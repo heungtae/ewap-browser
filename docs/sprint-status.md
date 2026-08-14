@@ -21,7 +21,7 @@
 | S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Done | S1 | 2026-08-14 | 2026-08-14 | `npm run test:company`, policy module/agent import, ADR-006/007/008 | Codex implementation/QA review | S3 시작 가능 |
 | S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Done | S2 | 2026-08-14 | 2026-08-14 | `npm run test:company`, `npm run test:fixtures`, verifier and select contracts | Codex implementation/QA review | S4 시작 가능 |
 | S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Done | S3 | 2026-08-14 | 2026-08-14 | `npm run test:company`, redacted audit schema, ADR-010 | Codex implementation/QA review | S5 시작 가능 |
-| S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Planned | S4 | - | - | - | - | S4 완료 대기 |
+| S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Done | S4 | 2026-08-15 | 2026-08-15 | `npm run test:company`, control panel contract | Codex implementation/QA review | S6 시작 가능 |
 | S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Planned | S5 | - | - | - | - | S5 완료 대기 |
 | S7 Page Profile MCP Control Plane | [계획](sprints/S7-page-profile-mcp.md) | Planned | S1,S2,S3,S4,S6 | - | - | - | - | 선행 Sprint 완료 대기 |
 | S8 AI Evaluation & Release Qualification | [계획](sprints/S8-release-qualification.md) | Planned | S0~S7 | - | - | - | - | release candidate scope freeze 대기 |
@@ -103,6 +103,18 @@
 - Reviewers: Codex implementation/QA review.
 - Residual risk or blocker: enterprise audit forwarding remains intentionally absent until a managed retention/access owner is supplied.
 - Next action: S5 Side Panel Operational UX.
+
+### S5 — Side Panel Operational UX — 2026-08-15
+
+- Status: Done
+- Scope delivered: managed Ask/Act controls, enterprise-origin state, explicit R2 confirmation queue, redacted audit timeline and stop control; upstream Dev-mode button is removed.
+- Evidence:
+  - Build/lint/unit: `npm run test:company` including `control-panel-contract.test.mjs`
+  - Browser E2E/security/evaluation: Company panel consumes only the bounded panel-state contract; negative source assertion excludes argument/page-value fields.
+  - Snapshot/ADR/documentation: `get_company_panel_state`, `set_company_mode`, `company_stop` background contracts.
+- Reviewers: Codex implementation/QA review.
+- Residual risk or blocker: full authenticated enterprise UX testing requires a managed company origin and is deferred to S8 release qualification.
+- Next action: S6 Security & Resilience Hardening.
 
 ## 완료 판정 체크
 

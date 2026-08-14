@@ -1,0 +1,6 @@
+#company-control-panel { margin: 8px 12px; padding: 8px; border: 1px solid var(--border, #d0d7de); border-radius: 8px; font: 12px/1.4 system-ui, sans-serif; }
+.company-control-heading { display:flex; justify-content:space-between; gap:8px; font-weight:600; }
+.company-origin-ok { color: #16803c; }.company-origin-denied { color: #b42318; }
+.company-control-actions { display:flex; gap:6px; margin:7px 0; }.company-control-actions button.active { font-weight:700; outline:2px solid currentColor; }
+.company-confirmation { margin:4px 0; }.company-confirmation button { margin-left:6px; }
+#company-audit { margin:4px 0 0; padding-left:18px; }

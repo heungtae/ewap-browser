@@ -17762,6 +17762,16 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     return this.companyAudit.snapshot();
   }
 
+  getCompanyPendingConfirmations() {
+    return this.companyMutationPolicy.listPending();
+  }
+
+  setCompanyConversationMode(tabId, mode) {
+    if (!['ask', 'act'].includes(mode)) return false;
+    this.getConversation(tabId, mode);
+    return true;
+  }
+
   async executeTool(tabId, name, args, onUpdate = null, executionContext = null) {
     const dispatchContext = executionContext && typeof executionContext === 'object'
       ? executionContext

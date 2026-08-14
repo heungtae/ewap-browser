@@ -49,6 +49,7 @@ import {
 import { providerIconUrl } from './provider-icons.js';
 import { parseWatchSlashCommand, WATCH_COMMAND_USAGE } from './watch-command.js';
 import { createSidePanelWindowScope } from './sidepanel-window-scope.js';
+import { mountCompanyControlPanel } from './company-panel.js';
 import { visionProviderKind } from '../providers/vision-capabilities.js';
 import {
   clearStagedScreenshots,
@@ -11391,6 +11392,14 @@ function sendToBackground(action, data = {}) {
   });
 }
 
+// Keep the existing conversation UI, but make the managed Company control
+// plane explicit and remove the upstream Dev-mode escape hatch from the UI.
+const companyControlPanel = mountCompanyControlPanel({
+  send: sendToBackground,
+  onMode: (mode) => setMode(mode),
+  onStop: () => abortRun(),
+});
+
 // --- Keyboard shortcuts ---
 
 function handleRecordingEscapeKey(e) {
@@ -11493,11 +11502,15 @@ function setMode(mode) {
 
   updateActWarning();
   resetInputPlaceholderRotation();
+  if (currentTabId && (mode === 'ask' || mode === 'act')) {
+    void sendToBackground('set_company_mode', { tabId: currentTabId, mode }).catch(() => {});
+  }
+  void companyControlPanel?.refresh?.();
 }
 
 function normalizeAgentMode(mode) {
   if (isStandaloneWindow) return 'ask';
-  return mode === 'act' || mode === 'dev' ? mode : 'ask';
+  return mode === 'act' ? 'act' : 'ask';
 }
 
 async function ensureActMode() {

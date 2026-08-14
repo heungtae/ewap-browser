@@ -41,14 +41,18 @@ export class CompanyMutationPolicy {
     if (risk.risk === 'R3') return { allowed: false, code: 'R3_DENIED', risk, error: 'Destructive action is denied by Company policy.' };
     if (this.executed.has(fingerprint)) return { allowed: false, code: 'DUPLICATE_MUTATION', risk, error: 'An equivalent mutation was already dispatched and will not be retried automatically.' };
     if (risk.risk !== 'R2') return { allowed: true, risk, fingerprint };
-    const confirmation = this.pending.get(confirmationId);
+    const confirmation = confirmationId
+      ? this.pending.get(confirmationId)
+      : [...this.pending.values()].find((entry) => entry.approved && entry.fingerprint === fingerprint);
     if (!confirmation || confirmation.expiresAt < this.now() || confirmation.fingerprint !== fingerprint) {
       const id = `confirm_${this.now()}_${Math.random().toString(36).slice(2, 10)}`;
       this.pending.set(id, { fingerprint, expiresAt: this.now() + this.confirmationTtlMs, approved: false, risk });
       return { allowed: false, code: 'R2_CONFIRMATION_REQUIRED', risk, confirmationId: id, error: 'Business mutation requires explicit user confirmation.' };
     }
     if (!confirmation.approved) return { allowed: false, code: 'R2_CONFIRMATION_REQUIRED', risk, confirmationId, error: 'Business mutation requires explicit user confirmation.' };
-    this.pending.delete(confirmationId);
+    for (const [id, entry] of this.pending.entries()) {
+      if (entry === confirmation) this.pending.delete(id);
+    }
     return { allowed: true, risk, fingerprint };
   }
 
@@ -57,6 +61,13 @@ export class CompanyMutationPolicy {
     if (!pending || pending.expiresAt < this.now()) return false;
     pending.approved = true;
     return true;
+  }
+
+  listPending() {
+    const now = this.now();
+    return [...this.pending.entries()]
+      .filter(([, entry]) => entry.expiresAt >= now)
+      .map(([id, entry]) => ({ id, risk: entry.risk.risk, expiresAt: entry.expiresAt, approved: entry.approved }));
   }
 
   recordDispatch(fingerprint) {

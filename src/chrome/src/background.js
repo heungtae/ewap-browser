@@ -1,5 +1,6 @@
 import { ProviderManager } from './providers/manager.js';
-import { COMPANY_PROVIDER_ID } from './company/config/managed-config.js';
+import { COMPANY_PROVIDER_ID, loadManagedCompanyConfig } from './company/config/managed-config.js';
+import { evaluateCompanyTool } from './company/policy/company-policy.js';
 import { Agent } from './agent/agent.js';
 import {
   CUSTOM_SKILLS_STORAGE_KEY,
@@ -3154,6 +3155,35 @@ async function handleMessage(msg, sender) {
 
     case 'get_company_audit': {
       return { events: agent.getCompanyAudit() };
+    }
+
+    case 'get_company_panel_state': {
+      const tab = (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
+      const pageUrl = tab?.url || '';
+      const config = await loadManagedCompanyConfig();
+      const act = evaluateCompanyTool({ name: 'scroll', mode: 'act', pageUrl, config });
+      return {
+        tabId: tab?.id || null,
+        mode: tab?.id ? agent.conversationModes.get(tab.id) || 'ask' : 'ask',
+        originAllowed: act.originAllowed === true,
+        provider: COMPANY_PROVIDER_ID,
+        pendingConfirmations: agent.getCompanyPendingConfirmations(),
+        audit: agent.getCompanyAudit(),
+      };
+    }
+
+    case 'set_company_mode': {
+      const tabId = msg.tabId || sender.tab?.id;
+      if (!tabId || !agent.setCompanyConversationMode(tabId, msg.mode)) {
+        return { ok: false, denied: true, error: 'Company mode must be ask or act and bound to a tab.' };
+      }
+      return { ok: true, mode: msg.mode };
+    }
+
+    case 'company_stop': {
+      const tabId = msg.tabId || sender.tab?.id;
+      if (tabId) agent.abort(tabId);
+      return { ok: true };
     }
 
     case 'set_active_provider': {
