@@ -19,7 +19,7 @@
 | S0 Baseline & Delivery Foundation | [계획](sprints/S0-baseline-foundation.md) | Done | - | 2026-08-14 | 2026-08-14 | [baseline](../BASELINE.md), [runtime](runtime-inventory.md), [tools](tool-inventory.md), [permissions](permission-inventory.md), [providers](provider-inventory.md) | Codex implementation/QA review | S1 시작 가능 |
 | S1 Enterprise Lockdown | [계획](sprints/S1-enterprise-lockdown.md) | Done | S0 | 2026-08-14 | 2026-08-14 | `npm run test:company`, `npm run test:fixtures`, manifest load, ADR-003/004/005/011 | Codex implementation/QA review | S2 시작 가능 |
 | S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Done | S1 | 2026-08-14 | 2026-08-14 | `npm run test:company`, policy module/agent import, ADR-006/007/008 | Codex implementation/QA review | S3 시작 가능 |
-| S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Planned | S2 | - | - | - | - | S2 완료 대기 |
+| S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Done | S2 | 2026-08-14 | 2026-08-14 | `npm run test:company`, `npm run test:fixtures`, verifier and select contracts | Codex implementation/QA review | S4 시작 가능 |
 | S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Planned | S3 | - | - | - | - | S3 완료 대기 |
 | S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Planned | S4 | - | - | - | - | S4 완료 대기 |
 | S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Planned | S5 | - | - | - | - | S5 완료 대기 |
@@ -79,6 +79,18 @@
 - Reviewers: Codex implementation/QA review.
 - Residual risk or blocker: S3 must add target-label preflight and verified form controls before mutation tools are enabled.
 - Next action: S3 Verified Core Form Automation.
+
+### S3 — Verified Core Form Automation — 2026-08-14
+
+- Status: Done
+- Scope delivered: verified ref_id form mutation exposure, native select option discovery/selection, controlled-input reuse and normalized VERIFIED/FAILED/UNKNOWN results.
+- Evidence:
+  - Build/lint/unit: `npm run test:company` including action verifier and tool snapshot tests
+  - Browser E2E/security/evaluation: `npm run test:fixtures` covers controlled inputs, select, checkbox, modal, portal and stale-ref fixtures
+  - Snapshot/ADR/documentation: ADR-002 and ADR-009; COMPANY_TOOLS Act snapshot
+- Reviewers: Codex implementation/QA review.
+- Residual risk or blocker: click/press action tools remain disabled until target preflight and Side Panel confirmation workflow are completed.
+- Next action: S4 Audit & Evidence Pipeline.
 
 ## 완료 판정 체크
 

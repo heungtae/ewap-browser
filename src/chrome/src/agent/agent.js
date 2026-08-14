@@ -91,6 +91,7 @@ import { repairAssistantDisplayText, sanitizeText as sanitizePlannerText } from 
 import { loadManagedCompanyConfig } from '../company/config/managed-config.js';
 import { evaluateCompanyTool } from '../company/policy/company-policy.js';
 import { CompanyMutationPolicy } from '../company/policy/mutation-policy.js';
+import { verifyCompanyAction } from '../company/verifier/action-verifier.js';
 import { buildCustomSkillsPrompt, buildSkillLoaderDefinition, buildSkillToolDefinitions, buildSkillToolRegistry, getEligibleCustomSkills, getEligibleSkillCatalog, normalizeCustomSkills } from './skills.js';
 import { publicMediaUrlNeedsExplicitTarget } from './public-media-url.js';
 import { USER_MEMORY_DEFAULT_MAX_PROMPT_CHARS, formatUserMemoryPrompt, normalizeUserMemoryMaxPromptChars, normalizeUserMemoryStore } from './user-memory.js';
@@ -22640,6 +22641,8 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       'set_checked': 'set_checked',
       'type_ax': 'type_ax',
       'set_field': 'set_field',
+      'get_select_options': 'get_select_options',
+      'select_option': 'select_option',
       'click': 'click',
       'type_text': 'type',
       'press_keys': 'press_keys',
@@ -22801,6 +22804,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       if (name === 'read_page') {
         response = applyReadPageWindow(response, args);
       }
+      response = verifyCompanyAction({ name, response });
       this._clearUploadSelectorRecoveryAfterInspection(tabId, name, response);
     return this._withCoordinateReconciliation(response, coordinateDiagnostic);
   }

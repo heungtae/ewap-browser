@@ -1134,6 +1134,39 @@ export const AGENT_TOOLS = [
   },
 ];
 
+// Company-only form tools. They are appended to the upstream schema list so
+// the existing parser and argument validator recognize them, but the company
+// registry is the only path that can expose them to a model.
+AGENT_TOOLS.push(
+  {
+    type: 'function',
+    function: {
+      name: 'get_select_options',
+      description: 'Read the options of a native select identified by a current accessibility ref_id.',
+      parameters: {
+        type: 'object',
+        properties: { ref_id: { type: 'string' } },
+        required: ['ref_id'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'select_option',
+      description: 'Select one exact native select option by its current accessibility ref_id and visible label or value.',
+      parameters: {
+        type: 'object',
+        properties: {
+          ref_id: { type: 'string' },
+          option: { type: 'string' },
+        },
+        required: ['ref_id', 'option'],
+      },
+    },
+  },
+);
+
 /**
  * Read-only tools allowed in Ask mode.
  */

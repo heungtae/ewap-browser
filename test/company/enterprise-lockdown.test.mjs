@@ -12,7 +12,8 @@ assert.deepEqual(companyToolNamesForMode('ask'), [
   'clarify', 'done', 'find_text', 'get_accessibility_tree', 'read_page',
 ]);
 assert.deepEqual(companyToolNamesForMode('act'), [
-  'clarify', 'done', 'find_text', 'get_accessibility_tree', 'read_page',
+  'clarify', 'done', 'find_text', 'get_accessibility_tree', 'get_select_options', 'hover', 'read_page',
+  'scroll', 'select_option', 'set_checked', 'set_field', 'type_ax', 'verify_form', 'wait_for_element',
 ]);
 assert.equal(evaluateCompanyTool({ name: 'read_page', mode: 'ask', pageUrl: 'https://outside.example', config }).allowed, true);
 assert.equal(evaluateCompanyTool({ name: 'click_ax', mode: 'ask', pageUrl: 'https://eda.company.net/equipment', config }).code, 'COMPANY_TOOL_DENIED');

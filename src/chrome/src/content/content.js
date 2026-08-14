@@ -5319,6 +5319,55 @@
           return failure(e && e.message || String(e));
         }
       },
+      'get_select_options': () => {
+        try {
+          const { ref_id } = msg.params || {};
+          if (typeof ref_id !== 'string') return { success: false, error: 'ref_id is required', dispatched: false, noDispatch: true };
+          const el = window.__wb_ax_lookup?.(ref_id);
+          if (!el || !el.isConnected) return { success: false, error: `ref_id ${ref_id} is stale`, dispatched: false, noDispatch: true };
+          if (el.tagName !== 'SELECT') return { success: false, error: 'get_select_options supports native <select> controls only.', dispatched: false, noDispatch: true };
+          return {
+            success: true,
+            ref_id,
+            options: Array.from(el.options).map((option) => ({
+              label: option.text.trim(),
+              value: option.value,
+              selected: option.selected,
+              disabled: option.disabled,
+            })),
+          };
+        } catch (error) {
+          return { success: false, error: error?.message || String(error), dispatched: false, noDispatch: true };
+        }
+      },
+      'select_option': async () => {
+        try {
+          const { ref_id, option } = msg.params || {};
+          if (typeof ref_id !== 'string' || typeof option !== 'string') return { success: false, error: 'ref_id and option are required', dispatched: false, noDispatch: true };
+          const el = window.__wb_ax_lookup?.(ref_id);
+          if (!el || !el.isConnected) return { success: false, error: `ref_id ${ref_id} is stale`, dispatched: false, noDispatch: true };
+          if (el.tagName !== 'SELECT') return { success: false, error: 'select_option supports native <select> controls only. Use the documented ARIA combobox flow for portal widgets.', dispatched: false, noDispatch: true };
+          const requested = option.trim();
+          const match = Array.from(el.options).find((item) => item.value === requested || item.text.trim() === requested);
+          if (!match || match.disabled) return { success: false, error: `No enabled exact option matching "${requested}".`, dispatched: false, noDispatch: true };
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value')?.set;
+          if (setter) setter.call(el, match.value); else el.value = match.value;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+          await new Promise((resolve) => setTimeout(resolve, SET_FIELD_VERIFY_DELAY_MS));
+          const verified = el.isConnected && el.value === match.value;
+          return {
+            success: verified,
+            verified,
+            dispatched: true,
+            ref_id,
+            selected: match.text.trim(),
+            ...(verified ? {} : { error: 'Select value did not settle to the requested option.' }),
+          };
+        } catch (error) {
+          return { success: false, error: error?.message || String(error), dispatched: true };
+        }
+      },
       // Internal Chrome recovery helpers. The background resolves the exact
       // ref again, prepares either replacement or append selection, sends
       // trusted CDP text, then asks this content script for settled readback.
