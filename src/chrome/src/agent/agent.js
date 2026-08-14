@@ -92,6 +92,7 @@ import { loadManagedCompanyConfig } from '../company/config/managed-config.js';
 import { evaluateCompanyTool } from '../company/policy/company-policy.js';
 import { CompanyMutationPolicy } from '../company/policy/mutation-policy.js';
 import { verifyCompanyAction } from '../company/verifier/action-verifier.js';
+import { CompanyAuditRecorder } from '../company/audit/audit-recorder.js';
 import { buildCustomSkillsPrompt, buildSkillLoaderDefinition, buildSkillToolDefinitions, buildSkillToolRegistry, getEligibleCustomSkills, getEligibleSkillCatalog, normalizeCustomSkills } from './skills.js';
 import { publicMediaUrlNeedsExplicitTarget } from './public-media-url.js';
 import { USER_MEMORY_DEFAULT_MAX_PROMPT_CHARS, formatUserMemoryPrompt, normalizeUserMemoryMaxPromptChars, normalizeUserMemoryStore } from './user-memory.js';
@@ -394,6 +395,7 @@ export class Agent extends LoopDetector {
     super();
     this.providerManager = providerManager;
     this.companyMutationPolicy = new CompanyMutationPolicy();
+    this.companyAudit = new CompanyAuditRecorder({ storage: globalThis.chrome?.storage || null });
     this.conversations = new Map(); // tabId -> messages[]
     // tabId -> durable selected-text boundary. Follow-up turns and Continue
     // inherit this scope without exposing conversation history from before the
@@ -17756,6 +17758,10 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     return this.companyMutationPolicy.approve(confirmationId);
   }
 
+  getCompanyAudit() {
+    return this.companyAudit.snapshot();
+  }
+
   async executeTool(tabId, name, args, onUpdate = null, executionContext = null) {
     const dispatchContext = executionContext && typeof executionContext === 'object'
       ? executionContext
@@ -17769,6 +17775,15 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       config: await loadManagedCompanyConfig(),
     });
     if (!companyDecision.allowed) {
+      void this.companyAudit.record({
+        tool: name,
+        mode: this._effectiveRunMode(tabId, 'act'),
+        origin: companyPageUrl,
+        outcome: 'DENIED',
+        success: false,
+        dispatched: false,
+        policy: companyDecision.code,
+      });
       return {
         success: false,
         denied: true,
@@ -17785,6 +17800,16 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       confirmationId: dispatchContext.companyConfirmationId,
     });
     if (!companyMutationDecision.allowed) {
+      void this.companyAudit.record({
+        tool: name,
+        mode: this._effectiveRunMode(tabId, 'act'),
+        origin: companyPageUrl,
+        risk: companyMutationDecision.risk?.risk,
+        outcome: 'DENIED',
+        success: false,
+        dispatched: false,
+        policy: companyMutationDecision.code,
+      });
       return {
         success: false,
         denied: true,
@@ -22805,6 +22830,16 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
         response = applyReadPageWindow(response, args);
       }
       response = verifyCompanyAction({ name, response });
+      void this.companyAudit.record({
+        tool: name,
+        mode: this._effectiveRunMode(tabId, 'act'),
+        origin: companyPageUrl,
+        risk: companyMutationDecision.risk?.risk,
+        outcome: response?.outcome || (response?.success ? 'SUCCESS' : 'FAILED'),
+        success: response?.success === true,
+        dispatched: response?.dispatched === true,
+        policy: companyDecision.allowed ? 'ALLOW' : companyDecision.code,
+      });
       this._clearUploadSelectorRecoveryAfterInspection(tabId, name, response);
     return this._withCoordinateReconciliation(response, coordinateDiagnostic);
   }

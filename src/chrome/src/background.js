@@ -3152,6 +3152,10 @@ async function handleMessage(msg, sender) {
       return { ok: agent.approveCompanyConfirmation(msg.confirmationId) };
     }
 
+    case 'get_company_audit': {
+      return { events: agent.getCompanyAudit() };
+    }
+
     case 'set_active_provider': {
       if (msg.providerId !== COMPANY_PROVIDER_ID) {
         return { ok: false, denied: true, error: 'Only the managed Company vLLM provider is available.' };

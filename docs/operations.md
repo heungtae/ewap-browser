@@ -26,3 +26,7 @@ S8 전에 다음을 실제 증적으로 준비한다.
 2. incident evidence에는 secret, raw page text, full typed value를 포함하지 않는다.
 3. root cause, affected version/config/profile, containment, rollback, regression test를 기록한다.
 4. security invariant를 변경하는 remediation은 ADR과 security review를 거친다.
+
+## Current audit implementation boundary
+
+S4 stores a bounded local `companyAuditEvents` timeline containing only redacted policy/action outcome metadata. It deliberately has no enterprise forwarding implementation until retention, access control and endpoint ownership are approved.
