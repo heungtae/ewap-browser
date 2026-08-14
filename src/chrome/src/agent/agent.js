@@ -90,6 +90,7 @@ import { extractFirstJsonObject } from './json-extract.js';
 import { repairAssistantDisplayText, sanitizeText as sanitizePlannerText } from './text-sanitize.js';
 import { loadManagedCompanyConfig } from '../company/config/managed-config.js';
 import { evaluateCompanyTool } from '../company/policy/company-policy.js';
+import { CompanyMutationPolicy } from '../company/policy/mutation-policy.js';
 import { buildCustomSkillsPrompt, buildSkillLoaderDefinition, buildSkillToolDefinitions, buildSkillToolRegistry, getEligibleCustomSkills, getEligibleSkillCatalog, normalizeCustomSkills } from './skills.js';
 import { publicMediaUrlNeedsExplicitTarget } from './public-media-url.js';
 import { USER_MEMORY_DEFAULT_MAX_PROMPT_CHARS, formatUserMemoryPrompt, normalizeUserMemoryMaxPromptChars, normalizeUserMemoryStore } from './user-memory.js';
@@ -391,6 +392,7 @@ export class Agent extends LoopDetector {
   constructor(providerManager) {
     super();
     this.providerManager = providerManager;
+    this.companyMutationPolicy = new CompanyMutationPolicy();
     this.conversations = new Map(); // tabId -> messages[]
     // tabId -> durable selected-text boundary. Follow-up turns and Continue
     // inherit this scope without exposing conversation history from before the
@@ -17749,6 +17751,10 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     }
   }
 
+  approveCompanyConfirmation(confirmationId) {
+    return this.companyMutationPolicy.approve(confirmationId);
+  }
+
   async executeTool(tabId, name, args, onUpdate = null, executionContext = null) {
     const dispatchContext = executionContext && typeof executionContext === 'object'
       ? executionContext
@@ -17771,6 +17777,28 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
         error: companyDecision.error,
       };
     }
+    const companyMutationDecision = this.companyMutationPolicy.authorize({
+      name,
+      args,
+      origin: companyPageUrl,
+      confirmationId: dispatchContext.companyConfirmationId,
+    });
+    if (!companyMutationDecision.allowed) {
+      return {
+        success: false,
+        denied: true,
+        dispatched: false,
+        noDispatch: true,
+        companyPolicy: companyMutationDecision.code,
+        risk: companyMutationDecision.risk?.risk,
+        confirmationId: companyMutationDecision.confirmationId,
+        error: companyMutationDecision.error,
+      };
+    }
+    // Reserve before dispatch: an uncertain browser outcome is never retried.
+    // This is intentionally conservative even when a later browser adapter
+    // fails to return a conclusive result.
+    if (companyMutationDecision.fingerprint) this.companyMutationPolicy.recordDispatch(companyMutationDecision.fingerprint);
     let coordinatePoint = null;
     let coordinateDiagnostic = null;
     // Canonicalize coordinate clicks before toolbar recovery probes them.

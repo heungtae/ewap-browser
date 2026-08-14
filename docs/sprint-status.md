@@ -18,7 +18,7 @@
 |---|---|---|---|---|---|---|---|---|
 | S0 Baseline & Delivery Foundation | [계획](sprints/S0-baseline-foundation.md) | Done | - | 2026-08-14 | 2026-08-14 | [baseline](../BASELINE.md), [runtime](runtime-inventory.md), [tools](tool-inventory.md), [permissions](permission-inventory.md), [providers](provider-inventory.md) | Codex implementation/QA review | S1 시작 가능 |
 | S1 Enterprise Lockdown | [계획](sprints/S1-enterprise-lockdown.md) | Done | S0 | 2026-08-14 | 2026-08-14 | `npm run test:company`, `npm run test:fixtures`, manifest load, ADR-003/004/005/011 | Codex implementation/QA review | S2 시작 가능 |
-| S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Planned | S1 | - | - | - | - | S1 완료 대기 |
+| S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Done | S1 | 2026-08-14 | 2026-08-14 | `npm run test:company`, policy module/agent import, ADR-006/007/008 | Codex implementation/QA review | S3 시작 가능 |
 | S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Planned | S2 | - | - | - | - | S2 완료 대기 |
 | S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Planned | S3 | - | - | - | - | S3 완료 대기 |
 | S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Planned | S4 | - | - | - | - | S4 완료 대기 |
@@ -67,6 +67,18 @@
 - Reviewers: Codex implementation/QA review; enterprise deployment approval is a later S8 release gate.
 - Residual risk or blocker: mutation tools remain deliberately disabled until S2/S3 policy and verifier work.
 - Next action: S2 Policy & Mutation Control Plane.
+
+### S2 — Policy & Mutation Control Plane — 2026-08-14
+
+- Status: Done
+- Scope delivered: deterministic R0~R3 policy, confirmation ID approval path, R3 deny and redacted duplicate-mutation reservation.
+- Evidence:
+  - Build/lint/unit: `npm run test:company` including `mutation-policy.test.mjs`
+  - Browser E2E/security/evaluation: direct policy denies unapproved R2, R3 and duplicate mutation before dispatch
+  - Snapshot/ADR/documentation: [ADR-006](adr/ADR-006-deterministic-policy.md), [ADR-007](adr/ADR-007-r2-confirmation.md), [ADR-008](adr/ADR-008-r3-hard-deny.md)
+- Reviewers: Codex implementation/QA review.
+- Residual risk or blocker: S3 must add target-label preflight and verified form controls before mutation tools are enabled.
+- Next action: S3 Verified Core Form Automation.
 
 ## 완료 판정 체크
 

@@ -3148,6 +3148,10 @@ async function handleMessage(msg, sender) {
       };
     }
 
+    case 'approve_company_confirmation': {
+      return { ok: agent.approveCompanyConfirmation(msg.confirmationId) };
+    }
+
     case 'set_active_provider': {
       if (msg.providerId !== COMPANY_PROVIDER_ID) {
         return { ok: false, denied: true, error: 'Only the managed Company vLLM provider is available.' };
