@@ -16,7 +16,7 @@
 
 | Sprint | 상세 계획 | 상태 | 선행 Sprint | 시작일 | 완료일 | 증적 | 승인 | blocker / 다음 조치 |
 |---|---|---|---|---|---|---|---|---|
-| S0 Baseline & Delivery Foundation | [계획](sprints/S0-baseline-foundation.md) | Planned | - | - | - | - | - | upstream source 확보 후 baseline inventory 시작 |
+| S0 Baseline & Delivery Foundation | [계획](sprints/S0-baseline-foundation.md) | Done | - | 2026-08-14 | 2026-08-14 | [baseline](../BASELINE.md), [runtime](runtime-inventory.md), [tools](tool-inventory.md), [permissions](permission-inventory.md), [providers](provider-inventory.md) | Codex implementation/QA review | S1 시작 가능 |
 | S1 Enterprise Lockdown | [계획](sprints/S1-enterprise-lockdown.md) | Planned | S0 | - | - | - | - | S0 완료 대기 |
 | S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Planned | S1 | - | - | - | - | S1 완료 대기 |
 | S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Planned | S2 | - | - | - | - | S2 완료 대기 |
@@ -43,6 +43,18 @@
 - Residual risk or blocker: <none or explicit description>
 - Next action: <next Sprint start condition or unblock action>
 ```
+
+### S0 — Baseline & Delivery Foundation — 2026-08-14
+
+- Status: Done
+- Scope delivered: pinned upstream import, reproducible Node/browser fixture baseline, runtime/tool/permission/provider inventories, provenance and S0 ADRs.
+- Evidence:
+  - Build/lint/unit: [`BASELINE.md`](../BASELINE.md)
+  - Browser E2E/security/evaluation: `npm run test:fixtures` and `npm run ci:e2e:dry` recorded in [`BASELINE.md`](../BASELINE.md)
+  - Snapshot/ADR/documentation: [ADR-001](adr/ADR-001-webbrain-fork.md), [ADR-002](adr/ADR-002-accessibility-ref-id-interface.md), [ADR-012](adr/ADR-012-upstream-sync.md)
+- Reviewers: Codex implementation/QA review; enterprise deployment approval is a later S8 release gate.
+- Residual risk or blocker: broad upstream capability surface; S1 must reduce it before any company mutation tool is admitted.
+- Next action: S1 Enterprise Lockdown.
 
 ## 완료 판정 체크
 

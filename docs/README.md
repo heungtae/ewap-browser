@@ -8,8 +8,8 @@
 |---|---|---|
 | [상세 설계](company-web-agent-detailed-design.md) | 제품·보안·기술 설계의 기준 | Baseline |
 | [기존 구현 계획](coding-agent-implementation-plan.md) | upstream 기반의 초기 phase/PR 제안 | Baseline |
-| [아키텍처 경계](architecture.md) | trust boundary와 책임 분리의 요약 기준 | Active plan |
-| [보안 모델](security-model.md) | 위협, 금지 surface, fail-closed 통제와 증적 | Active plan |
+| [Company 아키텍처 경계](company-architecture.md) | trust boundary와 책임 분리의 요약 기준 | Active plan |
+| [Company 보안 모델](company-security-model.md) | 위협, 금지 surface, fail-closed 통제와 증적 | Active plan |
 | [구성 관리](configuration.md) | managed configuration의 소유권과 변경 통제 | Active plan |
 | [운영 및 release](operations.md) | 배포, 장애 대응, monitoring, rollback의 준비 기준 | Active plan |
 | [Upstream sync](upstream-sync.md) | upstream 변경의 검토·채택 절차 | Active plan |
