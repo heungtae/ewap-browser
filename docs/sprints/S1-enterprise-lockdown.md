@@ -30,7 +30,7 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] permission, provider, tool, origin configuration의 승인된 snapshot이 있다.
-- [ ] ASK read-only와 external-origin ACT deny가 독립 테스트로 증명됐다.
-- [ ] ADR-003/004/005/011과 RQ 추적성을 갱신했다.
-- [ ] S1 evidence와 승인을 `../sprint-status.md`에 기록했다.
+- [x] permission, provider, tool, origin configuration의 reviewed local snapshot이 있다.
+- [x] ASK read-only와 external-origin ACT deny가 독립 테스트로 증명됐다.
+- [x] ADR-003/004/005/011과 RQ 추적성을 갱신했다.
+- [x] S1 evidence와 local review를 `../sprint-status.md`에 기록했다.

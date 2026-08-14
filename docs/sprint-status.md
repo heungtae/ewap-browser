@@ -152,7 +152,7 @@
 - Residual risk or blocker: no managed live Qwen/vLLM evaluation, Page Profile service qualification, enterprise-origin E2E, deployment/rollback rehearsal or named release approvals. Decision is NO-GO; current fail-closed defaults preserve safety.
 - Next action: create a controlled production-qualification sprint only after the four GO conditions in the release record are satisfied.
 
-## 완료 판정 체크
+## 향후 Sprint/Hotfix 완료 판정 템플릿
 
 - [ ] 선행 Sprint가 `Done`이다.
 - [ ] `docs/sprints.md`의 범위와 완료 증적을 충족했다.

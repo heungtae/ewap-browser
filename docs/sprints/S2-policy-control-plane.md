@@ -30,6 +30,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] 모든 mutation path가 단일 policy entry point를 거친다.
-- [ ] R2/R3/duplicate/UNKNOWN behavior가 테스트로 증명됐다.
-- [ ] ADR-006~009, RQ-02/06/07, 상태 기록부를 갱신했다.
+- [x] Company model-exposed mutation path가 단일 policy entry point를 거친다.
+- [x] R2/R3/duplicate/UNKNOWN behavior가 테스트로 증명됐다.
+- [x] ADR-006~009, RQ-02/06/07, 상태 기록부를 갱신했다.

@@ -28,7 +28,7 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] `BASELINE.md`와 네 종류 inventory가 실제 결과로 채워졌다.
-- [ ] baseline 명령, upstream pin, 알려진 실패가 증적으로 링크됐다.
-- [ ] ADR-001/002/012 검토 상태를 갱신했다.
-- [ ] S0 상태와 reviewer를 `../sprint-status.md`에 기록했다.
+- [x] `BASELINE.md`와 네 종류 inventory가 실제 결과로 채워졌다.
+- [x] baseline 명령, upstream pin, 알려진 실패가 증적으로 링크됐다.
+- [x] ADR-001/002/012 검토 상태를 갱신했다.
+- [x] S0 상태와 reviewer를 `../sprint-status.md`에 기록했다.
