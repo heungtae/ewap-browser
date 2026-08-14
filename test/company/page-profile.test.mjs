@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { buildAccessibilityFingerprint } from '../../src/chrome/src/company/page-profile/page-fingerprint.js';
+import { readFile } from 'node:fs/promises';
 import { PageProfileResolver, validatePageProfile } from '../../src/chrome/src/company/page-profile/page-profile-resolver.js';
 import { ManagedPageProfileClient } from '../../src/chrome/src/company/page-profile/managed-page-profile-client.js';
 import { AuthoritativeBindingClient, resolveAuthoritativeField } from '../../src/chrome/src/company/page-profile/authoritative-binding.js';
@@ -28,4 +29,8 @@ assert.equal(await new ManagedPageProfileClient({ endpoint: 'https://outside.exa
 const profile = { id: 'equipment-edit', authoritativeFields: ['equipment.status'] };
 assert.equal((await resolveAuthoritativeField({ profile, field: 'equipment.status', client: new AuthoritativeBindingClient() })).code, 'AUTHORITATIVE_BINDING_UNAVAILABLE');
 assert.equal((await resolveAuthoritativeField({ profile, field: 'equipment.owner', client: new AuthoritativeBindingClient() })).code, 'AUTHORITATIVE_FIELD_NOT_DECLARED');
+const content = await readFile(new URL('../../src/chrome/src/content/content.js', import.meta.url), 'utf8');
+assert.match(content, /get_company_accessibility_fingerprint/);
+assert.match(content, /Object\.values\(window\.__wbElementMap/);
+assert.match(content, /getAttribute\?\.\('aria-label'\)/);
 console.log('company page profile tests passed');

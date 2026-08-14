@@ -4387,6 +4387,25 @@
       'wait_for_element': () => waitForElement(msg.params || {}),
       'get_selection': () => ({ text: window.getSelection()?.toString() || '' }),
       'find_text': () => findText(msg.params || {}),
+      // Internal only: never exposed as a model tool. It returns the minimum
+      // semantic material needed to derive the managed Page Profile fingerprint
+      // and deliberately excludes values, refs, coordinates and DOM markup.
+      'get_company_accessibility_fingerprint': () => {
+        try {
+          if (typeof window.__generateAccessibilityTree !== 'function') return { elements: [] };
+          window.__generateAccessibilityTree('interactive', 8, 2000);
+          const references = window.__wbElementMap instanceof Map
+            ? [...window.__wbElementMap.values()]
+            : Object.values(window.__wbElementMap || {});
+          const elements = references.map((reference) => reference?.deref?.()).filter(Boolean).slice(0, 160).map((element) => ({
+            role: String(element.getAttribute?.('role') || element.tagName || 'unknown').toLowerCase(),
+            name: String(element.getAttribute?.('aria-label') || element.getAttribute?.('title') || element.textContent || '').trim().slice(0, 96),
+          }));
+          return { elements };
+        } catch {
+          return { elements: [] };
+        }
+      },
       // ── Accessibility-tree-backed reads and actions ──────────────────
       //
       // The tree is built by src/content/accessibility-tree.js (a port of

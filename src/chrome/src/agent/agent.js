@@ -17786,8 +17786,8 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     let elements = [];
     try {
       pageUrl = (await chrome.tabs.get(tabId))?.url || '';
-      const response = await chrome.tabs.sendMessage(tabId, { target: 'content', action: 'get_accessibility_tree' });
-      elements = response?.elements || response?.tree?.elements || [];
+      const response = await chrome.tabs.sendMessage(tabId, { target: 'content', action: 'get_company_accessibility_fingerprint' });
+      elements = response?.elements || [];
     } catch {}
     const fingerprint = buildAccessibilityFingerprint({ pageUrl, elements });
     const config = await loadManagedCompanyConfig();
