@@ -14,17 +14,17 @@
 
 ## 현재 상태
 
-| Sprint | 상태 | 선행 Sprint | 시작일 | 완료일 | 증적 | 승인 | blocker / 다음 조치 |
-|---|---|---|---|---|---|---|---|
-| S0 Baseline & Delivery Foundation | Planned | - | - | - | - | - | upstream source 확보 후 baseline inventory 시작 |
-| S1 Enterprise Lockdown | Planned | S0 | - | - | - | - | S0 완료 대기 |
-| S2 Policy & Mutation Control Plane | Planned | S1 | - | - | - | - | S1 완료 대기 |
-| S3 Verified Core Form Automation | Planned | S2 | - | - | - | - | S2 완료 대기 |
-| S4 Audit & Evidence Pipeline | Planned | S3 | - | - | - | - | S3 완료 대기 |
-| S5 Side Panel Operational UX | Planned | S4 | - | - | - | - | S4 완료 대기 |
-| S6 Security & Resilience Hardening | Planned | S5 | - | - | - | - | S5 완료 대기 |
-| S7 Page Profile MCP Control Plane | Planned | S1,S2,S3,S4,S6 | - | - | - | - | 선행 Sprint 완료 대기 |
-| S8 AI Evaluation & Release Qualification | Planned | S0~S7 | - | - | - | - | release candidate scope freeze 대기 |
+| Sprint | 상세 계획 | 상태 | 선행 Sprint | 시작일 | 완료일 | 증적 | 승인 | blocker / 다음 조치 |
+|---|---|---|---|---|---|---|---|---|
+| S0 Baseline & Delivery Foundation | [계획](sprints/S0-baseline-foundation.md) | Planned | - | - | - | - | - | upstream source 확보 후 baseline inventory 시작 |
+| S1 Enterprise Lockdown | [계획](sprints/S1-enterprise-lockdown.md) | Planned | S0 | - | - | - | - | S0 완료 대기 |
+| S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Planned | S1 | - | - | - | - | S1 완료 대기 |
+| S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Planned | S2 | - | - | - | - | S2 완료 대기 |
+| S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Planned | S3 | - | - | - | - | S3 완료 대기 |
+| S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Planned | S4 | - | - | - | - | S4 완료 대기 |
+| S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Planned | S5 | - | - | - | - | S5 완료 대기 |
+| S7 Page Profile MCP Control Plane | [계획](sprints/S7-page-profile-mcp.md) | Planned | S1,S2,S3,S4,S6 | - | - | - | - | 선행 Sprint 완료 대기 |
+| S8 AI Evaluation & Release Qualification | [계획](sprints/S8-release-qualification.md) | Planned | S0~S7 | - | - | - | - | release candidate scope freeze 대기 |
 
 ## Sprint 종료 기록 양식
 

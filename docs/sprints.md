@@ -26,6 +26,8 @@ S7은 S1~S4의 보안 경계와 검증 체계가 고정된 뒤 시작한다. S8�
 
 ## Sprint 상세
 
+각 Sprint의 설계, work breakdown, 테스트 케이스와 산출물 형식은 [Sprint별 상세 계획](sprints/README.md)을 기준으로 한다. 이 문서는 의존성·범위·종료 게이트의 상위 로드맵이며, 상태 변경은 계속 [상태 기록부](sprint-status.md)에서만 수행한다.
+
 ### S0 — Baseline & Delivery Foundation
 
 **목적:** upstream 기준점을 재현 가능하게 고정하고 이후 변경을 비교할 문서·증적 기반을 만든다.

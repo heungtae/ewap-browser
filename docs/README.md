@@ -14,6 +14,7 @@
 | [운영 및 release](operations.md) | 배포, 장애 대응, monitoring, rollback의 준비 기준 | Active plan |
 | [Upstream sync](upstream-sync.md) | upstream 변경의 검토·채택 절차 | Active plan |
 | [스프린트 계획](sprints.md) | 구현 순서, 의존성, 진입/완료 조건 | Active plan |
+| [Sprint별 상세 계획](sprints/README.md) | Sprint별 설계·작업·검증 계획서 | Active plan |
 | [스프린트 상태](sprint-status.md) | 실제 완료 여부와 증적의 단일 기록부 | Active ledger |
 | [AI-DLC 거버넌스](ai-dlc-governance.md) | AI 사용, 책임, 모델 평가, 운영 게이트 | Active plan |
 | [요구사항 추적성](requirements-traceability.md) | 요구사항에서 설계·검증·스프린트까지의 연결 | Active plan |
