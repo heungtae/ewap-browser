@@ -22,7 +22,7 @@
 | S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Done | S2 | 2026-08-14 | 2026-08-14 | `npm run test:company`, `npm run test:fixtures`, verifier and select contracts | Codex implementation/QA review | S4 시작 가능 |
 | S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Done | S3 | 2026-08-14 | 2026-08-14 | `npm run test:company`, redacted audit schema, ADR-010 | Codex implementation/QA review | S5 시작 가능 |
 | S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Done | S4 | 2026-08-15 | 2026-08-15 | `npm run test:company`, control panel contract | Codex implementation/QA review | S6 시작 가능 |
-| S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Planned | S5 | - | - | - | - | S5 완료 대기 |
+| S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Done | S5 | 2026-08-15 | 2026-08-15 | `npm run test:company`, background allowlist | Codex implementation/QA review | S7 시작 가능 |
 | S7 Page Profile MCP Control Plane | [계획](sprints/S7-page-profile-mcp.md) | Planned | S1,S2,S3,S4,S6 | - | - | - | - | 선행 Sprint 완료 대기 |
 | S8 AI Evaluation & Release Qualification | [계획](sprints/S8-release-qualification.md) | Planned | S0~S7 | - | - | - | - | release candidate scope freeze 대기 |
 
@@ -115,6 +115,18 @@
 - Reviewers: Codex implementation/QA review.
 - Residual risk or blocker: full authenticated enterprise UX testing requires a managed company origin and is deferred to S8 release qualification.
 - Next action: S6 Security & Resilience Hardening.
+
+### S6 — Security & Resilience Hardening — 2026-08-15
+
+- Status: Done
+- Scope delivered: fail-closed service-worker action allowlist, disabled scheduler/cloud bridge/user-memory startup, disabled WebMCP preference hydration and download routing initialization.
+- Evidence:
+  - Build/lint/unit: `npm run test:company` including `background-action-policy.test.mjs`; `node --check src/chrome/src/background.js`.
+  - Browser E2E/security/evaluation: dangerous cloud, scheduler, sync, provider mutation, OAuth, screenshot and download message actions are denied before provider/storage hydration.
+  - Snapshot/ADR/documentation: `COMPANY_BACKGROUND_ACTIONS` is the reviewed message-exposure snapshot.
+- Reviewers: Codex implementation/QA review.
+- Residual risk or blocker: dead upstream modules remain present in source for incremental lockdown compatibility but have no manifest permission, startup path or allowed message route.
+- Next action: S7 Page Profile MCP Control Plane.
 
 ## 완료 판정 체크
 

@@ -1,6 +1,7 @@
 import { ProviderManager } from './providers/manager.js';
 import { COMPANY_PROVIDER_ID, loadManagedCompanyConfig } from './company/config/managed-config.js';
 import { evaluateCompanyTool } from './company/policy/company-policy.js';
+import { isCompanyBackgroundActionAllowed } from './company/policy/background-action-policy.js';
 import { Agent } from './agent/agent.js';
 import {
   CUSTOM_SKILLS_STORAGE_KEY,
@@ -131,7 +132,6 @@ const teacherRunInterlock = createTeacherRunInterlock(teacherSessionStore, {
 });
 agent.setRunStartGuard((tabId) => teacherRunInterlock.guardRunStart(tabId));
 const profileSync = new ProfileSyncManager(chrome.storage.local);
-installDownloadDirectoryRouting(chrome);
 
 async function playWatchAlert({ style = 'default' } = {}) {
   const stored = await chrome.storage.local.get('notifySound');
@@ -167,8 +167,7 @@ const scheduler = new ScheduledJobManager({
   hideIndicator: (tabId) => sendIndicatorMessage(tabId, 'WB_HIDE_AGENT_INDICATORS'),
   playWatchAlert,
 });
-agent.setScheduler(scheduler);
-scheduler.start();
+// Schedulers are deliberately not started in the Company build.
 
 // Wire the recorder to our provider manager so its transcription path
 // can look up the user's configured Whisper-compatible provider. Must
@@ -190,9 +189,6 @@ const cloudRunController = createCloudRunController({
   stopRecording: stopTabRecording,
   workflowTrace,
 });
-alwaysAllowApiMutationsReady
-  .then(() => cloudRunController.syncBridge())
-  .catch(() => {});
 
 const MAX_AGENT_STEPS_DEFAULT = 130;
 const MAX_AGENT_STEPS_UNLIMITED_SENTINEL = 200;
@@ -362,8 +358,7 @@ async function loadStrictSecretMode() {
 loadStrictSecretMode();
 
 async function loadWebMCPEnabled() {
-  const stored = await chrome.storage.local.get('webMcpEnabled');
-  agent.setWebMCPEnabled(stored.webMcpEnabled === true);
+  agent.setWebMCPEnabled(false);
 }
 const webMcpEnabledReady = loadWebMCPEnabled().catch(() => {});
 
@@ -942,9 +937,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   await providerManager.load();
   await loadMaxSteps();
   await loadClarifyTimeout();
-  await syncAgentUserMemoryFromStorage().catch(() => {});
-  await cloudRunController.syncBridge().catch(() => {});
-  scheduleUserMemoryExtractionDrain(5000);
+  // Company build: no memory extraction, cloud bridge or scheduler startup.
   console.log('[WebBrain] Extension installed, providers loaded.');
 });
 
@@ -954,9 +947,7 @@ chrome.runtime.onStartup?.addListener(async () => {
   await providerManager.load();
   await loadMaxSteps();
   await loadClarifyTimeout();
-  await syncAgentUserMemoryFromStorage().catch(() => {});
-  await cloudRunController.syncBridge().catch(() => {});
-  scheduleUserMemoryExtractionDrain(5000);
+  // Company build: no memory extraction, cloud bridge or scheduler startup.
 });
 
 // Listen for setting changes
@@ -965,11 +956,7 @@ chrome.storage.onChanged.addListener((changes) => {
     selectionShortcutLocale = normalizeSelectionShortcutLocale(changes.wbLocale.newValue);
     createContextMenus().catch(() => {});
   }
-  if (PROFILE_SYNC_DATA_KEYS.some((key) => changes[key])) profileSync.noteChanges(changes).catch(() => {});
-  if (changes.providers || changes.activeProvider || changes.helpImproveWebBrain) providerManager.load().catch(() => {});
-  if (changes.webbrainCloudBridgeEnabled || changes.webbrainCloudBridgeUrl) {
-    cloudRunController.syncBridge().catch(() => {});
-  }
+  if (changes.providers || changes.activeProvider) providerManager.load().catch(() => {});
   if (changes.maxAgentSteps) {
     agent.maxSteps = normalizeMaxAgentSteps(changes.maxAgentSteps.newValue);
   }
@@ -2125,6 +2112,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 async function handleMessage(msg, sender) {
+  if (!isCompanyBackgroundActionAllowed(msg.action)) {
+    return { ok: false, denied: true, code: 'COMPANY_BACKGROUND_ACTION_DENIED', error: 'This background capability is disabled in Company Web Agent.' };
+  }
   const lightweightAction = [
     'get_recording_state',
     'persist_tab_chat',
