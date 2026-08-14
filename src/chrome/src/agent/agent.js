@@ -93,6 +93,9 @@ import { evaluateCompanyTool } from '../company/policy/company-policy.js';
 import { CompanyMutationPolicy } from '../company/policy/mutation-policy.js';
 import { verifyCompanyAction } from '../company/verifier/action-verifier.js';
 import { CompanyAuditRecorder } from '../company/audit/audit-recorder.js';
+import { buildAccessibilityFingerprint } from '../company/page-profile/page-fingerprint.js';
+import { PageProfileResolver } from '../company/page-profile/page-profile-resolver.js';
+import { ManagedPageProfileClient } from '../company/page-profile/managed-page-profile-client.js';
 import { buildCustomSkillsPrompt, buildSkillLoaderDefinition, buildSkillToolDefinitions, buildSkillToolRegistry, getEligibleCustomSkills, getEligibleSkillCatalog, normalizeCustomSkills } from './skills.js';
 import { publicMediaUrlNeedsExplicitTarget } from './public-media-url.js';
 import { USER_MEMORY_DEFAULT_MAX_PROMPT_CHARS, formatUserMemoryPrompt, normalizeUserMemoryMaxPromptChars, normalizeUserMemoryStore } from './user-memory.js';
@@ -396,6 +399,8 @@ export class Agent extends LoopDetector {
     this.providerManager = providerManager;
     this.companyMutationPolicy = new CompanyMutationPolicy();
     this.companyAudit = new CompanyAuditRecorder({ storage: globalThis.chrome?.storage || null });
+    this.companyPageProfiles = new Map();
+    this.companyPageProfileResolver = new PageProfileResolver();
     this.conversations = new Map(); // tabId -> messages[]
     // tabId -> durable selected-text boundary. Follow-up turns and Continue
     // inherit this scope without exposing conversation history from before the
@@ -17766,6 +17771,26 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     return this.companyMutationPolicy.listPending();
   }
 
+  async _resolveCompanyPageProfile(tabId) {
+    let pageUrl = '';
+    let elements = [];
+    try {
+      pageUrl = (await chrome.tabs.get(tabId))?.url || '';
+      const response = await chrome.tabs.sendMessage(tabId, { target: 'content', action: 'get_accessibility_tree' });
+      elements = response?.elements || response?.tree?.elements || [];
+    } catch {}
+    const fingerprint = buildAccessibilityFingerprint({ pageUrl, elements });
+    const config = await loadManagedCompanyConfig();
+    this.companyPageProfileResolver.client = new ManagedPageProfileClient({ endpoint: config.pageProfileEndpoint });
+    const resolution = await this.companyPageProfileResolver.resolve(fingerprint);
+    this.companyPageProfiles.set(tabId, resolution);
+    return resolution;
+  }
+
+  getCompanyPageProfile(tabId) {
+    return this.companyPageProfiles.get(tabId) || { status: 'unknown', profile: null };
+  }
+
   setCompanyConversationMode(tabId, mode) {
     if (!['ask', 'act'].includes(mode)) return false;
     this.getConversation(tabId, mode);
@@ -17802,6 +17827,16 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
         companyPolicy: companyDecision.code,
         error: companyDecision.error,
       };
+    }
+    if (companyDecision.spec?.mutation) {
+      const pageProfile = this.getCompanyPageProfile(tabId);
+      if (pageProfile.status !== 'resolved' || !pageProfile.profile.allowedTools.includes(name)) {
+        return {
+          success: false, denied: true, dispatched: false, noDispatch: true,
+          companyPolicy: 'PAGE_PROFILE_DENIED',
+          error: 'Act mode requires a resolved Page Profile that explicitly allowlists this business tool.',
+        };
+      }
     }
     const companyMutationDecision = this.companyMutationPolicy.authorize({
       name,
@@ -24005,6 +24040,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     this._runUpdateCallbacks.set(tabId, onUpdate);
     const previousForegroundCapture = this._configureCapturePolicyForRun(tabId, runOptions);
     this._runModeOverrides.set(tabId, mode);
+    if (mode === 'act') await this._resolveCompanyPageProfile(tabId);
     const previousCloudContext = this.cloudRunContexts.get(tabId);
     if (runOptions.cloudRun) {
       this.cloudRunContexts.set(tabId, { outputSchema: runOptions.outputSchema ?? null, schemaRepairUsed: false });

@@ -27,8 +27,10 @@ export function mountCompanyControlPanel({ send, onMode, onStop }) {
   const refresh = async () => {
     const state = await send('get_company_panel_state');
     const origin = panel.querySelector('#company-origin-state');
-    origin.textContent = state?.originAllowed ? 'enterprise origin verified' : 'Act blocked: origin not allowlisted';
-    origin.className = state?.originAllowed ? 'company-origin-ok' : 'company-origin-denied';
+    origin.textContent = state?.originAllowed && state?.pageProfile === 'resolved'
+      ? 'enterprise origin and page profile verified'
+      : state?.originAllowed ? 'Act business tools blocked: Page Profile unknown' : 'Act blocked: origin not allowlisted';
+    origin.className = state?.originAllowed && state?.pageProfile === 'resolved' ? 'company-origin-ok' : 'company-origin-denied';
     panel.querySelectorAll('[data-company-mode]').forEach((button) => {
       button.classList.toggle('active', button.dataset.companyMode === state?.mode);
       button.disabled = button.dataset.companyMode === 'act' && !state?.originAllowed;

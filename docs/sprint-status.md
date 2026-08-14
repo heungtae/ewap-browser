@@ -23,7 +23,7 @@
 | S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Done | S3 | 2026-08-14 | 2026-08-14 | `npm run test:company`, redacted audit schema, ADR-010 | Codex implementation/QA review | S5 시작 가능 |
 | S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Done | S4 | 2026-08-15 | 2026-08-15 | `npm run test:company`, control panel contract | Codex implementation/QA review | S6 시작 가능 |
 | S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Done | S5 | 2026-08-15 | 2026-08-15 | `npm run test:company`, background allowlist | Codex implementation/QA review | S7 시작 가능 |
-| S7 Page Profile MCP Control Plane | [계획](sprints/S7-page-profile-mcp.md) | Planned | S1,S2,S3,S4,S6 | - | - | - | - | 선행 Sprint 완료 대기 |
+| S7 Page Profile MCP Control Plane | [계획](sprints/S7-page-profile-mcp.md) | Done | S1,S2,S3,S4,S6 | 2026-08-15 | 2026-08-15 | `npm run test:company`, Page Profile contracts | Codex implementation/QA review | S8 시작 가능 |
 | S8 AI Evaluation & Release Qualification | [계획](sprints/S8-release-qualification.md) | Planned | S0~S7 | - | - | - | - | release candidate scope freeze 대기 |
 
 ## Sprint 종료 기록 양식
@@ -127,6 +127,18 @@
 - Reviewers: Codex implementation/QA review.
 - Residual risk or blocker: dead upstream modules remain present in source for incremental lockdown compatibility but have no manifest permission, startup path or allowed message route.
 - Next action: S7 Page Profile MCP Control Plane.
+
+### S7 — Page Profile MCP Control Plane — 2026-08-15
+
+- Status: Done
+- Scope delivered: deterministic sanitized Accessibility Fingerprint, TTL profile cache/revocation support, managed MCP-only profile client, response validation, Page Profile state display and Act business-tool fail-closed enforcement.
+- Evidence:
+  - Build/lint/unit: `npm run test:company` including `page-profile.test.mjs`; agent/page-profile module import check.
+  - Browser E2E/security/evaluation: unknown profile cannot authorize a business mutation; fingerprint test proves field value and `ref_id` do not leave the page boundary.
+  - Snapshot/ADR/documentation: only `https://mcp.company.net` profile endpoint is accepted; resolver permits only existing COMPANY_TOOLS names.
+- Reviewers: Codex implementation/QA review.
+- Residual risk or blocker: production Act workflows require a managed Page Profile endpoint and profile metadata; until provisioned, they intentionally fail closed.
+- Next action: S8 AI Evaluation & Release Qualification.
 
 ## 완료 판정 체크
 

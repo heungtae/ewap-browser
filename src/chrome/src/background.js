@@ -3157,6 +3157,7 @@ async function handleMessage(msg, sender) {
         mode: tab?.id ? agent.conversationModes.get(tab.id) || 'ask' : 'ask',
         originAllowed: act.originAllowed === true,
         provider: COMPANY_PROVIDER_ID,
+        pageProfile: tab?.id ? agent.getCompanyPageProfile(tab.id).status : 'unknown',
         pendingConfirmations: agent.getCompanyPendingConfirmations(),
         audit: agent.getCompanyAudit(),
       };

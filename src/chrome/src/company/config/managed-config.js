@@ -10,6 +10,7 @@ export const DEFAULT_COMPANY_CONFIG = Object.freeze({
   }),
   allowedOrigins: Object.freeze(['https://eda.company.net']),
   auditEndpoint: 'https://audit.company.net',
+  pageProfileEndpoint: '',
 });
 
 function normalizedHttpsOrigin(value) {
@@ -42,6 +43,10 @@ export function normalizeCompanyConfig(raw = {}) {
     }),
     allowedOrigins: Object.freeze(allowedOrigins),
     auditEndpoint: normalizedHttpsOrigin(raw.auditEndpoint || DEFAULT_COMPANY_CONFIG.auditEndpoint),
+    pageProfileEndpoint: (() => {
+      const endpoint = String(raw.pageProfileEndpoint || DEFAULT_COMPANY_CONFIG.pageProfileEndpoint || '');
+      try { return new URL(endpoint).origin === 'https://mcp.company.net' ? endpoint : ''; } catch { return ''; }
+    })(),
   });
 }
 
