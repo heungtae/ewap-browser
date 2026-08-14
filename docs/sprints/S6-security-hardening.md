@@ -30,6 +30,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] security regression suite가 release 후보에서 실행됐다.
-- [ ] high/critical finding=0이며 residual risk는 owner/expiry/ADR로 기록됐다.
-- [ ] RQ-10/11, threat model, 상태 기록부를 갱신했다.
+- [x] security regression suite가 release 후보에서 실행됐다; [catalog](S6-security-regression-catalog.md)를 따른다.
+- [x] high/critical finding은 local evidence에서 0이며 residual risk는 [register](S6-risk-register.md)에 기록됐다.
+- [x] RQ-10/11, [Company threat model](../company-threat-model.md), 상태 기록부를 갱신했다.

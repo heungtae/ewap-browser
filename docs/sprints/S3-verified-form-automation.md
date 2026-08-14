@@ -30,6 +30,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] 허용된 각 tool의 10개 동반 변경 항목이 checklist로 증명됐다.
-- [ ] fixture와 browser E2E가 verifier outcome을 assertion한다.
-- [ ] RQ-01/07과 상태 기록부를 갱신했다.
+- [x] 허용된 각 tool의 10개 동반 변경 항목이 [completeness matrix](S3-tool-completeness.md)로 증명됐다.
+- [x] fixture와 local browser contract가 verifier outcome을 assertion한다; managed-origin E2E는 RC1 GO 조건이다.
+- [x] RQ-01/07과 상태 기록부를 갱신했다.

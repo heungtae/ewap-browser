@@ -1871,6 +1871,7 @@ globalThis.__webbrainLastNav = lastNavByTab;
 function recordNav(tabId, type, url) {
   if (tabId == null) return;
   lastNavByTab.set(tabId, { ts: Date.now(), type, url: url || '' });
+  agent.revokeCompanyPageProfile(tabId);
 }
 
 function recordTeacherNavigation(tabId, url, options) {
@@ -3173,8 +3174,7 @@ async function handleMessage(msg, sender) {
 
     case 'company_stop': {
       const tabId = msg.tabId || sender.tab?.id;
-      if (tabId) agent.abort(tabId);
-      return { ok: true };
+      return tabId ? { ok: true, ...(await agent.stopCompanyRun(tabId)) } : { ok: true, stopped: false, debuggerDetached: true };
     }
 
     case 'set_active_provider': {

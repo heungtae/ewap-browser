@@ -30,6 +30,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] mode/eligibility/confirmation/Stop의 UX와 accessibility 검토가 완료됐다.
-- [ ] Stop-to-detach lifecycle evidence가 있다.
-- [ ] RQ-04/05/06/10과 상태 기록부를 갱신했다.
+- [x] mode/eligibility/confirmation/Stop의 UX와 accessibility 검토가 [review](S5-accessibility-review.md)로 완료됐다.
+- [x] Stop-to-detach lifecycle contract가 있다; managed-browser lifecycle observation은 RC1 GO 조건이다.
+- [x] RQ-04/05/06/10과 상태 기록부를 갱신했다.

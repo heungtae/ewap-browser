@@ -31,6 +31,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] profile resolution과 dynamic exposure가 LLM 없이 동작함을 증명했다.
-- [ ] privacy, outage, revocation, authoritative binding failure 증적이 있다.
-- [ ] ADR-013, RQ-12/13/14, 상태 기록부를 갱신했다.
+- [x] profile resolution과 dynamic exposure가 LLM 없이 동작함을 증명했다.
+- [x] privacy, outage, revocation, authoritative binding failure 증적과 [operations record](S7-page-profile-operations.md)가 있다.
+- [x] ADR-013, RQ-12/13/14, 상태 기록부를 갱신했다.

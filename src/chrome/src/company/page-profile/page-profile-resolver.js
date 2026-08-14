@@ -1,7 +1,7 @@
 import { companyToolSpec } from '../tools/tool-registry.js';
 
 export function validatePageProfile(raw, fingerprint) {
-  if (!raw || typeof raw !== 'object' || !String(raw.id || '').trim()) return null;
+  if (!raw || typeof raw !== 'object' || raw.version !== 1 || !String(raw.id || '').trim()) return null;
   if (raw.origin !== fingerprint.origin || !Array.isArray(raw.allowedTools)) return null;
   const allowedTools = [...new Set(raw.allowedTools.filter((name) => companyToolSpec(name)))].sort();
   const authoritativeFields = Array.isArray(raw.authoritativeFields)

@@ -93,6 +93,7 @@ import { evaluateCompanyTool } from '../company/policy/company-policy.js';
 import { CompanyMutationPolicy } from '../company/policy/mutation-policy.js';
 import { verifyCompanyAction } from '../company/verifier/action-verifier.js';
 import { CompanyAuditRecorder } from '../company/audit/audit-recorder.js';
+import { companyToolNamesForMode, companyToolSpec } from '../company/tools/tool-registry.js';
 import { buildAccessibilityFingerprint } from '../company/page-profile/page-fingerprint.js';
 import { PageProfileResolver } from '../company/page-profile/page-profile-resolver.js';
 import { ManagedPageProfileClient } from '../company/page-profile/managed-page-profile-client.js';
@@ -8957,6 +8958,15 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     // response or conversation/tab cleanup resolves its scope.
   }
 
+  async stopCompanyRun(tabId) {
+    this.abort(tabId);
+    const cleanup = await Promise.allSettled([
+      cdpClient.disableDevDiagnostics(tabId),
+      cdpClient.detach(tabId),
+    ]);
+    return { stopped: true, debuggerDetached: cleanup.every((result) => result.status === 'fulfilled') };
+  }
+
   /**
    * Resolve a pending clarify() tool call with the user's answer. Called by
    * background.js when the side panel posts `clarify_response`.
@@ -17791,6 +17801,22 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     return this.companyPageProfiles.get(tabId) || { status: 'unknown', profile: null };
   }
 
+  revokeCompanyPageProfile(tabId) {
+    const previous = this.companyPageProfiles.get(tabId);
+    if (previous?.profile?.origin) this.companyPageProfileResolver.revokeOrigin(previous.profile.origin);
+    this.companyPageProfiles.delete(tabId);
+  }
+
+  _companyAllowedToolNames(tabId, mode) {
+    const names = companyToolNamesForMode(mode);
+    if (mode !== 'act') return new Set(names);
+    const profile = this.getCompanyPageProfile(tabId);
+    return new Set(names.filter((name) => {
+      const spec = companyToolSpec(name);
+      return !spec?.mutation || (profile.status === 'resolved' && profile.profile.allowedTools.includes(name));
+    }));
+  }
+
   setCompanyConversationMode(tabId, mode) {
     if (!['ask', 'act'].includes(mode)) return false;
     this.getConversation(tabId, mode);
@@ -17829,8 +17855,17 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       };
     }
     if (companyDecision.spec?.mutation) {
+      // A same-origin SPA route can change business context without changing
+      // the tab origin. Re-resolve immediately before dispatch so a previous
+      // profile's authority cannot survive that transition.
+      await this._resolveCompanyPageProfile(tabId);
       const pageProfile = this.getCompanyPageProfile(tabId);
       if (pageProfile.status !== 'resolved' || !pageProfile.profile.allowedTools.includes(name)) {
+        void this.companyAudit.record({
+          tool: name, mode: this._effectiveRunMode(tabId, 'act'), origin: companyPageUrl,
+          risk: companyDecision.spec.risk, outcome: 'DENIED', success: false, dispatched: false,
+          policy: 'PAGE_PROFILE_DENIED',
+        });
         return {
           success: false, denied: true, dispatched: false, noDispatch: true,
           companyPolicy: 'PAGE_PROFILE_DENIED',
@@ -24344,7 +24379,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     const sourceBoundAttachments = selectionOnly ? [] : attachments;
     if (sourceBoundAttachments && sourceBoundAttachments.length) {
       const attachmentToolNames = new Set(
-        getToolsForMode(mode, { tier: provider.promptTier })
+        getToolsForMode(mode, { tier: provider.promptTier, companyAllowedToolNames: this._companyAllowedToolNames(tabId, mode) })
           .map(tool => tool?.function?.name)
           .filter(Boolean),
       );
@@ -24430,6 +24465,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     const cloudRunContext = this.cloudRunContexts.get(tabId) || null;
     let tools = getToolsForMode(mode, {
       strictSecretMode: this.strictSecretMode,
+      companyAllowedToolNames: this._companyAllowedToolNames(tabId, mode),
       tier,
       accessibilityTreeMaxChars: readWindow.treePageChars,
       webMcpAvailable: this.webMcpEnabled === true,
@@ -24602,6 +24638,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       skillTools = this._skillToolDefinitions(tabId, mode, tier, this._activeSkillSiteAdapter(tabId));
       tools = getToolsForMode(mode, {
         strictSecretMode: this.strictSecretMode,
+        companyAllowedToolNames: this._companyAllowedToolNames(tabId, mode),
         tier,
         accessibilityTreeMaxChars: readWindow.treePageChars,
         webMcpAvailable: this.webMcpEnabled === true,
@@ -25065,6 +25102,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     this._runUpdateCallbacks.set(tabId, onUpdate);
     const previousForegroundCapture = this._configureCapturePolicyForRun(tabId, runOptions);
     this._runModeOverrides.set(tabId, mode);
+    if (mode === 'act') await this._resolveCompanyPageProfile(tabId);
     const previousCloudContext = this.cloudRunContexts.get(tabId);
     if (runOptions.cloudRun) {
       this.cloudRunContexts.set(tabId, { outputSchema: runOptions.outputSchema ?? null, schemaRepairUsed: false });
@@ -25241,6 +25279,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     const cloudRunContext = this.cloudRunContexts.get(tabId) || null;
     let tools = getToolsForMode(mode, {
       strictSecretMode: this.strictSecretMode,
+      companyAllowedToolNames: this._companyAllowedToolNames(tabId, mode),
       tier,
       accessibilityTreeMaxChars: readWindow.treePageChars,
       webMcpAvailable: this.webMcpEnabled === true,
@@ -25287,6 +25326,7 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
       skillTools = this._skillToolDefinitions(tabId, mode, tier, this._activeSkillSiteAdapter(tabId));
       tools = getToolsForMode(mode, {
         strictSecretMode: this.strictSecretMode,
+        companyAllowedToolNames: this._companyAllowedToolNames(tabId, mode),
         tier,
         accessibilityTreeMaxChars: readWindow.treePageChars,
         webMcpAvailable: this.webMcpEnabled === true,

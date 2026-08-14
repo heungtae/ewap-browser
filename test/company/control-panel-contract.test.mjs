@@ -6,6 +6,7 @@ const sidepanel = await readFile(new URL('../../src/chrome/src/ui/sidepanel.html
 assert.match(panel, /get_company_panel_state/);
 assert.match(panel, /approve_company_confirmation/);
 assert.match(panel, /company_stop/);
+assert.match(panel, /debugger detached/);
 assert.match(panel, /Redacted audit timeline/);
 assert.doesNotMatch(panel, /args|pageText|typedValue/);
 assert.doesNotMatch(sidepanel, /id="btn-mode-dev"/);

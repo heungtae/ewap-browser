@@ -21,6 +21,7 @@ export function mountCompanyControlPanel({ send, onMode, onStop }) {
       <button type="button" data-company-stop>Stop</button>
     </div>
     <div id="company-confirmations" aria-live="polite"></div>
+    <div id="company-stop-result" aria-live="polite"></div>
     <details><summary>Redacted audit timeline</summary><ol id="company-audit"></ol></details>`;
   document.getElementById('header')?.after(panel);
 
@@ -57,8 +58,11 @@ export function mountCompanyControlPanel({ send, onMode, onStop }) {
     }
     if (event.target.closest('[data-company-stop]')) {
       const state = await send('get_company_panel_state');
-      await send('company_stop', { tabId: state?.tabId });
+      const result = await send('company_stop', { tabId: state?.tabId });
       onStop();
+      panel.querySelector('#company-stop-result').textContent = result?.debuggerDetached
+        ? 'Stopped; debugger detached.'
+        : 'Stopped; debugger cleanup needs attention.';
       return refresh();
     }
   });

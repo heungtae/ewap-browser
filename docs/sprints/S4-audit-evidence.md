@@ -30,6 +30,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] audit schema와 retention/access decision이 승인됐다.
-- [ ] secret/redaction negative tests와 mutation-to-audit coverage가 있다.
-- [ ] ADR-010, RQ-08, 상태 기록부를 갱신했다.
+- [x] audit schema와 local retention/access decision이 [data contract](S4-audit-data-contract.md)로 승인됐다.
+- [x] secret/redaction negative tests와 mutation-to-audit coverage가 있다.
+- [x] ADR-010, RQ-08, 상태 기록부를 갱신했다.

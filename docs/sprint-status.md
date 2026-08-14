@@ -107,7 +107,7 @@
 ### S5 — Side Panel Operational UX — 2026-08-15
 
 - Status: Done
-- Scope delivered: managed Ask/Act controls, enterprise-origin state, explicit R2 confirmation queue, redacted audit timeline and stop control; upstream Dev-mode button is removed.
+- Scope delivered: managed Ask/Act controls, enterprise-origin state, explicit R2 confirmation queue, redacted audit timeline and Stop control; upstream Dev-mode button is removed. Stop now requests diagnostics shutdown and debugger detach after abort.
 - Evidence:
   - Build/lint/unit: `npm run test:company` including `control-panel-contract.test.mjs`
   - Browser E2E/security/evaluation: Company panel consumes only the bounded panel-state contract; negative source assertion excludes argument/page-value fields.
@@ -119,7 +119,7 @@
 ### S6 — Security & Resilience Hardening — 2026-08-15
 
 - Status: Done
-- Scope delivered: fail-closed service-worker action allowlist, disabled scheduler/cloud bridge/user-memory startup, disabled WebMCP preference hydration and download routing initialization.
+- Scope delivered: fail-closed service-worker action allowlist, disabled scheduler/cloud bridge/user-memory startup, disabled WebMCP preference hydration and download routing initialization; security catalog, NFR boundary and residual-risk register are recorded.
 - Evidence:
   - Build/lint/unit: `npm run test:company` including `background-action-policy.test.mjs`; `node --check src/chrome/src/background.js`.
   - Browser E2E/security/evaluation: dangerous cloud, scheduler, sync, provider mutation, OAuth, screenshot and download message actions are denied before provider/storage hydration.

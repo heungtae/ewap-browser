@@ -13,7 +13,7 @@
 | RQ-07 | 모든 mutation은 verifier; UNKNOWN retry 금지 | 상세 설계 22, AGENTS | S3 | verifier/UNKNOWN E2E | Verified (local) |
 | RQ-08 | secret/raw page text가 log에 남지 않음 | 상세 설계 15,16,29 | S4 | redaction/negative audit test | Verified (local) |
 | RQ-09 | minimum MV3 permission 및 단일 company provider | 상세 설계 4,7 | S1 | manifest/provider snapshots | Verified (local) |
-| RQ-10 | CDP lifecycle이 Stop/종료에 detach | 상세 설계 42 | S5,S6 | lifecycle E2E | Pending live environment |
+| RQ-10 | CDP lifecycle이 Stop/종료에 detach | 상세 설계 42 | S5,S6 | lifecycle contract + managed-browser E2E | Verified (local); live observation pending |
 | RQ-11 | hostile page 및 malformed call fail closed | 상세 설계 12,27,30 | S6 | security regression suite | Verified (local) |
 | RQ-12 | profile resolution은 LLM 없이 deterministic | 상세 설계 48~58 | S7 | resolver tests/review | Verified (local) |
 | RQ-13 | unknown profile ACT deny 및 tool revoke | 상세 설계 55,59,60 | S7 | transition/outage E2E | Verified (local fail-closed) |

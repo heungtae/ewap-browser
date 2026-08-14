@@ -21,6 +21,8 @@
 | Page Profile compromise/outage | over-exposed MCP tools or unsafe fallback | authenticated/schema-validated profile, dynamic revoke, unknown fail closed | S7 |
 | model regression | unsafe or invalid proposal | versioned evaluation and release thresholds | S8 |
 
+The detailed Company threat-to-test mapping and residual disposition are maintained in [company-threat-model.md](company-threat-model.md) and [S6 risk register](sprints/S6-risk-register.md).
+
 ## Non-negotiable fail-closed conditions
 
 - allowlist 밖 origin의 ACT

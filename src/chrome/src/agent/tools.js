@@ -1506,6 +1506,12 @@ export function getToolsForMode(mode, opts = {}) {
   // Company mode deliberately ignores upstream provider tiers and extensions.
   // Only the audited registry may reach the model.
   let base = devModeRequested ? [] : filterCompanyToolsForMode(normalizedMode, AGENT_TOOLS);
+  // A resolved Page Profile can only narrow the audited Company registry.
+  // This is evaluated before the schema reaches the model, not merely at
+  // dispatch time.
+  if (opts.companyAllowedToolNames instanceof Set) {
+    base = base.filter((tool) => opts.companyAllowedToolNames.has(tool?.function?.name));
+  }
   const requestedTreePageChars = tier !== 'compact'
     && Number(opts.accessibilityTreeMaxChars) === EXPANDED_TREE_PAGE_CHARS
     ? EXPANDED_TREE_PAGE_CHARS
