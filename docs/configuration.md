@@ -19,4 +19,4 @@
 - secret은 storage, audit, UI diagnostics, test report에 기록하지 않는다.
 - configuration change에는 version, owner, effective date, rollback value를 남긴다.
 
-S1에서 actual schema와 precedence test를 만들고, S7에서 Page Profile/MCP configuration을 이 규칙에 편입한다.
+S1에서 `src/chrome/src/company/config/managed-config.js`로 managed schema와 precedence를 구현했다. `company-vllm`만 활성 provider이며, 사용자가 provider URL/API key/model을 바꾸는 background path는 deny된다. S7에서 Page Profile/MCP configuration을 이 규칙에 편입한다.

@@ -17,7 +17,7 @@
 | Sprint | 상세 계획 | 상태 | 선행 Sprint | 시작일 | 완료일 | 증적 | 승인 | blocker / 다음 조치 |
 |---|---|---|---|---|---|---|---|---|
 | S0 Baseline & Delivery Foundation | [계획](sprints/S0-baseline-foundation.md) | Done | - | 2026-08-14 | 2026-08-14 | [baseline](../BASELINE.md), [runtime](runtime-inventory.md), [tools](tool-inventory.md), [permissions](permission-inventory.md), [providers](provider-inventory.md) | Codex implementation/QA review | S1 시작 가능 |
-| S1 Enterprise Lockdown | [계획](sprints/S1-enterprise-lockdown.md) | Planned | S0 | - | - | - | - | S0 완료 대기 |
+| S1 Enterprise Lockdown | [계획](sprints/S1-enterprise-lockdown.md) | Done | S0 | 2026-08-14 | 2026-08-14 | `npm run test:company`, `npm run test:fixtures`, manifest load, ADR-003/004/005/011 | Codex implementation/QA review | S2 시작 가능 |
 | S2 Policy & Mutation Control Plane | [계획](sprints/S2-policy-control-plane.md) | Planned | S1 | - | - | - | - | S1 완료 대기 |
 | S3 Verified Core Form Automation | [계획](sprints/S3-verified-form-automation.md) | Planned | S2 | - | - | - | - | S2 완료 대기 |
 | S4 Audit & Evidence Pipeline | [계획](sprints/S4-audit-evidence.md) | Planned | S3 | - | - | - | - | S3 완료 대기 |
@@ -55,6 +55,18 @@
 - Reviewers: Codex implementation/QA review; enterprise deployment approval is a later S8 release gate.
 - Residual risk or blocker: broad upstream capability surface; S1 must reduce it before any company mutation tool is admitted.
 - Next action: S1 Enterprise Lockdown.
+
+### S1 — Enterprise Lockdown — 2026-08-14
+
+- Status: Done
+- Scope delivered: minimum MV3 manifest surface, managed company-vLLM provider, COMPANY_TOOLS allowlist, Ask/Act-only exposure and direct execution deny.
+- Evidence:
+  - Build/lint/unit: `npm run test:company`
+  - Browser E2E/security/evaluation: `npm run test:fixtures`; Chromium manifest load command
+  - Snapshot/ADR/documentation: [ADR-003](adr/ADR-003-managed-company-vllm.md), [ADR-004](adr/ADR-004-enterprise-origin-allowlist.md), [ADR-005](adr/ADR-005-ask-act-two-mode.md), [ADR-011](adr/ADR-011-disable-external-automation.md)
+- Reviewers: Codex implementation/QA review; enterprise deployment approval is a later S8 release gate.
+- Residual risk or blocker: mutation tools remain deliberately disabled until S2/S3 policy and verifier work.
+- Next action: S2 Policy & Mutation Control Plane.
 
 ## 완료 판정 체크
 

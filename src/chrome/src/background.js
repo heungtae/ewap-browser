@@ -1,4 +1,5 @@
 import { ProviderManager } from './providers/manager.js';
+import { COMPANY_PROVIDER_ID } from './company/config/managed-config.js';
 import { Agent } from './agent/agent.js';
 import {
   CUSTOM_SKILLS_STORAGE_KEY,
@@ -3148,31 +3149,23 @@ async function handleMessage(msg, sender) {
     }
 
     case 'set_active_provider': {
+      if (msg.providerId !== COMPANY_PROVIDER_ID) {
+        return { ok: false, denied: true, error: 'Only the managed Company vLLM provider is available.' };
+      }
       await providerManager.setActive(msg.providerId);
       return { ok: true };
     }
 
     case 'update_provider': {
-      await providerManager.updateProvider(msg.providerId, msg.config, {
-        markConfigured: msg.markConfigured !== false,
-      });
-      return { ok: true };
+      return { ok: false, denied: true, error: 'Company provider configuration is managed and read-only.' };
     }
 
     case 'ollama_launch_handoff': {
-      const handoff = normalizeOllamaLaunchHandoff(msg.handoff || {});
-      await providerManager.updateProvider(handoff.providerId, handoff.config);
-      await providerManager.setActive(handoff.providerId);
-      return {
-        ok: true,
-        providerId: handoff.providerId,
-        model: handoff.model,
-        baseUrl: handoff.baseUrl,
-        contextWindow: handoff.contextWindow,
-      };
+      return { ok: false, denied: true, error: 'Local provider handoff is disabled in Company Web Agent.' };
     }
 
     case 'test_provider': {
+      if (msg.providerId !== COMPANY_PROVIDER_ID) return { ok: false, denied: true, error: 'Provider is not available.' };
       return await providerManager.testProvider(msg.providerId);
     }
 

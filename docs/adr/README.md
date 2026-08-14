@@ -10,15 +10,15 @@ ADR은 현재 설계를 재진술하는 문서가 아니라, 대안·결정·영
 |---|---|---|---|
 | ADR-001 | WebBrain fork 선택 | S0 | Accepted |
 | ADR-002 | AX tree/ref_id를 primary semantic interface로 선택 | S0 | Accepted |
-| ADR-003 | Qwen3.5/vLLM 단일 runtime provider | S1 | Proposed |
-| ADR-004 | enterprise domain allowlist | S1 | Proposed |
-| ADR-005 | ASK/ACT two-mode model | S1 | Proposed |
+| ADR-003 | Qwen3.5/vLLM 단일 runtime provider | S1 | Accepted |
+| ADR-004 | enterprise domain allowlist | S1 | Accepted |
+| ADR-005 | ASK/ACT two-mode model | S1 | Accepted |
 | ADR-006 | deterministic policy outside LLM | S2 | Proposed |
 | ADR-007 | R2 mutation human confirmation | S2 | Proposed |
 | ADR-008 | R3 destructive action hard deny | S2 | Proposed |
 | ADR-009 | mutation verifier와 UNKNOWN no-retry | S3 | Proposed |
 | ADR-010 | minimal audit/redaction/retention | S4 | Proposed |
-| ADR-011 | external automation/network feature disablement | S1 | Proposed |
+| ADR-011 | external automation/network feature disablement | S1 | Accepted |
 | ADR-012 | upstream structure and security patch sync | S0 | Accepted |
 | ADR-013 | Page Profile MCP deterministic control plane | S7 | Proposed |
 | ADR-014 | model evaluation/release threshold | S8 | Proposed |

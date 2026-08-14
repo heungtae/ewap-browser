@@ -6,6 +6,7 @@ import { VertexAnthropicProvider } from './vertex-anthropic.js';
 import { signOutClaude } from './oauth-claude.js';
 import { AwsBedrockProvider } from './aws-bedrock.js';
 import { WebGPUVisionProvider, WEBGPU_VISION_ENABLED_KEY } from './webgpu.js';
+import { COMPANY_PROVIDER_ID, loadManagedCompanyConfig } from '../company/config/managed-config.js';
 import { ADDITIONAL_PROVIDER_DEFAULTS } from './provider-catalog.js';
 // Static, NOT dynamic: this module runs in the MV3 service worker, where
 // `await import()` throws "import() is disallowed on ServiceWorkerGlobalScope".
@@ -92,6 +93,30 @@ export class ProviderManager {
    * defaults do not stay visible forever for existing users.
    */
   async load() {
+    const company = await loadManagedCompanyConfig();
+    const config = {
+      type: 'openai',
+      category: 'cloud',
+      label: 'Company vLLM',
+      providerName: 'company-vllm',
+      baseUrl: company.provider.baseUrl,
+      model: company.provider.model,
+      apiKey: company.provider.apiKey,
+      requiresApiKey: false,
+      contextWindow: 32768,
+      maxTokens: company.provider.maxTokens,
+      temperature: company.provider.temperature,
+      timeoutMs: company.provider.timeoutMs,
+      supportsAskStreaming: true,
+      supportsVision: false,
+      enabled: true,
+      managed: true,
+    };
+    this.providers.clear();
+    this.activeProviderId = COMPANY_PROVIDER_ID;
+    this.providers.set(COMPANY_PROVIDER_ID, this._createProvider(COMPANY_PROVIDER_ID, config));
+    return;
+
     const data = await chrome.storage.local.get(['providers', 'activeProvider', WEBBRAIN_DEVICE_GUID_KEY, HELP_IMPROVE_WEBBRAIN_KEY]);
     const rawStoredOllama = data.providers?.ollama;
     const ollamaVisionConfigMigrated = !!rawStoredOllama && (
@@ -174,6 +199,10 @@ export class ProviderManager {
    * Save current configuration to chrome.storage.
    */
   async save() {
+    // Company provider configuration is supplied by enterprise managed
+    // storage. It must never be copied to user-editable local storage.
+    return;
+
     const configs = {};
     for (const [id, provider] of this.providers) {
       configs[id] = provider.config;
@@ -1078,17 +1107,18 @@ export class ProviderManager {
    * Switch the active provider.
    */
   async setActive(id) {
-    if (!this.providers.has(id)) {
-      throw new Error(`Provider not found: ${id}`);
+    if (id !== COMPANY_PROVIDER_ID || !this.providers.has(COMPANY_PROVIDER_ID)) {
+      throw new Error('Only the managed Company vLLM provider is available.');
     }
-    this.activeProviderId = id;
-    await this.save();
+    this.activeProviderId = COMPANY_PROVIDER_ID;
   }
 
   /**
    * Update a provider's configuration.
    */
   async updateProvider(id, config, { markConfigured = true } = {}) {
+    throw new Error('Company provider configuration is managed and cannot be edited locally.');
+
     if (!this.providers.has(id)) {
       throw new Error(`Provider not found: ${id}`);
     }

@@ -1,6 +1,7 @@
 import { closeToolDefinitions } from './tool-arguments.js';
 import { hasJsonSchemaMarker, isJsonSchemaSpec } from './cloud-output.js';
 import { EXPANDED_TREE_PAGE_CHARS, STANDARD_TREE_PAGE_CHARS } from './read-completeness.js';
+import { filterCompanyToolsForMode } from '../company/tools/tool-registry.js';
 
 /**
  * Tool definitions for the WebBrain agent.
@@ -1466,22 +1467,12 @@ export function getToolsForMode(mode, opts = {}) {
   // Back-compat: callers used to pass `compact: true/false`; the tier knob
   // (compact | mid | full) supersedes it.
   const tier = opts.tier || (opts.compact ? 'compact' : 'full');
-  const normalizedMode = mode === 'dev' ? 'dev' : (mode === 'ask' ? 'ask' : 'act');
-  const devCompactBlocked = normalizedMode === 'dev' && tier === 'compact';
-  let base;
-  if (normalizedMode === 'ask') {
-    base = AGENT_TOOLS.filter(t => ASK_ONLY_TOOLS.includes(t.function.name));
-  } else if (devCompactBlocked) {
-    base = [];
-  } else if (tier === 'compact') {
-    base = AGENT_TOOLS
-      .filter(t => COMPACT_TOOL_NAMES.has(t.function.name))
-      .map(t => (t.function.name === 'upload_file' ? compactUploadFileTool(t) : t));
-  } else if (tier === 'mid') {
-    base = AGENT_TOOLS.filter(t => MID_TOOL_NAMES.has(t.function.name));
-  } else {
-    base = AGENT_TOOLS.filter(t => FULL_TOOL_NAMES.has(t.function.name));
-  }
+  const devModeRequested = mode === 'dev';
+  const normalizedMode = mode === 'ask' ? 'ask' : 'act';
+  const devCompactBlocked = devModeRequested;
+  // Company mode deliberately ignores upstream provider tiers and extensions.
+  // Only the audited registry may reach the model.
+  let base = devModeRequested ? [] : filterCompanyToolsForMode(normalizedMode, AGENT_TOOLS);
   const requestedTreePageChars = tier !== 'compact'
     && Number(opts.accessibilityTreeMaxChars) === EXPANDED_TREE_PAGE_CHARS
     ? EXPANDED_TREE_PAGE_CHARS
@@ -1509,7 +1500,7 @@ export function getToolsForMode(mode, opts = {}) {
       },
     };
   });
-  if (normalizedMode === 'dev' && tier !== 'compact') {
+  if (false && normalizedMode === 'dev' && tier !== 'compact') {
     const seen = new Set(base.map(t => t.function?.name).filter(Boolean));
     const devTools = AGENT_TOOLS.filter(t => DEV_EXTENDED_TOOL_NAMES.has(t.function.name) && !seen.has(t.function.name));
     base = [...base, ...devTools];
@@ -1517,13 +1508,13 @@ export function getToolsForMode(mode, opts = {}) {
   if (opts.webMcpAvailable !== true) {
     base = base.filter(tool => !WEBMCP_TOOL_NAMES.has(tool.function?.name));
   }
-  if (opts.watchBeep === true && normalizedMode === 'act') {
+  if (false && opts.watchBeep === true && normalizedMode === 'act') {
     base = [...base, WATCH_BEEP_TOOL];
   }
-  if (!devCompactBlocked && tier !== 'compact' && opts.skillLoaderTool?.function?.name === 'load_skill') {
+  if (false && !devCompactBlocked && tier !== 'compact' && opts.skillLoaderTool?.function?.name === 'load_skill') {
     base = [...base, opts.skillLoaderTool];
   }
-  if (!devCompactBlocked && Array.isArray(opts.skillTools) && opts.skillTools.length) {
+  if (false && !devCompactBlocked && Array.isArray(opts.skillTools) && opts.skillTools.length) {
     const seen = new Set([...RESERVED_AGENT_TOOL_NAMES, ...base.map(t => t.function?.name).filter(Boolean)]);
     const extras = opts.skillTools.filter(t => {
       const name = t?.function?.name;

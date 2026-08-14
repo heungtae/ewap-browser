@@ -88,6 +88,8 @@ import {
 } from '../providers/provider-compatibility.js';
 import { extractFirstJsonObject } from './json-extract.js';
 import { repairAssistantDisplayText, sanitizeText as sanitizePlannerText } from './text-sanitize.js';
+import { loadManagedCompanyConfig } from '../company/config/managed-config.js';
+import { evaluateCompanyTool } from '../company/policy/company-policy.js';
 import { buildCustomSkillsPrompt, buildSkillLoaderDefinition, buildSkillToolDefinitions, buildSkillToolRegistry, getEligibleCustomSkills, getEligibleSkillCatalog, normalizeCustomSkills } from './skills.js';
 import { publicMediaUrlNeedsExplicitTarget } from './public-media-url.js';
 import { USER_MEMORY_DEFAULT_MAX_PROMPT_CHARS, formatUserMemoryPrompt, normalizeUserMemoryMaxPromptChars, normalizeUserMemoryStore } from './user-memory.js';
@@ -17751,6 +17753,24 @@ Rules: no prose intro, no conclusion, no "this screenshot shows...", no layout d
     const dispatchContext = executionContext && typeof executionContext === 'object'
       ? executionContext
       : {};
+    let companyPageUrl = '';
+    try { companyPageUrl = (await chrome.tabs.get(tabId))?.url || ''; } catch {}
+    const companyDecision = evaluateCompanyTool({
+      name,
+      mode: this._effectiveRunMode(tabId, 'act'),
+      pageUrl: companyPageUrl,
+      config: await loadManagedCompanyConfig(),
+    });
+    if (!companyDecision.allowed) {
+      return {
+        success: false,
+        denied: true,
+        dispatched: false,
+        noDispatch: true,
+        companyPolicy: companyDecision.code,
+        error: companyDecision.error,
+      };
+    }
     let coordinatePoint = null;
     let coordinateDiagnostic = null;
     // Canonicalize coordinate clicks before toolbar recovery probes them.
