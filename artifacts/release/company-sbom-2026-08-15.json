@@ -1,0 +1,36 @@
+{
+  "format": "company-minimal-sbom-v1",
+  "generatedAt": "2026-08-15",
+  "application": {
+    "name": "webbrain",
+    "version": "31.0.1",
+    "license": "MIT"
+  },
+  "components": [
+    {
+      "name": "fsevents",
+      "version": "2.3.2",
+      "license": "MIT"
+    },
+    {
+      "name": "playwright",
+      "version": "1.59.1",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "playwright-core",
+      "version": "1.59.1",
+      "license": "Apache-2.0"
+    },
+    {
+      "name": "tldts",
+      "version": "7.4.10",
+      "license": "MIT"
+    },
+    {
+      "name": "tldts-core",
+      "version": "7.4.10",
+      "license": "MIT"
+    }
+  ]
+}

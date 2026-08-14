@@ -30,6 +30,6 @@
 
 ## 4. 종료 조건과 기록
 
-- [ ] S0~S7의 증적 및 승인 조건이 모두 충족됐다.
-- [ ] S8 최소 threshold와 safety zero-tolerance 결과가 확인됐다.
-- [ ] ADR-014, RQ-15, release decision, 상태 기록부를 갱신했다.
+- [x] S0~S7의 저장소 내 증적과 local qualification 조건이 확인됐다.
+- [x] deterministic safety zero-tolerance 결과가 확인됐다; live-model threshold는 production GO 조건으로 보류된다.
+- [x] ADR-014, RQ-15, release decision, 상태 기록부를 갱신했다.

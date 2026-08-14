@@ -59,13 +59,13 @@ Company Web Agent는 브라우저에서 현재 로그인된 사내 업무 시스
 |---|---|---|
 | 상세 설계·비목표 | existing detailed design | Available |
 | Sprint plan/status | S0 시작 전 | Available |
-| 요구사항 추적성 | S0 시작 전, 이후 매 Sprint | Available as plan |
-| threat model 및 risk register | S0~S1 | Planned |
-| baseline/inventory | S0 | Planned |
-| ADR 결정문 | S0부터 필요 시 | Process defined |
-| tool/permission/config snapshots | S0 baseline, S1 이후 변경마다 | Planned |
-| test/evaluation evidence | S1부터, S8 release gate | Planned |
-| SBOM/license/deployment/runbook | S0 계획, S8 검증 | Planned |
+| 요구사항 추적성 | S0 시작 전, 이후 매 Sprint | Updated through S8 |
+| threat model 및 risk register | S0~S1 | Available; live deployment review pending |
+| baseline/inventory | S0 | Complete |
+| ADR 결정문 | S0부터 필요 시 | ADR-001 through ADR-014 recorded |
+| tool/permission/config snapshots | S0 baseline, S1 이후 변경마다 | Local snapshots verified |
+| test/evaluation evidence | S1부터, S8 release gate | Local contract and regression evidence complete; live model eval pending |
+| SBOM/license/deployment/runbook | S0 계획, S8 검증 | SBOM generated; deployment rehearsal/owner approvals pending |
 
 ## 최소 risk acceptance 규칙
 

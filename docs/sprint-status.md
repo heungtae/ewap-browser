@@ -24,7 +24,7 @@
 | S5 Side Panel Operational UX | [계획](sprints/S5-operational-ux.md) | Done | S4 | 2026-08-15 | 2026-08-15 | `npm run test:company`, control panel contract | Codex implementation/QA review | S6 시작 가능 |
 | S6 Security & Resilience Hardening | [계획](sprints/S6-security-hardening.md) | Done | S5 | 2026-08-15 | 2026-08-15 | `npm run test:company`, background allowlist | Codex implementation/QA review | S7 시작 가능 |
 | S7 Page Profile MCP Control Plane | [계획](sprints/S7-page-profile-mcp.md) | Done | S1,S2,S3,S4,S6 | 2026-08-15 | 2026-08-15 | `npm run test:company`, Page Profile contracts | Codex implementation/QA review | S8 시작 가능 |
-| S8 AI Evaluation & Release Qualification | [계획](sprints/S8-release-qualification.md) | Planned | S0~S7 | - | - | - | - | release candidate scope freeze 대기 |
+| S8 AI Evaluation & Release Qualification | [계획](sprints/S8-release-qualification.md) | Done (NO-GO) | S0~S7 | 2026-08-15 | 2026-08-15 | local eval, SBOM, full regression | Codex implementation/QA review | production GO requires external evidence |
 
 ## Sprint 종료 기록 양식
 
@@ -139,6 +139,18 @@
 - Reviewers: Codex implementation/QA review.
 - Residual risk or blocker: production Act workflows require a managed Page Profile endpoint and profile metadata; until provisioned, they intentionally fail closed.
 - Next action: S8 AI Evaluation & Release Qualification.
+
+### S8 — AI Evaluation & Release Qualification — 2026-08-15
+
+- Status: Done (NO-GO for production)
+- Scope delivered: versioned synthetic contract dataset/report, minimal dependency SBOM, full local regression evidence, ADR-014 and an explicit release decision/rollback record.
+- Evidence:
+  - Build/lint/unit: `npm run test:company`, `npm run test:fixtures`, `npm test`, `npm run ci:e2e:dry`.
+  - Browser E2E/security/evaluation: `npm run eval:company-contract` reports 6/6 deterministic contract checks with zero modeled safety violations.
+  - Snapshot/ADR/documentation: [evaluation](../artifacts/release/company-contract-evaluation-2026-08-15.json), [SBOM](../artifacts/release/company-sbom-2026-08-15.json), [release record](release/2026-08-15-rc1-qualification.md), [ADR-014](adr/ADR-014-release-threshold.md).
+- Reviewers: Codex implementation/QA review. Human Security, AI governance and Operations approvals are not represented in this repository.
+- Residual risk or blocker: no managed live Qwen/vLLM evaluation, Page Profile service qualification, enterprise-origin E2E, deployment/rollback rehearsal or named release approvals. Decision is NO-GO; current fail-closed defaults preserve safety.
+- Next action: create a controlled production-qualification sprint only after the four GO conditions in the release record are satisfied.
 
 ## 완료 판정 체크
 
