@@ -43,6 +43,10 @@
 | [05-deployment-operations.md](05-deployment-operations.md) | 포털 설치와 잠긴 설정·업데이트는 어떻게 운영하는가? |
 | [06-data-audit-and-privacy.md](06-data-audit-and-privacy.md) | 무엇을 보관하고 무엇을 절대 보관하지 않는가? |
 | [07-verification-and-release.md](07-verification-and-release.md) | 출시 전에 무엇을 자동·수동으로 증명해야 하는가? |
+| [08-sprint-design.md](08-sprint-design.md) | 작은 구현 Sprint가 설계 경계를 어떻게 나누는가? |
+| [09-sprint-development-plan.md](09-sprint-development-plan.md) | 각 Sprint에서 무엇을 구현하고 어떤 스크립트를 제공하는가? |
+| [10-sprint-verification-plan.md](10-sprint-verification-plan.md) | 각 Sprint를 끝내기 위해 어떤 로컬 검증을 수행하는가? |
+| [11-sprint-progress.md](11-sprint-progress.md) | Sprint별 실제 진행 상태와 검증·커밋 증거는 무엇인가? |
 
 ## 우선 구현 순서
 
@@ -54,3 +58,5 @@
 6. 배포 자동화, 보안 회귀, 사내 파일럿
 
 각 단계는 다음 단계의 기능을 미리 노출하지 않는다.
+
+개발은 [08-sprint-design.md](08-sprint-design.md)부터 [11-sprint-progress.md](11-sprint-progress.md)까지의 Sprint 문서를 함께 기준으로 진행한다. Sprint는 작게 끝내고, 각 Sprint의 검증 게이트가 통과한 뒤에만 하나의 독립된 Git commit으로 닫는다.
