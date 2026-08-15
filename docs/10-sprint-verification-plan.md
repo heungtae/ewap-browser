@@ -2,6 +2,8 @@
 
 ## 1. 공통 실행 규칙
 
+검증자는 먼저 [08-sprint-design.md](08-sprint-design.md)의 공통 종료 조건과 [`sprints/`](sprints/README.md)의 해당 독립 설계에서 명시적 제외·feature gate·인계 조건을 확인한다. 자동 테스트 성공만으로 제외된 production 기능을 활성화할 수 없다.
+
 검증은 개발자 로컬 환경에서 재현 가능해야 한다. 명령 이름은 S0에서 확정하고 이후 Sprint는 동일 명령을 확장한다. 각 Sprint 완료 시 실행한 정확한 명령, 결과 요약, test count, commit hash를 [11-sprint-progress.md](11-sprint-progress.md)에 남긴다. 계획된 명령을 아직 실행하지 않은 상태를 성공으로 표기하지 않는다.
 
 구현 범위가 12의 작업 카드보다 넓어지거나 카드에 없는 permission/message/tool/dependency가 생기면 검증을 시작하지 않고 먼저 설계 변경으로 되돌린다.

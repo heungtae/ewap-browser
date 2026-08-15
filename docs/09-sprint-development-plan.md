@@ -2,6 +2,7 @@
 
 ## 1. 공통 개발 규칙
 
+- 현재 Sprint를 시작하기 전에 [08-sprint-design.md](08-sprint-design.md)의 선행 gate와 [`sprints/`](sprints/README.md)의 해당 독립 설계를 읽는다. 이 문서는 작업 순서를 정의하며 독립 설계의 포함/제외 경계를 넓히지 않는다.
 - 구현 카드의 파일 경계·DTO·알고리즘·테스트는 [12-low-cost-agent-implementation-spec.md](12-low-cost-agent-implementation-spec.md)를 따른다. 저가형 AI에는 Sprint 전체가 아니라 카드 하나만 전달한다.
 - 각 Sprint 시작 시 [11-sprint-progress.md](11-sprint-progress.md)의 상태를 `In progress`로 바꾸고 범위를 기록한다.
 - 새 의존성, manifest permission, runtime message, Company Tool은 해당 Sprint의 설계·검증 항목과 함께만 추가한다.

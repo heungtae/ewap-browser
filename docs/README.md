@@ -43,7 +43,8 @@
 | [05-deployment-operations.md](05-deployment-operations.md) | 포털 설치와 잠긴 설정·업데이트는 어떻게 운영하는가? |
 | [06-data-audit-and-privacy.md](06-data-audit-and-privacy.md) | 무엇을 보관하고 무엇을 절대 보관하지 않는가? |
 | [07-verification-and-release.md](07-verification-and-release.md) | 출시 전에 무엇을 자동·수동으로 증명해야 하는가? |
-| [08-sprint-design.md](08-sprint-design.md) | 작은 구현 Sprint가 설계 경계를 어떻게 나누는가? |
+| [08-sprint-design.md](08-sprint-design.md) | Sprint 순서·의존성·공통 착수/종료 gate는 무엇인가? |
+| [sprints/](sprints/README.md) | 각 Sprint의 목표·포함/제외 범위·핵심 계약·인계 조건은 무엇인가? |
 | [09-sprint-development-plan.md](09-sprint-development-plan.md) | 각 Sprint에서 무엇을 구현하고 어떤 스크립트를 제공하는가? |
 | [10-sprint-verification-plan.md](10-sprint-verification-plan.md) | 각 Sprint를 끝내기 위해 어떤 로컬 검증을 수행하는가? |
 | [11-sprint-progress.md](11-sprint-progress.md) | Sprint별 실제 진행 상태와 검증·커밋 증거는 무엇인가? |
@@ -51,15 +52,17 @@
 | [13-page-profile-and-business-mcp-contract.md](13-page-profile-and-business-mcp-contract.md) | Profile resolver와 authoritative Business MCP를 어떤 서명·API·데이터 경계로 연결하는가? |
 | [14-semantic-projection-fingerprint.md](14-semantic-projection-fingerprint.md) | Page Profile fingerprint의 canonical schema·정규화·hash·golden vector를 어떻게 고정하는가? |
 
-## 우선 구현 순서
+## Sprint 구현 순서
 
-1. Manifest/Managed Storage/Native Host 설치 기반과 최소 Side Panel
-2. DOM semantic projection + `ref_id` preview와 document epoch 등록
-3. 정책 엔진, origin allowlist, 위험 분류, 감사 이벤트
-4. 검증 가능한 폼 변경 도구와 R2 확인 UX
-5. AI Hub/SSO/bridge 연결, Page Profile/MCP와 production Ask 활성화
-6. 배포 자동화, 보안 회귀, 사내 파일럿
+| 순서 | Sprint | 독립 설계 | production feature gate |
+|---|---|---|---|
+| 1 | S0 | [로컬 개발·시험 기반](sprints/s0-local-development-foundation.md) | 사용자 기능 없음 |
+| 2 | S1 | [semantic projection preview](sprints/s1-semantic-projection-preview.md) | production Ask/Act 차단 |
+| 3 | S2 | [결정적 mutation 기반](sprints/s2-deterministic-mutation-foundation.md) | controlled fixture만, production Act 차단 |
+| 4 | S3 | [R2 확인·중단·종료 상태](sprints/s3-r2-confirmation-and-terminal-state.md) | local adapter만, production R2 차단 |
+| 5 | S4 | [Native Host·AI Hub 경계](sprints/s4-native-host-and-ai-hub-boundary.md) | 운영 계약 없으면 fail closed |
+| 6 | S5 | [Profile/MCP·managed pilot](sprints/s5-profile-mcp-and-managed-pilot.md) | release gate 통과 뒤 파일럿 후보 |
 
-각 단계는 다음 단계의 기능을 미리 노출하지 않는다.
+각 Sprint는 다음 Sprint 기능을 미리 노출하지 않는다. 개발은 상위 순서와 gate인 [08](08-sprint-design.md), 현재 Sprint의 [독립 설계](sprints/README.md), 실행 순서인 [09](09-sprint-development-plan.md), 검증 기준인 [10](10-sprint-verification-plan.md), 카드 명세인 [12](12-low-cost-agent-implementation-spec.md)를 함께 기준으로 진행한다. 실제 상태와 완료 증거는 [11](11-sprint-progress.md)에만 기록한다.
 
-개발은 [08-sprint-design.md](08-sprint-design.md)부터 [12-low-cost-agent-implementation-spec.md](12-low-cost-agent-implementation-spec.md)까지의 Sprint 문서를 함께 기준으로 진행한다. 특히 구현 담당자가 저가형 AI이거나 신규 참여자이면 12의 작업 카드 하나만 수행한다. Sprint는 작게 끝내고, 각 Sprint의 검증 게이트가 통과한 뒤에만 하나의 독립된 Git commit으로 닫는다.
+특히 구현 담당자가 저가형 AI이거나 신규 참여자이면 현재 Sprint 문서를 읽은 뒤 12의 작업 카드 하나만 수행한다. Sprint는 작게 끝내고, 각 Sprint의 검증 게이트가 통과한 뒤에만 하나의 독립된 Git commit으로 닫는다.

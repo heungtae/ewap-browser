@@ -10,14 +10,14 @@ Sprint를 시작할 때 owner, 시작일, 범위, branch를 채운다. 종료할
 
 기준일: 2026-08-15. 이 문서는 개발 계획만 수립한 상태이며, 아래 구현 Sprint를 시작하거나 컴파일·Chrome 설치 검증을 실행하지 않았다.
 
-| Sprint | 상태 | 목표 | 선행 | 검증 증적 | Commit | 다음 조치 |
+| Sprint | 상태 | 독립 설계 | 선행 | 검증 증적 | Commit | 다음 조치 |
 |---|---|---|---|---|---|---|
-| S0 | Planned | 로컬 개발·시험 기반과 Chrome 개발 로드 스크립트 | - | 미실행 | - | S0 범위만 구현·검증 |
-| S1 | Planned | 외부 호출 없는 semantic projection preview | S0 | 미실행 | - | S0 완료 후 시작 |
-| S2 | Planned | R1 정책·감사·검증 가능한 변경 | S1 | 미실행 | - | S1 완료 후 시작 |
-| S3 | Planned | R2 확인·중단·terminal state | S2 | 미실행 | - | S2 완료 후 시작 |
-| S4 | Planned | Native Host·bridge·SSO adapter | S3, 운영 계약 | 미실행 | - | S3 완료 및 운영 입력 확인 후 시작 |
-| S5 | Planned | Profile/MCP·production Ask·managed pilot 준비 | S4, 승인 | 미실행 | - | S4 완료 및 승인 준비 후 시작 |
+| S0 | Planned | [로컬 개발·시험 기반](sprints/s0-local-development-foundation.md) | - | 미실행 | - | S0 범위만 구현·검증 |
+| S1 | Planned | [semantic projection preview](sprints/s1-semantic-projection-preview.md) | S0 | 미실행 | - | S0 완료 후 시작 |
+| S2 | Planned | [결정적 mutation 기반](sprints/s2-deterministic-mutation-foundation.md) | S1 | 미실행 | - | S1 완료 후 시작 |
+| S3 | Planned | [R2 확인·중단·종료 상태](sprints/s3-r2-confirmation-and-terminal-state.md) | S2 | 미실행 | - | S2 완료 후 시작 |
+| S4 | Planned | [Native Host·AI Hub 경계](sprints/s4-native-host-and-ai-hub-boundary.md) | S3, 운영 계약 | 미실행 | - | S3 완료 및 운영 입력 확인 후 시작 |
+| S5 | Planned | [Profile/MCP·managed pilot](sprints/s5-profile-mcp-and-managed-pilot.md) | S4, 승인 | 미실행 | - | S4 완료 및 승인 준비 후 시작 |
 
 ## Sprint 종료 기록 템플릿
 
