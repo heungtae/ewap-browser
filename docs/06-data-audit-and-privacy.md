@@ -4,7 +4,7 @@
 
 모델에 보내는 페이지 정보는 목적을 수행할 수 있는 최소 DOM semantic projection 정보와 현재 run에만 유효한 `model_ref`다. `model_ref`는 opaque target correlation 용도이며 terminal 시 폐기하고 audit에는 넣지 않는다. 원문 DOM, HTML, CSS, screenshot, 좌표, raw ref_id, ref/model-ref 매핑, input value, password/OTP/MFA, cookie, token, Authorization header를 기본 전송·저장·로그 대상에서 제외한다.
 
-semantic projection fingerprint는 Page Profile 해결에만 쓰며 [14의 `semantic-projection-fp-v1`](14-semantic-projection-fingerprint.md) closed canonical input만 허용한다. fingerprint object는 raw snapshot에서 key를 지우는 방식이 아니라 allowlist field로 새로 만들며, raw accessible name은 고정 label category를 계산한 뒤 버린다. field value, raw label 원문, origin/path, document epoch, ref_id, model_ref, coordinate는 canonical JSON·hash·audit에 포함하지 않는다.
+semantic projection fingerprint는 Page Profile 해결에만 쓰며 [14의 `semantic-projection-fp-v1`](14-semantic-projection-fingerprint.md) closed canonical input만 허용한다. fingerprint object는 raw snapshot에서 key를 지우는 방식이 아니라 allowlist field로 새로 만들며, raw accessible name은 고정 label category를 계산한 뒤 버린다. visible node membership은 구조 identity로 반영하지만 visibility 값 자체는 field로 넣지 않는다. field value, raw label 원문, origin/path, document epoch, ref_id, model_ref, coordinate는 canonical JSON·hash·audit에 포함하지 않는다.
 
 사용자가 Act에서 입력하는 protected value는 모델 proposal과 target preflight 뒤에만 수집한다. raw value는 Side Panel, service worker와 해당 content script 사이의 현재 run transient memory/Chrome 내부 IPC에만 존재하며, value slot·digest·raw value는 Host, bridge, LLM, persistent storage, audit, telemetry, error detail로 보내지 않는다. JavaScript string의 물리적 overwrite를 보장한다고 주장하지 않고 terminal/navigation/Stop/worker restart/TTL에 retained reference가 남지 않음을 검증한다.
 
@@ -12,13 +12,16 @@ semantic projection fingerprint는 Page Profile 해결에만 쓰며 [14의 `sema
 
 | 저장소 | 허용 | 금지 |
 |---|---|---|
-| 확장 `storage.local` | mode, non-secret preference, bounded run state, redacted audit | prompt, completion, page text, action value, credential |
+| 확장 `storage.local` | mode, non-secret preference, terminal run summary, redacted audit | active/transient run, prompt, completion, page text, action value, Profile body, credential |
+| 확장 `storage.session`/worker memory | active run의 opaque ID·binding·slot·verified Profile reference | raw page/value의 persistence, content-script access |
 | Managed Storage | origin·도구·risk·resolver 식별자 등 정책 key | 모든 header 이름/값, 장기 비밀, cookie, 사용자 assertion |
 | Native Host durable store | Profile replay high-water mark와 OS 보호 metadata | Profile body, page text, ref/model ref, identity, assertion |
 | Native Host memory | 현재 요청과 짧은 수명 assertion | 디스크 토큰 cache, raw 로그 |
 | Business MCP run memory | 현재 run의 허용된 authoritative field value | profile JWS/subject token/value/provenance의 persistent cache, audit, telemetry |
 | bridge 운영 로그 | request ID, route, status, duration, redacted error code | HTTP body, header value, token, streamed content |
 | AI Hub | AI Hub 보존 정책에 필요한 최소 데이터 | 확장이 독자적으로 결정하지 않음 |
+
+service worker는 bootstrap에서 `storage.managed`, `storage.local`, `storage.session`을 모두 `TRUSTED_CONTEXTS`로 제한한다. 접근 수준 잠금과 확인이 성공하기 전에는 run과 audit 처리를 시작하지 않는다. content script의 storage API 직접 접근은 모듈 경계와 실제 Chrome E2E 양쪽에서 실패해야 한다.
 
 ## 3. 감사 이벤트 계약
 

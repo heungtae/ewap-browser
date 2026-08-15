@@ -4,7 +4,7 @@
 
 1. 브라우저의 의미 정보는 Chrome MV3 content script가 DOM에서 만드는 제한된 **semantic projection**과 문서 범위의 `ref_id`로 표현한다. Chrome Accessibility Tree(AX tree)를 읽는다고 주장하지 않는다.
 2. 모델 출력은 비신뢰 입력이다. 모델은 행동을 제안하고, 확장 내부의 순수 정책 엔진만 허가한다.
-3. 모든 브라우저 변경은 실행 전 preflight와 실행 후 verifier를 통과해야 한다.
+3. 모든 브라우저 변경은 실행 전 preflight와 실행 후 verifier를 통과해야 한다. verifier predicate는 모델 출력에서 받지 않고 signed Page Profile, 현재 pre-state와 결정적 tool rule로만 생성한다.
 4. 변경 결과가 `UNKNOWN`이면 자동 재시도하지 않는다.
 5. 단일 목적 구성요소와 명시적 인터페이스를 사용한다. 확장 모듈은 LLM·정책·DOM·네트워크 권한을 함께 갖지 않는다.
 6. 로컬 PC에 있는 값도 비밀로 가정하지 않는다. AI Hub가 헤더와 Windows SSO assertion을 검증한다.
@@ -61,11 +61,11 @@ bridge는 OpenAI-compatible wire 변환과 정해진 헤더 전달을 담당한�
 ### Act 요청
 
 1. Ask와 동일한 전처리 후, origin allowlist·Page Profile·도구 allowlist를 모두 확인한다.
-2. 모델은 raw action value 없이 tool, run 한정 `model_ref` target, 허용된 boolean/key argument만 제안한다. service worker가 schema, mode, ref 존재성, 위험도, 중복, target label을 preflight한다.
+2. 모델은 raw action value나 verifier 조건 없이 tool, run 한정 `model_ref` target, 허용된 boolean/key argument만 제안한다. service worker가 schema, mode, ref 존재성, 위험도, 중복, target label을 preflight하고 signed Profile·pre-state·tool rule에서 verifier predicate를 만든다.
 3. `set_text_by_ref` 또는 `select_option_by_ref`이면 target을 먼저 확정한 뒤 Side Panel에 `AWAITING_VALUE`를 표시한다. 사용자가 입력한 값은 run/target/tool에 결속된 일회성 value slot으로 service worker와 content script에만 전달하며 모델·Host에는 보내지 않는다.
 4. R2면 단 한 번 쓰는 확인 ID와 사람이 읽을 수 있는 변경 요약을 Side Panel에 표시한다.
 5. value slot 또는 사용자 확인이 필요한 경우 이를 atomic consume한 뒤 content script가 정확히 하나의 행동을 실행한다.
-6. verifier가 기대 상태를 확인해 `VERIFIED`, `FAILED`, `UNKNOWN`으로 정규화한다.
+6. verifier가 실행 전후의 상태 전이 또는 exact approved navigation template을 확인해 `VERIFIED`, `FAILED`, `UNKNOWN`으로 정규화한다. 이미 참이던 상태, no-op, 단순 same-origin 이동은 성공 증거가 아니다.
 7. `UNKNOWN`은 중단·감사·사용자 알림만 하며 value를 복구하거나 재시도하지 않는다.
 
 ## 4. Page Profile과 MCP
@@ -75,7 +75,7 @@ Page Profile은 URL origin/path 규칙과 **값이 제거된** semantic projecti
 - 허용 origin/path와 만료 시간
 - 노출 가능한 기존 Company Tool 이름
 - 이 page profile에서 허용된 Business MCP server/tool 확장과 authoritative field 목록
-- field semantic label, risk override의 하향 제한, verifier 기대값
+- field semantic label, effect/risk floor, service-worker가 predicate를 만들 수 있는 closed verifier declaration
 
 profile 변경·만료·탭 이동·SPA의 major semantic 변화 시 이전 profile의 도구는 즉시 철회하고 진행 중 action을 취소한 뒤 새 profile을 resolve한다. 알 수 없는 profile은 Act를 거부하고 Ask에는 기본 읽기 도구만 남긴다. authoritative MCP 호출이 실패하면 모델이 값을 추측하거나 DOM에서 대체 발견하지 못하게 한다. Profile 신뢰·갱신의 상세 계약은 03에, resolver·Business MCP API와 값 노출 경계는 13에 정의한다.
 

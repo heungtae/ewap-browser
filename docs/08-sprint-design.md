@@ -36,7 +36,7 @@
 
 ### S1 — semantic projection preview
 
-- Side Panel → service worker → content script의 typed runtime message와 content-owned `DOCUMENT_REGISTER`만 연다. service worker는 등록된 epoch만 run에 채택한다.
+- Side Panel → service worker → content script의 typed runtime message와 content-owned `DOCUMENT_REGISTER`만 연다. service worker는 storage access level 잠금 뒤 Chrome sender의 active `documentId`/lifecycle에 결속된 epoch만 run에 채택한다.
 - snapshot은 실제 Chrome DOM에서 산출 가능한 redacted semantic role/name/state와 현재 document epoch의 `ref_id`만 반환한다. browser AX tree/node ID나 input value는 반환하지 않는다.
 - preview는 page-read origin과 S0 manifest/policy 일치만 통과하면 현재 projection을 렌더링한다. Profile resolver, Native Host, LLM egress는 호출하지 않으며 성공 mock도 허용하지 않는다.
 - production Ask와 Act는 S5 전까지 `PROFILE_UNAVAILABLE`로 fail closed 한다. preview는 읽기 도구 외 메시지와 mutation 요청을 service worker와 content script 양쪽에서 거부한다.
@@ -44,26 +44,26 @@
 ### S2 — R1 결정적 변경
 
 - policy engine은 UI·모델과 무관한 순수 함수이며 origin, mode, profile, target, risk를 입력으로 받는다.
-- R1 도구는 하나의 `ActionIntent`만 실행하고 실행 전 target 상태와 실행 후 기대 semantic projection state를 대조한다.
+- mutation primitive는 하나의 `ActionIntent`만 실행한다. signed Profile의 effect declaration과 authoritative verifier 유무가 R1/R2를 정하며, 모델은 verifier 조건을 제안하지 못한다. R1은 실행 전 target 상태와 service worker가 만든 실행 후 predicate를 대조한다.
 - 모델 proposal과 target preflight 뒤 `AWAITING_VALUE` 상태에서만 Side Panel protected value control을 연다. `set_text_by_ref`/`select_option_by_ref` 값은 run/target/tool 한정 one-time slot으로 `SUBMIT_ACTION_VALUE`에서 받고 content `EXECUTE_ACTION`에 한 번만 전달한다. terminal outcome/취소/navigation/5분 inactivity에는 폐기하며 값·slot ID·digest를 Host, bridge, LLM에 보내지 않는다.
 - audit은 06의 allowlist JSON schema만 기록한다. raw text, field value, URL path, header는 기록하지 않는다.
-- signed Profile과 S4 Host가 없는 동안 R1 executor는 local controlled fixture에서만 검증하며 production Act는 S5 전까지 활성화하지 않는다.
+- signed Profile과 S4 Host가 없는 동안 mutation primitive executor는 local controlled fixture에서만 검증하며 production Act는 S5 전까지 활성화하지 않는다.
 
 ### S3 — R2 확인과 실패-폐쇄
 
 - R2는 Host session-binding verifier가 제공한 opaque session binding, tab context, document epoch, intent digest에 결속된 일회성 confirmation으로만 실행한다. S3의 local test adapter는 cross-session rejection 계약만 증명하며, production R2는 S4 Host verifier와 S5 Profile 없이는 활성화하지 않는다.
 - navigation, stale ref, Stop, worker 재시작은 진행 중 mutation을 취소하며 `UNKNOWN`을 자동 재시도하지 않는다.
-- `click_by_ref`와 `press_key_by_ref`는 profile/tool별 verifier 기대값과 명시적인 programmatic activation capability 없이는 성공으로 처리하지 않는다. trusted input이 필요한 target 및 capability 밖 role/key는 `TARGET_NOT_ACTIONABLE`로 거부하며 pointer/debugger/coordinate 우회는 추가하지 않는다.
+- 모든 primitive의 R2 경로는 profile/tool별 effect와 closed verifier declaration, 명시적인 programmatic activation capability 없이는 성공으로 처리하지 않는다. text/select/checkbox autosave도 R2 확인과 authoritative 업무 상태 전이를 요구한다. trusted input이 필요한 target 및 capability 밖 role/key는 `TARGET_NOT_ACTIONABLE`로 거부하며 pointer/debugger/coordinate 우회는 추가하지 않는다.
 
 ### S4 — Native Host·AI Hub 경계
 
 - extension은 typed/redacted request와 cancellation만 Native Host에 보낸다. 모델용 snapshot/proposal에는 run 한정 `model_ref`만 허용하며 raw `ref_id`와 mapping은 contract 단계에서 거부한다.
-- Host는 allowed extension ID, framing, header allowlist, named-pipe ACL/mutual request authentication/replay, assertion failure를 독립적으로 검사한다.
+- Host는 `connectNative()` persistent-port framed loop, request correlation/cancellation/disconnect cleanup, allowed extension ID, header allowlist, named-pipe ACL/mutual request authentication/replay, assertion failure를 독립적으로 검사한다.
 - 실제 broker URL, assertion contract, fixed header ownership이 제공되지 않으면 `AI_HUB_NOT_CONFIGURED`로 종료한다. placeholder 값으로 호출하지 않는다.
 
 ### S5 — Profile/MCP·운영 패키지
 
-- Profile resolver는 origin/path와 [14의 `semantic-projection-fp-v1`](14-semantic-projection-fingerprint.md) value-free fingerprint만 받으며, signed profile의 ID/version/expiry/key rotation/durable replay 방지/크기 제한을 검증한다. profile은 synthetic click/key 가능 role·key와 trusted-input-required target의 deny capability, page별 Business MCP server/tool 확장을 선언해야 한다. SPA major semantic 변화 시 이전 tool을 철회하고 profile을 재해결한다.
+- Profile resolver는 origin/path와 [14의 `semantic-projection-fp-v1`](14-semantic-projection-fingerprint.md) value-free fingerprint, 단발 request nonce와 exact-page context digest만 받으며 signed profile의 결속, ID/version/expiry/key rotation/idempotent durable replay CAS/크기 제한을 검증한다. profile은 모든 mutation primitive의 effect/risk와 closed verifier, synthetic activation 가능 role·key와 trusted-input-required target의 deny capability, page별 Business MCP server/tool 확장을 선언해야 한다. path 또는 visibility membership을 포함한 SPA page context 변화 시 이전 tool을 철회하고 profile을 재해결한다.
 - S5에서 S4 Host가 준비된 뒤 production Ask를 활성화한다. verified Profile은 Act와 Business MCP tool에 필수이고, 서명된 `UNKNOWN_PROFILE`은 Ask basic-read-only만 허용한다. 그 전 Sprint의 preview/local fixture는 production Ask/Act 성공 증적이 아니다.
 - authoritative field는 [13](13-page-profile-and-business-mcp-contract.md)의 page profile deterministic Business MCP value source만 사용한다. Host는 profile-allowlisted server/tool Registry route와 별도 SSO assertion으로 호출하며 MCP 실패 시 다른 server/tool을 포함해 추측하거나 DOM 대체값을 사용하지 않는다. `agentic-read` tool은 해당 page profile에 allowlist된 read-only tool만 동적으로 모델에 노출한다.
 - package, update manifest, managed policy, Native Host installer와 rollback은 동일 compatibility matrix와 hash 증적으로 묶는다.

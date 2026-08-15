@@ -4,9 +4,9 @@
 
 | 계층 | 필수 검증 |
 |---|---|
-| Unit | origin matcher, mode/risk policy, model-ref mapping, content epoch registration, value-slot/digest binding, confirmation digest, redaction, fingerprint canonicalization, config schema, intent dedupe |
-| Contract | tool/model-proposal/value-delivery JSON schema, runtime message allowlist, R2 binding IPC, native-host IPC, Page Profile JWS/resolver, Business MCP binding/result, bridge header forwarding, AI Hub error mapping |
-| Extension fixture | 실제 Chrome DOM semantic projection/ref stability, content epoch registration/restart, controlled input, select, checkbox, modal, portal, stale ref, occlusion, navigation, `isTrusted` 거부 target |
+| Unit | origin matcher, effect/risk policy, Profile-derived verifier builder, model-ref mapping, authoritative document registration, value-slot/digest binding, confirmation digest, redaction, visibility-aware fingerprint canonicalization, config schema, intent dedupe |
+| Contract | tool/model-proposal/value-delivery JSON schema, verifier-field reject, runtime message allowlist, R2 binding IPC, persistent native-host IPC, Page Profile JWS/resolver/replay CAS, exact-page binding, 두 Business MCP call kind/result, bridge header forwarding, AI Hub error mapping |
+| Extension fixture | 실제 Chrome DOM semantic projection/ref stability, sender documentId/lifecycle registration/restart, storage access denial, controlled input/select/checkbox autosave, modal, portal, stale ref, occlusion, navigation, `isTrusted` 거부 target |
 | Security negative | R3 deny, Ask mutation deny, blocked-origin snapshot/LLM egress deny, policy/manifest mismatch, unknown profile deny, raw secret/audit leak, arbitrary message deny |
 | Native Host | allowed extension ID, malformed framing, Windows SSO failure, header allowlist, named-pipe ACL/mutual authentication/replay deny, cancellation, no stdout diagnostics |
 | Packaging | MV3 manifest permission snapshot, no Firefox artifact, no remote code, extension/host hash, signed update manifest |
@@ -39,7 +39,7 @@
 17. 등록되지 않은/늦은 document epoch, worker restart 뒤 미등록 epoch가 run에 사용됨
 18. R2 binding IPC가 tab-context/epoch/session/digest/nonce/one-time consume 불일치를 수락함
 19. Profile capability가 없는 synthetic click/key 또는 trusted-input 필요 target을 실행함
-20. fingerprint golden vector·label alias·state capability·relation canonicalization 불일치, 현재 field/UI state 또는 forbidden field의 hash 유입, restart 뒤 lower/equal version replay 또는 durable replay store corruption을 허용함
+20. fingerprint golden vector·label alias·state capability·relation canonicalization 불일치, 포함 node의 현재 field/UI state 또는 forbidden field의 hash 유입, visibility membership 변화 누락, same-version/different-digest·lower-version replay 또는 durable replay store corruption을 허용함
 21. Managed policy가 header key를 수락하거나 Host/bridge ACL 구성 밖 header가 사용됨
 22. Profile resolver 또는 Business MCP가 query/fragment, raw DOM/ref/value, cookie 또는 browser header를 받음
 23. profile 밖 field 또는 server/tool, arbitrary MCP endpoint/header, AI Hub assertion 재사용이 허용됨
@@ -47,6 +47,15 @@
 25. MCP timeout·late response·`NOT_FOUND`·`ACCESS_DENIED` 뒤 DOM/LLM fallback 또는 자동 재시도가 실행됨
 26. 서명된 `UNKNOWN_PROFILE`에서 Business MCP tool이 노출되거나 Act가 허용됨
 27. proposal 전 raw value 수집, wrong-context/expired/duplicate value slot consume, raw value의 model/Host/bridge/storage/audit/error 유입 또는 IPC 실패 뒤 value delivery 재전송이 허용됨
+28. 모델 proposal의 verifier/`expected` field가 수락되거나 이미 참인 state, no-op, 미승인 same-origin path가 `VERIFIED`가 됨
+29. 동일 Profile version/definition의 새 run·tab·cache fallback 또는 record별 binding은 거부하면서 same version/different signed definition 또는 lower version은 matcher/fingerprint 변경으로 수락됨
+30. 같은 fingerprint의 다른 exact page record에서 JWS, subject token, cache 또는 late MCP response를 교차 사용함
+31. content가 주장한 tab/frame/document metadata, old/prerender/frozen sender document 또는 worker restart 뒤 competing registration이 current run에 채택됨
+32. authoritative-field와 agentic-read wire field가 섞이거나 model enum 밖 argument, result-key/value-kind mismatch, nested/raw result가 수락됨
+33. text/select/checkbox autosave가 R1로 실행되거나 effect/authoritative verifier 없는 mutation이 실행됨
+34. Host가 one-frame process 또는 `sendNativeMessage()`를 혼용해 multi-request confirmation/cancellation/disconnect cleanup state를 잃음
+35. storage access level 잠금 전 run이 시작되거나 content script가 managed/local policy·audit를 읽을 수 있음
+36. visible membership 변화가 fingerprint/tool revocation에 반영되지 않거나 포함된 node의 checked/selected 등 현재 상태값만으로 hash가 바뀜
 
 ## 4. 릴리스 체크리스트
 

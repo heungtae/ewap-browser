@@ -4,7 +4,7 @@
 
 `semantic-projection-fp-v1`은 Page Profile을 결정적으로 선택하기 위한 값 없는 페이지 구조 fingerprint다. 이 값은 모델 입력, 페이지 요약, 사용자 표시 또는 감사 식별자로 사용하지 않는다. fingerprint는 exact `page_read_origins` gate를 통과한 top-level document의 `frame_id=0` projection에서만 만든다. 차단 origin, child frame 단독 snapshot, 등록되지 않은 `document_epoch`, 크기 제한을 넘긴 snapshot에서는 fingerprint를 만들거나 resolver를 호출하지 않는다.
 
-동일한 화면 구조에서 업무 record, 입력값, 현재 checked/selected/expanded/disabled 상태 또는 opaque ref만 바뀌면 같은 fingerprint가 나와야 한다. 반대로 role, 구조적 state capability, 포함 node 순서·관계 또는 고정 label category가 바뀌면 다른 fingerprint가 나와야 한다.
+동일한 visible 화면 구조에서 업무 record, 입력값, 현재 checked/selected/expanded/disabled 상태 또는 opaque ref만 바뀌면 같은 fingerprint가 나와야 한다. visibility는 profile identity의 일부다. node가 visible membership에 들어오거나 빠지면 ordinal/관계와 hash가 바뀌며 service worker는 이전 Profile/tool을 즉시 철회하고 재해결한다. role, 구조적 state capability, 포함 node 순서·관계 또는 고정 label category 변화도 다른 fingerprint를 만든다.
 
 ## 2. Canonical input schema
 
@@ -48,10 +48,10 @@ type SemanticProjectionFingerprintV1 = {
 
 다음 순서를 바꾸지 않는다.
 
-1. S1 semantic projection collector와 동일한 redaction·sensitive-node 제외·지원 role·visible 규칙을 적용한다. 지원하지 않는 role과 `visible=false` node는 fingerprint node에도 넣지 않는다.
+1. S1 semantic projection collector와 동일한 redaction·sensitive-node 제외·지원 role·visible 규칙을 적용한다. 지원하지 않는 role과 `visible=false` node는 fingerprint node에도 넣지 않는다. visibility boolean 자체를 field로 hash하지는 않지만 포함 배열 membership은 의도적으로 profile identity다.
 2. top-level document의 포함 node를 DOM preorder로 정렬하고, 필터링된 배열의 index를 0부터 연속된 `ordinal`로 부여한다. DOM 전체 node index나 `ref_id` 생성 순서를 사용하지 않는다.
 3. `parent_ordinal`은 포함 node 중 가장 가까운 semantic ancestor의 ordinal이다. 없으면 `null`이며, 값이 있으면 preorder 특성상 현재 `ordinal`보다 작아야 한다. `label_ordinal`은 같은 top-level frame에서 명시적으로 연결되고 포함 배열에도 존재하는 label relation target의 ordinal이며, 그 외에는 `null`이다. relation이 자기 자신을 가리키거나 배열 밖 ordinal을 가리키면 snapshot을 거부한다.
-4. 현재 field/UI 상태값은 canonical input에 넣지 않고 구조적 capability만 만든다. `checkable`은 role이 `checkbox` 또는 `radio`이면 `true`, `selectable`은 role이 `option` 또는 `tab`이면 `true`다. `expandable`은 projection의 `expanded` key가 boolean으로 존재하면 실제 값과 무관하게 `true`다. `required`는 projection의 `required`가 명시적으로 `true`일 때만 `true`다. 그 밖에는 각각 `false`이며 key를 생략하지 않는다. 실제 `checked`, `selected`, `expanded`, `disabled`, `enabled`, `visible` 값은 hash하지 않는다.
+4. 포함된 node의 현재 field/UI 상태값은 canonical input에 넣지 않고 구조적 capability만 만든다. `checkable`은 role이 `checkbox` 또는 `radio`이면 `true`, `selectable`은 role이 `option` 또는 `tab`이면 `true`다. `expandable`은 projection의 `expanded` key가 boolean으로 존재하면 실제 값과 무관하게 `true`다. `required`는 projection의 `required`가 명시적으로 `true`일 때만 `true`다. 그 밖에는 각각 `false`이며 key를 생략하지 않는다. 포함된 node의 실제 `checked`, `selected`, `expanded`, `disabled`, `enabled` 값은 hash하지 않는다. visibility는 1단계 membership으로만 반영한다.
 5. redaction된 accessible name을 4절에 따라 `label_category` 하나로 바꾼 뒤 raw name을 버린다. label category 계산 전 이미 sensitive-node 제외 대상이면 `other`로 낮추지 않고 node 전체를 제외한다.
 6. 위 schema의 새 object를 생성한다. `SemanticSnapshot` object에서 key를 삭제하는 방식이나 임의 object spread는 금지한다.
 
@@ -114,7 +114,8 @@ canonical schema, node filtering/order, state 변환, alias 표, 정규화 또�
 
 - golden canonical JSON의 byte length와 fingerprint가 5절 값과 정확히 일치한다.
 - object key 삽입 순서가 달라도 같은 RFC 8785 bytes와 hash가 나온다.
-- input value, 현재 checked/selected/expanded/disabled/enabled/visible, raw label 원문, `document_epoch`, `ref_id`, `model_ref`와 URL record ID 변경은 hash에 들어가지 않는다.
+- 포함된 node의 input value, 현재 checked/selected/expanded/disabled/enabled, raw label 원문, `document_epoch`, `ref_id`, `model_ref`와 URL record ID 변경은 hash에 들어가지 않는다.
+- 동일 node가 visible→hidden으로 바뀐 golden pair는 node 제외로 다른 hash를 만들고 즉시 이전 Profile/tool을 철회한다. hidden→visible 복귀도 새 page-context resolution 전까지 이전 Profile을 재사용하지 않는다.
 - `Save`, `SAVE!`, `저장`은 `save`; 빈 name은 `none`; 사전에 없는 name은 `other`다.
 - preorder, role, state capability, parent/label relation 또는 category가 달라지면 hash가 달라진다.
 - relation ordinal과 `null`을 서로 같은 값으로 취급하지 않는다.

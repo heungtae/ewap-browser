@@ -28,7 +28,7 @@
 | R2 | 제출, 승인, 생성, 외부 전송, 업무 상태 변경 | Act + 정확한 intent의 명시 확인 + 검증 |
 | R3 | 삭제, 되돌릴 수 없는 폐기, 보안·권한 변경, 금전/계약 확정 | 항상 거부 |
 
-위험 분류는 tool 이름만으로 결정하지 않는다. target semantic role/label, action argument의 구조, profile metadata, 현재 문서 상태를 함께 검사하고 더 높은 위험도를 적용한다.
+위험 분류는 tool 이름만으로 결정하지 않는다. target semantic role/label, action argument의 구조, signed Profile의 effect/risk declaration, 현재 문서 상태를 함께 검사하고 더 높은 위험도를 적용한다. 모든 mutation primitive는 Profile이 `local-ui-only` effect를 증명할 때만 R1이며 autosave, 외부 전송 또는 server-side 업무 상태 변경 가능성이 있으면 R2로 승격한다. effect 선언이 없거나 server-side effect의 authoritative verifier를 만들 수 없으면 `TARGET_NOT_ACTIONABLE`로 거부한다.
 
 ## 4. Company Tool 계약
 
@@ -39,11 +39,11 @@
 | `read_semantic_projection` | Ask, Act | R0 | 값 redaction 후 DOM semantic projection 반환 |
 | `find_by_ref` | Ask, Act | R0 | 현재 document epoch의 ref만 반환 |
 | `read_page_summary` | Ask, Act | R0 | 제한된 semantic 요약 |
-| `set_text_by_ref` | Act | R1 | label preflight, 이벤트 후 value/ARIA 검증 |
-| `select_option_by_ref` | Act | R1 | 허용 option 발견 후 selected state 검증 |
-| `set_checked_by_ref` | Act | R1 | checkbox/radio ARIA state 검증 |
-| `click_by_ref` | Act | R2 | semantic target preflight, navigation/상태 검증 |
-| `press_key_by_ref` | Act | R2 | 허용 key allowlist, 결과 검증 |
+| `set_text_by_ref` | Act | R1 또는 R2 | Profile effect 분류, label preflight, 값+업무 상태 전이 검증 |
+| `select_option_by_ref` | Act | R1 또는 R2 | Profile effect 분류, option 단일 일치, 선택+업무 상태 전이 검증 |
+| `set_checked_by_ref` | Act | R1 또는 R2 | Profile effect 분류, checkbox/radio+업무 상태 전이 검증 |
+| `click_by_ref` | Act | R1 또는 R2 | Profile effect 분류, semantic target preflight, exact navigation/상태 전이 검증 |
+| `press_key_by_ref` | Act | R1 또는 R2 | Profile effect 분류, 허용 key, exact navigation/상태 전이 검증 |
 | `get_authoritative_field` | Ask, Act | R0 | profile의 deterministic Business MCP value source만 호출 |
 
 `execute_js`, arbitrary fetch, research/search, download/upload, scheduler, cloud sync, OAuth provider 추가, CAPTCHA, WebMCP, social automation은 도구·메시지·manifest·설정 어느 층에서도 제공하지 않는다.
@@ -59,6 +59,8 @@
 5. 동일 intent digest는 terminal outcome 전에는 한 번만 예약된다.
 6. stale ref, navigation, target 가림, 실행 예외는 `FAILED` 또는 `UNKNOWN`으로 종료한다.
 7. `UNKNOWN`은 자동·모델 유도·백그라운드 재시도를 금지한다.
+8. 모델 proposal에는 verifier/`expected` field를 허용하지 않는다. verifier predicate는 service worker가 signed Profile의 closed declaration, 실행 직전 pre-state와 tool rule에서 생성하며 ActionIntent에 내부 값으로 결속한다.
+9. mutation 성공은 실행 전에는 거짓이던 predicate가 실행 뒤 참이 된 상태 전이 또는 Profile의 exact origin/path-template navigation과 post-navigation state를 모두 증명해야 한다. 이미 참인 상태, no-op, 단순 same-origin 이동은 `VERIFIED`가 아니다.
 
 ## 6. ActionIntent, 값, 확인과 중지
 

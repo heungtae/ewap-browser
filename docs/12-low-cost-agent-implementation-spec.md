@@ -169,7 +169,6 @@ Page Profile용 fingerprint canonicalizer는 이 DTO를 임의로 축약하지 �
 ```ts
 type ProposalBase = {
   target: string;                 // current run의 model_ref
-  expected: { state?: SemanticState; navigation?: "none" | "same-origin" };
 };
 type ModelActionProposal =
   | (ProposalBase & { tool: "set_text_by_ref" | "select_option_by_ref" })
@@ -199,6 +198,8 @@ type SubmitActionValuePayload =
 ```
 
 `set_text_by_ref`는 `text`, `select_option_by_ref`는 `option` slot을 반드시 요구한다. 이 두 proposal에는 `argument`를 허용하지 않는다. `set_checked_by_ref`는 `checked` 하나, `press_key_by_ref`는 `key` 하나만 요구하며 value slot을 만들지 않는다. `click_by_ref`에는 `argument`와 value slot이 모두 없다. `option_name`, text, selector, DOM value를 model schema에 추가할 수 없다.
+
+모델 proposal schema는 `additionalProperties: false`다. `expected`, verifier ID/predicate, risk, profile/effect, navigation path를 모델이 보내면 proposal 전체를 `INVALID_ARGUMENT`으로 거부한다. 이 값들은 target을 해석한 뒤 service worker만 만든다.
 
 service worker는 preflight가 끝난 pending proposal마다 crypto-random `value_slot_id` 하나만 만들고 `(run_id, tab_id, frame_id, document_epoch, profile id/version, tool, ref_id, value_kind, expires_at, consumed=false)`에 결속해 메모리에 저장한다. `PANEL_STATE/AWAITING_VALUE`에는 redacted target 정보와 제약만 넣는다. raw value는 `SUBMIT_ACTION_VALUE`에서 처음 생기며 Side Panel sender, active run state, 모든 binding, kind, 길이와 TTL이 일치할 때만 받는다. mismatch, duplicate, expiry 또는 navigation에는 slot과 제출값을 폐기하고 `VALUE_BINDING_INVALID`로 terminal 처리한다.
 
@@ -257,11 +258,37 @@ type ActionIntent = {
   profile: { id: string; version: number };
   ref_id: string;
   risk: "R1" | "R2";
-  expected: { state?: SemanticState; navigation?: "none" | "same-origin" };
+  effect: "local-ui-only" | "server-side";
+  verifier: VerifierPredicate;
   argument?: { checked?: boolean; key?: "Enter" | "Space" | "Escape" };
   value_binding?: ValueBinding;
 };
+
+type VerifierPredicate =
+  | {
+      kind: "semantic-state-transition";
+      declaration_id: string;
+      pre_state_digest: string;
+      required_changes: SemanticStatePredicate[];
+    }
+  | {
+      kind: "exact-navigation-transition";
+      declaration_id: string;
+      pre_page_context_digest: string;
+      origin: string;
+      path_template_id: string;
+      required_post_states: SemanticStatePredicate[];
+    }
+  | {
+      kind: "business-state-transition";
+      declaration_id: string;
+      precondition_token: string;
+      authoritative_field_id: string;
+      expected_transition: string;
+    };
 ```
+
+`VerifierPredicate`는 모델이나 Side Panel payload가 아니다. service worker가 current signed Profile의 tool/effect/verifier declaration을 exact match하고 실행 직전 pre-state를 캡처한 뒤 closed enum만으로 생성한다. `pre_state_digest`와 `pre_page_context_digest`는 current run/document 내부 결속값이며 Host·LLM·audit에 보내지 않는다. 이미 predicate가 참이면 no-op 방지를 위해 실행 전에 거부한다. `server-side` effect는 `business-state-transition` 또는 exact navigation 뒤 authoritative post-state가 없으면 `TARGET_NOT_ACTIONABLE`이다.
 
 intent digest는 `ActionIntent`의 UTF-8 RFC 8785 canonical JSON을 SHA-256 unpadded base64url로 계산한다. key 순서, 빈 optional key, `undefined`는 canonical JSON에 넣지 않는다. raw value는 intent에 추가하지 않는다. `value_binding.value_digest`는 intent 결속과 duplicate 방지에만 쓰며 raw value와 함께 persistence, audit, Host, bridge, LLM로 전송하지 않는다.
 
@@ -284,7 +311,7 @@ type RuntimeEnvelope<T> = {
 };
 ```
 
-`DOCUMENT_REGISTER`는 run envelope와 분리된 content-only schema다: `{ schema_version: 1, kind: "DOCUMENT_REGISTER", tab_id, frame_id, document_epoch, registration_nonce }`. document start의 content script만 epoch를 만들고 이 schema로 등록한다. service worker는 `sender.id`, sender tab/frame, nonce 형식을 확인해 현재 document registry에 저장한다. worker 재시작 뒤에는 content script가 같은 epoch를 재등록해야 하고, run coordinator는 등록되지 않았거나 늦게 온 epoch를 생성·대체·채택하지 않는다.
+`DOCUMENT_REGISTER`는 run envelope와 분리된 content-only schema다: `{ schema_version: 1, kind: "DOCUMENT_REGISTER", document_epoch }`. document start의 content script만 epoch를 만들고 이 schema로 등록한다. service worker는 `sender.id`, `sender.tab.id`, `sender.frameId`, `sender.documentId`, `sender.documentLifecycle === "active"`를 Chrome의 권한 근거로 사용해 `(tab, frame, documentId) → epoch`를 저장한다. content payload가 tab/frame/document/lifecycle을 주장하면 unknown key로 거부한다. worker 재시작 뒤에는 content script가 같은 epoch를 현재 active `sender.documentId`에서 다시 등록해야 하고, competing old/prerender/frozen document 또는 늦게 온 epoch를 생성·대체·채택하지 않는다.
 
 service worker는 `sender.id === chrome.runtime.id`, sender tab/frame, 등록된 document와 run의 tab/frame/epoch가 모두 맞을 때만 수락한다. `START_*`, `SUBMIT_ACTION_VALUE`, `CONFIRM`, `CANCEL`은 Side Panel sender만, `CONTENT_*`, `VERIFY_*`는 해당 content frame만, `EXECUTE_ACTION`과 `NATIVE_LLM_REQUEST`는 service worker 내부 coordinator/adapter만 생성할 수 있다. `SUBMIT_ACTION_VALUE`는 run이 `AWAITING_VALUE`일 때만 수락한다. `postMessage`, external message, event detail은 어떤 경우에도 이 envelope로 승격하지 않는다.
 
@@ -306,6 +333,7 @@ service worker는 `sender.id === chrome.runtime.id`, sender tab/frame, 등록된
 | `AI_HUB_NOT_CONFIGURED` | AI Hub 연결이 아직 구성되지 않았습니다. | 운영 구성 후 새 요청 |
 | `TRANSPORT_FAILED` | AI Hub 연결에 실패했습니다. | 사용자의 명시적 새 요청만 |
 | `PAYLOAD_LIMIT_EXCEEDED` | 페이지 정보가 허용 범위를 초과했습니다. | 페이지 범위 변경 후 새 요청 |
+| `STORAGE_BOUNDARY_UNAVAILABLE` | 브라우저 저장소 보안 경계를 설정할 수 없습니다. | Chrome/정책 복구 후 새 요청 |
 | `INTERNAL_FAILURE` | 작업을 안전하게 완료할 수 없습니다. | 새 요청만 |
 
 R2가 action 뒤 결과를 확정할 수 없으면 UI outcome은 `UNKNOWN`이고 error code가 있더라도 재시도 button을 렌더링하지 않는다.
@@ -316,29 +344,32 @@ R2가 action 뒤 결과를 확정할 수 없으면 UI outcome은 `UNKNOWN`이고
 
 각 tab에는 한 active run만 허용한다. 새 start 요청은 기존 run이 `READING`, `PROPOSING` 또는 `AWAITING_VALUE`이면 retained value reference와 slot을 지우고 먼저 `CANCELLED`로 종료한 뒤 시작한다. `PREFLIGHT` 이후에는 기존 run을 취소한 결과가 확정되기 전 새 run을 시작하지 않는다.
 
+service worker bootstrap은 runtime listener가 run을 처리하기 전에 managed/local/session storage access level을 모두 `TRUSTED_CONTEXTS`로 설정하고 세 Promise의 성공을 기다린다. 어느 호출이든 실패하면 document registration, preview, Ask/Act와 audit write를 받지 않고 `STORAGE_BOUNDARY_UNAVAILABLE`로 fail closed 한다.
+
 ```text
 start(mode, userRequest)
   validate panel sender, exact page_read origin, policy bundle, registered content epoch
-  adopt registered (tab, frame, document_epoch); create opaque tab_context; persist only redacted summary
+  adopt registered authoritative (tab, frame, sender.documentId, document_epoch); create opaque tab_context; persist only redacted summary
   request content snapshot
   validate snapshot size/schema/epoch; resolve and verify profile
   make model_ref mapping; call Host only for Ask interpretation or action proposal
-  validate every model result against tool schema; never execute model text
+  validate every model result against tool schema; reject verifier/expected fields; never execute model text
   if Ask: render read-only response; terminal COMPLETED
   if Act: resolve exactly one ModelActionProposal target
     if value tool: target preflight; create one bound slot; transition AWAITING_VALUE
-    otherwise: build one ActionIntent and continue through preflight
+    otherwise: derive verifier from signed profile + pre-state + tool rule; build one ActionIntent and continue through preflight
 
 submitActionValue(payload)
   require Side Panel sender and AWAITING_VALUE
   validate slot/run/tab/frame/epoch/profile/tool/ref/kind/TTL and raw value constraints
-  compute value digest; build ValueBinding and one ActionIntent
+  compute value digest; derive verifier from signed profile + fresh pre-state + tool rule; build ValueBinding and one ActionIntent
   process intent through preflight; keep raw value only in pending slot memory
 
 preflight(intent)
   validate run/tab/frame/epoch/profile/ref/argument schema
   for value tool require matching unconsumed slot and fresh target preflight
-  compute risk from policy; reject claimed lower risk
+  require signed effect/risk/verifier declaration; compute risk from effect and policy
+  reject local-ui-only claim if autosave/server effect is possible; reject server-side without authoritative predicate
   reject R3; deny Ask mutation; reserve digest once
   request content target preflight
   if decision ALLOW: executeOnce(intent)
@@ -368,21 +399,25 @@ content script는 매 document start마다 random `document_epoch`를 한 번 �
 
 다음 중 하나면 ref를 stale로 판정한다: document epoch 불일치, element가 `isConnected=false`, frame 불일치, element role 변경, redacted name fingerprint 변경, MutationObserver가 target 또는 ancestor의 relevant attribute/child list 변경을 관찰. stale ref는 다시 resolve하지 않고 `TARGET_STALE`을 반환한다. CSS selector로 재탐색하지 않는다.
 
-### 4.3 R1 executor
+### 4.3 Mutation primitive executor
 
-| tool | preflight | 실행 | verifier |
+아래 표는 DOM primitive를 정의할 뿐 위험 pipeline을 고정하지 않는다. 각 primitive는 signed Profile의 effect declaration에 따라 R1 또는 R2로 들어간다. executor는 service worker가 만든 `VerifierPredicate`만 받고 모델 proposal에서 성공 조건을 읽지 않는다.
+
+| tool | preflight | 실행 | local verifier 및 추가 요구 |
 |---|---|---|---|
-| `set_text_by_ref` | `input`/`textarea`, visible, enabled, sensitive 아님, one-time `text` delivery binding 일치 | delivery의 value로 native setter + `input`, `change` event | same element의 value가 delivery와 정확히 같은지 content 내부에서만 확인; projection의 enabled/role도 재확인 |
-| `select_option_by_ref` | `select` 또는 approved combobox, one-time `option` delivery binding과 option name 단일 일치 | delivery와 일치하는 option 선택 + `input`, `change` | selected option의 redacted name/state가 expected와 일치 |
-| `set_checked_by_ref` | checkbox/radio, target group/profile rule 유효 | desired value와 다를 때만 click | `checked` state가 desired와 일치 |
+| `set_text_by_ref` | `input`/`textarea`, visible, enabled, sensitive 아님, one-time `text` delivery binding 일치 | delivery의 value로 native setter + `input`, `change` event | same element의 value가 delivery와 정확히 같은지 content 내부 확인; R2이면 authoritative 업무 전이 추가 필수 |
+| `select_option_by_ref` | `select` 또는 approved combobox, one-time `option` delivery binding과 option name 단일 일치 | delivery와 일치하는 option 선택 + `input`, `change` | selected option state 확인; R2이면 authoritative 업무 전이 추가 필수 |
+| `set_checked_by_ref` | checkbox/radio, target group/profile rule 유효 | desired value와 다를 때만 click | pre-state와 다른 `checked` 전이 확인; R2이면 authoritative 업무 전이 추가 필수 |
+| `click_by_ref` | capability가 허용한 role, visible/enabled, trusted input 불필요 | `HTMLElement.click()` 한 번 | Profile-derived state/navigation/business transition |
+| `press_key_by_ref` | capability가 허용한 key와 focus target, trusted input 불필요 | 허용 key의 `keydown`/`keyup` 한 번 | Profile-derived state/navigation/business transition |
 
 `set_text_by_ref`와 `select_option_by_ref`는 3.3의 `AWAITING_VALUE → SUBMIT_ACTION_VALUE → EXECUTE_ACTION` 경로만 사용한다. raw value를 `START_ACT`, 모델 proposal, `ActionIntent.argument`, confirmation, audit 또는 Host request로 복사하는 대체 경로는 없다. 이 전달·consume·retained-reference 검증을 구현할 수 없으면 두 tool을 registry에 추가하지 않는다.
 
-### 4.4 R2 executor
+### 4.4 R2 confirmation 및 verifier pipeline
 
-R2는 `click_by_ref`, `press_key_by_ref`만 허용한다. profile이 `expected` verifier와 `programmatic_activation` capability를 모두 선언하지 않았으면 preflight에서 `TARGET_NOT_ACTIONABLE`다. capability는 tool별 허용 role, `press_key_by_ref`의 허용 key, `requires_trusted_input` target class를 명시하며 기본값은 deny다. confirmation 화면은 tool, redacted target name, profile display name, risk reason만 표시한다.
+R2는 4.3의 모든 mutation primitive에 적용할 수 있다. profile이 `effect: server-side`, `risk_floor: R2`, closed verifier declaration을 모두 제공하지 않으면 preflight에서 `TARGET_NOT_ACTIONABLE`다. click/key에는 추가로 `programmatic_activation` capability가 필요하다. capability는 tool별 허용 role, `press_key_by_ref`의 허용 key, `requires_trusted_input` target class를 명시하며 기본값은 deny다. confirmation 화면은 tool, redacted target name, profile display name, risk reason만 표시한다.
 
-`click_by_ref`는 capability가 허용한 role에서만 `HTMLElement.click()`을 사용하고 pointer coordinate, synthetic mouse sequence, form submit 직접 호출을 사용하지 않는다. `press_key_by_ref`는 capability가 허용한 `Enter`, `Space`, `Escape`에 한해 focused target이 preflight ref와 같은지 확인한 뒤 `keydown`/`keyup` synthetic DOM event만 dispatch한다. 어느 경로도 trusted input을 만들지 않는다. Profile이 trusted input을 요구한다고 선언했거나 fixture/운영 검증에서 `isTrusted` 거부 target으로 분류한 경우 실행하지 않고 `TARGET_NOT_ACTIONABLE`로 끝낸다. action 뒤 3초 안에 `expected.state` 또는 승인된 same-origin navigation predicate를 observer로 증명해야 한다. navigation 자체는 성공 증거가 아니다. observer가 끊기거나 3초 timeout이면 `UNKNOWN`이다.
+`click_by_ref`는 capability가 허용한 role에서만 `HTMLElement.click()`을 사용하고 pointer coordinate, synthetic mouse sequence, form submit 직접 호출을 사용하지 않는다. `press_key_by_ref`는 capability가 허용한 `Enter`, `Space`, `Escape`에 한해 focused target이 preflight ref와 같은지 확인한 뒤 `keydown`/`keyup` synthetic DOM event만 dispatch한다. 어느 경로도 trusted input을 만들지 않는다. Profile이 trusted input을 요구한다고 선언했거나 fixture/운영 검증에서 `isTrusted` 거부 target으로 분류한 경우 실행하지 않고 `TARGET_NOT_ACTIONABLE`로 끝낸다. action 뒤 3초 안에 Profile-derived predicate의 pre-state→post-state 전이를 증명해야 한다. navigation은 exact approved origin/path template과 required post-state를 모두 만족해야 하며 자체로는 성공 증거가 아니다. observer/Business MCP evidence가 끊기거나 timeout이면 `UNKNOWN`이다.
 
 ### 4.5 Policy decision table
 
@@ -398,11 +433,12 @@ R2는 `click_by_ref`, `press_key_by_ref`만 허용한다. profile이 `expected` 
 | 6 | signed `UNKNOWN_PROFILE`의 Ask basic-read-only | 다음 조건으로 진행 |
 | 7 | target sensitive, stale, invisible, disabled, occluded | `DENY / TARGET_NOT_ACTIONABLE` 또는 `TARGET_STALE` |
 | 8 | value tool의 slot 누락·kind/binding/TTL mismatch·이미 consume됨 | `DENY / VALUE_BINDING_INVALID` |
-| 9 | risk R3 또는 allowlist 밖 tool/key/option | `DENY / POLICY_DENIED` |
-| 10 | duplicate digest가 예약됨 | `DENY / POLICY_DENIED` |
-| 11 | R2이며 valid Host session binding 없음 | `DENY / CONFIRMATION_INVALID` |
-| 12 | R2 | `REQUIRE_CONFIRMATION` |
-| 13 | R0/R1의 모든 verifier 선언 유효 | `ALLOW` |
+| 9 | mutation effect/risk/verifier 선언 누락, 모델 제공 verifier field, 이미 참인 predicate, server-side effect의 authoritative predicate 없음 | `DENY / TARGET_NOT_ACTIONABLE` 또는 `INVALID_ARGUMENT` |
+| 10 | risk R3 또는 allowlist 밖 tool/key/option | `DENY / POLICY_DENIED` |
+| 11 | duplicate digest가 예약됨 | `DENY / POLICY_DENIED` |
+| 12 | R2이며 valid Host session binding 없음 | `DENY / CONFIRMATION_INVALID` |
+| 13 | R2 | `REQUIRE_CONFIRMATION` |
+| 14 | R0/R1의 모든 verifier 선언 유효 | `ALLOW` |
 
 ## 5. LLM과 Native Host의 최소 계약
 
@@ -452,12 +488,13 @@ type VerifyConfirmationRequest = {
 type VerifyConfirmationResult = { status: "CONSUMED" };
 ```
 
-service worker는 document registration을 채택할 때만 `tab_context`를 만들고 local `(tab_id, frame_id, document_epoch)` binding을 유지한다. `BIND_SESSION` → `ISSUE_CONFIRMATION` → 사용자 승인 → `VERIFY_CONFIRMATION`의 순서를 바꾸지 않는다. Host는 each step에서 current Windows session, extension instance, expiry 및 이전 binding fields를 재확인하고 마지막 response를 atomic one-time consume한다. `PROFILE_REPLAY_CAS`는 verified `(profile_id, matcher, fingerprint_alg, fingerprint, profile_version)`만 받고 `ACCEPTED` 또는 `PROFILE_UNAVAILABLE`만 반환한다; high-water value를 읽거나 reset하는 schema는 없다.
+service worker는 authoritative document registration을 채택할 때만 `tab_context`를 만들고 local `(tab_id, frame_id, sender.documentId, document_epoch)` binding을 유지한다. `BIND_SESSION` → `ISSUE_CONFIRMATION` → 사용자 승인 → `VERIFY_CONFIRMATION`의 순서를 바꾸지 않는다. Host는 each step에서 current Windows session, extension instance, expiry 및 이전 binding fields를 재확인하고 마지막 response를 atomic one-time consume한다. `PROFILE_REPLAY_CAS`는 verified `profile_jws`와 claimed `(deployment_id, profile_id, profile_version, signed_definition_digest)`만 받고 `ADVANCED`, `IDEMPOTENT_ACCEPTED` 또는 `PROFILE_UNAVAILABLE`만 반환한다. extension과 Host는 13의 JWS-signed 안정 Profile 정의 projection에서 digest를 독립 계산하고 Host는 JWS/claim/digest mismatch를 거부한다. Host key는 `(deployment_id, profile_id)`이고 같은 version은 definition digest가 같을 때만 수락한다. high-water value를 읽거나 reset하는 schema는 없다.
 
 ### 5.2 Native Messaging implementation rules
 
-- `stdin`에서 4-byte little-endian size + UTF-8 JSON 한 frame만 읽고, 512 KiB 초과·truncated·invalid JSON이면 connection을 닫는다.
+- 확장은 `connectNative()`만 사용하고 Host는 port EOF까지 `stdin`의 4-byte little-endian size + UTF-8 JSON frame을 반복해서 읽는다. frame은 512 KiB를 넘을 수 없고 truncated·invalid JSON·duplicate request ID면 port를 닫고 모든 pending state를 폐기한다.
 - `stdout`에는 성공/오류 Native Messaging frame만 기록한다. console logger를 stdout provider에 등록하지 않는다.
+- 모든 request/response/stream chunk/`CANCEL_REQUEST`는 `request_id`로 correlate한다. 최대 동시 요청 수를 4로 제한하고 unknown/already-terminal cancellation은 idempotent no-op으로 답한다. port disconnect·Host crash에는 stream, confirmation, MCP request와 nonce를 폐기하며 `sendNativeMessage()`를 혼용하지 않는다.
 - executable 시작 시 allowed extension origin, deployment config, pipe ACL, static header allowlist가 모두 검증되지 않으면 request를 받지 않고 `AI_HUB_NOT_CONFIGURED`만 반환한다.
 - bridge pipe request는 request ID, body SHA-256, issued-at, nonce, sender signature를 포함한다. 수신자는 60초 nonce cache에서 중복을 거부하고, 60초보다 오래된 issued-at도 거부한다.
 - Host는 arbitrary URL, command, header map, model name을 extension request에서 받지 않는다. 이 값은 administrator ACL 구성에서만 읽는다.
@@ -481,10 +518,10 @@ S0 target scripts는 다음 이름으로 고정한다. root `package.json`은 �
 
 | ID | 만들 파일/책임 | 필수 negative test |
 |---|---|---|
-| S1-1 | `contracts/runtime-message`, document-registration schema, sender validator | unknown kind, forged tab/frame, page postMessage, registration 전 run 거부 |
-| S1-2 | `content/semantic-collector`, `ref-registry`, epoch re-registration, redactor | late epoch, input value/password/closed shadow/cross-origin frame 미포함 |
+| S1-1 | `contracts/runtime-message`, minimal document-registration schema, authoritative sender validator | unknown kind, forged tab/frame/document metadata, old/prerender/frozen lifecycle, page postMessage, registration 전 run 거부 |
+| S1-2 | `content/semantic-collector`, `ref-registry`, sender.documentId-bound epoch re-registration, redactor | competing/late epoch, worker restart, input value/password/closed shadow/cross-origin frame 미포함 |
 | S1-3 | `security/origin-matcher`, policy bundle validator | `file:`, IP literal, localhost, permission 밖 preview read 거부 |
-| S1-4 | panel preview → coordinator → projection render | Host/resolver/LLM call 및 어떤 mutation message도 dispatch하지 않음 |
+| S1-4 | storage access bootstrap + panel preview → coordinator → projection render | content storage read와 잠금 전 run, Host/resolver/LLM call 및 어떤 mutation message도 dispatch하지 않음 |
 
 S1 fixture는 최소 button, checkbox, labelled textbox, selected option, navigation link, password field, dynamically replaced button을 제공한다. E2E는 실제 Chrome에서 projection field와 stale ref를 assert한다.
 
@@ -493,7 +530,7 @@ S1 fixture는 최소 button, checkbox, labelled textbox, selected option, naviga
 | ID | 만들 파일/책임 | 필수 negative test |
 |---|---|---|
 | S2-1 | `policy/decision`, tool registry, model proposal/intent/value-slot JSON schemas | Ask mutation, raw value model argument, unknown profile, R3 deny |
-| S2-2 | `content/preflight`, each R1 executor/verifier | occluded/disabled/stale/sensitive target deny |
+| S2-2 | `content/preflight`, mutation primitive executor, Profile-derived verifier builder | model verifier field, no-op, occluded/disabled/stale/sensitive target deny |
 | S2-3 | 3.3의 Side Panel value slot, digest/binding store, one-time content delivery와 retained-reference disposal hook | proposal 전/wrong-context/duplicate/expired submit, terminal/cancel/navigation/5분 후 slot 사용, raw value leak·send-failure 재전송 거부 |
 | S2-4 | audit allowlist serializer | raw value/digest/path/name/ref가 output에 없음 |
 
@@ -505,14 +542,14 @@ S2에서 `click_by_ref`, `press_key_by_ref`, session binding, real Host network�
 |---|---|---|
 | S3-1 | canonical digest, opaque tab context, confirmation store/state machine | duplicate/expired/cross-tab/cross-epoch token 거부 |
 | S3-2 | three-step session-binding verifier interface + local fake | nonce/session/digest mismatch, fake production enable 거부 |
-| S3-3 | capability-gated R2 executor + Stop/navigation cancellation | no confirmation, trusted-input target, R3, timeout UNKNOWN, retry 거부 |
+| S3-3 | all-primitive R2 confirmation/verifier pipeline + Stop/navigation cancellation | autosave without declaration, no confirmation, trusted-input target, R3, timeout UNKNOWN, retry 거부 |
 | S3-4 | Side Panel confirmation/terminal renderer | raw value/digest가 화면에 없음 |
 
 ### S4 카드
 
 | ID | 만들 파일/책임 | 필수 negative test |
 |---|---|---|
-| S4-1 | Native framing/allowed-origin/model-ref/R2 binding schema/domain error mapper | malformed/oversize/raw-ref or mapping/foreign origin/cross-context confirmation/stdout log leak 거부 |
+| S4-1 | persistent Native framed loop/correlation/cancellation, allowed-origin/model-ref/R2 binding schema/domain error mapper | malformed/oversize/duplicate ID/raw-ref or mapping/foreign origin/cross-context confirmation/disconnect state/stdout log leak 거부 |
 | S4-2 | administrator config reader + no-config adapter | missing input에서 `AI_HUB_NOT_CONFIGURED`, network 없음 |
 | S4-3 | named-pipe mutual-auth adapter, nonce cache | direct TCP, bad ACL/signature/nonce replay 거부 |
 | S4-4 | SSO broker/profile-replay durable-store interface + mock contract test | assertion identity와 high-water value가 extension response에 없음 |
@@ -523,8 +560,8 @@ S2에서 `click_by_ref`, `press_key_by_ref`, session binding, real Host network�
 
 | ID | 만들 파일/책임 | 필수 negative test |
 |---|---|---|
-| S5-1 | JWS profile verifier, [14](14-semantic-projection-fingerprint.md)의 fp-v1 canonicalizer/golden vectors, durable replay CAS, cache atomic swap | canonical schema·alias·state-capability·relation/hash drift와 현재 field/UI state 유입, unsigned/expired/future/oversize/replay/tie/fingerprint mismatch/store corruption 거부 |
-| S5-2 | [13의 resolver/profile schema](13-page-profile-and-business-mcp-contract.md), Context Router, Host-owned MCP Registry/page profile extension adapter | same-page/different-record match, SPA profile re-resolution/tool revocation, MCP failure 또는 다른 server/tool DOM/LLM fallback, profile 밖 field/server/tool, arbitrary route/header, deterministic/agentic exposure 혼합, visibility/audit leak, late response 거부 |
+| S5-1 | exact-page-bound JWS verifier, [14](14-semantic-projection-fingerprint.md)의 fp-v1 canonicalizer/visibility golden pairs, idempotent durable replay CAS, cache atomic swap | canonical drift, current-state hash 유입, cross-record binding, unsigned/expired/future/oversize/same-version-different-body/lower-version/tie/fingerprint mismatch/store corruption 거부 |
+| S5-2 | [13의 resolver/profile/두 call-kind wire schema](13-page-profile-and-business-mcp-contract.md), Context Router, Host-owned MCP Registry/page profile extension adapter | cross-record JWS/subject/cache, SPA profile re-resolution/tool revocation, MCP failure 또는 다른 server/tool DOM/LLM fallback, profile 밖 field/server/tool, arbitrary route/header, call-kind/argument/result 혼합, visibility/audit leak, late response 거부 |
 | S5-3 | package/policy/host compatibility validators | hash/version/header key mismatch deployment 차단 |
 | S5-4 | installer/health/rollback + VM checklist | rollback 후 tool/host disabled 확인 |
 

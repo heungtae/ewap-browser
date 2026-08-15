@@ -34,7 +34,7 @@
 
 ## 3. S1 — semantic projection preview
 
-1. typed runtime contracts와 sender/tab/frame/run validation을 만든다.
+1. typed runtime contracts, storage `TRUSTED_CONTEXTS` bootstrap gate와 authoritative sender tab/frame/documentId/lifecycle/run validation을 만든다.
 2. Side Panel의 preview 요청/상태 UI, service worker coordinator, 실제 Chrome DOM semantic projection collector/ref registry를 잇고 content-owned `DOCUMENT_REGISTER`/worker-restart 재등록을 구현한다.
 3. `read_semantic_projection`, `find_by_ref`, `read_page_summary`의 preview projection만 추가한다. 모델/Host용 tool exposure는 추가하지 않는다.
 4. redaction, document epoch 폐기·registration, 메시지 allowlist, page-read gate와 preview mutation 거부를 구현한다. resolver/LLM egress는 S5에서만 호출한다.
@@ -44,7 +44,7 @@
 ## 4. S2 — R1 정책·감사·변경
 
 1. Managed Storage schema parser, exact origin matcher, mode/profile/risk policy engine을 구현한다.
-2. `set_text_by_ref`, `select_option_by_ref`, `set_checked_by_ref`의 schema, preflight, deterministic executor, verifier를 만든다. text/option에는 target 확정 뒤 `AWAITING_VALUE`, Side Panel `SUBMIT_ACTION_VALUE`, run/target/tool 한정 slot/digest, content one-time delivery와 retained-reference 폐기를 구현한다.
+2. `set_text_by_ref`, `select_option_by_ref`, `set_checked_by_ref`의 schema, primitive executor와 signed Profile/pre-state/tool rule 기반 verifier builder를 만든다. model proposal에는 verifier field를 허용하지 않는다. text/option에는 target 확정 뒤 `AWAITING_VALUE`, Side Panel `SUBMIT_ACTION_VALUE`, run/target/tool 한정 slot/digest, content one-time delivery와 retained-reference 폐기를 구현한다.
 3. policy decision과 terminal outcome의 최소 audit serializer를 추가한다.
 4. controlled fixtures에 정상·stale·occluded·sensitive-field와 terminal outcome/취소 시 value slot 및 retained-reference 폐기 사례를 추가한다. JavaScript string의 물리적 overwrite를 성공 기준으로 주장하지 않는다.
 
@@ -55,7 +55,7 @@ S2 산출물은 controlled fixture에서만 R1을 실행한다. S5의 verified P
 ## 5. S3 — R2 확인·중단·상태
 
 1. intent digest, `BIND_SESSION`/`ISSUE_CONFIRMATION`/`VERIFY_CONFIRMATION` Host session-binding interface, opaque tab context, confirmation store, one-time confirmation UI와 expiry/invalidation을 구현한다. local test adapter만으로는 production R2를 활성화하지 않는다.
-2. Profile의 programmatic activation capability 안에서만 `click_by_ref`, `press_key_by_ref`, Stop/cancellation, navigation/worker-restart recovery를 구현한다. trusted-input-required fixture는 `TARGET_NOT_ACTIONABLE`로 끝낸다.
+2. 모든 mutation primitive가 signed Profile effect에 따라 R2 confirmation pipeline으로 승격될 수 있게 하고, programmatic activation capability 안에서만 `click_by_ref`, `press_key_by_ref`, Stop/cancellation, navigation/worker-restart recovery를 구현한다. authoritative verifier 없는 autosave와 trusted-input-required fixture는 `TARGET_NOT_ACTIONABLE`로 끝낸다.
 3. `VERIFIED`, `FAILED`, `UNKNOWN`, `CANCELLED` 결과를 단일 terminal-state contract로 정규화한다. S3 local adapter/fixture는 production Ask/Act 성공으로 취급하지 않는다.
 4. 모든 `UNKNOWN`/단절 경로에서 재시도를 금지한다.
 
@@ -63,7 +63,7 @@ S2 산출물은 controlled fixture에서만 R1을 실행한다. S5의 verified P
 
 ## 6. S4 — Native Host·bridge·SSO adapter
 
-1. Native Messaging framing, allowed extension ID, `model_ref`만 포함한 typed request/proposal, R2 binding IPC schema, cancellation을 구현한다. raw `ref_id`와 ref mapping은 extension/Host contract에서 거부한다.
+1. `connectNative()` persistent-port framed read loop, request/stream correlation, cancellation/disconnect cleanup, allowed extension ID, `model_ref`만 포함한 typed request/proposal과 R2 binding IPC schema를 구현한다. raw `ref_id`와 ref mapping은 extension/Host contract에서 거부한다.
 2. Windows ACL named-pipe bridge adapter, mutual request signing/nonce replay 방지, fixed-header allowlist/error normalization을 구현한다. TCP loopback bridge를 만들지 않는다.
 3. SSO broker adapter와 session-binding verifier interface, mock broker를 구현한다. 운영 계약이 없으면 network 호출 대신 `AI_HUB_NOT_CONFIGURED`를 반환한다.
 4. Host diagnostics의 stdout framing 분리와 redacted Event Log/stderr 정책을 구현한다.
@@ -72,7 +72,7 @@ S2 산출물은 controlled fixture에서만 R1을 실행한다. S5의 verified P
 
 ## 7. S5 — Profile/MCP·배포·파일럿 준비
 
-1. [13의 resolver/JWS schema](13-page-profile-and-business-mcp-contract.md)를 따른 signed Profile resolver, [14의 `semantic-projection-fp-v1`](14-semantic-projection-fingerprint.md) canonicalization과 golden vectors, key-ring verification/rotation, Host durable high-water compare-and-set, cache fallback/invalidation, page profile Business MCP extension, tool withdrawal을 구현한다. Business MCP adapter는 current profile의 server/tool MCP Registry route·별도 assertion·deterministic binding·agentic-read dynamic exposure·value visibility·late-response 폐기 규칙을 포함한다.
+1. [13의 resolver/JWS schema](13-page-profile-and-business-mcp-contract.md)를 따른 exact-page-bound signed Profile resolver, [14의 `semantic-projection-fp-v1`](14-semantic-projection-fingerprint.md) canonicalization과 visibility golden pairs, key-ring verification/rotation, Host `(deployment_id, profile_id)` high-water CAS, cache fallback/invalidation, page profile Business MCP extension, tool withdrawal을 구현한다. Business MCP adapter는 두 call kind의 closed wire schema, current exact page context, server/tool MCP Registry route·별도 assertion·deterministic binding·agentic-read dynamic exposure·value visibility·late-response 폐기 규칙을 포함한다.
 2. extension package, update manifest, managed policy sample validator, Native Host installer/health-check/rollback script를 만든다.
 3. compatibility matrix, package/policy/host hash capture, portal-install VM checklist를 자동화 가능한 범위까지 구현한다.
 4. verified Profile + Host 뒤 production Ask/Act gate를 활성화하고, 07의 release checklist에 필요한 승인 증적 위치와 파일럿 운영 runbook을 연결한다.

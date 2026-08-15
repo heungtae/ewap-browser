@@ -38,7 +38,7 @@
 ## 4. 업데이트와 롤백
 
 - 패키지는 고정 extension ID를 유지하고 자체 HTTPS update manifest에서만 업데이트한다.
-- staged ring(개발 → 보안 파일럿 → 제한된 조직 → 전체)과 최소 지원 Chrome version을 둔다.
+- staged ring(개발 → 보안 파일럿 → 제한된 조직 → 전체)을 사용한다. 최소 지원 Chrome은 authoritative `MessageSender.documentId`/`documentLifecycle`과 storage access-level API를 제공하는 106으로 고정하고 installer health check에서 이보다 낮은 버전을 차단한다.
 - extension, Native Host, bridge config는 호환성 매트릭스로 묶어 배포한다.
 - host permission, managed origin bundle, resolver/MCP endpoint, Profile key ring은 하나의 compatibility matrix entry로 검토·배포한다. Business MCP endpoint와 Registry는 Managed Storage가 아니라 Host MCP Registry에만 존재한다. policy 단독 갱신은 기존 manifest 집합을 축소만 할 수 있다.
 - emergency rollback은 이전 서명 버전 또는 policy disable로 가능해야 한다.
@@ -47,6 +47,6 @@
 
 ## 5. 운영 상태와 지원
 
-Side Panel은 endpoint 또는 header 값을 표시하지 않고 다음 상태 코드만 보여 준다: `INSTALLED`, `POLICY_MISSING`, `NATIVE_HOST_MISSING`, `BRIDGE_UNREACHABLE`, `SSO_UNAVAILABLE`, `AI_HUB_DENIED`, `PROFILE_UNAVAILABLE`, `UNKNOWN_PROFILE`, `BUSINESS_MCP_UNAVAILABLE`, `STOPPED`.
+Side Panel은 endpoint 또는 header 값을 표시하지 않고 다음 상태 코드만 보여 준다: `INSTALLED`, `POLICY_MISSING`, `STORAGE_BOUNDARY_UNAVAILABLE`, `NATIVE_HOST_MISSING`, `BRIDGE_UNREACHABLE`, `SSO_UNAVAILABLE`, `AI_HUB_DENIED`, `PROFILE_UNAVAILABLE`, `UNKNOWN_PROFILE`, `BUSINESS_MCP_UNAVAILABLE`, `STOPPED`.
 
 지원 수집물은 extension version, deployment ID, run ID, timestamp, reason code, redacted audit event ID로 제한한다. 원문 page text, action argument, model prompt/completion, credential, header 값은 티켓에 자동 첨부하지 않는다.

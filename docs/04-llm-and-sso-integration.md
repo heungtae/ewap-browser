@@ -48,6 +48,8 @@ bridge는 AI Hub 설정에 따라 고정 upstream headers를 붙이고, 허용 �
 
 Windows 설치 패키지는 host executable과 host manifest를 설치하고 해당 Chrome extension ID만 `allowed_origins`에 둔다. host manifest 등록은 조직 표준에 따라 HKLM으로 수행하고, per-user HKCU 등록은 사내 보안 검토 전에는 금지한다.
 
+확장은 `chrome.runtime.connectNative()` persistent port 하나를 service worker 수명 동안 사용한다. Host는 port EOF까지 여러 Native Messaging frame을 읽는 bounded loop를 유지하고 `request_id`로 응답·stream chunk·`CANCEL_REQUEST`를 correlate한다. 동시에 처리하는 요청 수와 frame/response 크기를 제한하며 같은 `request_id` 재사용을 거부한다. port disconnect, service-worker Stop, Host process crash에는 모든 model stream, R2 binding/confirmation, pending MCP request와 nonce를 메모리에서 폐기하고 mutation run을 `UNKNOWN` 또는 실행 전이면 `CANCELLED`로 끝낸다. `sendNativeMessage()` 요청별 process를 혼용하지 않는다.
+
 Host IPC request에는 action/tool schema, redacted model snapshot, request ID, cancellation과 아래 R2 binding schema만 허용한다. host는 DOM, raw `ref_id`, browser tab ID, arbitrary URL, shell command를 받지 않는다. 표준 출력은 Native Messaging framing 데이터만 쓰고 운영 로그는 redacted event ID만 stderr/Windows Event Log로 낸다.
 
 Host는 현재 Windows logon session을 broker로 검증한 뒤 extension에 identity 대신 짧은 수명의 opaque `session_binding_id`만 반환할 수 있다. service worker는 `(tab_id, frame_id, document_epoch)`마다 crypto-random `tab_context`를 만들며, Host에는 tab ID 대신 이것만 보낸다.
@@ -62,7 +64,7 @@ R2는 다음 JSON Schema 2020-12 메시지 세 개만 사용한다(모두 `schem
 
 어느 응답도 사용자 identity, assertion, tab ID, raw ref/value를 포함하지 않는다. `VERIFY_CONFIRMATION`이 성공하기 전에는 `EXECUTE_ACTION`을 보내지 않으며 cross-tab, cross-epoch, cross-session, nonce/confirmation reuse는 모두 거부한다.
 
-Profile replay high-water mark는 Host가 관리자 ACL과 OS 보호 저장소로 관리한다. extension은 verified candidate의 profile key/version/fingerprint tuple만 compare-and-set 요청할 수 있으며, Host는 이전 value나 저장소 내용을 반환하지 않는다.
+Profile replay high-water mark는 Host가 관리자 ACL과 OS 보호 저장소로 관리한다. extension은 verified `profile_jws`와 claimed `(deployment_id, profile_id, profile_version, signed_definition_digest)`만 compare-and-set 요청할 수 있고 Host는 JWS를 다시 검증한 뒤 안정 Profile 정의 projection에서 digest를 독립 재계산한다. Host는 higher version을 advance하고 same version/same definition digest를 idempotent accept하며 same version/different definition digest와 lower version을 거부한다. Host는 JWS, 이전 value나 저장소 내용을 응답하지 않는다.
 
 ## 5. SSO broker 계약
 

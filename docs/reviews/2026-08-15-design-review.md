@@ -2,7 +2,7 @@
 
 ## 결론
 
-설계의 fail-closed, R3 거부, `UNKNOWN` 재시도 금지, 감사 allowlist 원칙은 일관적이다. 초기 검토의 R-01~R-07과 후속 계약 검토의 R-08~R-15는 설계·검증 계약에 반영됐다. 다만 2차 재검토에서 verifier 소유권, Profile replay CAS, page-record binding, document identity, Business MCP wire contract 등 R-16~R-24를 새로 발견했다. 이 항목들은 아직 `Pending`이므로 현재 설계 전체는 **수정 후 재검토**가 필요하다. S1은 production Ask가 아닌 외부 호출 없는 semantic projection preview이며, verified Profile과 Host가 갖춰지는 S5 전에는 production Ask/Act를 활성화하지 않는다.
+설계의 fail-closed, R3 거부, `UNKNOWN` 재시도 금지, 감사 allowlist 원칙은 일관적이다. 초기 검토 R-01~R-07, 후속 계약 검토 R-08~R-15와 2차 재검토 R-16~R-24를 모두 설계·검증 계약에 반영했다. verifier 소유권, idempotent Profile replay CAS, exact page-record/document identity, Business MCP call-kind wire, effect 기반 R2 승격, persistent Native port, storage access level과 visibility identity 결정이 닫혔다. 따라서 이 리뷰의 설계 지적은 **반영 완료**다. 이는 구현·Chrome E2E 또는 production 승인을 뜻하지 않으며, S1은 외부 호출 없는 semantic projection preview이고 verified Profile과 Host가 갖춰지는 S5 전에는 production Ask/Act를 활성화하지 않는다.
 
 ## 검토 범위
 
@@ -32,15 +32,15 @@
 | R-13 | 반영 | `semantic-projection-fp-v1`의 closed schema·label alias·현재 상태값을 제외한 state capability·relation 정규화·golden hash와 Host의 OS 보호 durable high-water CAS를 정하고 restart/corruption을 fail closed로 처리했다. | [03](../03-extension-design.md), [04](../04-llm-and-sso-integration.md), [05](../05-deployment-operations.md), [06](../06-data-audit-and-privacy.md), [10 S5](../10-sprint-verification-plan.md), [14](../14-semantic-projection-fingerprint.md) | 2026-08-15 |
 | R-14 | 반영 | stricter rule을 단일 기준으로 채택해 Managed Storage의 모든 header 이름·값을 금지하고 Host/bridge ACL 구성만 소유하게 했다. | [03](../03-extension-design.md), [04](../04-llm-and-sso-integration.md), [06](../06-data-audit-and-privacy.md), [10 S5](../10-sprint-verification-plan.md) | 2026-08-15 |
 | R-15 | 반영 | value-bearing tool은 모델이 target을 제안한 뒤 Side Panel에서 값을 수집하고, run/target/tool 한정 slot·digest를 atomic consume해 content script에 한 번만 전달한다. slot/value는 model·Host·storage·audit에서 금지하고 disconnect 재전송도 금지했다. | [01](../01-architecture.md), [02](../02-security-policy.md), [03](../03-extension-design.md), [06](../06-data-audit-and-privacy.md), [10 S2](../10-sprint-verification-plan.md), [12 3.3/4](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
-| R-16 | Pending | 비신뢰 모델이 verifier의 `expected` 조건을 제안해 이미 참인 상태나 넓은 same-origin navigation을 성공 증거로 만들 수 있다. | 미반영; [12 3.3/3.4/4.4](../12-low-cost-agent-implementation-spec.md), [13 3.3](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
-| R-17 | Pending | replay high-water CAS가 같은 version을 거부하면서 cache fallback도 같은 CAS를 다시 요구해 정상 재사용을 차단한다. key에 matcher/fingerprint가 들어가 profile 전역 rollback도 충분히 막지 못한다. | 미반영; [03 7](../03-extension-design.md), [13 3.1/3.2](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
-| R-18 | Pending | record 간 동일 fingerprint/path-prefix에서 resolver의 `subject_token`이 현재 exact page context에 Host 검증 가능한 형태로 결속되지 않는다. | 미반영; [13 3/4](../13-page-profile-and-business-mcp-contract.md), [14](../14-semantic-projection-fingerprint.md) | 2026-08-15 |
-| R-19 | Pending | `DOCUMENT_REGISTER`가 Chrome의 authoritative `sender.documentId`를 사용하지 않고 content가 주장한 tab/frame/epoch와 형식 검사 nonce에 의존한다. | 미반영; [03 4/5](../03-extension-design.md), [12 3.5/4.2](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
-| R-20 | Pending | `agentic-read` extension request, Host gateway request, 성공 response가 하나의 닫힌 wire schema로 연결되지 않는다. | 미반영; [13 4.2/4.3](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
-| R-21 | Pending | effect 기반 위험 승격 원칙과 text/select/checkbox의 R1 고정 및 click/key 전용 R2 executor가 충돌한다. | 미반영; [02 3/4](../02-security-policy.md), [12 4.3/4.4](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
-| R-22 | Pending | Native Host의 stdin one-frame 규칙이 persistent port, cancellation, streaming과 3단계 confirmation state의 수명 계약과 충돌한다. | 미반영; [04 2/4](../04-llm-and-sso-integration.md), [12 5.2](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
-| R-23 | Pending | Chrome의 기본 storage access level을 잠그는 계약이 없어 content script가 Managed/local storage 경계를 우회할 수 있다. | 미반영; [03 1/3](../03-extension-design.md), [06 2](../06-data-audit-and-privacy.md) | 2026-08-15 |
-| R-24 | Pending | fingerprint 변환은 invisible node를 제거하지만 검증 계획은 visibility 변화가 hash에 영향을 주지 않아야 한다고 요구한다. | 미반영; [14 3/6](../14-semantic-projection-fingerprint.md) | 2026-08-15 |
+| R-16 | 반영 | 모델 proposal에서 verifier/`expected`를 제거했다. service worker가 signed Profile+pre-state+tool rule로 predicate를 만들며 no-op과 단순 same-origin 이동을 성공으로 보지 않는다. | [01](../01-architecture.md), [02](../02-security-policy.md), [07](../07-verification-and-release.md), [10 S2/S3](../10-sprint-verification-plan.md), [12 3.3/3.4/4](../12-low-cost-agent-implementation-spec.md), [13 3.3](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
+| R-17 | 반영 | high-water key를 `(deployment_id, profile_id)`로 통합하고 JWS-signed 안정 Profile 정의 digest에 대해 higher-version advance, same-version/same-digest idempotent accept, 다른 정의/lower version reject로 고정했다. record별 nonce/context/token은 별도 binding으로 검증한다. | [03 7](../03-extension-design.md), [04 4](../04-llm-and-sso-integration.md), [07](../07-verification-and-release.md), [10 S5](../10-sprint-verification-plan.md), [12 5](../12-low-cost-agent-implementation-spec.md), [13 3](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
+| R-18 | 반영 | resolver nonce와 canonical exact-page digest를 JWS, cache, extension→Host, Host→gateway에 결속하고 cross-record/late response를 양쪽에서 거부한다. | [03 7](../03-extension-design.md), [07](../07-verification-and-release.md), [10 S5](../10-sprint-verification-plan.md), [13 2/3/4/6](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
+| R-19 | 반영 | Chrome 106+의 authoritative sender tab/frame/documentId/lifecycle을 채택하고 content 주장 metadata와 old/prerender/frozen document를 거부한다. | [03 2/4/5](../03-extension-design.md), [05 4](../05-deployment-operations.md), [07](../07-verification-and-release.md), [09 S1](../09-sprint-development-plan.md), [10 S1](../10-sprint-verification-plan.md), [12 3.5/4](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
+| R-20 | 반영 | authoritative field와 agentic-read의 Host→gateway request/response를 별도 closed schema로 분리하고 model enum, exact result key/kind/scalar를 Registry와 교차 검증한다. | [07](../07-verification-and-release.md), [09 S5](../09-sprint-development-plan.md), [10 S5](../10-sprint-verification-plan.md), [13 3.4/4/5/6](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
+| R-21 | 반영 | primitive와 risk pipeline을 분리했다. 모든 mutation은 signed effect에 따라 R2로 승격되며 autosave/server effect에 authoritative verifier가 없으면 거부한다. | [02 3/4/5](../02-security-policy.md), [07](../07-verification-and-release.md), [08 S2/S3/S5](../08-sprint-design.md), [09 S2/S3](../09-sprint-development-plan.md), [10 S2/S3](../10-sprint-verification-plan.md), [12 4](../12-low-cost-agent-implementation-spec.md), [13 3.3](../13-page-profile-and-business-mcp-contract.md) | 2026-08-15 |
+| R-22 | 반영 | `connectNative()` persistent port만 사용하고 multi-frame loop, request/stream correlation, cancellation, concurrency 및 disconnect/crash cleanup을 고정했다. | [04 4](../04-llm-and-sso-integration.md), [07](../07-verification-and-release.md), [08 S4](../08-sprint-design.md), [09 S4](../09-sprint-development-plan.md), [10 S4](../10-sprint-verification-plan.md), [12 5.2](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
+| R-23 | 반영 | service-worker bootstrap 첫 단계에서 managed/local/session을 `TRUSTED_CONTEXTS`로 잠그고 성공 전 모든 run/audit를 fail closed 한다. | [03 3](../03-extension-design.md), [06 2](../06-data-audit-and-privacy.md), [07](../07-verification-and-release.md), [09 S1](../09-sprint-development-plan.md), [10 S1](../10-sprint-verification-plan.md), [12 3.6/4.1](../12-low-cost-agent-implementation-spec.md) | 2026-08-15 |
+| R-24 | 반영 | visibility membership을 Profile identity로 결정했다. invisible node는 제외하고 toggle은 hash 변경·즉시 tool 철회·재해결을 일으키며 포함 node의 다른 현재 상태값은 hash하지 않는다. | [03 7](../03-extension-design.md), [06 1](../06-data-audit-and-privacy.md), [07](../07-verification-and-release.md), [09 S5](../09-sprint-development-plan.md), [10 S5](../10-sprint-verification-plan.md), [14 1/3/6](../14-semantic-projection-fingerprint.md) | 2026-08-15 |
 
 ### 상태 규칙
 
@@ -271,13 +271,22 @@ canonicalization은 `visible=false` node를 배열에서 제거하므로 visibil
 
 ## 반영한 결정 순서
 
-아래 순서는 이미 닫힌 R-08~R-15에 대한 기록이다. R-16~R-24는 이 목록의 완료 항목이 아니며, 추적표의 `Pending` 상태와 각 완료 조건을 먼저 해소해야 한다.
+아래 순서는 닫힌 R-08~R-24의 결정 기록이다.
 
 1. R-08의 LLM-scoped target identifier를 결정하고 model/Host/action schema를 맞췄다.
 2. R-09의 content-owned document epoch registration과 run state transition을 확정했다.
 3. R-10에 따라 S1을 preview-only로 축소하고 실제 Ask의 Profile/Host 선행 계약을 S5로 이동했다.
 4. R-11의 R2 binding IPC schema와 R-12의 프로그램적 activation 지원 Profile을 확정했다.
 5. R-13 fingerprint/replay cache와 R-14 header ownership을 data·deployment·verification 문서에 일관되게 반영했다.
+6. R-15 value-bearing tool의 model 비노출 slot·digest·atomic consume을 확정했다.
+7. R-16 verifier 소유권을 service worker로 옮기고 no-op/exact navigation transition을 고정했다.
+8. R-17 replay namespace와 idempotent same-version CAS를 확정했다.
+9. R-18 exact page-context digest/nonce를 JWS·cache·Host·gateway에 관통시켰다.
+10. R-19 Chrome sender document identity/lifecycle을 registration 권한 근거로 채택했다.
+11. R-20 Business MCP의 두 call kind request/response를 closed schema로 분리했다.
+12. R-21 mutation primitive와 effect/risk/confirmation pipeline을 분리했다.
+13. R-22 persistent Native port 수명과 cancellation/disconnect cleanup을 고정했다.
+14. R-23 storage trust boundary와 R-24 visibility identity를 Chrome E2E/golden pair 검증에 연결했다.
 6. R-15에 따라 모델 비노출 value slot, Side Panel submit, content one-time delivery와 disconnect fail-closed 경로를 확정했다.
 7. 각 항목의 negative test 계획을 [10-sprint-verification-plan.md](../10-sprint-verification-plan.md)에 넣었다. 구현 전이므로 모든 Sprint는 [11-sprint-progress.md](../11-sprint-progress.md)의 `Planned` 상태를 유지한다.
 
