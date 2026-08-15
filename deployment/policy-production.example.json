@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "permission_origins": [],
+  "page_read_origins": [],
+  "profile_resolver_origins": [],
+  "llm_egress_origins": []
+}

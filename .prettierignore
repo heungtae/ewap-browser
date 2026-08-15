@@ -1,0 +1,5 @@
+node_modules/
+dist/
+dist-extension/
+native-host/bin/
+native-host/obj/

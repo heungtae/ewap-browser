@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>Company Web Agent</title>
+  </head>
+  <body>
+    <main>
+      <button id="preview" type="button">페이지 미리보기</button>
+      <label for="fixture-value">Fixture 텍스트</label>
+      <input id="fixture-value" type="text" autocomplete="off" />
+      <button id="fixture-set" type="button">Fixture 텍스트 설정</button>
+      <button id="cancel" type="button">중단</button>
+      <output id="status" aria-live="polite">준비됨</output>
+      <pre id="projection"></pre>
+    </main>
+    <script type="module" src="../js/panel.js"></script>
+  </body>
+</html>
