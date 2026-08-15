@@ -9,7 +9,7 @@
 1. 회사 Chrome 관리/enrollment와 extension installation policy 확인
 2. 서명된 extension package 및 HTTPS update manifest 등록
 3. Company Agent Host 설치, host manifest 등록, Windows ACL 적용
-4. localhost-only `codex-chat-bridge` 서비스/프로세스 설치와 read-only 설정 배치
+4. TCP listener 없는 Windows ACL named-pipe `codex-chat-bridge` 서비스/프로세스 설치와 read-only 설정 배치
 5. Managed Storage policy와 extension ID를 적용
 6. health check 후 Side Panel에서 설치 상태를 표시
 
@@ -29,8 +29,8 @@
 | 구성 | 소유자 | 사용자 변경 | 비고 |
 |---|---|---|---|
 | 확장 ID/version/update URL | Endpoint/Chrome 운영 | 불가 | HTTPS, 서명 검증 |
-| origin allowlist, 도구, risk 정책 | 보안 운영 | 불가 | Managed Storage |
-| bridge URL/wire/model/static headers | AI Hub 운영 | 불가 | Native Host/bridge ACL 보호 |
+| permission/page-read/resolver/LLM egress origin 정책, 도구, risk 정책 | 보안 운영 | 불가 | release artifact host permission과 일치하는 Managed Storage bundle |
+| bridge pipe/wire/model/static headers/pipe signing key, Profile replay high-water store, Business MCP Registry server/tool route/assertion audience/data classification/field allowlist | AI Hub 운영 | 불가 | Native Host/bridge 관리자 ACL·OS 보호 저장소 |
 | SSO broker/AI Hub certificate | IAM/AI Hub 운영 | 불가 | rotation과 rollback 필요 |
 | Ask/Act 현재 선택, 확인 응답 | 최종 사용자 | 가능 | 정책 범위 안에서만 |
 | 비민감 UI preference | 최종 사용자 | 가능 | 보안 판단에 사용 금지 |
@@ -40,12 +40,13 @@
 - 패키지는 고정 extension ID를 유지하고 자체 HTTPS update manifest에서만 업데이트한다.
 - staged ring(개발 → 보안 파일럿 → 제한된 조직 → 전체)과 최소 지원 Chrome version을 둔다.
 - extension, Native Host, bridge config는 호환성 매트릭스로 묶어 배포한다.
+- host permission, managed origin bundle, resolver/MCP endpoint, Profile key ring은 하나의 compatibility matrix entry로 검토·배포한다. Business MCP endpoint와 Registry는 Managed Storage가 아니라 Host MCP Registry에만 존재한다. policy 단독 갱신은 기존 manifest 집합을 축소만 할 수 있다.
 - emergency rollback은 이전 서명 버전 또는 policy disable로 가능해야 한다.
 - config version을 증가시킬 때는 새 schema를 이해하지 못하는 확장이 fail closed 한다.
-- 매 릴리스에서 extension package hash, native host hash, policy JSON hash, manifest permission snapshot을 보관한다.
+- 매 릴리스에서 extension package hash, native host hash, policy JSON hash, manifest permission snapshot과 fingerprint algorithm version을 보관한다.
 
 ## 5. 운영 상태와 지원
 
-Side Panel은 endpoint 또는 header 값을 표시하지 않고 다음 상태 코드만 보여 준다: `INSTALLED`, `POLICY_MISSING`, `NATIVE_HOST_MISSING`, `BRIDGE_UNREACHABLE`, `SSO_UNAVAILABLE`, `AI_HUB_DENIED`, `PROFILE_UNAVAILABLE`, `STOPPED`.
+Side Panel은 endpoint 또는 header 값을 표시하지 않고 다음 상태 코드만 보여 준다: `INSTALLED`, `POLICY_MISSING`, `NATIVE_HOST_MISSING`, `BRIDGE_UNREACHABLE`, `SSO_UNAVAILABLE`, `AI_HUB_DENIED`, `PROFILE_UNAVAILABLE`, `UNKNOWN_PROFILE`, `BUSINESS_MCP_UNAVAILABLE`, `STOPPED`.
 
 지원 수집물은 extension version, deployment ID, run ID, timestamp, reason code, redacted audit event ID로 제한한다. 원문 page text, action argument, model prompt/completion, credential, header 값은 티켓에 자동 첨부하지 않는다.

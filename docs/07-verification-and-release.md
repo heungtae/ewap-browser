@@ -4,11 +4,11 @@
 
 | 계층 | 필수 검증 |
 |---|---|
-| Unit | origin matcher, mode/risk policy, confirmation digest, redaction, config schema, intent dedupe |
-| Contract | tool JSON schema, runtime message allowlist, native-host IPC, bridge header forwarding, AI Hub error mapping |
-| Extension fixture | AX/ref stability, controlled input, select, checkbox, modal, portal, stale ref, occlusion, navigation |
-| Security negative | R3 deny, Ask mutation deny, unknown profile deny, raw secret/audit leak, arbitrary message deny, static header override deny |
-| Native Host | allowed extension ID, malformed framing, Windows SSO failure, header allowlist, cancellation, no stdout diagnostics |
+| Unit | origin matcher, mode/risk policy, model-ref mapping, content epoch registration, value-slot/digest binding, confirmation digest, redaction, fingerprint canonicalization, config schema, intent dedupe |
+| Contract | tool/model-proposal/value-delivery JSON schema, runtime message allowlist, R2 binding IPC, native-host IPC, Page Profile JWS/resolver, Business MCP binding/result, bridge header forwarding, AI Hub error mapping |
+| Extension fixture | 실제 Chrome DOM semantic projection/ref stability, content epoch registration/restart, controlled input, select, checkbox, modal, portal, stale ref, occlusion, navigation, `isTrusted` 거부 target |
+| Security negative | R3 deny, Ask mutation deny, blocked-origin snapshot/LLM egress deny, policy/manifest mismatch, unknown profile deny, raw secret/audit leak, arbitrary message deny |
+| Native Host | allowed extension ID, malformed framing, Windows SSO failure, header allowlist, named-pipe ACL/mutual authentication/replay deny, cancellation, no stdout diagnostics |
 | Packaging | MV3 manifest permission snapshot, no Firefox artifact, no remote code, extension/host hash, signed update manifest |
 | E2E | managed policy install, portal bootstrap path, SSO assertion, AI Hub call, R2 confirmation, VERIFIED/UNKNOWN behavior |
 
@@ -30,6 +30,23 @@
 8. 로그/감사/오류에 secret, header value, raw page text, typed value가 존재함
 9. Native Host가 다른 extension origin, 임의 URL, shell command를 수락함
 10. 사용자가 정책으로 잠긴 LLM endpoint/model/header/origin을 UI나 local preference로 바꿀 수 있음
+11. 비허용 origin에서 snapshot 수집, Profile resolver 호출 또는 LLM egress가 가능함
+12. policy origin과 manifest host permission이 불일치해도 실행됨
+13. bridge가 직접 호출, header/assertion 위조 또는 재전송을 수락함
+14. 다른 session의 confirmation, stale value buffer 또는 value audit/LLM/Host 유입이 가능함
+15. unsigned, expired, replayed 또는 profile 변경 중 이전 Profile이 action을 허용함
+16. raw `ref_id`/mapping이 Host·LLM·audit에 있거나 unknown/consumed `model_ref` proposal이 internal target으로 해석됨
+17. 등록되지 않은/늦은 document epoch, worker restart 뒤 미등록 epoch가 run에 사용됨
+18. R2 binding IPC가 tab-context/epoch/session/digest/nonce/one-time consume 불일치를 수락함
+19. Profile capability가 없는 synthetic click/key 또는 trusted-input 필요 target을 실행함
+20. fingerprint golden vector·label alias·state capability·relation canonicalization 불일치, 현재 field/UI state 또는 forbidden field의 hash 유입, restart 뒤 lower/equal version replay 또는 durable replay store corruption을 허용함
+21. Managed policy가 header key를 수락하거나 Host/bridge ACL 구성 밖 header가 사용됨
+22. Profile resolver 또는 Business MCP가 query/fragment, raw DOM/ref/value, cookie 또는 browser header를 받음
+23. profile 밖 field 또는 server/tool, arbitrary MCP endpoint/header, AI Hub assertion 재사용이 허용됨
+24. `model_visibility` 또는 `user_visibility`가 거부한 authoritative value가 모델, Side Panel, audit, log, cache에 존재함
+25. MCP timeout·late response·`NOT_FOUND`·`ACCESS_DENIED` 뒤 DOM/LLM fallback 또는 자동 재시도가 실행됨
+26. 서명된 `UNKNOWN_PROFILE`에서 Business MCP tool이 노출되거나 Act가 허용됨
+27. proposal 전 raw value 수집, wrong-context/expired/duplicate value slot consume, raw value의 model/Host/bridge/storage/audit/error 유입 또는 IPC 실패 뒤 value delivery 재전송이 허용됨
 
 ## 4. 릴리스 체크리스트
 
