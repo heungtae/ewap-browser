@@ -1,52 +1,27 @@
-# 05. Windows 배포 및 운영
+# 05. 배포 및 운영
 
-## 1. 배포 모델
+## 1. 지원 환경
 
-기본 모델은 **사내 포털에서 사용자가 설치를 시작하고, 회사 관리 Chrome 정책이 확장·Native Host·읽기 전용 구성을 적용하는 방식**이다. Chrome Web Store는 필수 조건이 아니다. 관리 Chrome에서는 자체 호스팅 확장을 enterprise installation policy로 설치할 수 있다.
+WebBrain은 Chrome MV3 확장으로 Windows와 Linux에서 배포한다. 조직은 관리 Chrome 정책으로 설치·업데이트할 수 있고, 사용자는 Chrome 확장 설치 방식으로 직접 설치할 수 있다.
 
-포털의 설치 버튼은 서명된 회사 bootstrapper/MSI 또는 조직의 endpoint-management 작업을 시작한다. 설치 과정은 다음을 원자적으로 완료해야 한다.
+## 2. 배포 구성
 
-1. 회사 Chrome 관리/enrollment와 extension installation policy 확인
-2. 서명된 extension package 및 HTTPS update manifest 등록
-3. Company Agent Host 설치, host manifest 등록, Windows ACL 적용
-4. TCP listener 없는 Windows ACL named-pipe `codex-chat-bridge` 서비스/프로세스 설치와 read-only 설정 배치
-5. Managed Storage policy와 extension ID를 적용
-6. health check 후 Side Panel에서 설치 상태를 표시
+| 구성                              | 사용자 설정         | 관리 배포 설정                                        |
+| --------------------------------- | ------------------- | ----------------------------------------------------- |
+| 확장 설치와 업데이트 URL          | Chrome extension UI | Chrome enterprise policy 또는 endpoint manager        |
+| provider URL/model/API key/header | Settings            | 조직이 사전 구성한 extension profile 또는 사용자 입력 |
+| 사이트 권한                       | Side Panel/Settings | 초기 extension profile                                |
+| 브라우저 로그인                   | 웹사이트 UI         | 해당 웹사이트의 기존 정책                             |
 
-사용자가 관리자 권한이나 관리 Chrome 조건을 만족하지 않으면 포털은 설치하지 않고 IT 안내를 제공한다.
+## 3. 설치와 업데이트
 
-## 2. 설치 정책 선택
+1. Chrome에 서명된 확장을 설치한다.
+2. 사용자는 Settings에서 local OpenAI-compatible provider와 header를 설정하거나 제공된 profile을 가져온다.
+3. 연결 시험을 실행하고 Side Panel에서 Ask를 시작한다.
+4. Act는 capability × host 권한 카드와 결과적 행동 확인을 거친다.
 
-| 정책 | 사용 시점 | 사용자 제거/중지 |
-|---|---|---|
-| `normal_installed` | 포털에서 사용자가 설치를 선택하고 비활성화 권한을 허용할 때 | 가능 |
-| `force_installed` | 보안·운영상 항상 실행되어야 하는 회사 지정 사용자군 | 불가 |
+업데이트는 extension package와 settings schema version을 함께 관리한다. provider 설정에 알 수 없는 field가 있으면 해당 provider를 비활성화하고 사용자에게 다시 저장하도록 요청한다.
 
-초기 파일럿은 `normal_installed`를 권장한다. 단, Managed Storage와 Native Host 정책은 어떤 설치 모드에서도 IT가 관리한다. unmanaged Chrome의 로컬 설정 파일 또는 unpacked extension은 지원하지 않는다.
+## 4. 운영 상태
 
-## 3. 구성 소유권
-
-| 구성 | 소유자 | 사용자 변경 | 비고 |
-|---|---|---|---|
-| 확장 ID/version/update URL | Endpoint/Chrome 운영 | 불가 | HTTPS, 서명 검증 |
-| permission/page-read/resolver/LLM egress origin 정책, 도구, risk 정책 | 보안 운영 | 불가 | release artifact host permission과 일치하는 Managed Storage bundle |
-| bridge pipe/wire/model/static headers/pipe signing key, Profile replay high-water store, Business MCP Registry server/tool route/assertion audience/data classification/field allowlist | AI Hub 운영 | 불가 | Native Host/bridge 관리자 ACL·OS 보호 저장소 |
-| SSO broker/AI Hub certificate | IAM/AI Hub 운영 | 불가 | rotation과 rollback 필요 |
-| Ask/Act 현재 선택, 확인 응답 | 최종 사용자 | 가능 | 정책 범위 안에서만 |
-| 비민감 UI preference | 최종 사용자 | 가능 | 보안 판단에 사용 금지 |
-
-## 4. 업데이트와 롤백
-
-- 패키지는 고정 extension ID를 유지하고 자체 HTTPS update manifest에서만 업데이트한다.
-- staged ring(개발 → 보안 파일럿 → 제한된 조직 → 전체)을 사용한다. 최소 지원 Chrome은 authoritative `MessageSender.documentId`/`documentLifecycle`과 storage access-level API를 제공하는 106으로 고정하고 installer health check에서 이보다 낮은 버전을 차단한다.
-- extension, Native Host, bridge config는 호환성 매트릭스로 묶어 배포한다.
-- host permission, managed origin bundle, resolver/MCP endpoint, Profile key ring은 하나의 compatibility matrix entry로 검토·배포한다. Business MCP endpoint와 Registry는 Managed Storage가 아니라 Host MCP Registry에만 존재한다. policy 단독 갱신은 기존 manifest 집합을 축소만 할 수 있다.
-- emergency rollback은 이전 서명 버전 또는 policy disable로 가능해야 한다.
-- config version을 증가시킬 때는 새 schema를 이해하지 못하는 확장이 fail closed 한다.
-- 매 릴리스에서 extension package hash, native host hash, policy JSON hash, manifest permission snapshot과 fingerprint algorithm version을 보관한다.
-
-## 5. 운영 상태와 지원
-
-Side Panel은 endpoint 또는 header 값을 표시하지 않고 다음 상태 코드만 보여 준다: `INSTALLED`, `POLICY_MISSING`, `STORAGE_BOUNDARY_UNAVAILABLE`, `NATIVE_HOST_MISSING`, `BRIDGE_UNREACHABLE`, `SSO_UNAVAILABLE`, `AI_HUB_DENIED`, `PROFILE_UNAVAILABLE`, `UNKNOWN_PROFILE`, `BUSINESS_MCP_UNAVAILABLE`, `STOPPED`.
-
-지원 수집물은 extension version, deployment ID, run ID, timestamp, reason code, redacted audit event ID로 제한한다. 원문 page text, action argument, model prompt/completion, credential, header 값은 티켓에 자동 첨부하지 않는다.
+Side Panel은 `READY`, `PROVIDER_NOT_CONFIGURED`, `PROVIDER_AUTH_FAILED`, `PROVIDER_UNAVAILABLE`, `PERMISSION_REQUIRED`, `CONFIRMATION_REQUIRED`, `STOPPED`, `UNKNOWN`을 표시한다. 지원 수집물은 extension version, provider label, host, reason code, timestamp로 제한하며 API key·header 값·page content·prompt는 포함하지 않는다.
