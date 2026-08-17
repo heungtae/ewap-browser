@@ -24,7 +24,7 @@ extension/
 - Chrome MV3 service worker와 Side Panel을 사용한다.
 - 페이지 automation이 필요하므로 content script와 host permission은 사용자가 설치 시 승인한다.
 - `storage`, `sidePanel`, `activeTab`, `debugger`를 제품 기능에 필요한 기본 권한으로 선언한다. `tabs`, `scripting`, `webNavigation`, `downloads`, `alarms`는 해당 도구가 실제 도입될 때만 추가한다.
-- host permission은 사용자가 승인한 사내 사이트 범위로 제한하며 `<all_urls>`를 기본값으로 사용하지 않는다. `debugger` authority는 host permission만 믿지 않고 service worker가 exact origin, current sender tab과 capability × host gate를 attach 전에 다시 제한한다.
+- 일반 웹 UI를 지원하므로 host permission과 content script는 `<all_urls>`를 사용한다. 브라우저 제한 페이지(`chrome://`, Web Store 등)는 Chrome이 주입을 차단한다. service worker는 current active tab의 `http(s)` origin과 capability × host gate를 다시 확인하고, provider egress와 Profile Resolver 허용 origin은 별도 allowlist로 유지한다.
 - `offscreen`은 사용하지 않는다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest 권한이 아니다.
 
 ## 3. 사용자 설정 저장소

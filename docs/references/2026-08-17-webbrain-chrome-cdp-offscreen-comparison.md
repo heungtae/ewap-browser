@@ -54,7 +54,7 @@
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | CDP              | 설계 Level 2, 구현 Level 1                                              | Level 4                                                             | 현재 제품은 trusted input만 bounded CDP로 보강하고 WebBrain은 CDP를 핵심 플랫폼으로 사용 |
 | Offscreen        | Level 0                                                                 | Level 4                                                             | 현재 제품에는 없고 WebBrain은 다목적 실행 host로 사용                                    |
-| Extension 권한   | 설계에 `debugger` 추가, 사내 host 제한. 현재 manifest 미반영            | `debugger`, `offscreen`, `scripting`, `tabCapture`, `<all_urls>` 등 | 동일 `debugger` 권한이 있어도 현재 제품의 command/host 범위가 훨씬 작음                  |
+| Extension 권한   | `debugger`, `<all_urls>`와 제한된 content-script 경로                     | `debugger`, `offscreen`, `scripting`, `tabCapture`, `<all_urls>` 등 | host 범위는 넓혔지만 CDP command·page script·offscreen 범위는 계속 제한                 |
 | Trusted input    | 설계는 allowlisted mouse·keyboard·text, 구현 없음                       | 광범위한 CDP mouse·keyboard·text dispatch                           | 현재 제품은 승인된 primitive만 계획                                                      |
 | Shadow DOM·frame | 일반 content-script 접근 범위                                           | CDP DOM과 child target session                                      | closed shadow DOM과 OOPIF 처리 범위 차이                                                 |
 | Screenshot·진단  | 제품 runtime 기능 없음                                                  | screenshot, console, network, listener 진단                         | 관찰성과 Dev 기능 차이                                                                   |
@@ -67,13 +67,13 @@
 
 ### Manifest authority
 
-`extension/manifest.json`은 다음 권한만 선언한다.
+`extension/manifest.json`은 일반 웹 UI 지원을 위해 다음 권한과 host 범위를 선언한다.
 
 ```json
 "permissions": ["storage", "sidePanel", "activeTab"]
 ```
 
-`debugger`, `offscreen`, `scripting`, `tabs`, `webNavigation`, `tabCapture`는 현재 manifest에 없다. host permission도 개발 fixture origin으로 제한된다. S2 구현은 `debugger`만 추가하고 `offscreen`과 broad `<all_urls>`는 추가하지 않는 계약이다.
+`debugger`, `offscreen`, `scripting`, `tabs`, `webNavigation`, `tabCapture`는 현재 manifest에 없다. content script와 host permission은 `<all_urls>`이며, service worker가 현재 탭의 `http(s)` origin과 capability를 다시 검증한다. 브라우저 제한 페이지는 지원하지 않는다.
 
 ### 페이지 읽기와 행동
 
