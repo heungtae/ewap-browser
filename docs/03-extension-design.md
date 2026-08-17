@@ -6,6 +6,7 @@
 extension/
   manifest.json
   src/service-worker/  # run coordinator, permission gate, provider host/transport
+  src/offscreen/       # localhost/PNA provider request proxy
   src/content/         # projection, ref registry, DOM executor
   src/cdp/             # closed command allowlist, action-scoped attach/detach
   src/sidepanel/       # task, permission card, confirmation, result
@@ -17,7 +18,7 @@ extension/
 
 별도 protocol adapter는 `provider-plugins/<plugin-id>/` workspace package로 개발하고 build 단계에서 generated registry에 결합한다. 각 package는 manifest, side-effect 없는 adapter entry와 conformance test를 가진다. 선언형 plugin은 source package 없이 manifest만 설치한다.
 
-의존성은 `sidepanel/content → service-worker → bounded CDP adapter 또는 provider registry/plugin host → core transport → contracts/security`다. network 요청은 service worker의 core transport만 수행한다. plugin은 `chrome.*`, DOM, CDP, storage와 raw credential에 접근하지 않는다.
+의존성은 `sidepanel/content → service-worker → offscreen provider proxy → provider registry/plugin host → core transport → contracts/security`다. provider의 localhost/PNA POST는 Offscreen 문서의 core transport가 수행하고, plugin은 `chrome.*`, DOM, CDP, storage와 raw credential에 접근하지 않는다. Offscreen은 provider 요청에만 사용하며 비밀값은 runtime message로 전달하지 않고 `chrome.storage.local` 경계에서 읽는다.
 
 ## 2. Manifest
 
@@ -25,7 +26,7 @@ extension/
 - 페이지 automation이 필요하므로 content script와 host permission은 사용자가 설치 시 승인한다.
 - `storage`, `sidePanel`, `activeTab`, `debugger`를 제품 기능에 필요한 기본 권한으로 선언한다. `tabs`, `scripting`, `webNavigation`, `downloads`, `alarms`는 해당 도구가 실제 도입될 때만 추가한다.
 - 일반 웹 UI를 지원하므로 host permission과 content script는 `<all_urls>`를 사용한다. 브라우저 제한 페이지(`chrome://`, Web Store 등)는 Chrome이 주입을 차단한다. service worker는 current active tab의 `http(s)` origin과 capability × host gate를 다시 확인하고, provider egress와 Profile Resolver 허용 origin은 별도 allowlist로 유지한다.
-- `offscreen`은 사용하지 않는다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest 권한이 아니다.
+- `offscreen`은 MV3 Service Worker의 localhost/PNA provider POST 프록시를 위해 선언한다. `privateNetworkAccess`는 Chrome 확장 manifest permission이 아니므로 선언하지 않는다. host permission에는 `<all_urls>`와 함께 `http://localhost/*`, `http://127.0.0.1/*`를 명시한다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest 권한이 아니다.
 
 ## 3. 사용자 설정 저장소
 

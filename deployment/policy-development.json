@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "permission_origins": ["<all_urls>"],
+  "permission_origins": ["<all_urls>", "http://localhost", "http://127.0.0.1"],
   "page_read_origins": ["<all_urls>"],
   "profile_resolver_origins": [],
   "llm_egress_origins": []

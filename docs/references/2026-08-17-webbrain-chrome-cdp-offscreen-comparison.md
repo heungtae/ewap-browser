@@ -53,8 +53,8 @@
 | 영역             | 현재 제품                                                               | WebBrain                                                            | 해석                                                                                     |
 | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | CDP              | 설계 Level 2, 구현 Level 1                                              | Level 4                                                             | 현재 제품은 trusted input만 bounded CDP로 보강하고 WebBrain은 CDP를 핵심 플랫폼으로 사용 |
-| Offscreen        | Level 0                                                                 | Level 4                                                             | 현재 제품에는 없고 WebBrain은 다목적 실행 host로 사용                                    |
-| Extension 권한   | `debugger`, `<all_urls>`와 제한된 content-script 경로                     | `debugger`, `offscreen`, `scripting`, `tabCapture`, `<all_urls>` 등 | host 범위는 넓혔지만 CDP command·page script·offscreen 범위는 계속 제한                 |
+| Offscreen        | Level 1 provider localhost/PNA POST proxy                               | Level 4                                                             | 현재 제품은 provider network에만 제한하고 WebBrain은 다목적 실행 host로 사용             |
+| Extension 권한   | `debugger`, `<all_urls>`와 제한된 content-script 경로                   | `debugger`, `offscreen`, `scripting`, `tabCapture`, `<all_urls>` 등 | host 범위는 넓혔지만 CDP command·page script·offscreen 범위는 계속 제한                  |
 | Trusted input    | 설계는 allowlisted mouse·keyboard·text, 구현 없음                       | 광범위한 CDP mouse·keyboard·text dispatch                           | 현재 제품은 승인된 primitive만 계획                                                      |
 | Shadow DOM·frame | 일반 content-script 접근 범위                                           | CDP DOM과 child target session                                      | closed shadow DOM과 OOPIF 처리 범위 차이                                                 |
 | Screenshot·진단  | 제품 runtime 기능 없음                                                  | screenshot, console, network, listener 진단                         | 관찰성과 Dev 기능 차이                                                                   |
@@ -139,18 +139,17 @@ WebBrain에서 CDP는 일부 예외 도구의 보조 경로가 아니다. Chrome
 
 ## 현재 제품의 offscreen 수준
 
-현재 manifest에는 `offscreen` 권한이 없고 `extension/src/offscreen/`도 없다. 규범 아키텍처는 provider HTTP를 service worker의 core transport 책임으로 둔다.
+현재 제품은 `offscreen`과 `privateNetworkAccess` 권한을 사용하고 `extension/src/offscreen/`에서 provider localhost/PNA POST를 프록시한다. Service Worker는 요청을 검증하고 Offscreen으로 전달하며, provider 설정과 secret은 Offscreen이 `chrome.storage.local`에서 읽는다.
 
 따라서 현재 제품에는 다음 offscreen 기반 기능이 없다.
 
-- localhost/PNA fetch fallback
 - offscreen WebGPU worker host
 - tab/display/microphone recording
 - Web Audio mixing 또는 background alert
 - OPFS와 blob URL을 이용한 대용량 staging
 - offscreen document가 유지하는 장기 WebSocket
 
-과거 원본 참고설계에서도 offscreen과 `privateNetworkAccess`는 실제 필요성이 검증된 후 추가할 권한으로 분류했다. 이는 현재 규범 계약이나 구현 완료를 뜻하지 않는다.
+현재 구현 범위는 provider network proxy뿐이다. WebBrain의 다목적 offscreen 기능과 권한은 도입하지 않는다.
 
 ## WebBrain의 offscreen 수준
 

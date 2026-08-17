@@ -32,6 +32,7 @@ export const openAiCompatibleAdapter: ProviderAdapter = {
             body: {
               model: request.model,
               messages: request.messages,
+              ...(request.tools ? { tools: request.tools } : {}),
               stream: request.stream,
             },
           }
@@ -40,6 +41,7 @@ export const openAiCompatibleAdapter: ProviderAdapter = {
             body: {
               model: request.model,
               input: request.messages,
+              ...(request.tools ? { tools: request.tools } : {}),
               stream: request.stream,
             },
           };

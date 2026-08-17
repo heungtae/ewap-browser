@@ -1,12 +1,17 @@
 import type { ErrorCode } from "../contracts/types.js";
 
 export class ContractError extends Error {
-  constructor(public readonly code: ErrorCode) {
+  public readonly detail?: string;
+  constructor(
+    public readonly code: ErrorCode,
+    detail?: string,
+  ) {
     super(code);
+    if (detail !== undefined) this.detail = detail;
   }
 }
-export const fail = (code: ErrorCode): never => {
-  throw new ContractError(code);
+export const fail = (code: ErrorCode, detail?: string): never => {
+  throw new ContractError(code, detail);
 };
 export const isPlainObject = (
   value: unknown,

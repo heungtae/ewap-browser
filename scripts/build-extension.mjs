@@ -9,6 +9,7 @@ await build({
     content: "extension/src/content/entry.ts",
     panel: "extension/src/sidepanel/entry.ts",
     settings: "extension/src/settings/entry.ts",
+    offscreen: "extension/src/offscreen/entry.ts",
   },
   bundle: true,
   format: "esm",
@@ -35,5 +36,10 @@ await mkdir(new URL("settings/", output), { recursive: true });
 await cp(
   "extension/src/settings/index.html",
   new URL("settings/index.html", output),
+);
+await mkdir(new URL("offscreen/", output), { recursive: true });
+await cp(
+  "extension/src/offscreen/index.html",
+  new URL("offscreen/index.html", output),
 );
 console.log("extension artifact built at dist-extension");

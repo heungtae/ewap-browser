@@ -64,6 +64,30 @@ const headerValue = (value: string): string =>
   })
     ? value
     : fail("INVALID_ARGUMENT");
+const providerHeaders = (config: ProviderConfig): Headers => {
+  const headers = new Headers({ "Content-Type": "application/json" });
+  const seen = new Set<string>();
+  for (const header of config.headers) {
+    const name = header.name.trim().toLowerCase();
+    if (
+      !/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) ||
+      reservedHeaders.has(name) ||
+      seen.has(name)
+    )
+      fail("INVALID_ARGUMENT");
+    seen.add(name);
+    headers.set(header.name, headerValue(header.value));
+  }
+  if (config.api_key_header === "none") {
+    if (config.api_key) fail("INVALID_ARGUMENT");
+  } else {
+    const key = headerValue(config.api_key);
+    if (config.api_key_header === "authorization_bearer")
+      headers.set("Authorization", `Bearer ${key}`);
+    else headers.set(config.api_key_header, key);
+  }
+  return headers;
+};
 
 export class CoreProviderTransport {
   public constructor(
@@ -94,27 +118,7 @@ export class CoreProviderTransport {
       `${base.pathname.replace(/\/$/, "")}${plan.path}`,
       base,
     );
-    const headers = new Headers({ "Content-Type": "application/json" });
-    const seen = new Set<string>();
-    for (const header of config.headers) {
-      const name = header.name.trim().toLowerCase();
-      if (
-        !/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) ||
-        reservedHeaders.has(name) ||
-        seen.has(name)
-      )
-        fail("INVALID_ARGUMENT");
-      seen.add(name);
-      headers.set(header.name, headerValue(header.value));
-    }
-    if (config.api_key_header === "none") {
-      if (config.api_key) fail("INVALID_ARGUMENT");
-    } else {
-      const key = headerValue(config.api_key);
-      if (config.api_key_header === "authorization_bearer")
-        headers.set("Authorization", `Bearer ${key}`);
-      else headers.set(config.api_key_header, key);
-    }
+    const headers = providerHeaders(config);
     const controller = new AbortController();
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
@@ -129,19 +133,82 @@ export class CoreProviderTransport {
         redirect: "error",
       });
       if (response.status === 401 || response.status === 403)
-        fail("PROVIDER_AUTH_FAILED");
-      if (!response.ok) fail("PROVIDER_UNAVAILABLE");
+        fail(
+          "PROVIDER_AUTH_FAILED",
+          `HTTP ${response.status}; auth=${config.api_key_header}; key=${config.api_key ? "configured" : "empty"}`,
+        );
+      if (!response.ok) fail("PROVIDER_UNAVAILABLE", `HTTP ${response.status}`);
       const contentType = response.headers.get("content-type") ?? "";
       if (!/(application\/json|text\/event-stream)/i.test(contentType))
-        fail("PROVIDER_UNAVAILABLE");
+        fail("PROVIDER_UNAVAILABLE", "invalid response content type");
       return { status: response.status, body: response.body };
     } catch (error) {
       if (error instanceof Error && error.message.startsWith("PROVIDER_"))
         throw error;
-      return fail("PROVIDER_UNAVAILABLE");
+      return fail(
+        "PROVIDER_UNAVAILABLE",
+        error instanceof Error && error.name === "AbortError"
+          ? "request timed out or was aborted"
+          : "network/CORS/PNA request failed",
+      );
     } finally {
       this.timers.clear(timeout);
       signal?.removeEventListener("abort", abort);
+    }
+  }
+
+  public async listModels(
+    config: ProviderConfig,
+    path = "/models",
+  ): Promise<{ status: number; models: string[] }> {
+    if (!config.enabled) fail("PROVIDER_NOT_CONFIGURED");
+    const base = validateProviderBaseUrl(
+      config.base_url,
+      config.private_network_opt_in,
+    );
+    const url = new URL(`${base.pathname.replace(/\/$/, "")}${path}`, base);
+    const controller = new AbortController();
+    const timeout = this.timers.set(
+      () => controller.abort(),
+      config.timeout_ms,
+    );
+    try {
+      const response = await this.fetcher(url, {
+        method: "GET",
+        headers: providerHeaders(config),
+        signal: controller.signal,
+        credentials: "omit",
+        redirect: "error",
+      });
+      if (response.status === 401 || response.status === 403)
+        fail(
+          "PROVIDER_AUTH_FAILED",
+          `HTTP ${response.status}; auth=${config.api_key_header}; key=${config.api_key ? "configured" : "empty"}`,
+        );
+      if (!response.ok) fail("PROVIDER_UNAVAILABLE", `HTTP ${response.status}`);
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!/application\/json/i.test(contentType))
+        fail("PROVIDER_UNAVAILABLE", "invalid response content type");
+      const value = JSON.parse(await response.text()) as {
+        data?: Array<{ id?: unknown }>;
+        models?: Array<{ name?: unknown }>;
+      };
+      const models = [
+        ...(value.data ?? []).map((model) => model.id),
+        ...(value.models ?? []).map((model) => model.name),
+      ].filter((model): model is string => typeof model === "string");
+      return { status: response.status, models };
+    } catch (error) {
+      if (error instanceof Error && error.message.startsWith("PROVIDER_"))
+        throw error;
+      return fail(
+        "PROVIDER_UNAVAILABLE",
+        error instanceof Error && error.name === "AbortError"
+          ? "request timed out or was aborted"
+          : "network/CORS/PNA request failed",
+      );
+    } finally {
+      this.timers.clear(timeout);
     }
   }
 }

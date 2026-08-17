@@ -15,12 +15,19 @@ export type ResolveInput = {
   pageContextDigest: string;
   fingerprint: string;
 };
+export type ResolvedProfile = {
+  profile: Profile;
+  profile_jws: string;
+};
 export class ProfileResolver {
   public constructor(
     private readonly config: ResolverConfig,
     private readonly fetcher: typeof fetch = fetch,
   ) {}
   public async resolve(input: ResolveInput): Promise<Profile> {
+    return (await this.resolveWithProof(input)).profile;
+  }
+  public async resolveWithProof(input: ResolveInput): Promise<ResolvedProfile> {
     if (
       !input.path.startsWith("/") ||
       input.path.includes("?") ||
@@ -67,15 +74,18 @@ export class ProfileResolver {
       response.headers.get("content-type") !== "application/jose"
     )
       return fail("PROFILE_UNAVAILABLE");
-    const compact = await response.text();
-    const profile = await verifyProfileJws(compact, this.config.keyRing);
-    return verifyProfileClaims(profile, {
+    const profile_jws = await response.text();
+    const profile = await verifyProfileJws(profile_jws, this.config.keyRing);
+    return {
+      profile: verifyProfileClaims(profile, {
       deploymentId: this.config.deploymentId,
       nonce,
       pageContextDigest: input.pageContextDigest,
       origin: input.origin,
       path: input.path,
       fingerprint: input.fingerprint,
-    });
+      }),
+      profile_jws,
+    };
   }
 }

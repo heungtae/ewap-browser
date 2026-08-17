@@ -2,14 +2,21 @@
   "manifest_version": 3,
   "name": "ContextPilot (development)",
   "version": "0.1.0",
-  "minimum_chrome_version": "106",
-  "permissions": ["storage", "sidePanel", "activeTab", "debugger"],
-  "host_permissions": ["<all_urls>"],
+  "minimum_chrome_version": "109",
+  "permissions": ["storage", "sidePanel", "activeTab", "debugger", "offscreen"],
+  "host_permissions": [
+    "<all_urls>",
+    "http://localhost/*",
+    "http://127.0.0.1/*"
+  ],
   "background": {
     "service_worker": "src/service-worker/entry.js",
     "type": "module"
   },
   "side_panel": { "default_path": "src/sidepanel/index.html" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://localhost:* http://127.0.0.1:* https:"
+  },
   "options_ui": {
     "page": "src/settings/index.html",
     "open_in_tab": true

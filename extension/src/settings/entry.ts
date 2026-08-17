@@ -27,6 +27,25 @@ const headersContainer =
 const addHeader = document.querySelector<HTMLButtonElement>("#add-header");
 const providerTest =
   document.querySelector<HTMLButtonElement>("#provider-test");
+const providerModelsLoad = document.querySelector<HTMLButtonElement>(
+  "#provider-models-load",
+);
+const apiKeyToggle =
+  document.querySelector<HTMLButtonElement>("#api-key-toggle");
+const providerModels =
+  document.querySelector<HTMLDataListElement>("#provider-models");
+const providerModelSelectionDialog = document.querySelector<HTMLDialogElement>(
+  "#provider-model-selection-dialog",
+);
+const providerModelSelection = document.querySelector<HTMLSelectElement>(
+  "#provider-model-selection",
+);
+const providerModelSelectionCancel = document.querySelector<HTMLButtonElement>(
+  "#provider-model-selection-cancel",
+);
+const providerModelSelectionConfirm = document.querySelector<HTMLButtonElement>(
+  "#provider-model-selection-confirm",
+);
 const profileTest = document.querySelector<HTMLButtonElement>("#profile-test");
 const field = (name: string): HTMLInputElement | HTMLSelectElement => {
   const element = form?.elements.namedItem(name);
@@ -86,6 +105,40 @@ const readHeaders = (): Array<{ name: string; value: string }> => {
 
 addHeader?.addEventListener("click", () => appendHeaderRow());
 appendHeaderRow();
+apiKeyToggle?.addEventListener("click", () => {
+  const apiKey = field("api_key");
+  if (!(apiKey instanceof HTMLInputElement)) return;
+  apiKey.type = apiKey.type === "password" ? "text" : "password";
+  apiKeyToggle.textContent = apiKey.type === "password" ? "표시" : "숨김";
+});
+providerModelSelection?.addEventListener("change", () => {
+  if (providerModelSelectionConfirm)
+    providerModelSelectionConfirm.disabled = !providerModelSelection.value;
+});
+providerModelSelectionCancel?.addEventListener("click", () => {
+  providerModelSelectionDialog?.close();
+});
+providerModelSelectionConfirm?.addEventListener("click", () => {
+  void (async () => {
+    const model = providerModelSelection?.value;
+    if (!model) return;
+    providerModelSelectionConfirm.disabled = true;
+    try {
+      field("model").value = model;
+      await saveProvider();
+      providerModelSelectionDialog?.close();
+      show(`모델을 선택하고 저장했습니다 (${model})`);
+    } catch (error: unknown) {
+      show(
+        error instanceof Error
+          ? `모델 저장 실패 (${error.message})`
+          : "모델을 저장하지 못했습니다.",
+      );
+    } finally {
+      providerModelSelectionConfirm.disabled = false;
+    }
+  })();
+});
 
 void storage?.get("provider_settings").then((stored) => {
   const state = stored.provider_settings as
@@ -95,6 +148,7 @@ void storage?.get("provider_settings").then((stored) => {
   if (!current) return;
   field("base_url").value = String(current.base_url ?? "");
   field("model").value = String(current.model ?? "");
+  field("api_key").value = String(current.api_key ?? "");
   field("api_key_header").value = String(
     current.api_key_header ?? "authorization_bearer",
   );
@@ -115,12 +169,15 @@ void storage?.get("provider_settings").then((stored) => {
     }
     if (!headers.length) appendHeaderRow();
   }
-  show("저장된 provider 설정을 불러왔습니다. 비밀값은 다시 표시하지 않습니다.");
+  show("저장된 provider 설정을 불러왔습니다. API key는 기본 숨김 상태입니다.");
 });
 
 const saveProvider = async (): Promise<{
   wire_api: "chat_completions" | "responses";
   model: string;
+  base_url: string;
+  api_key_header: string;
+  api_key_configured: boolean;
 }> => {
   const baseUrl = field("base_url").value.trim();
   let parsed: URL;
@@ -132,6 +189,7 @@ const saveProvider = async (): Promise<{
   const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(
     parsed.hostname,
   );
+  const ollamaEndpoint = loopback && parsed.port === "11434";
   if (
     parsed.protocol !== "https:" &&
     !(parsed.protocol === "http:" && loopback)
@@ -139,6 +197,7 @@ const saveProvider = async (): Promise<{
     throw new Error("HTTPS 또는 loopback HTTP endpoint만 허용됩니다.");
   }
   const apiKey = field("api_key").value;
+  const apiKeyHeader = field("api_key_header").value;
   let headers: Array<{ name: string; value: string }>;
   try {
     headers = readHeaders();
@@ -150,12 +209,14 @@ const saveProvider = async (): Promise<{
     plugin_version: "1.0.0",
     label: "Local OpenAI-compatible LLM",
     base_url: baseUrl,
-    wire_api: "responses" as "chat_completions" | "responses",
+    wire_api: (ollamaEndpoint ? "chat_completions" : "responses") as
+      | "chat_completions"
+      | "responses",
     model: field("model").value.trim(),
     api_key: apiKey,
-    api_key_header: field("api_key_header").value,
+    api_key_header: apiKeyHeader,
     headers,
-    timeout_ms: 30_000,
+    timeout_ms: 120_000,
     enabled: true,
   };
   if (!storage) throw new Error("설정 저장소를 사용할 수 없습니다.");
@@ -163,10 +224,14 @@ const saveProvider = async (): Promise<{
   const previous = stored.provider_settings as
     | { providers?: Record<string, Record<string, unknown>> }
     | undefined;
-  if (!apiKey && previous?.providers?.local?.api_key)
+  if (apiKeyHeader !== "none" && !apiKey && previous?.providers?.local?.api_key)
     provider.api_key = String(previous.providers.local.api_key);
+  if (apiKeyHeader === "none") provider.api_key = "";
   const previousWireApi = previous?.providers?.local?.wire_api;
-  if (previousWireApi === "chat_completions" || previousWireApi === "responses")
+  if (
+    !ollamaEndpoint &&
+    (previousWireApi === "chat_completions" || previousWireApi === "responses")
+  )
     provider.wire_api = previousWireApi;
   await storage.set({
     provider_settings: {
@@ -175,8 +240,14 @@ const saveProvider = async (): Promise<{
       active_provider: "local",
     },
   });
-  field("api_key").value = "";
-  return { wire_api: provider.wire_api, model: provider.model };
+  field("api_key").value = provider.api_key;
+  return {
+    wire_api: provider.wire_api,
+    model: provider.model,
+    base_url: provider.base_url,
+    api_key_header: provider.api_key_header,
+    api_key_configured: provider.api_key.length > 0,
+  };
 };
 
 form?.addEventListener("submit", (event) => {
@@ -199,8 +270,18 @@ providerTest?.addEventListener("click", () => {
       return;
     }
     show("LLM 연결을 테스트하는 중입니다.");
+    const startedAt = performance.now();
+    console.groupCollapsed("[ContextPilot] LLM 연결 테스트");
     try {
       const provider = await saveProvider();
+      console.info("요청 설정", {
+        endpoint: provider.base_url,
+        model: provider.model,
+        wire_api: provider.wire_api,
+        auth: provider.api_key_header,
+        key_configured: provider.api_key_configured,
+        stream: false,
+      });
       const response = await runtime.sendMessage({
         kind: "PROVIDER_TEST",
         payload: {
@@ -218,6 +299,10 @@ providerTest?.addEventListener("click", () => {
         response !== null &&
         (response as { ok?: unknown }).ok
       ) {
+        console.info("연결 테스트 성공", {
+          status: (response as { status?: number }).status,
+          elapsed_ms: Math.round(performance.now() - startedAt),
+        });
         show(
           `LLM 연결 테스트 성공 (HTTP ${(response as { status?: number }).status ?? "응답"})`,
         );
@@ -229,12 +314,111 @@ providerTest?.addEventListener("click", () => {
         typeof (response as { code?: unknown }).code === "string"
           ? (response as { code: string }).code
           : "UNKNOWN";
-      show(`LLM 연결 테스트 실패 (${code})`);
+      const detail =
+        typeof response === "object" &&
+        response !== null &&
+        typeof (response as { detail?: unknown }).detail === "string"
+          ? `: ${(response as { detail: string }).detail}`
+          : "";
+      console.warn("연결 테스트 실패", {
+        code,
+        detail: detail.slice(2) || undefined,
+        elapsed_ms: Math.round(performance.now() - startedAt),
+      });
+      show(`LLM 연결 테스트 실패 (${code}${detail})`);
     } catch (error: unknown) {
+      console.error("연결 테스트 예외", {
+        error: error instanceof Error ? error.message : String(error),
+        elapsed_ms: Math.round(performance.now() - startedAt),
+      });
       show(
         error instanceof Error
           ? `LLM 연결 테스트 실패 (${error.message})`
           : "LLM 연결 테스트에 실패했습니다.",
+      );
+    } finally {
+      console.groupEnd();
+    }
+  })();
+});
+
+providerModelsLoad?.addEventListener("click", () => {
+  void (async () => {
+    if (!runtime) {
+      show("확장 프로그램 런타임에 연결할 수 없습니다.");
+      return;
+    }
+    try {
+      await saveProvider();
+      show("모델을 불러오는 중입니다.");
+      const response = await runtime.sendMessage({
+        kind: "PROVIDER_MODELS",
+        payload: { id: "local" },
+      });
+      console.info("모델 조회 응답", response);
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        (response as { ok?: unknown }).ok !== true
+      ) {
+        const code =
+          typeof (response as { code?: unknown }).code === "string"
+            ? (response as { code: string }).code
+            : "UNKNOWN";
+        const detail =
+          typeof (response as { detail?: unknown }).detail === "string"
+            ? `: ${(response as { detail: string }).detail}`
+            : "";
+        throw new Error(`${code}${detail}`);
+      }
+      const models =
+        typeof response === "object" &&
+        response !== null &&
+        Array.isArray((response as { models?: unknown }).models)
+          ? (response as { models: unknown[] }).models.filter(
+              (model): model is string => typeof model === "string",
+            )
+          : [];
+      if (!models.length) throw new Error("모델을 찾지 못했습니다.");
+      providerModels?.replaceChildren(
+        ...models.map((model) => {
+          const option = document.createElement("option");
+          option.value = model;
+          return option;
+        }),
+      );
+      if (models.length === 1) {
+        field("model").value = models[0] ?? "";
+        await saveProvider();
+        show(`모델 불러오기 완료 (1개: ${models[0]})`);
+        return;
+      }
+      if (providerModelSelection && providerModelSelectionDialog) {
+        providerModelSelection.replaceChildren();
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "모델을 선택하세요";
+        placeholder.disabled = true;
+        placeholder.selected = true;
+        providerModelSelection.append(placeholder);
+        for (const model of models) {
+          const option = document.createElement("option");
+          option.value = model;
+          option.textContent = model;
+          providerModelSelection.append(option);
+        }
+        if (providerModelSelectionConfirm)
+          providerModelSelectionConfirm.disabled = true;
+        providerModelSelectionDialog.showModal();
+      }
+      show(
+        `모델 불러오기 완료 (${models.length}개). 팝업에서 모델을 선택하세요.`,
+      );
+    } catch (error: unknown) {
+      show(
+        error instanceof Error
+          ? `모델 불러오기 실패 (${error.message})`
+          : "모델을 불러오지 못했습니다.",
       );
     }
   })();

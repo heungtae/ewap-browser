@@ -42,8 +42,32 @@ export type PublicProviderConfig = Omit<
 export type NormalizedProviderRequest = {
   wire_api: WireApi;
   model: string;
-  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+  messages: ProviderMessage[];
+  tools?: ProviderToolDefinition[];
   stream: boolean;
+};
+export type ProviderToolDefinition = {
+  type: "function";
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
+};
+export type ProviderToolCall = {
+  id: string;
+  name: string;
+  arguments: string;
+};
+export type ProviderMessage = {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string;
+  tool_calls?: ProviderToolCall[];
+  tool_call_id?: string;
+};
+export type ProviderChatResponse = {
+  content: string;
+  tool_calls: ProviderToolCall[];
 };
 export type ProviderRequestPlan = {
   path: "/chat/completions" | "/responses";

@@ -2,13 +2,13 @@
 
 ## 1. 결정
 
-| 항목          | 값                         |
-| ------------- | -------------------------- |
-| 설계 결정     | Adopted                    |
-| 구현 상태     | Planned, S2                |
-| 권한          | `debugger`, 사내 host 범위 |
-| 제품 CDP 수준 | Level 2 bounded adapter    |
-| Offscreen     | 도입하지 않음              |
+| 항목          | 값                           |
+| ------------- | ---------------------------- |
+| 설계 결정     | Adopted                      |
+| 구현 상태     | Planned, S2                  |
+| 권한          | `debugger`, 사내 host 범위   |
+| 제품 CDP 수준 | Level 2 bounded adapter      |
+| Offscreen     | provider localhost/PNA proxy |
 
 제품은 WebBrain의 전체 CDP 실행 플랫폼을 도입하지 않고 Level 2 bounded CDP adapter를 사용한다. 목적은 일반 DOM executor로 만들 수 없는 trusted mouse·keyboard·text input을 승인된 사내 UI에 전달하는 것이다.
 
@@ -18,7 +18,7 @@
 - content script가 `document_epoch`, `ref_id`, visibility, sensitivity와 action preflight의 권위자다.
 - service worker가 permission, risk, confirmation, execution path, CDP lifecycle과 verifier를 소유한다.
 - 모델, provider plugin, 페이지와 site adapter는 raw CDP surface를 볼 수 없다.
-- offscreen document는 도입하지 않는다.
+- provider localhost/PNA POST는 Offscreen document proxy에서 수행한다. Offscreen은 provider network 경계에만 사용하며 CDP lifecycle이나 페이지 자동화 권한을 확장하지 않는다.
 
 ## 2. 적용 범위
 

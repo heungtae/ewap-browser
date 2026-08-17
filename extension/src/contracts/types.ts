@@ -1,5 +1,6 @@
 export const COMPANY_TOOLS = [
   "read_semantic_projection",
+  "call_page_business_tool",
   "find_by_ref",
   "read_page_summary",
   "set_text_by_ref",

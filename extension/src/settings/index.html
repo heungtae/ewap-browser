@@ -140,6 +140,15 @@
       .header-row button:hover {
         background: rgba(248, 113, 113, 0.12);
       }
+      .secret-field {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+      .secret-field button,
+      #provider-models-load {
+        padding: 8px 12px;
+      }
       #add-header {
         padding: 7px 10px;
         color: var(--accent-2);
@@ -206,6 +215,38 @@
         color: #a7f3d0;
         font-size: 12px;
       }
+      dialog {
+        width: min(420px, calc(100vw - 32px));
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 22px;
+        background: var(--card);
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
+      }
+      dialog::backdrop {
+        background: rgba(3, 6, 15, 0.68);
+        backdrop-filter: blur(3px);
+      }
+      dialog h2 {
+        margin-bottom: 5px;
+      }
+      dialog p {
+        margin-bottom: 16px;
+      }
+      dialog .button-row {
+        justify-content: flex-end;
+        margin-top: 18px;
+      }
+      dialog #provider-model-selection-cancel {
+        color: var(--accent-2);
+        background: var(--surface);
+        box-shadow: none;
+      }
+      dialog button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
       hr {
         border: 0;
         border-top: 1px solid var(--border);
@@ -246,7 +287,12 @@
               required
               value="http://127.0.0.1:8080/v1"
           /></label>
-          <label>Model <input name="model" required value="qwen" /></label>
+          <label
+            >Model
+            <input name="model" list="provider-models" required value="qwen" />
+            <datalist id="provider-models"></datalist>
+          </label>
+          <button id="provider-models-load" type="button">모델 불러오기</button>
           <label
             >인증 방식
             <select name="api_key_header">
@@ -257,8 +303,12 @@
             </select></label
           >
           <label
-            >API key <input name="api_key" type="password" autocomplete="off"
-          /></label>
+            >API key
+            <span class="secret-field">
+              <input name="api_key" type="password" autocomplete="off" />
+              <button id="api-key-toggle" type="button">표시</button>
+            </span>
+          </label>
           <div class="headers-field">
             <div class="headers-heading">
               <label for="provider-headers">HTTP headers</label>
@@ -276,6 +326,27 @@
         </form>
         <output id="settings-status" aria-live="polite"></output>
       </section>
+      <dialog
+        id="provider-model-selection-dialog"
+        aria-labelledby="provider-model-selection-title"
+      >
+        <h2 id="provider-model-selection-title">불러온 모델 선택</h2>
+        <p>사용할 모델을 선택한 뒤 저장하세요.</p>
+        <label
+          >Model
+          <select id="provider-model-selection">
+            <option value="" selected disabled>모델을 선택하세요</option>
+          </select>
+        </label>
+        <div class="button-row">
+          <button id="provider-model-selection-cancel" type="button">
+            취소
+          </button>
+          <button id="provider-model-selection-confirm" type="button" disabled>
+            선택 저장
+          </button>
+        </div>
+      </dialog>
       <hr />
       <section class="settings-card">
         <h2>Page Profile Resolver</h2>

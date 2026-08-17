@@ -2,7 +2,14 @@ import { ProviderRegistry } from "./registry.js";
 import { CoreProviderTransport } from "./transport.js";
 import { ProviderSettings } from "../settings/provider-settings.js";
 import { fail, isPlainObject } from "../security/validation.js";
-import type { NormalizedProviderRequest, ProviderConfig } from "./types.js";
+import type {
+  NormalizedProviderRequest,
+  ProviderChatResponse,
+  ProviderConfig,
+  ProviderMessage,
+  ProviderToolCall,
+  ProviderToolDefinition,
+} from "./types.js";
 
 export type ProviderRuntimeStorage = {
   get(key: string): Promise<Record<string, unknown>>;
@@ -21,6 +28,32 @@ export class ProviderRuntime {
         (await storage.get("provider_settings")).provider_settings,
       write: async (state) => storage.set({ provider_settings: state }),
     });
+  }
+
+  public async chat(input: {
+    messages: ProviderMessage[];
+    tools?: ProviderToolDefinition[];
+  }): Promise<ProviderChatResponse> {
+    const config = await this.settings.active();
+    const resolved = this.registry.resolve(
+      config.plugin_id,
+      config.plugin_version,
+    );
+    const result = await this.transport.send(config, resolved.adapter, {
+      wire_api: config.wire_api,
+      model: config.model,
+      messages: input.messages,
+      ...(input.tools ? { tools: input.tools } : {}),
+      stream: false,
+    });
+    if (!result.body) fail("PROVIDER_UNAVAILABLE");
+    let response: unknown;
+    try {
+      response = JSON.parse(await new Response(result.body).text());
+    } catch {
+      return fail("PROVIDER_UNAVAILABLE");
+    }
+    return parseChatResponse(response);
   }
 
   public async handle(
@@ -82,6 +115,13 @@ export class ProviderRuntime {
       );
       return { ok: true, status: result.status };
     }
+    if (kind === "PROVIDER_MODELS") {
+      const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
+      if (typeof value.id !== "string") fail("INVALID_ARGUMENT");
+      const config = await this.settings.resolve(value.id as string);
+      const result = await this.transport.listModels(config, "/models");
+      return { ok: true, status: result.status, models: result.models };
+    }
     if (kind === "CHAT_SEND") {
       const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
       if (
@@ -90,43 +130,57 @@ export class ProviderRuntime {
         value.prompt.length > 8_000
       )
         fail("INVALID_ARGUMENT");
-      const config = await this.settings.active();
-      const resolved = this.registry.resolve(
-        config.plugin_id,
-        config.plugin_version,
-      );
-      const result = await this.transport.send(config, resolved.adapter, {
-        wire_api: config.wire_api,
-        model: config.model,
+      const response = await this.chat({
         messages: [{ role: "user", content: value.prompt as string }],
-        stream: false,
       });
-      if (!result.body) fail("PROVIDER_UNAVAILABLE");
-      const text = await new Response(result.body).text();
-      let response: unknown;
-      try {
-        response = JSON.parse(text);
-      } catch {
+      if (response.tool_calls.length > 0 || !response.content)
         fail("PROVIDER_UNAVAILABLE");
-      }
-      const responseObject = isPlainObject(response)
-        ? response
-        : fail("PROVIDER_UNAVAILABLE");
-      const choices = responseObject.choices;
-      const first = Array.isArray(choices) ? choices[0] : undefined;
-      const message =
-        isPlainObject(first) && isPlainObject(first.message)
-          ? first.message.content
-          : undefined;
-      const output =
-        typeof message === "string"
-          ? message
-          : typeof responseObject.output_text === "string"
-            ? responseObject.output_text
-            : undefined;
-      if (!output) fail("PROVIDER_UNAVAILABLE");
-      return { ok: true, message: output };
+      return { ok: true, message: response.content };
     }
     return fail("INVALID_ARGUMENT");
   }
 }
+
+const parseToolCalls = (value: unknown): ProviderToolCall[] => {
+  if (!Array.isArray(value)) return [];
+  const calls: ProviderToolCall[] = [];
+  for (const candidate of value) {
+    if (!isPlainObject(candidate)) continue;
+    const functionValue = isPlainObject(candidate.function)
+      ? candidate.function
+      : candidate;
+    if (
+      typeof candidate.id !== "string" ||
+      typeof functionValue.name !== "string" ||
+      typeof functionValue.arguments !== "string"
+    )
+      continue;
+    calls.push({
+      id: candidate.id,
+      name: functionValue.name,
+      arguments: functionValue.arguments,
+    });
+  }
+  return calls;
+};
+
+const parseChatResponse = (response: unknown): ProviderChatResponse => {
+  const object = isPlainObject(response)
+    ? response
+    : fail("PROVIDER_UNAVAILABLE");
+  const choices = object.choices;
+  const first = Array.isArray(choices) ? choices[0] : undefined;
+  const message = isPlainObject(first) && isPlainObject(first.message)
+    ? first.message
+    : undefined;
+  if (message) {
+    const content = typeof message.content === "string" ? message.content : "";
+    const toolCalls = parseToolCalls(message.tool_calls);
+    if (content || toolCalls.length > 0) return { content, tool_calls: toolCalls };
+  }
+  const output = typeof object.output_text === "string" ? object.output_text : "";
+  const responseCalls = parseToolCalls(object.output);
+  if (output || responseCalls.length > 0)
+    return { content: output, tool_calls: responseCalls };
+  return fail("PROVIDER_UNAVAILABLE");
+};

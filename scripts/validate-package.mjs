@@ -13,7 +13,13 @@ const hostPermissions = manifest.host_permissions
   )
   .sort();
 const policyPermissions = [...policy.permission_origins].sort();
-const expectedPermissions = ["activeTab", "debugger", "sidePanel", "storage"];
+const expectedPermissions = [
+  "activeTab",
+  "debugger",
+  "offscreen",
+  "sidePanel",
+  "storage",
+];
 if (
   JSON.stringify([...manifest.permissions].sort()) !==
   JSON.stringify(expectedPermissions)
@@ -21,7 +27,7 @@ if (
   throw new Error("manifest permission snapshot differs from bounded design");
 if (
   manifest.permissions.some((permission) =>
-    ["offscreen", "scripting", "tabs", "webNavigation"].includes(permission),
+    ["scripting", "tabs", "webNavigation"].includes(permission),
   )
 )
   throw new Error("manifest contains an unsupported permission");

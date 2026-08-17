@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ProviderRuntime } from "../../../src/providers/runtime.js";
+import { CoreProviderTransport } from "../../../src/providers/transport.js";
 import type { ProviderConfig } from "../../../src/providers/types.js";
 
 const config: ProviderConfig = {
@@ -77,5 +78,117 @@ describe("provider runtime", () => {
       (enabled.providers as Record<string, { enabled: boolean }>)["local"]
         ?.enabled,
     ).toBe(true);
+  });
+
+  it("given_page_projection_tools_when_chatting_then_sends_system_and_tool_schema", async () => {
+    let stored: Record<string, unknown> = {};
+    let body: Record<string, unknown> | undefined;
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(async (_input, init) => {
+        body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        return new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: "검색 결과는 현재 페이지에 있습니다.",
+                },
+              },
+            ],
+          }),
+          { headers: { "content-type": "application/json" } },
+        );
+      }),
+    );
+    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
+
+    await expect(
+      runtime.chat({
+        messages: [
+          { role: "system", content: "system" },
+          { role: "user", content: "[UNTRUSTED_PAGE_PROJECTION]{}" },
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "read_semantic_projection",
+              description: "Read the current page.",
+              parameters: { type: "object" },
+            },
+          },
+        ],
+      }),
+    ).resolves.toEqual({
+      content: "검색 결과는 현재 페이지에 있습니다.",
+      tool_calls: [],
+    });
+    expect(body).toMatchObject({
+      messages: [
+        { role: "system", content: "system" },
+        { role: "user", content: "[UNTRUSTED_PAGE_PROJECTION]{}" },
+      ],
+      tools: [
+        {
+          type: "function",
+          function: { name: "read_semantic_projection" },
+        },
+      ],
+    });
+  });
+
+  it("given_provider_tool_call_when_chatting_then_normalizes_call", async () => {
+    let stored: Record<string, unknown> = {};
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(async () =>
+        new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: "",
+                  tool_calls: [
+                    {
+                      id: "call_1",
+                      function: {
+                        name: "read_semantic_projection",
+                        arguments: "{}",
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          }),
+          { headers: { "content-type": "application/json" } },
+        ),
+      ),
+    );
+    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
+
+    await expect(
+      runtime.chat({ messages: [{ role: "user", content: "현재 페이지" }] }),
+    ).resolves.toEqual({
+      content: "",
+      tool_calls: [
+        { id: "call_1", name: "read_semantic_projection", arguments: "{}" },
+      ],
+    });
   });
 });

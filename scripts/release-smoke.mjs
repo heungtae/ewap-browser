@@ -9,14 +9,24 @@ const required = [
   "js/content.js",
   "js/panel.js",
   "js/settings.js",
+  "js/offscreen.js",
   "sidepanel/index.html",
   "settings/index.html",
+  "offscreen/index.html",
 ];
 if (
   manifest.manifest_version !== 3 ||
   JSON.stringify([...manifest.permissions].sort()) !==
-    JSON.stringify(["activeTab", "debugger", "sidePanel", "storage"]) ||
-  !manifest.host_permissions.includes("<all_urls>")
+    JSON.stringify([
+      "activeTab",
+      "debugger",
+      "offscreen",
+      "sidePanel",
+      "storage",
+    ]) ||
+  !manifest.host_permissions.includes("<all_urls>") ||
+  !manifest.host_permissions.includes("http://localhost/*") ||
+  !manifest.host_permissions.includes("http://127.0.0.1/*")
 )
   throw new Error("release manifest is missing all-web-page host coverage");
 for (const path of required)

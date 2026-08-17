@@ -91,6 +91,8 @@ Run coordinator
   → core가 tool call schema와 run registry를 검증
 ```
 
+Ask chat은 `system`, redacted projection을 포함한 `user`, `assistant`, `tool` message와 provider function schema를 사용한다. 첫 turn에는 현재 페이지 projection을 전달하므로 tool calling을 지원하지 않는 compatible model도 현재 화면 질의에 답할 수 있다. tool calling을 지원하는 model은 `read_semantic_projection` 또는 서명된 Page Profile이 허용한 Business MCP read tool을 호출할 수 있고, core가 닫힌 schema와 Profile binding을 다시 검증한다. projection과 Business MCP result는 시스템 지시가 아닌 untrusted data다.
+
 plugin이 반환하는 request plan에는 상대 path, wire API, JSON body와 response mode만 포함한다. plugin은 다음을 할 수 없다.
 
 - `fetch`, WebSocket 또는 browser API 직접 호출

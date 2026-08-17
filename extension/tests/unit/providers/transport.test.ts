@@ -73,4 +73,32 @@ describe("core provider transport", () => {
       validateProviderBaseUrl("http://192.168.1.5:8080/v1", true),
     ).not.toThrow();
   });
+
+  it("given_http_error_when_sending_then_exposes_status_without_body", async () => {
+    const transport = new CoreProviderTransport(
+      async () =>
+        new Response("secret provider error", {
+          status: 502,
+          headers: { "content-type": "text/plain" },
+        }),
+    );
+    await expect(
+      transport.send(config("none"), openAiCompatibleAdapter, request),
+    ).rejects.toMatchObject({
+      code: "PROVIDER_UNAVAILABLE",
+      detail: "HTTP 502",
+    });
+  });
+
+  it("given_fetch_network_error_when_sending_then_classifies_network_boundary", async () => {
+    const transport = new CoreProviderTransport(async () => {
+      throw new TypeError("Failed to fetch");
+    });
+    await expect(
+      transport.send(config("none"), openAiCompatibleAdapter, request),
+    ).rejects.toMatchObject({
+      code: "PROVIDER_UNAVAILABLE",
+      detail: "network/CORS/PNA request failed",
+    });
+  });
 });
