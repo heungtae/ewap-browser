@@ -8,9 +8,25 @@ const policy = JSON.parse(
   ),
 );
 const hostPermissions = manifest.host_permissions
-  .map((entry) => new URL(entry.replace("/*", "")).origin)
+  .map((entry) =>
+    entry === "<all_urls>" ? entry : new URL(entry.replace("/*", "")).origin,
+  )
   .sort();
 const policyPermissions = [...policy.permission_origins].sort();
+const expectedPermissions = ["activeTab", "debugger", "sidePanel", "storage"];
+if (
+  JSON.stringify([...manifest.permissions].sort()) !==
+  JSON.stringify(expectedPermissions)
+)
+  throw new Error("manifest permission snapshot differs from bounded design");
+if (
+  manifest.permissions.some((permission) =>
+    ["offscreen", "scripting", "tabs", "webNavigation"].includes(permission),
+  )
+)
+  throw new Error("manifest contains an unsupported permission");
+if (!manifest.options_ui?.page)
+  throw new Error("provider Settings page is missing");
 if (JSON.stringify(hostPermissions) !== JSON.stringify(policyPermissions))
   throw new Error("manifest host_permissions and permission_origins differ");
 for (const list of [

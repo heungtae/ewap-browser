@@ -8,6 +8,7 @@ await build({
     "service-worker": "extension/src/service-worker/entry.ts",
     content: "extension/src/content/entry.ts",
     panel: "extension/src/sidepanel/entry.ts",
+    settings: "extension/src/settings/entry.ts",
   },
   bundle: true,
   format: "esm",
@@ -20,6 +21,7 @@ const manifest = JSON.parse(await readFile("extension/manifest.json", "utf8"));
 manifest.background.service_worker = "js/service-worker.js";
 manifest.content_scripts[0].js = ["js/content.js"];
 manifest.side_panel.default_path = "sidepanel/index.html";
+manifest.options_ui.page = "settings/index.html";
 await writeFile(
   new URL("manifest.json", output),
   `${JSON.stringify(manifest, null, 2)}\n`,
@@ -28,5 +30,10 @@ await mkdir(new URL("sidepanel/", output), { recursive: true });
 await cp(
   "extension/src/sidepanel/index.html",
   new URL("sidepanel/index.html", output),
+);
+await mkdir(new URL("settings/", output), { recursive: true });
+await cp(
+  "extension/src/settings/index.html",
+  new URL("settings/index.html", output),
 );
 console.log("extension artifact built at dist-extension");
