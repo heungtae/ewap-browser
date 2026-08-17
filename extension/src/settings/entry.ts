@@ -2,12 +2,20 @@ type StorageArea = {
   get(key: string): Promise<Record<string, unknown>>;
   set(value: Record<string, unknown>): Promise<void>;
 };
+type BrowserRuntime = {
+  sendMessage(message: unknown): Promise<unknown>;
+};
 import { validateProfileResolverSettings } from "./profile-settings.js";
 const storage = (
   globalThis as typeof globalThis & {
-    chrome?: { storage: { local: StorageArea } };
+    chrome?: { runtime: BrowserRuntime; storage: { local: StorageArea } };
   }
 ).chrome?.storage.local;
+const runtime = (
+  globalThis as typeof globalThis & {
+    chrome?: { runtime: BrowserRuntime };
+  }
+).chrome?.runtime;
 
 const form = document.querySelector<HTMLFormElement>("#provider-form");
 const status = document.querySelector<HTMLOutputElement>("#settings-status");
@@ -17,6 +25,9 @@ const profileStatus =
 const headersContainer =
   document.querySelector<HTMLElement>("#provider-headers");
 const addHeader = document.querySelector<HTMLButtonElement>("#add-header");
+const providerTest =
+  document.querySelector<HTMLButtonElement>("#provider-test");
+const profileTest = document.querySelector<HTMLButtonElement>("#profile-test");
 const field = (name: string): HTMLInputElement | HTMLSelectElement => {
   const element = form?.elements.namedItem(name);
   if (
@@ -107,10 +118,17 @@ void storage?.get("provider_settings").then((stored) => {
   show("저장된 provider 설정을 불러왔습니다. 비밀값은 다시 표시하지 않습니다.");
 });
 
-form?.addEventListener("submit", (event) => {
-  event.preventDefault();
+const saveProvider = async (): Promise<{
+  wire_api: "chat_completions" | "responses";
+  model: string;
+}> => {
   const baseUrl = field("base_url").value.trim();
-  const parsed = new URL(baseUrl);
+  let parsed: URL;
+  try {
+    parsed = new URL(baseUrl);
+  } catch {
+    throw new Error("Endpoint URL 형식을 확인해 주세요.");
+  }
   const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(
     parsed.hostname,
   );
@@ -118,16 +136,14 @@ form?.addEventListener("submit", (event) => {
     parsed.protocol !== "https:" &&
     !(parsed.protocol === "http:" && loopback)
   ) {
-    show("HTTPS 또는 loopback HTTP endpoint만 허용됩니다.");
-    return;
+    throw new Error("HTTPS 또는 loopback HTTP endpoint만 허용됩니다.");
   }
   const apiKey = field("api_key").value;
   let headers: Array<{ name: string; value: string }>;
   try {
     headers = readHeaders();
   } catch {
-    show("HTTP header name과 value를 함께 입력해 주세요.");
-    return;
+    throw new Error("HTTP header name과 value를 함께 입력해 주세요.");
   }
   const provider = {
     plugin_id: "contextpilot.openai-compatible",
@@ -142,33 +158,86 @@ form?.addEventListener("submit", (event) => {
     timeout_ms: 30_000,
     enabled: true,
   };
-  void storage
-    ?.get("provider_settings")
-    .then((stored) => {
-      const previous = stored.provider_settings as
-        | { providers?: Record<string, Record<string, unknown>> }
-        | undefined;
-      if (!apiKey && previous?.providers?.local?.api_key)
-        provider.api_key = String(previous.providers.local.api_key);
-      const previousWireApi = previous?.providers?.local?.wire_api;
-      if (
-        previousWireApi === "chat_completions" ||
-        previousWireApi === "responses"
-      )
-        provider.wire_api = previousWireApi;
-      return storage.set({
-        provider_settings: {
-          schema_version: 1,
-          providers: { ...(previous?.providers ?? {}), local: provider },
-          active_provider: "local",
+  if (!storage) throw new Error("설정 저장소를 사용할 수 없습니다.");
+  const stored = await storage.get("provider_settings");
+  const previous = stored.provider_settings as
+    | { providers?: Record<string, Record<string, unknown>> }
+    | undefined;
+  if (!apiKey && previous?.providers?.local?.api_key)
+    provider.api_key = String(previous.providers.local.api_key);
+  const previousWireApi = previous?.providers?.local?.wire_api;
+  if (previousWireApi === "chat_completions" || previousWireApi === "responses")
+    provider.wire_api = previousWireApi;
+  await storage.set({
+    provider_settings: {
+      schema_version: 1,
+      providers: { ...(previous?.providers ?? {}), local: provider },
+      active_provider: "local",
+    },
+  });
+  field("api_key").value = "";
+  return { wire_api: provider.wire_api, model: provider.model };
+};
+
+form?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void saveProvider()
+    .then(() =>
+      show("저장했습니다. API key는 다시 표시하거나 export하지 않습니다."),
+    )
+    .catch((error: unknown) =>
+      show(
+        error instanceof Error ? error.message : "설정을 저장하지 못했습니다.",
+      ),
+    );
+});
+
+providerTest?.addEventListener("click", () => {
+  void (async () => {
+    if (!runtime) {
+      show("확장 프로그램 런타임에 연결할 수 없습니다.");
+      return;
+    }
+    show("LLM 연결을 테스트하는 중입니다.");
+    try {
+      const provider = await saveProvider();
+      const response = await runtime.sendMessage({
+        kind: "PROVIDER_TEST",
+        payload: {
+          id: "local",
+          request: {
+            wire_api: provider.wire_api,
+            model: provider.model,
+            messages: [{ role: "user", content: "connection test" }],
+            stream: false,
+          },
         },
       });
-    })
-    .then(() => {
-      field("api_key").value = "";
-      show("저장했습니다. API key는 다시 표시하거나 export하지 않습니다.");
-    })
-    .catch(() => show("설정을 저장하지 못했습니다."));
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        (response as { ok?: unknown }).ok
+      ) {
+        show(
+          `LLM 연결 테스트 성공 (HTTP ${(response as { status?: number }).status ?? "응답"})`,
+        );
+        return;
+      }
+      const code =
+        typeof response === "object" &&
+        response !== null &&
+        typeof (response as { code?: unknown }).code === "string"
+          ? (response as { code: string }).code
+          : "UNKNOWN";
+      show(`LLM 연결 테스트 실패 (${code})`);
+    } catch (error: unknown) {
+      show(
+        error instanceof Error
+          ? `LLM 연결 테스트 실패 (${error.message})`
+          : "LLM 연결 테스트에 실패했습니다.",
+      );
+    }
+  })();
 });
 
 const profileField = (name: string): HTMLInputElement | HTMLTextAreaElement => {
@@ -198,26 +267,75 @@ void storage?.get("profile_resolver").then((stored) => {
     2,
   );
 });
+const readProfileSettings = () =>
+  validateProfileResolverSettings({
+    schema_version: 1,
+    url: profileField("resolver_url").value.trim(),
+    deployment_id: profileField("deployment_id").value.trim(),
+    allowed_origins: profileField("allowed_origins")
+      .value.split(/\r?\n/)
+      .map((item) => item.trim())
+      .filter(Boolean),
+    key_ring: JSON.parse(profileField("key_ring").value),
+  });
+const saveProfileSettings = async () => {
+  const value = readProfileSettings();
+  if (!storage) throw new Error("설정 저장소를 사용할 수 없습니다.");
+  await storage.set({ profile_resolver: value });
+};
+
 profileForm?.addEventListener("submit", (event) => {
   event.preventDefault();
-  try {
-    const value = validateProfileResolverSettings({
-      schema_version: 1,
-      url: profileField("resolver_url").value.trim(),
-      deployment_id: profileField("deployment_id").value.trim(),
-      allowed_origins: profileField("allowed_origins")
-        .value.split(/\r?\n/)
-        .map((item) => item.trim())
-        .filter(Boolean),
-      key_ring: JSON.parse(profileField("key_ring").value),
-    });
-    void storage?.set({ profile_resolver: value }).then(() => {
+  void saveProfileSettings()
+    .then(() => {
       if (profileStatus)
         profileStatus.value = "Page Profile Resolver 설정을 저장했습니다.";
+    })
+    .catch(() => {
+      if (profileStatus)
+        profileStatus.value =
+          "Resolver URL, origin, public key 형식을 확인해 주세요.";
     });
-  } catch {
+});
+
+profileTest?.addEventListener("click", () => {
+  void (async () => {
+    if (!runtime) {
+      if (profileStatus)
+        profileStatus.value = "확장 프로그램 런타임에 연결할 수 없습니다.";
+      return;
+    }
     if (profileStatus)
-      profileStatus.value =
-        "Resolver URL, origin, public key 형식을 확인해 주세요.";
-  }
+      profileStatus.value = "Page Profile MCP 연결을 테스트하는 중입니다.";
+    try {
+      await saveProfileSettings();
+      const response = await runtime.sendMessage({ kind: "RESOLVE_PROFILE" });
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        (response as { ok?: unknown }).ok
+      ) {
+        const value = response as {
+          resolution?: string;
+          profile_id?: string;
+          profile_version?: number;
+        };
+        if (profileStatus)
+          profileStatus.value = `Page Profile MCP 연결 테스트 성공 (${value.resolution ?? "응답 검증 완료"}${value.profile_id ? `, ${value.profile_id} v${value.profile_version ?? "-"}` : ""})`;
+        return;
+      }
+      const code =
+        typeof response === "object" &&
+        response !== null &&
+        typeof (response as { code?: unknown }).code === "string"
+          ? (response as { code: string }).code
+          : "UNKNOWN";
+      if (profileStatus)
+        profileStatus.value = `Page Profile MCP 연결 테스트 실패 (${code})`;
+    } catch {
+      if (profileStatus)
+        profileStatus.value =
+          "Resolver URL, origin, public key 형식 또는 현재 페이지를 확인해 주세요.";
+    }
+  })();
 });

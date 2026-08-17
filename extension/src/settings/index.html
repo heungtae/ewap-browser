@@ -2,7 +2,7 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <title>ContextPilot · LLM Provider 설정</title>
+    <title>ContextPilot 설정</title>
     <style>
       :root {
         color-scheme: dark;
@@ -189,6 +189,16 @@
         filter: brightness(1.1);
         transform: translateY(-1px);
       }
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .button-row button[type="button"] {
+        color: var(--accent-2);
+        background: var(--surface);
+        box-shadow: none;
+      }
       output {
         display: block;
         min-height: 20px;
@@ -220,12 +230,12 @@
       <header class="settings-header">
         <span class="brand-mark" aria-hidden="true">✦</span>
         <div>
-          <h1>LLM Provider</h1>
+          <h1>ContextPilot 설정</h1>
           <p class="settings-subtitle">ContextPilot local configuration</p>
         </div>
       </header>
       <section class="settings-card">
-        <h2>Provider 설정</h2>
+        <h2>LLM Provider</h2>
         <p>제품 계정이나 OAuth 없이 현재 Chrome profile에만 저장합니다.</p>
         <form id="provider-form">
           <label
@@ -259,7 +269,10 @@
             ></div>
             <button id="add-header" type="button">+ Header 추가</button>
           </div>
-          <button type="submit">저장</button>
+          <div class="button-row">
+            <button type="submit">저장</button>
+            <button id="provider-test" type="button">연결 테스트</button>
+          </div>
         </form>
         <output id="settings-status" aria-live="polite"></output>
       </section>
@@ -293,7 +306,10 @@
               placeholder='{"k1":"-----BEGIN PUBLIC KEY-----..."}'
             ></textarea>
           </label>
-          <button type="submit">Resolver 저장</button>
+          <div class="button-row">
+            <button type="submit">Resolver 저장</button>
+            <button id="profile-test" type="button">연결 테스트</button>
+          </div>
         </form>
         <output id="profile-status" aria-live="polite"></output>
       </section>

@@ -129,6 +129,12 @@ const panelUrl = (): string | undefined =>
   chromeApi?.runtime.getURL("sidepanel/index.html");
 const isPanelSender = (sender: Sender): boolean =>
   sender.id === chromeApi?.runtime.id && sender.url === panelUrl();
+const settingsUrl = (): string | undefined =>
+  chromeApi?.runtime.getURL("settings/index.html");
+const isSettingsSender = (sender: Sender): boolean =>
+  sender.id === chromeApi?.runtime.id && sender.url === settingsUrl();
+const isPanelOrSettingsSender = (sender: Sender): boolean =>
+  isPanelSender(sender) || isSettingsSender(sender);
 const exactKeys = (value: object, keys: readonly string[]): boolean =>
   Object.keys(value).every((key) => keys.includes(key)) &&
   keys.every((key) => key in value);
@@ -366,7 +372,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     return true;
   }
   if (kind === "RESOLVE_PROFILE") {
-    if (!isPanelSender(sender) || !exactKeys(message, ["kind"])) {
+    if (!isPanelOrSettingsSender(sender) || !exactKeys(message, ["kind"])) {
       respond(safeFailure("INVALID_ARGUMENT"));
       return;
     }
@@ -454,7 +460,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       "CHAT_SEND",
     ].includes(kind)
   ) {
-    if (!isPanelSender(sender) || !providerRuntime) {
+    if (!isPanelOrSettingsSender(sender) || !providerRuntime) {
       respond(safeFailure("INVALID_ARGUMENT"));
       return;
     }
