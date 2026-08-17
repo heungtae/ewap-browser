@@ -7,6 +7,7 @@ export type PolicyBundle = {
   llm_egress_origins: string[];
 };
 const canonicalOrigin = (value: string): string => {
+  if (value === "<all_urls>") return value;
   let parsed: URL;
   try {
     parsed = new URL(value);
@@ -35,6 +36,14 @@ export const exactOrigin = (
   allowed: readonly string[],
 ): boolean => {
   try {
+    if (allowed.includes("<all_urls>")) {
+      const parsed = new URL(candidate);
+      return (
+        (parsed.protocol === "https:" || parsed.protocol === "http:") &&
+        !parsed.username &&
+        !parsed.password
+      );
+    }
     return allowed.map(canonicalOrigin).includes(canonicalOrigin(candidate));
   } catch {
     return false;

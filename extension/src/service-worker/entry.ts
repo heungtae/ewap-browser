@@ -2,6 +2,16 @@ import { validateSemanticSnapshot } from "../contracts/semantic-snapshot.js";
 import type { SemanticSnapshot } from "../contracts/types.js";
 import { digestCanonical } from "../security/canonical.js";
 import { ContractError } from "../security/validation.js";
+import { opaqueId } from "../security/canonical.js";
+import {
+  PermissionManager,
+  type Capability,
+  type PermissionDecision,
+} from "../policy/permission-manager.js";
+import { ProviderRuntime } from "../providers/runtime.js";
+import { ProfileResolver } from "../profile/resolver.js";
+import { semanticFingerprint } from "../profile/fingerprint.js";
+import { validateProfileResolverSettings } from "../settings/profile-settings.js";
 import { ServiceCoordinator } from "./coordinator.js";
 import type {
   ActionDefinition,
@@ -39,11 +49,13 @@ type BrowserTabs = {
   query(query: {
     active: boolean;
     lastFocusedWindow: boolean;
-  }): Promise<Array<{ id?: number }>>;
+  }): Promise<Array<{ id?: number; url?: string }>>;
   sendMessage(tabId: number, message: unknown): Promise<unknown>;
 };
 type BrowserStorageArea = {
   setAccessLevel(level: { accessLevel: "TRUSTED_CONTEXTS" }): Promise<void>;
+  get?(key: string): Promise<Record<string, unknown>>;
+  set?(value: Record<string, unknown>): Promise<void>;
 };
 type BrowserStorage = {
   managed: BrowserStorageArea;
@@ -63,13 +75,25 @@ const registered = new Map<string, string>();
 const registrationKey = (tabId: number, frameId: number): string =>
   `${tabId}:${frameId}`;
 const safeFailure = (code: string) => ({ ok: false, code });
-const fixtureOrigin = "https://fixture.company.test:8443";
-const fixtureProfile = { id: "development-fixture-local-ui-v1", version: 1 };
+const allWebPages = "<all_urls>";
+const localPageProfile = { id: "local-page-ui-v1", version: 1 };
 const localSessionBinding = new LocalFixtureSessionBinding();
 const localBindings = new Map<string, SessionBinding>();
+const permissions = new PermissionManager();
+const providerRuntime =
+  chromeApi?.storage.local.get && chromeApi.storage.local.set
+    ? new ProviderRuntime({
+        get: chromeApi.storage.local.get.bind(chromeApi.storage.local),
+        set: chromeApi.storage.local.set.bind(chromeApi.storage.local),
+      })
+    : undefined;
+const permissionRequests = new Map<
+  string,
+  { capability: Capability; origin: string; expiresAt: number }
+>();
 const coordinator = new ServiceCoordinator({
-  permission_origins: [fixtureOrigin],
-  page_read_origins: [fixtureOrigin],
+  permission_origins: [allWebPages],
+  page_read_origins: [allWebPages],
   profile_resolver_origins: [],
   llm_egress_origins: [],
 });
@@ -83,7 +107,10 @@ void Promise.all([
     accessLevel: "TRUSTED_CONTEXTS",
   }),
 ])
-  .then(() => {
+  .then(async () => {
+    const saved = await chromeApi?.storage.local.get?.("wb_permissions");
+    if (saved?.wb_permissions !== undefined)
+      permissions.load(saved.wb_permissions);
     storageReady = true;
     coordinator.completeStorageBootstrap(true);
   })
@@ -98,17 +125,31 @@ const isPanelSender = (sender: Sender): boolean =>
 const exactKeys = (value: object, keys: readonly string[]): boolean =>
   Object.keys(value).every((key) => keys.includes(key)) &&
   keys.every((key) => key in value);
+const pageOrigin = (value: string | undefined): string => {
+  try {
+    const parsed = new URL(value ?? "");
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:")
+      throw new Error("unsupported page scheme");
+    return parsed.origin;
+  } catch {
+    throw new ContractError("ORIGIN_NOT_ALLOWED");
+  }
+};
 const readActiveSnapshot = async (): Promise<{
   tabId: number;
+  origin: string;
   snapshot: SemanticSnapshot;
+  path: string;
 }> => {
   const tabs = await chromeApi!.tabs.query({
     active: true,
     lastFocusedWindow: true,
   });
-  const tabId = tabs[0]?.id;
-  if (tabId === undefined)
+  const tab = tabs[0];
+  const tabId = tab?.id;
+  if (!tab || tabId === undefined)
     return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
+  const origin = pageOrigin(tab.url);
   const result = await chromeApi!.tabs.sendMessage(tabId, {
     kind: "CONTENT_SNAPSHOT",
   });
@@ -122,7 +163,7 @@ const readActiveSnapshot = async (): Promise<{
   if (
     typeof payload !== "object" ||
     payload === null ||
-    (payload as { origin?: unknown }).origin !== fixtureOrigin
+    (payload as { origin?: unknown }).origin !== origin
   )
     return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
   const snapshot = validateSemanticSnapshot(
@@ -130,21 +171,47 @@ const readActiveSnapshot = async (): Promise<{
   );
   if (registered.get(registrationKey(tabId, 0)) !== snapshot.document_epoch)
     return Promise.reject(new ContractError("DOCUMENT_NOT_REGISTERED"));
-  return { tabId, snapshot };
+  let path = "/";
+  try {
+    path = new URL(tab?.url ?? origin).pathname;
+  } catch {
+    return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
+  }
+  return { tabId, origin, snapshot, path };
 };
-const fixtureTextDefinition = (preStateDigest: string): ActionDefinition => ({
+const resolveActiveProfile = async () => {
+  const active = await readActiveSnapshot();
+  const stored = await chromeApi!.storage.local.get?.("profile_resolver");
+  if (!stored?.profile_resolver)
+    return Promise.reject(new ContractError("PROFILE_UNAVAILABLE"));
+  const settings = validateProfileResolverSettings(stored.profile_resolver);
+  const resolver = new ProfileResolver({
+    deploymentId: settings.deployment_id,
+    url: settings.url,
+    allowedOrigins: settings.allowed_origins,
+    keyRing: settings.key_ring,
+  });
+  const profile = await resolver.resolve({
+    origin: active.origin,
+    path: active.path,
+    pageContextDigest: digestCanonical(active.snapshot),
+    fingerprint: semanticFingerprint(active.snapshot).fingerprint,
+  });
+  return { tabId: active.tabId, profile };
+};
+const localTextDefinition = (preStateDigest: string): ActionDefinition => ({
   tool: "set_text_by_ref",
   effect: "local-ui-only",
   risk: "R1",
   eligibleRoles: ["textbox"],
   verifier: {
     kind: "semantic-state-transition",
-    declaration_id: "development-fixture-text-v1",
+    declaration_id: "local-page-text-v1",
     pre_state_digest: preStateDigest,
     required_changes: [],
   },
 });
-const fixtureDefinition = (
+const localMutationDefinition = (
   tool: "select_option_by_ref" | "set_checked_by_ref",
   refId: string,
   preStateDigest: string,
@@ -159,8 +226,8 @@ const fixtureDefinition = (
     kind: "semantic-state-transition",
     declaration_id:
       tool === "select_option_by_ref"
-        ? "development-fixture-select-v1"
-        : "development-fixture-checkbox-v1",
+        ? "local-page-select-v1"
+        : "local-page-checkbox-v1",
     pre_state_digest: preStateDigest,
     required_changes:
       tool === "set_checked_by_ref" && typeof checked === "boolean"
@@ -252,8 +319,52 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     return;
   }
   if (kind === "START_ASK") {
-    respond(safeFailure("PROFILE_UNAVAILABLE"));
-    return;
+    if (!isPanelSender(sender) || !exactKeys(message, ["kind"])) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    void resolveActiveProfile()
+      .then(({ profile }) =>
+        respond({
+          ok: true,
+          resolution: profile.resolution,
+          profile_id: profile.profile_id,
+          profile_version: profile.profile_version,
+          business_mcp_count: profile.business_mcp?.length ?? 0,
+        }),
+      )
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError ? error.code : "PROFILE_UNAVAILABLE",
+          ),
+        ),
+      );
+    return true;
+  }
+  if (kind === "RESOLVE_PROFILE") {
+    if (!isPanelSender(sender) || !exactKeys(message, ["kind"])) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    void resolveActiveProfile()
+      .then(({ profile }) =>
+        respond({
+          ok: true,
+          resolution: profile.resolution,
+          profile_id: profile.profile_id,
+          profile_version: profile.profile_version,
+          business_mcp_count: profile.business_mcp?.length ?? 0,
+        }),
+      )
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError ? error.code : "PROFILE_UNAVAILABLE",
+          ),
+        ),
+      );
+    return true;
   }
   if (kind === "CANCEL") {
     if (!isPanelSender(sender) || !exactKeys(message, ["kind"])) {
@@ -278,6 +389,66 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       .catch(() => respond(safeFailure("INTERNAL_FAILURE")));
     return true;
   }
+  if (kind === "PERMISSION_DECISION") {
+    const requestId = (message as { permission_request_id?: unknown })
+      .permission_request_id;
+    const decision = (message as { decision?: unknown }).decision;
+    const request =
+      typeof requestId === "string"
+        ? permissionRequests.get(requestId)
+        : undefined;
+    if (
+      !isPanelSender(sender) ||
+      !exactKeys(message, ["kind", "permission_request_id", "decision"]) ||
+      !request ||
+      request.expiresAt < Date.now() ||
+      !["once", "always", "deny"].includes(decision as string)
+    ) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    permissions.decide(
+      request.capability,
+      request.origin,
+      requestId as string,
+      decision as PermissionDecision,
+    );
+    void chromeApi!.storage.local
+      .set?.({ wb_permissions: permissions.snapshot() })
+      .then(() => respond({ ok: true }))
+      .catch(() => respond(safeFailure("STORAGE_BOUNDARY_UNAVAILABLE")));
+    return;
+  }
+  if (
+    typeof kind === "string" &&
+    [
+      "PROVIDER_LIST",
+      "PLUGIN_INSTALL",
+      "PLUGIN_SET_ENABLED",
+      "PROVIDER_SAVE",
+      "PROVIDER_TEST",
+      "PROVIDER_EXPORT",
+      "CHAT_SEND",
+    ].includes(kind)
+  ) {
+    if (!isPanelSender(sender) || !providerRuntime) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    void providerRuntime
+      .handle(kind, (message as { payload?: unknown }).payload)
+      .then(respond)
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError
+              ? error.code
+              : "PROVIDER_PLUGIN_FAILED",
+          ),
+        ),
+      );
+    return true;
+  }
   if (kind === "START_ACT") {
     const requestedTool = (message as { tool?: unknown }).tool;
     const requestedRef = (message as { ref_id?: unknown }).ref_id;
@@ -287,15 +458,31 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       }
     ).argument?.checked;
     const requestedArgument = (message as { argument?: unknown }).argument;
+    const permissionRequestId = (message as { permission_request_id?: unknown })
+      .permission_request_id;
+    if (
+      permissionRequestId !== undefined &&
+      typeof permissionRequestId !== "string"
+    ) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    const allowedKeys = (base: readonly string[]): boolean =>
+      exactKeys(
+        message,
+        permissionRequestId === undefined
+          ? base
+          : [...base, "permission_request_id"],
+      );
     const validText =
       requestedTool === "set_text_by_ref" &&
-      exactKeys(message, ["kind", "tool", "ref_id"]);
+      allowedKeys(["kind", "tool", "ref_id"]);
     const validSelect =
       requestedTool === "select_option_by_ref" &&
-      exactKeys(message, ["kind", "tool", "ref_id"]);
+      allowedKeys(["kind", "tool", "ref_id"]);
     const validCheck =
       requestedTool === "set_checked_by_ref" &&
-      exactKeys(message, ["kind", "tool", "ref_id", "argument"]) &&
+      allowedKeys(["kind", "tool", "ref_id", "argument"]) &&
       typeof requestedArgument === "object" &&
       requestedArgument !== null &&
       Object.keys(requestedArgument).length === 1 &&
@@ -308,6 +495,35 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     ) {
       respond(safeFailure("PROFILE_UNAVAILABLE"));
       return;
+    }
+    const capability: Capability =
+      requestedTool === "set_checked_by_ref" ? "click" : "type";
+    const grantKey =
+      typeof permissionRequestId === "string" ? permissionRequestId : "new";
+    const permission = permissions.check(capability, allWebPages, grantKey);
+    if (permission !== "ALLOW") {
+      if (permission === "DENY") {
+        respond(safeFailure("POLICY_DENIED"));
+        return;
+      }
+      const requestId = opaqueId();
+      permissionRequests.set(requestId, {
+        capability,
+        origin: allWebPages,
+        expiresAt: Date.now() + 60_000,
+      });
+      respond({
+        ok: true,
+        state: "PERMISSION_REQUIRED",
+        permission_request_id: requestId,
+        capability,
+        host: "current page",
+      });
+      return;
+    }
+    if (typeof permissionRequestId === "string") {
+      permissionRequests.delete(permissionRequestId);
+      permissions.endRun(permissionRequestId);
     }
     void readActiveSnapshot()
       .then(({ tabId, snapshot }) => {
@@ -368,10 +584,10 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
             sensitive: false,
             stale: false,
           },
-          fixtureProfile,
+          localPageProfile,
           requestedTool === "set_text_by_ref"
-            ? fixtureTextDefinition(digestCanonical(target.state))
-            : fixtureDefinition(
+            ? localTextDefinition(digestCanonical(target.state))
+            : localMutationDefinition(
                 requestedTool as "select_option_by_ref" | "set_checked_by_ref",
                 refId,
                 digestCanonical(target.state),
@@ -549,13 +765,13 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     return;
   }
   void readActiveSnapshot()
-    .then(({ tabId, snapshot }) => {
+    .then(({ tabId, origin, snapshot }) => {
       try {
         const preview = coordinator.preview(
           tabId,
           0,
           snapshot.document_epoch,
-          fixtureOrigin,
+          origin,
           snapshot,
         );
         respond({ ok: true, snapshot: preview });

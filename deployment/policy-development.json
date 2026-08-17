@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "permission_origins": ["https://fixture.company.test:8443"],
-  "page_read_origins": ["https://fixture.company.test:8443"],
+  "permission_origins": ["<all_urls>"],
+  "page_read_origins": ["<all_urls>"],
   "profile_resolver_origins": [],
   "llm_egress_origins": []
 }

@@ -68,6 +68,60 @@ type RefRecord = {
   stale: boolean;
 };
 const refRecords = new Map<string, RefRecord>();
+type BoundedTargetRequest = {
+  kind: "PREPARE_BOUNDED_CDP_TARGET" | "CLEAR_BOUNDED_CDP_TARGET";
+  run_id: string;
+  action_id: string;
+  tab_id: number;
+  frame_id: number;
+  document_id: string;
+  document_epoch: string;
+  ref_id: string;
+  action_token: string;
+};
+const actionTokenPattern = /^[A-Za-z0-9_-]{22,128}$/;
+const boundedMarkers = new Map<string, HTMLElement>();
+const boundedTarget = (
+  request: BoundedTargetRequest,
+): HTMLElement | undefined => {
+  if (
+    request.document_epoch !== documentEpoch ||
+    request.frame_id !== 0 ||
+    !actionTokenPattern.test(request.action_token)
+  )
+    return undefined;
+  const record = refRecords.get(request.ref_id);
+  const element = record?.element;
+  if (
+    !record ||
+    record.stale ||
+    !(element instanceof HTMLElement) ||
+    !element.isConnected ||
+    roleFor(element) !== record.role ||
+    nameFor(element) !== record.name ||
+    isSensitiveElement(element) ||
+    !element.matches(":not([disabled])")
+  )
+    return undefined;
+  const style = getComputedStyle(element);
+  if (
+    style.display === "none" ||
+    style.visibility === "hidden" ||
+    element.getClientRects().length === 0
+  )
+    return undefined;
+  return element;
+};
+const isSensitiveElement = (element: Element): boolean =>
+  (element instanceof HTMLInputElement &&
+    (element.type === "password" ||
+      /password|secret|otp|mfa|인증|비밀번호|token|recovery/i.test(
+        nameFor(element),
+      ) ||
+      /one-time-code/i.test(element.autocomplete))) ||
+  /password|secret|otp|mfa|인증|비밀번호|token|recovery/i.test(
+    nameFor(element),
+  );
 const refFor = (element: Element, role: string, name: string): string => {
   const existing = refs.get(element);
   if (existing) {
@@ -225,6 +279,57 @@ const projection = (): unknown => ({
   },
 });
 runtime?.onMessage.addListener((message, sender, respond) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    ((message as { kind?: unknown }).kind === "PREPARE_BOUNDED_CDP_TARGET" ||
+      (message as { kind?: unknown }).kind === "CLEAR_BOUNDED_CDP_TARGET")
+  ) {
+    const request = message as BoundedTargetRequest;
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      request.tab_id === undefined ||
+      request.document_id === undefined ||
+      request.frame_id !== 0
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const markerKey = `${request.run_id}:${request.action_id}`;
+    if (request.kind === "CLEAR_BOUNDED_CDP_TARGET") {
+      const marked = boundedMarkers.get(markerKey);
+      if (
+        marked?.getAttribute("data-webbrain-action-token") ===
+        request.action_token
+      )
+        marked.removeAttribute("data-webbrain-action-token");
+      boundedMarkers.delete(markerKey);
+      respond({ ok: true });
+      return true;
+    }
+    const element = boundedTarget(request);
+    if (!element) {
+      respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
+      return true;
+    }
+    if (boundedMarkers.has(markerKey)) {
+      respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
+      return true;
+    }
+    element.setAttribute("data-webbrain-action-token", request.action_token);
+    boundedMarkers.set(markerKey, element);
+    respond({
+      ok: true,
+      unique: true,
+      sensitive: false,
+      stale: false,
+      visible: true,
+      enabled: true,
+      occluded: false,
+    });
+    return true;
+  }
   if (
     typeof message === "object" &&
     message !== null &&

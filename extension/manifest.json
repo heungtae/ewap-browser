@@ -3,16 +3,20 @@
   "name": "Company Web Agent (development)",
   "version": "0.1.0",
   "minimum_chrome_version": "106",
-  "permissions": ["storage", "sidePanel", "activeTab"],
-  "host_permissions": ["https://fixture.company.test:8443/*"],
+  "permissions": ["storage", "sidePanel", "activeTab", "debugger"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "src/service-worker/entry.js",
     "type": "module"
   },
   "side_panel": { "default_path": "src/sidepanel/index.html" },
+  "options_ui": {
+    "page": "src/settings/index.html",
+    "open_in_tab": true
+  },
   "content_scripts": [
     {
-      "matches": ["https://fixture.company.test:8443/*"],
+      "matches": ["<all_urls>"],
       "js": ["src/content/entry.js"],
       "run_at": "document_start"
     }

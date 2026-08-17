@@ -9,6 +9,8 @@ describe("security boundaries", () => {
     expect(
       exactOrigin("https://localhost", ["https://fixture.company.test"]),
     ).toBe(false));
+  it("given_all_urls_policy_when_matching_http_page_then_allowed", () =>
+    expect(exactOrigin("https://github.com", ["<all_urls>"])).toBe(true));
   it("given_egress_outside_permission_when_validating_then_denied", () =>
     expect(() =>
       validatePolicyBundle({
