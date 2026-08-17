@@ -220,11 +220,31 @@ new MutationObserver((mutations) => {
     "autocomplete",
   ],
 });
+const visiblePageText = (): string => {
+  const raw = document.body?.innerText ?? "";
+  const lines = raw
+    .split(/\r?\n/)
+    .map((line) =>
+      line
+        .replace(/[\u0000-\u001f\u007f]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean);
+  let result = "";
+  for (const line of lines) {
+    const next = result ? `${result}\n${line}` : line;
+    if ([...next].length > 12_000) break;
+    result = next;
+  }
+  return result;
+};
 const projection = (): unknown => ({
   origin: location.origin,
   snapshot: {
     document_epoch: documentEpoch,
     frame_id: 0,
+    visible_text: visiblePageText(),
     nodes: [
       ...document.querySelectorAll(
         "button,input,textarea,select,a,[role],h1,h2,h3,h4,h5,h6",

@@ -257,17 +257,25 @@ const readActiveSnapshot = async (): Promise<{
   snapshot: SemanticSnapshot;
   path: string;
 }> => {
+  console.debug("[ContextPilot][projection] querying active tab");
   const tabs = await chromeApi!.tabs.query({
     active: true,
     lastFocusedWindow: true,
   });
   const tab = tabs[0];
   const tabId = tab?.id;
+  console.debug("[ContextPilot][projection] active tab", {
+    tab_id: tabId,
+    url: tab?.url,
+  });
   if (!tab || tabId === undefined)
     return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
   let origin = pageOrigin(tab.url);
   const result = await chromeApi!.tabs.sendMessage(tabId, {
     kind: "CONTENT_SNAPSHOT",
+  });
+  console.debug("[ContextPilot][projection] content response", {
+    response: structuredClone(result),
   });
   if (
     typeof result !== "object" ||
@@ -301,6 +309,11 @@ const readActiveSnapshot = async (): Promise<{
   const snapshot = validateSemanticSnapshot(
     (payload as { snapshot: unknown }).snapshot,
   );
+  console.debug("[ContextPilot][projection] validated", {
+    document_epoch: snapshot.document_epoch,
+    node_count: snapshot.nodes.length,
+    visible_text_length: snapshot.visible_text.length,
+  });
   if (registered.get(registrationKey(tabId, 0)) !== snapshot.document_epoch)
     return Promise.reject(new ContractError("DOCUMENT_NOT_REGISTERED"));
   let path = "/";
@@ -317,6 +330,10 @@ const resolveProfileFor = async (active: {
   snapshot: SemanticSnapshot;
   path: string;
 }): Promise<ResolvedProfile> => {
+  console.debug("[ContextPilot][profile] resolving", {
+    origin: active.origin,
+    path: active.path,
+  });
   const stored = await chromeApi!.storage.local.get?.("profile_resolver");
   if (!stored?.profile_resolver)
     return Promise.reject(new ContractError("PROFILE_UNAVAILABLE"));
@@ -327,12 +344,19 @@ const resolveProfileFor = async (active: {
     allowedOrigins: settings.allowed_origins,
     keyRing: settings.key_ring,
   });
-  return resolver.resolveWithProof({
+  const resolved = await resolver.resolveWithProof({
     origin: active.origin,
     path: active.path,
     pageContextDigest: digestCanonical(active.snapshot),
     fingerprint: semanticFingerprint(active.snapshot).fingerprint,
   });
+  console.debug("[ContextPilot][profile] resolved", {
+    resolution: resolved.profile.resolution,
+    profile_id: resolved.profile.profile_id,
+    profile_version: resolved.profile.profile_version,
+    business_mcp_count: resolved.profile.business_mcp?.length ?? 0,
+  });
+  return resolved;
 };
 const resolveActiveProfile = async () => {
   const active = await readActiveSnapshot();
@@ -444,7 +468,7 @@ const runAskChat = async (payload: unknown): Promise<Record<string, unknown>> =>
   ];
   const mcp = new BusinessMcpClient(offscreenFetch);
   for (let step = 1; step <= 3; step += 1) {
-    console.debug("[ContextPilot][LLM request final]", {
+    console.info("[ContextPilot][LLM request final]", {
       step,
       messages: structuredClone(messages),
       tools: structuredClone(tools),

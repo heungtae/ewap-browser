@@ -93,6 +93,7 @@ export type SemanticSnapshot = {
   document_epoch: string;
   frame_id: number;
   nodes: SemanticNode[];
+  visible_text: string;
 };
 export type ModelSemanticNode = Omit<
   SemanticNode,
@@ -102,6 +103,7 @@ export type ModelSemanticSnapshot = {
   document_epoch: string;
   frame_id: number;
   nodes: ModelSemanticNode[];
+  visible_text: string;
 };
 export type ValueKind = "text" | "option";
 export type ValueBinding = {

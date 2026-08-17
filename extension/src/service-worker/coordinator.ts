@@ -83,6 +83,7 @@ export class ServiceCoordinator {
         document_epoch: snapshot.document_epoch,
         frame_id: snapshot.frame_id,
         nodes,
+        visible_text: snapshot.visible_text,
       },
       resolve: (proposal) => {
         const ref = map.get(proposal.target);

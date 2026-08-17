@@ -19,7 +19,7 @@ plugin manifest는 secret이 아닌 설정으로 저장한다. bundled adapter c
 
 ## 3. 페이지와 행동 데이터
 
-semantic projection은 role, redacted accessible name, 제한된 state와 run 한정 `model_ref`만 모델에 보낸다. raw HTML, CSS, password, OTP, cookie, Authorization header, API key, raw ref mapping과 사용자가 Act에서 넣는 값은 모델과 provider 요청에 보내지 않는다. CDP method, node/session ID, target token, selector, 좌표, box와 execution path도 모델/provider 입력에 포함하지 않는다.
+semantic projection은 role, redacted accessible name, 제한된 state, 최대 12,000자의 visible text와 run 한정 `model_ref`만 모델에 보낸다. visible text는 rendered page text를 정규화한 것으로 raw HTML, CSS, hidden DOM, password/OTP input value, cookie, Authorization header, API key, raw ref mapping과 사용자가 Act에서 넣는 값은 모델과 provider 요청에 보내지 않는다. CDP method, node/session ID, target token, selector, 좌표, box와 execution path도 모델/provider 입력에 포함하지 않는다.
 
 ## 4. 감사
 

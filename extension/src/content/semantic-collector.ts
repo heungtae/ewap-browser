@@ -65,6 +65,7 @@ export const collectSemanticProjection = (
     document_epoch: registry.epoch,
     frame_id: registry.frameId,
     nodes,
+    visible_text: "",
   };
   if (Buffer.byteLength(JSON.stringify(snapshot), "utf8") > 256 * 1024)
     fail("PAYLOAD_LIMIT_EXCEEDED");

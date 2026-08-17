@@ -62,7 +62,7 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
 
 content script는 `DOCUMENT_REGISTER`, `CONTENT_SNAPSHOT`, `EXECUTE_ACTION`, `PREPARE_BOUNDED_CDP_TARGET`, `CLEAR_BOUNDED_CDP_TARGET`, `VERIFY_RESULT`만 service worker와 교환한다. sender의 tab, frame, `documentId`, lifecycle을 Chrome API로 검증한다. CDP prepare/clear message는 service worker만 시작할 수 있고 Side Panel, page와 provider sender는 거부한다.
 
-snapshot에는 redacted role/name/state, document-scoped `ref_id`와 제한된 relation만 들어간다. service worker는 모델 호출 직전에 `ref_id`를 current-run `model_ref`로 치환하고 terminal transition·navigation·worker restart에 즉시 폐기한다.
+snapshot에는 redacted role/name/state, document-scoped `ref_id`, 제한된 relation과 최대 12,000자의 보이는 페이지 텍스트(`visible_text`)만 들어간다. `visible_text`는 rendered `innerText`를 줄 단위로 정규화한 것이며 raw HTML/CSS, hidden DOM, password/OTP input value와 browser credential은 포함하지 않는다. service worker는 모델 호출 직전에 `ref_id`를 current-run `model_ref`로 치환하고 terminal transition·navigation·worker restart에 즉시 폐기한다.
 
 bounded CDP 경로에서 content script는 preflight가 끝난 target 또는 실제 hit node에 128-bit 이상 무작위 action token을 일시적으로 표시한다. service worker는 token을 모델에 노출하지 않고 current run/action과 결속하며, CDP adapter는 정확히 하나의 live node만 해석한다. token은 dispatch 성공 여부와 관계없이 content script `finally`에서 제거한다. 페이지가 token을 복제·이동해 유일성 또는 hit test가 깨지면 실행하지 않는다.
 

@@ -4,6 +4,7 @@ import { validateSemanticSnapshot } from "../../../src/contracts/semantic-snapsh
 const snapshot = {
   document_epoch: "abcdefghijklmnop",
   frame_id: 0,
+  visible_text: "Google translation result",
   nodes: [
     {
       ref_id: "qrstuvwxyzABCDEF",
@@ -17,7 +18,10 @@ const snapshot = {
 };
 describe("semantic snapshot contract", () => {
   it("given_closed_snapshot_when_validating_then_accepts_projection", () =>
-    expect(validateSemanticSnapshot(snapshot).nodes[0]?.name).toBe("Save"));
+    expect(validateSemanticSnapshot(snapshot)).toMatchObject({
+      visible_text: "Google translation result",
+      nodes: [{ name: "Save" }],
+    }));
   it("given_raw_value_or_unknown_key_when_validating_then_denies", () =>
     expect(() =>
       validateSemanticSnapshot({
@@ -30,6 +34,13 @@ describe("semantic snapshot contract", () => {
       validateSemanticSnapshot({
         ...snapshot,
         nodes: [{ ...snapshot.nodes[0], parent_ref_id: "qrstuvwxyzABCDEF" }],
+      }),
+    ).toThrow("INVALID_ARGUMENT"));
+  it("given_oversized_visible_text_when_validating_then_denies", () =>
+    expect(() =>
+      validateSemanticSnapshot({
+        ...snapshot,
+        visible_text: "x".repeat(12_001),
       }),
     ).toThrow("INVALID_ARGUMENT"));
 });

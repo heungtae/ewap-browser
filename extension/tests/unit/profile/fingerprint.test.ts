@@ -8,6 +8,7 @@ describe("semantic fingerprint", () => {
     const result = semanticFingerprint({
       document_epoch: "x",
       frame_id: 0,
+      visible_text: "Current page text is not part of the fingerprint.",
       nodes: [
         {
           ref_id: "a",

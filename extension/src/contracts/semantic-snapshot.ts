@@ -75,16 +75,24 @@ const parseNode = (value: unknown): SemanticNode => {
   };
 };
 export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {
-  const snapshot = closedObject(value, ["document_epoch", "frame_id", "nodes"]);
+  const snapshot = closedObject(value, [
+    "document_epoch",
+    "frame_id",
+    "nodes",
+    "visible_text",
+  ]);
   if (
     !("document_epoch" in snapshot) ||
     !("frame_id" in snapshot) ||
     !("nodes" in snapshot) ||
+    !("visible_text" in snapshot) ||
     typeof snapshot.frame_id !== "number" ||
     !Number.isInteger(snapshot.frame_id) ||
     snapshot.frame_id < 0 ||
     !Array.isArray(snapshot.nodes) ||
-    snapshot.nodes.length > 500
+    snapshot.nodes.length > 500 ||
+    typeof snapshot.visible_text !== "string" ||
+    [...snapshot.visible_text].length > 12_000
   )
     return fail("INVALID_ARGUMENT");
   const nodes = snapshot.nodes.map(parseNode);
@@ -101,5 +109,6 @@ export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {
     document_epoch: opaque(snapshot.document_epoch),
     frame_id: snapshot.frame_id,
     nodes,
+    visible_text: snapshot.visible_text,
   };
 };
