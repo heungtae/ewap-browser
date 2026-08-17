@@ -11,6 +11,22 @@ const projection = document.querySelector<HTMLElement>("#projection");
 const chatForm = document.querySelector<HTMLFormElement>("#chat-form");
 const chatInput = document.querySelector<HTMLTextAreaElement>("#chat-input");
 const chatMessages = document.querySelector<HTMLElement>("#chat-messages");
+const modeAsk = document.querySelector<HTMLButtonElement>("#mode-ask");
+const modeAct = document.querySelector<HTMLButtonElement>("#mode-act");
+let chatMode: "ask" | "act" = "ask";
+const setChatMode = (mode: "ask" | "act"): void => {
+  chatMode = mode;
+  for (const [button, active] of [
+    [modeAsk, mode === "ask"],
+    [modeAct, mode === "act"],
+  ] as const) {
+    button?.setAttribute("aria-pressed", String(active));
+  }
+  if (status)
+    status.value = mode === "ask" ? "질문 모드입니다." : "실행 모드입니다.";
+};
+modeAsk?.addEventListener("click", () => setChatMode("ask"));
+modeAct?.addEventListener("click", () => setChatMode("act"));
 const appendMessage = (role: "user" | "assistant", text: string): void => {
   if (!chatMessages) return;
   const item = document.createElement("p");
@@ -29,7 +45,7 @@ chatForm?.addEventListener("submit", async (event) => {
   status.value = "응답을 기다리는 중입니다.";
   const response = await runtime.sendMessage({
     kind: "CHAT_SEND",
-    payload: { prompt },
+    payload: { prompt, mode: chatMode },
   });
   if (
     typeof response === "object" &&

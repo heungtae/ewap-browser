@@ -178,6 +178,38 @@
         background: rgba(22, 29, 46, 0.78);
         box-shadow: 0 16px 30px rgba(0, 0, 0, 0.2);
       }
+      #mode-toggle {
+        display: flex;
+        gap: 3px;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(11, 14, 23, 0.62);
+      }
+      .mode-button {
+        flex: 1;
+        padding: 6px 10px;
+        color: var(--muted);
+        border-color: transparent;
+        background: transparent;
+        box-shadow: none;
+        font-size: 11px;
+      }
+      .mode-button[aria-pressed="true"] {
+        color: #fff;
+        background: var(--accent);
+      }
+      .mode-button[data-mode="act"][aria-pressed="true"] {
+        background: #b7791f;
+      }
+      .chat-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .chat-actions #chat-send {
+        flex: 1;
+      }
       #chat-form label {
         color: var(--muted);
         font-size: 11px;
@@ -229,6 +261,11 @@
         border-color: transparent;
         background: linear-gradient(135deg, var(--accent), var(--accent-2));
         box-shadow: 0 8px 18px rgba(108, 99, 255, 0.22);
+      }
+      #cancel {
+        color: #fca5a5;
+        border-color: rgba(248, 113, 113, 0.28);
+        background: rgba(127, 29, 29, 0.18);
       }
       details,
       #permission-card {
@@ -316,7 +353,27 @@
         </div>
         <div id="chat-messages" aria-live="polite"></div>
         <form id="chat-form">
-          <label for="chat-input">질문</label>
+          <div id="mode-toggle" role="group" aria-label="작업 모드">
+            <button
+              class="mode-button"
+              data-mode="ask"
+              id="mode-ask"
+              type="button"
+              aria-pressed="true"
+            >
+              질문
+            </button>
+            <button
+              class="mode-button"
+              data-mode="act"
+              id="mode-act"
+              type="button"
+              aria-pressed="false"
+            >
+              실행
+            </button>
+          </div>
+          <label for="chat-input">내용</label>
           <textarea
             id="chat-input"
             rows="4"
@@ -324,7 +381,10 @@
             required
             placeholder="현재 페이지에 대해 질문하세요."
           ></textarea>
-          <button id="chat-send" type="submit">보내기</button>
+          <div class="chat-actions">
+            <button id="chat-send" type="submit">보내기</button>
+            <button id="cancel" type="button">중단</button>
+          </div>
         </form>
       </section>
       <details id="developer-preview">
@@ -339,7 +399,6 @@
         <button id="permission-always" type="button">항상 허용</button>
         <button id="permission-deny" type="button">거부</button>
       </section>
-      <button id="cancel" type="button">중단</button>
       <output id="status" aria-live="polite">준비됨</output>
       <pre id="projection"></pre>
     </main>
