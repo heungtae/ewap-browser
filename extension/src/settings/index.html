@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>LLM Provider 설정</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0e17;
+        --card: #111827;
+        --surface: #161d2e;
+        --border: rgba(255, 255, 255, 0.09);
+        --text: #e4e4ec;
+        --muted: #8b8fa4;
+        --accent: #6c63ff;
+        --accent-2: #a78bfa;
+        --glow: rgba(108, 99, 255, 0.22);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-width: 520px;
+        color: var(--text);
+        background: var(--bg);
+        font:
+          14px/1.55 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Inter,
+          sans-serif;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        z-index: -1;
+        width: 520px;
+        height: 360px;
+        top: -180px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: radial-gradient(circle, var(--glow), transparent 68%);
+        filter: blur(28px);
+      }
+      main {
+        width: min(760px, calc(100vw - 36px));
+        margin: 0 auto;
+        padding: 36px 0 56px;
+      }
+      .settings-header {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin-bottom: 25px;
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        color: #fff;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 10px 26px var(--glow);
+      }
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+      h1 {
+        font-size: 23px;
+        letter-spacing: -0.03em;
+      }
+      h2 {
+        font-size: 16px;
+        margin-bottom: 5px;
+      }
+      p {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .settings-subtitle {
+        margin-top: 3px;
+      }
+      .settings-card {
+        margin-top: 18px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        background: rgba(17, 24, 39, 0.84);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+      }
+      form {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+      label {
+        display: grid;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .headers-field {
+        display: grid;
+        gap: 8px;
+      }
+      .headers-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .headers-heading label {
+        display: block;
+      }
+      .headers-heading span {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 400;
+      }
+      .header-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        gap: 8px;
+        align-items: center;
+      }
+      .header-row button {
+        padding: 7px 10px;
+        color: #fca5a5;
+        background: transparent;
+        box-shadow: none;
+      }
+      .header-row button:hover {
+        background: rgba(248, 113, 113, 0.12);
+      }
+      #add-header {
+        padding: 7px 10px;
+        color: var(--accent-2);
+        background: transparent;
+        box-shadow: none;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 11px;
+        background: rgba(11, 14, 23, 0.72);
+        font: inherit;
+        font-weight: 400;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 78px;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: 2px solid var(--accent-2);
+        outline-offset: 1px;
+        border-color: transparent;
+      }
+      input::placeholder,
+      textarea::placeholder {
+        color: #6e7388;
+      }
+      button {
+        justify-self: start;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 16px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(108, 99, 255, 0.2);
+      }
+      button:hover {
+        filter: brightness(1.1);
+        transform: translateY(-1px);
+      }
+      output {
+        display: block;
+        min-height: 20px;
+        margin-top: 10px;
+        color: #a7f3d0;
+        font-size: 12px;
+      }
+      hr {
+        border: 0;
+        border-top: 1px solid var(--border);
+        margin: 26px 0 0;
+      }
+      @media (max-width: 560px) {
+        body {
+          min-width: 0;
+        }
+        main {
+          width: calc(100vw - 24px);
+          padding-top: 22px;
+        }
+        .settings-card {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="settings-header">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <div>
+          <h1>LLM Provider</h1>
+          <p class="settings-subtitle">WebBrain-inspired local configuration</p>
+        </div>
+      </header>
+      <section class="settings-card">
+        <h2>Provider 설정</h2>
+        <p>제품 계정이나 OAuth 없이 현재 Chrome profile에만 저장합니다.</p>
+        <form id="provider-form">
+          <label
+            >Endpoint
+            <input
+              name="base_url"
+              type="url"
+              required
+              value="http://127.0.0.1:8080/v1"
+          /></label>
+          <label>Model <input name="model" required value="qwen" /></label>
+          <label
+            >인증 방식
+            <select name="api_key_header">
+              <option value="none">없음</option>
+              <option value="authorization_bearer">Authorization Bearer</option>
+              <option value="api-key">api-key</option>
+              <option value="x-goog-api-key">x-goog-api-key</option>
+            </select></label
+          >
+          <label
+            >API key <input name="api_key" type="password" autocomplete="off"
+          /></label>
+          <div class="headers-field">
+            <div class="headers-heading">
+              <label for="provider-headers">HTTP headers</label>
+            </div>
+            <div
+              id="provider-headers"
+              aria-label="HTTP header key-value 목록"
+            ></div>
+            <button id="add-header" type="button">+ Header 추가</button>
+          </div>
+          <button type="submit">저장</button>
+        </form>
+        <output id="settings-status" aria-live="polite"></output>
+      </section>
+      <hr />
+      <section class="settings-card">
+        <h2>Page Profile Resolver</h2>
+        <p>
+          현재 페이지의 서명된 업무 Profile을 조회할 Resolver입니다. private
+          key나 API key는 입력하지 않습니다.
+        </p>
+        <form id="profile-form">
+          <label
+            >Resolver URL <input name="resolver_url" type="url" required
+          /></label>
+          <label>Deployment ID <input name="deployment_id" required /></label>
+          <label
+            >허용 Origin 목록
+            <textarea
+              name="allowed_origins"
+              rows="3"
+              required
+              placeholder="https://resolver.company.test"
+            ></textarea>
+          </label>
+          <label
+            >JWS public key ring (JSON)
+            <textarea
+              name="key_ring"
+              rows="8"
+              required
+              placeholder='{"k1":"-----BEGIN PUBLIC KEY-----..."}'
+            ></textarea>
+          </label>
+          <button type="submit">Resolver 저장</button>
+        </form>
+        <output id="profile-status" aria-live="polite"></output>
+      </section>
+    </main>
+    <script type="module" src="../js/settings.js"></script>
+  </body>
+</html>
