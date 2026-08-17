@@ -413,7 +413,16 @@ const runAskChat = async (payload: unknown): Promise<Record<string, unknown>> =>
     (value.mode !== "ask" && value.mode !== "act")
   )
     return fail("INVALID_ARGUMENT");
+  console.debug("[ContextPilot][CHAT_SEND accepted]", {
+    question: value.prompt,
+    mode: value.mode,
+  });
   const active = await readActiveSnapshot();
+  console.debug("[ContextPilot][page projection ready]", {
+    tab_id: active.tabId,
+    document_epoch: active.snapshot.document_epoch,
+    node_count: active.snapshot.nodes.length,
+  });
   const run = coordinator.runs.start(
     active.tabId,
     active.snapshot.frame_id,
@@ -737,22 +746,38 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     return;
   }
   if (kind === "CHAT_SEND") {
+    console.debug("[ContextPilot][CHAT_SEND received]", {
+      payload: structuredClone((message as { payload?: unknown }).payload),
+      sender_url: sender.url,
+    });
     if (!isPanelSender(sender) || !providerRuntime) {
+      console.error("[ContextPilot][CHAT_SEND rejected]", {
+        is_panel_sender: isPanelSender(sender),
+        provider_runtime_ready: !!providerRuntime,
+      });
       respond(safeFailure("INVALID_ARGUMENT"));
       return;
     }
     void runAskChat((message as { payload?: unknown }).payload)
       .then(respond)
-      .catch((error) =>
+      .catch((error) => {
+        const code =
+          error instanceof ContractError
+            ? error.code
+            : "PROVIDER_PLUGIN_FAILED";
+        console.error("[ContextPilot][CHAT_SEND failed before/at LLM]", {
+          code,
+          ...(error instanceof ContractError && error.detail
+            ? { detail: error.detail }
+            : {}),
+        });
         respond(
           safeFailure(
-            error instanceof ContractError
-              ? error.code
-              : "PROVIDER_PLUGIN_FAILED",
+            code,
             error instanceof ContractError ? error.detail : undefined,
           ),
-        ),
-      );
+        );
+      });
     return true;
   }
   if (

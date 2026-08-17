@@ -43,10 +43,17 @@ chatForm?.addEventListener("submit", async (event) => {
   appendMessage("user", prompt);
   chatInput.value = "";
   status.value = "응답을 기다리는 중입니다.";
-  const response = await runtime.sendMessage({
-    kind: "CHAT_SEND",
-    payload: { prompt, mode: chatMode },
-  });
+  let response: unknown;
+  try {
+    response = await runtime.sendMessage({
+      kind: "CHAT_SEND",
+      payload: { prompt, mode: chatMode },
+    });
+  } catch (error) {
+    console.error("[ContextPilot][Side Panel CHAT_SEND failed]", error);
+    status.value = "확장 프로그램 Service Worker 연결에 실패했습니다.";
+    return;
+  }
   if (
     typeof response === "object" &&
     response !== null &&
@@ -56,7 +63,14 @@ chatForm?.addEventListener("submit", async (event) => {
     appendMessage("assistant", (response as { message: string }).message);
     status.value = "응답을 받았습니다.";
   } else {
-    status.value = "Provider를 설정하거나 연결 상태를 확인해 주세요.";
+    const code =
+      typeof response === "object" &&
+      response !== null &&
+      typeof (response as { code?: unknown }).code === "string"
+        ? (response as { code: string }).code
+        : "UNKNOWN";
+    console.warn("[ContextPilot][Side Panel CHAT_SEND rejected]", response);
+    status.value = `질문을 처리하지 못했습니다. (${code})`;
   }
 });
 
