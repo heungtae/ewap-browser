@@ -3,13 +3,343 @@
   <head>
     <meta charset="utf-8" />
     <title>Company Web Agent</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0e17;
+        --panel: #111827;
+        --surface: #161d2e;
+        --surface-strong: #1a2233;
+        --border: rgba(255, 255, 255, 0.09);
+        --text: #e4e4ec;
+        --muted: #8b8fa4;
+        --accent: #6c63ff;
+        --accent-2: #a78bfa;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --glow: rgba(108, 99, 255, 0.24);
+        --radius: 16px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-width: 320px;
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        background: var(--bg);
+        font:
+          13px/1.55 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Inter,
+          sans-serif;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        z-index: -1;
+        width: 360px;
+        height: 360px;
+        top: -180px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: radial-gradient(circle, var(--glow), transparent 68%);
+        filter: blur(24px);
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 100vh;
+        padding: 14px;
+      }
+      .panel-header {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 2px 2px 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 9px;
+        color: #fff;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 8px 24px var(--glow);
+      }
+      .brand-copy {
+        display: grid;
+        gap: 1px;
+      }
+      .brand-copy strong {
+        font-size: 14px;
+        letter-spacing: 0.01em;
+      }
+      .brand-copy span {
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .connection {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        color: var(--muted);
+        font-size: 10px;
+      }
+      .connection::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
+      }
+      #chat {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 300px;
+      }
+      .section-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 2px 0 10px;
+      }
+      h1,
+      h2,
+      p {
+        margin: 0;
+      }
+      h1 {
+        font-size: 18px;
+        letter-spacing: -0.02em;
+      }
+      .section-heading span {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      #chat-messages {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 110px;
+        padding: 4px 0 14px;
+        overflow-y: auto;
+      }
+      #chat-messages:empty::before {
+        content: "현재 페이지에 대해 무엇이든 물어보세요.";
+        margin: auto;
+        padding: 18px;
+        color: var(--muted);
+        text-align: center;
+      }
+      #chat-messages p {
+        max-width: 88%;
+        margin: 0;
+        padding: 9px 12px;
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        overflow-wrap: anywhere;
+        white-space: pre-wrap;
+      }
+      #chat-messages p[data-role="user"] {
+        align-self: flex-end;
+        color: #fff;
+        border-color: transparent;
+        border-bottom-right-radius: 4px;
+        background: linear-gradient(135deg, var(--accent), #584ff0);
+        box-shadow: 0 8px 18px rgba(108, 99, 255, 0.18);
+      }
+      #chat-messages p[data-role="assistant"] {
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        background: var(--surface);
+      }
+      #chat-form {
+        display: grid;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(22, 29, 46, 0.78);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.2);
+      }
+      #chat-form label {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      textarea,
+      input,
+      select {
+        width: 100%;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(11, 14, 23, 0.62);
+        font: inherit;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 72px;
+        padding: 10px 11px;
+      }
+      textarea::placeholder,
+      input::placeholder {
+        color: #6e7388;
+      }
+      textarea:focus,
+      input:focus,
+      select:focus {
+        outline: 2px solid var(--accent-2);
+        outline-offset: 1px;
+        border-color: transparent;
+      }
+      button {
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 8px 12px;
+        color: var(--text);
+        background: var(--surface-strong);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.18s ease;
+      }
+      button:hover {
+        border-color: var(--accent-2);
+        background: #252d43;
+        transform: translateY(-1px);
+      }
+      #chat-send {
+        color: #fff;
+        border-color: transparent;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        box-shadow: 0 8px 18px rgba(108, 99, 255, 0.22);
+      }
+      details,
+      #permission-card {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(17, 24, 39, 0.78);
+      }
+      details {
+        padding: 10px 12px;
+      }
+      summary {
+        color: var(--muted);
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      details[open] summary {
+        color: var(--text);
+        margin-bottom: 10px;
+      }
+      details button {
+        margin: 0 5px 8px 0;
+        font-size: 11px;
+      }
+      pre {
+        max-height: 180px;
+        margin: 4px 0 0;
+        padding: 10px;
+        overflow: auto;
+        color: #c4b5fd;
+        border-radius: 9px;
+        background: #0a0d15;
+        font:
+          11px/1.45 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        white-space: pre-wrap;
+      }
+      #permission-card {
+        padding: 12px;
+        border-color: rgba(251, 191, 36, 0.35);
+        background: rgba(120, 79, 12, 0.16);
+      }
+      #permission-description {
+        margin-bottom: 10px;
+        color: #fbd38d;
+      }
+      #permission-card button {
+        font-size: 11px;
+      }
+      #permission-always {
+        color: #fff;
+        border-color: transparent;
+        background: var(--accent);
+      }
+      #permission-deny {
+        color: #fecaca;
+      }
+      #cancel {
+        align-self: flex-start;
+        color: #fca5a5;
+        font-size: 11px;
+      }
+      #status {
+        min-height: 18px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+    </style>
   </head>
   <body>
     <main>
-      <button id="preview" type="button">페이지 미리보기</button>
-      <label for="fixture-value">Fixture 텍스트</label>
-      <input id="fixture-value" type="text" autocomplete="off" />
-      <button id="fixture-set" type="button">Fixture 텍스트 설정</button>
+      <header class="panel-header">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span class="brand-copy"
+          ><strong>Company Web Agent</strong
+          ><span>Page-aware assistant</span></span
+        >
+        <span class="connection">Ready</span>
+      </header>
+      <section id="chat" aria-label="Ask chat">
+        <div class="section-heading">
+          <h1>Ask</h1>
+          <span>현재 탭 기반</span>
+        </div>
+        <div id="chat-messages" aria-live="polite"></div>
+        <form id="chat-form">
+          <label for="chat-input">질문</label>
+          <textarea
+            id="chat-input"
+            rows="4"
+            maxlength="8000"
+            required
+            placeholder="현재 페이지에 대해 질문하세요."
+          ></textarea>
+          <button id="chat-send" type="submit">보내기</button>
+        </form>
+      </section>
+      <details id="developer-preview">
+        <summary>개발자 진단</summary>
+        <button id="preview" type="button">페이지 projection 확인</button>
+        <button id="profile-resolve" type="button">Page Profile 확인</button>
+        <pre id="projection"></pre>
+      </details>
+      <section id="permission-card" hidden>
+        <p id="permission-description"></p>
+        <button id="permission-once" type="button">이번 작업만 허용</button>
+        <button id="permission-always" type="button">항상 허용</button>
+        <button id="permission-deny" type="button">거부</button>
+      </section>
       <button id="cancel" type="button">중단</button>
       <output id="status" aria-live="polite">준비됨</output>
       <pre id="projection"></pre>

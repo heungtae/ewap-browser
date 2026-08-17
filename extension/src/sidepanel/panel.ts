@@ -23,6 +23,19 @@ export const userMessage: Record<ErrorCode, string> = {
   BUSINESS_MCP_TIMEOUT: "업무 데이터 응답 시간이 초과되었습니다.",
   BUSINESS_MCP_PROTOCOL_ERROR:
     "업무 데이터 응답을 안전하게 확인할 수 없습니다.",
+  PERMISSION_REQUIRED: "이 사이트에서 해당 작업을 허용해야 합니다.",
+  CDP_UNAVAILABLE: "신뢰 입력 기능을 사용할 수 없습니다.",
+  CDP_CONFLICT: "다른 디버거가 연결되어 신뢰 입력을 실행할 수 없습니다.",
+  CDP_COMMAND_NOT_ALLOWED: "허용되지 않은 브라우저 입력 요청입니다.",
+  CDP_CLEANUP_FAILED:
+    "브라우저 입력 연결을 정리하지 못해 이 탭의 작업을 중단했습니다.",
+  PROVIDER_PLUGIN_NOT_FOUND: "선택한 provider plugin을 찾을 수 없습니다.",
+  PROVIDER_PLUGIN_INCOMPATIBLE:
+    "provider plugin 버전이 현재 확장과 호환되지 않습니다.",
+  PROVIDER_PLUGIN_FAILED: "provider plugin 요청을 처리하지 못했습니다.",
+  PROVIDER_NOT_CONFIGURED: "사용할 provider를 먼저 설정해야 합니다.",
+  PROVIDER_AUTH_FAILED: "provider API key 또는 header를 확인해 주세요.",
+  PROVIDER_UNAVAILABLE: "provider에 연결할 수 없습니다.",
 };
 export const terminalState = (
   outcome: Outcome,

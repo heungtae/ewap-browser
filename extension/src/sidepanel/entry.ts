@@ -2,78 +2,89 @@ type BrowserRuntime = { sendMessage(message: unknown): Promise<unknown> };
 const runtime = (
   globalThis as typeof globalThis & { chrome?: { runtime: BrowserRuntime } }
 ).chrome?.runtime;
-const button = document.querySelector<HTMLButtonElement>("#preview");
-const fixtureSet = document.querySelector<HTMLButtonElement>("#fixture-set");
-const fixtureValue = document.querySelector<HTMLInputElement>("#fixture-value");
+const preview = document.querySelector<HTMLButtonElement>("#preview");
+const profileResolve =
+  document.querySelector<HTMLButtonElement>("#profile-resolve");
 const cancel = document.querySelector<HTMLButtonElement>("#cancel");
 const status = document.querySelector<HTMLOutputElement>("#status");
 const projection = document.querySelector<HTMLElement>("#projection");
-let latestSnapshot:
-  | {
-      nodes?: Array<{ ref_id: string; role: string; name: string }>;
-    }
-  | undefined;
-button?.addEventListener("click", async () => {
+const chatForm = document.querySelector<HTMLFormElement>("#chat-form");
+const chatInput = document.querySelector<HTMLTextAreaElement>("#chat-input");
+const chatMessages = document.querySelector<HTMLElement>("#chat-messages");
+const appendMessage = (role: "user" | "assistant", text: string): void => {
+  if (!chatMessages) return;
+  const item = document.createElement("p");
+  item.dataset.role = role;
+  item.textContent = `${role === "user" ? "나" : "Agent"}: ${text}`;
+  chatMessages.append(item);
+};
+
+chatForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!runtime || !chatInput || !status) return;
+  const prompt = chatInput.value.trim();
+  if (!prompt) return;
+  appendMessage("user", prompt);
+  chatInput.value = "";
+  status.value = "응답을 기다리는 중입니다.";
+  const response = await runtime.sendMessage({
+    kind: "CHAT_SEND",
+    payload: { prompt },
+  });
+  if (
+    typeof response === "object" &&
+    response !== null &&
+    (response as { ok?: unknown }).ok &&
+    typeof (response as { message?: unknown }).message === "string"
+  ) {
+    appendMessage("assistant", (response as { message: string }).message);
+    status.value = "응답을 받았습니다.";
+  } else {
+    status.value = "Provider를 설정하거나 연결 상태를 확인해 주세요.";
+  }
+});
+
+preview?.addEventListener("click", async () => {
   if (!runtime || !status || !projection) return;
-  status.value = "페이지 정보를 확인하는 중입니다.";
+  status.value = "페이지 projection을 확인하는 중입니다.";
   const result = await runtime.sendMessage({ kind: "START_PREVIEW" });
   if (
     typeof result !== "object" ||
     result === null ||
     !(result as { ok?: unknown }).ok
   ) {
-    status.value = "이 사이트에서는 사용할 수 없습니다.";
+    status.value = "현재 페이지의 projection을 읽지 못했습니다.";
     projection.textContent = "";
     return;
   }
-  status.value = "미리보기 준비됨";
-  latestSnapshot = (result as { snapshot: typeof latestSnapshot }).snapshot;
-  projection.textContent = JSON.stringify(latestSnapshot, null, 2);
-});
-fixtureSet?.addEventListener("click", async () => {
-  if (!runtime || !status || !fixtureValue) return;
-  const target = latestSnapshot?.nodes?.find(
-    (node) => node.role === "textbox" && node.name === "Case name",
+  status.value = "projection을 확인했습니다.";
+  projection.textContent = JSON.stringify(
+    (result as { snapshot: unknown }).snapshot,
+    null,
+    2,
   );
-  if (!target) {
-    status.value = "먼저 Fixture 페이지 미리보기를 확인해 주세요.";
-    return;
-  }
-  status.value = "입력 대상 확인 중입니다.";
-  const started = await runtime.sendMessage({
-    kind: "START_ACT",
-    tool: "set_text_by_ref",
-    ref_id: target.ref_id,
-  });
-  if (
-    typeof started !== "object" ||
-    started === null ||
-    !(started as { ok?: unknown }).ok
-  ) {
-    status.value = "Fixture 작업을 시작할 수 없습니다.";
-    return;
-  }
-  const response = started as {
-    run_id: string;
-    value_slot_id: string;
-    value_kind: "text";
-  };
-  status.value = "입력값을 한 번만 전달하는 중입니다.";
-  const submitted = await runtime.sendMessage({
-    kind: "SUBMIT_ACTION_VALUE",
-    run_id: response.run_id,
-    value_slot_id: response.value_slot_id,
-    value_kind: response.value_kind,
-    value: fixtureValue.value,
-  });
-  fixtureValue.value = "";
-  status.value =
-    typeof submitted === "object" &&
-    submitted !== null &&
-    (submitted as { ok?: unknown }).ok
-      ? "Fixture 작업 완료"
-      : "Fixture 작업이 안전하게 종료되었습니다.";
 });
+profileResolve?.addEventListener("click", async () => {
+  if (!runtime || !status) return;
+  status.value = "Page Profile을 확인하는 중입니다.";
+  const response = await runtime.sendMessage({ kind: "RESOLVE_PROFILE" });
+  if (
+    typeof response === "object" &&
+    response !== null &&
+    (response as { ok?: unknown }).ok
+  ) {
+    const value = response as {
+      resolution: string;
+      profile_id?: string;
+      profile_version?: number;
+      business_mcp_count: number;
+    };
+    status.value = `Profile ${value.resolution}: ${value.profile_id ?? "unknown"} v${value.profile_version ?? "-"}, MCP ${value.business_mcp_count}개`;
+  } else {
+    status.value = "Resolver 설정 또는 Page Profile을 확인할 수 없습니다.";
+  }
+});
+
 cancel?.addEventListener("click", async () => {
   if (!runtime || !status) return;
   const result = await runtime.sendMessage({ kind: "CANCEL" });
