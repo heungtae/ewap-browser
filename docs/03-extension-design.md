@@ -35,7 +35,7 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
 {
   "providers": {
     "local": {
-      "plugin_id": "webbrain.openai-compatible",
+      "plugin_id": "contextpilot.openai-compatible",
       "plugin_version": "1.0.0",
       "label": "Local OpenAI-compatible LLM",
       "base_url": "http://127.0.0.1:8080/v1",
@@ -48,7 +48,7 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
     }
   },
   "activeProvider": "local",
-  "wb_permissions": [],
+  "contextpilot_permissions": [],
   "askBeforeConsequentialActions": true
 }
 ```

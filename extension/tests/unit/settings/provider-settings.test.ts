@@ -3,7 +3,7 @@ import { ProviderSettings } from "../../../src/settings/provider-settings.js";
 import type { ProviderConfig } from "../../../src/providers/types.js";
 
 const provider: ProviderConfig = {
-  plugin_id: "webbrain.openai-compatible",
+  plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   label: "local",
   base_url: "http://127.0.0.1:8080/v1",

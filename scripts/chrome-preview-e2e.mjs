@@ -130,8 +130,7 @@ try {
     if (worker) break;
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
   }
-  if (!worker)
-    throw new Error("Company Web Agent service worker was not loaded");
+  if (!worker) throw new Error("ContextPilot service worker was not loaded");
   const extensionId = new URL(worker.url).host;
   await cdp(version.webSocketDebuggerUrl, "Target.createTarget", {
     url: `chrome-extension://${extensionId}/sidepanel/index.html`,

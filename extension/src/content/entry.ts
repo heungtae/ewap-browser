@@ -300,10 +300,10 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     if (request.kind === "CLEAR_BOUNDED_CDP_TARGET") {
       const marked = boundedMarkers.get(markerKey);
       if (
-        marked?.getAttribute("data-webbrain-action-token") ===
+        marked?.getAttribute("data-contextpilot-action-token") ===
         request.action_token
       )
-        marked.removeAttribute("data-webbrain-action-token");
+        marked.removeAttribute("data-contextpilot-action-token");
       boundedMarkers.delete(markerKey);
       respond({ ok: true });
       return true;
@@ -317,7 +317,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
       return true;
     }
-    element.setAttribute("data-webbrain-action-token", request.action_token);
+    element.setAttribute("data-contextpilot-action-token", request.action_token);
     boundedMarkers.set(markerKey, element);
     respond({
       ok: true,

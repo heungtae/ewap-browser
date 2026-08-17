@@ -144,7 +144,7 @@ export class BoundedCdpAdapter {
         "DOM.querySelectorAll",
         {
           nodeId: rootNodeId,
-          selector: `[data-webbrain-action-token="${action.actionToken}"]`,
+          selector: `[data-contextpilot-action-token="${action.actionToken}"]`,
         },
       );
       const nodeIds = selected.nodeIds;
@@ -292,7 +292,7 @@ export class BoundedCdpAdapter {
     if (!Array.isArray(value) || value.length % 2 !== 0) return false;
     for (let index = 0; index < value.length; index += 2)
       if (
-        value[index] === "data-webbrain-action-token" &&
+        value[index] === "data-contextpilot-action-token" &&
         value[index + 1] === token
       )
         return true;

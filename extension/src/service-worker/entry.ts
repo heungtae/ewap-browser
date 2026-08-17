@@ -108,9 +108,16 @@ void Promise.all([
   }),
 ])
   .then(async () => {
-    const saved = await chromeApi?.storage.local.get?.("wb_permissions");
-    if (saved?.wb_permissions !== undefined)
-      permissions.load(saved.wb_permissions);
+    const saved = await chromeApi?.storage.local.get?.(
+      "contextpilot_permissions",
+    );
+    const legacy =
+      saved?.contextpilot_permissions === undefined
+        ? await chromeApi?.storage.local.get?.("wb_permissions")
+        : undefined;
+    const storedPermissions =
+      saved?.contextpilot_permissions ?? legacy?.wb_permissions;
+    if (storedPermissions !== undefined) permissions.load(storedPermissions);
     storageReady = true;
     coordinator.completeStorageBootstrap(true);
   })
@@ -414,7 +421,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       decision as PermissionDecision,
     );
     void chromeApi!.storage.local
-      .set?.({ wb_permissions: permissions.snapshot() })
+      .set?.({ contextpilot_permissions: permissions.snapshot() })
       .then(() => respond({ ok: true }))
       .catch(() => respond(safeFailure("STORAGE_BOUNDARY_UNAVAILABLE")));
     return;

@@ -130,7 +130,7 @@ form?.addEventListener("submit", (event) => {
     return;
   }
   const provider = {
-    plugin_id: "webbrain.openai-compatible",
+    plugin_id: "contextpilot.openai-compatible",
     plugin_version: "1.0.0",
     label: "Local OpenAI-compatible LLM",
     base_url: baseUrl,

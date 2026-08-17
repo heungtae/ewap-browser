@@ -18,9 +18,7 @@ if (
     JSON.stringify(["activeTab", "debugger", "sidePanel", "storage"]) ||
   !manifest.host_permissions.includes("<all_urls>")
 )
-  throw new Error(
-    "release manifest is missing all-web-page host coverage",
-  );
+  throw new Error("release manifest is missing all-web-page host coverage");
 for (const path of required)
   await readFile(new URL(`../dist-extension/${path}`, import.meta.url));
 const manifestBytes = await readFile(

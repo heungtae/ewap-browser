@@ -7,7 +7,7 @@ import {
 import type { ProviderConfig } from "../../../src/providers/types.js";
 
 const config = (scheme: ProviderConfig["api_key_header"]): ProviderConfig => ({
-  plugin_id: "webbrain.openai-compatible",
+  plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   label: "fixture",
   base_url: "http://127.0.0.1:8080/v1",

@@ -2,7 +2,7 @@
 
 ## 1. 제품 모델
 
-WebBrain은 한 사용자가 자신의 Chrome profile에 설치해 현재 브라우저 세션과 선택한 LLM provider를 연결하는 로컬 단일 사용자용 MV3 브라우저 에이전트다. 사용자는 Settings에서 provider plugin, 모델 연결과 실행 권한을 직접 관리한다.
+ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 브라우저 세션과 선택한 LLM provider를 연결하는 로컬 단일 사용자용 MV3 브라우저 에이전트다. 사용자는 Settings에서 provider plugin, 모델 연결과 실행 권한을 직접 관리한다.
 
 제품 경계는 다음과 같다.
 
@@ -64,7 +64,7 @@ Settings
                            └─ LLM
 ```
 
-provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api_key`, `api_key_header`, `headers`, timeout과 enabled 상태를 가진다. 기존 설정은 내장 `webbrain.openai-compatible` plugin으로 migration한다. `api_key_header`는 `authorization_bearer`, `api-key`, `x-goog-api-key` 중 하나다. plugin은 이 집합을 확장하거나 OAuth/token refresh를 구현할 수 없다. `headers`는 `{name, value}` 목록이며 같은 header 이름의 중복, 빈 이름, 제어 문자는 거부한다. `Content-Type: application/json`은 core가 고정한다.
+provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api_key`, `api_key_header`, `headers`, timeout과 enabled 상태를 가진다. 기존 설정은 내장 `contextpilot.openai-compatible` plugin으로 migration한다. `api_key_header`는 `authorization_bearer`, `api-key`, `x-goog-api-key` 중 하나다. plugin은 이 집합을 확장하거나 OAuth/token refresh를 구현할 수 없다. `headers`는 `{name, value}` 목록이며 같은 header 이름의 중복, 빈 이름, 제어 문자는 거부한다. `Content-Type: application/json`은 core가 고정한다.
 
 ## 4. 실행 흐름
 

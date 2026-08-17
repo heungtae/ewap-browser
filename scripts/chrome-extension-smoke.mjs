@@ -75,7 +75,7 @@ try {
   }
   if (!workers.some((worker) => worker.url.endsWith(expectedWorker))) {
     throw new Error(
-      "Company Web Agent service worker was not loaded by Chrome for Testing",
+      "ContextPilot service worker was not loaded by Chrome for Testing",
     );
   }
   const worker = workers.find((item) => item.url.endsWith(expectedWorker));
@@ -98,8 +98,7 @@ try {
     if (panel) break;
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
   }
-  if (!panel)
-    throw new Error("Company Web Agent Side Panel target was not created");
+  if (!panel) throw new Error("ContextPilot Side Panel target was not created");
   let previewRendered = false;
   while (Date.now() < deadline) {
     const evaluation = await cdp(
@@ -118,11 +117,11 @@ try {
   }
   if (!previewRendered) {
     throw new Error(
-      "Company Web Agent Side Panel did not render its preview control",
+      "ContextPilot Side Panel did not render its preview control",
     );
   }
   console.log(
-    "Chrome for Testing loaded the Company Web Agent service worker and Side Panel",
+    "Chrome for Testing loaded the ContextPilot service worker and Side Panel",
   );
 } finally {
   child.kill("SIGTERM");

@@ -9,7 +9,7 @@ const frame = (request) => {
 };
 const runFrames = async (requests) => {
   const child = spawn("dotnet", [
-    "native-host/bin/Debug/net8.0/CompanyWebAgent.Host.dll",
+    "native-host/bin/Debug/net8.0/ContextPilot.Host.dll",
   ]);
   const chunks = [];
   child.stdout.on("data", (chunk) => chunks.push(chunk));

@@ -6,8 +6,8 @@ describe("provider plugin registry", () => {
   it("given_builtin_plugin_when_resolving_then_adapter_is_available", () => {
     const registry = new ProviderRegistry();
     expect(
-      registry.resolve("webbrain.openai-compatible", "1.2.0").adapter.id,
-    ).toBe("webbrain.openai-compatible");
+      registry.resolve("contextpilot.openai-compatible", "1.2.0").adapter.id,
+    ).toBe("contextpilot.openai-compatible");
   });
 
   it("given_oauth_or_executable_field_when_importing_then_manifest_is_rejected", () => {
@@ -17,7 +17,7 @@ describe("provider plugin registry", () => {
       plugin_version: "1.0.0",
       api_version: 1,
       label: "Example",
-      adapter_id: "webbrain.openai-compatible",
+      adapter_id: "contextpilot.openai-compatible",
       wire_apis: ["responses"],
       auth_schemes: ["authorization_bearer"],
     };

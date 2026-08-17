@@ -3,7 +3,7 @@ import { ProviderRuntime } from "../../../src/providers/runtime.js";
 import type { ProviderConfig } from "../../../src/providers/types.js";
 
 const config: ProviderConfig = {
-  plugin_id: "webbrain.openai-compatible",
+  plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   label: "fixture",
   base_url: "http://127.0.0.1:8080/v1",
@@ -60,7 +60,7 @@ describe("provider runtime", () => {
     });
     await runtime.handle("PROVIDER_SAVE", { id: "local", config });
     await runtime.handle("PLUGIN_SET_ENABLED", {
-      plugin_id: "webbrain.openai-compatible",
+      plugin_id: "contextpilot.openai-compatible",
       enabled: false,
     });
     const disabled = await runtime.handle("PROVIDER_LIST", undefined);
@@ -69,7 +69,7 @@ describe("provider runtime", () => {
         ?.enabled,
     ).toBe(false);
     await runtime.handle("PLUGIN_SET_ENABLED", {
-      plugin_id: "webbrain.openai-compatible",
+      plugin_id: "contextpilot.openai-compatible",
       enabled: true,
     });
     const enabled = await runtime.handle("PROVIDER_LIST", undefined);

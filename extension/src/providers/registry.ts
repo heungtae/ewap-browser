@@ -5,14 +5,15 @@ import type { ProviderAdapter, ProviderPluginManifest } from "./types.js";
 
 export const BUILTIN_OPENAI_COMPATIBLE: ProviderPluginManifest = {
   schema_version: 1,
-  plugin_id: "webbrain.openai-compatible",
+  plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   api_version: 1,
   label: "OpenAI-compatible",
-  adapter_id: "webbrain.openai-compatible",
+  adapter_id: "contextpilot.openai-compatible",
   wire_apis: ["chat_completions", "responses"],
   auth_schemes: ["none", "authorization_bearer", "api-key", "x-goog-api-key"],
 };
+const LEGACY_OPENAI_COMPATIBLE_PLUGIN = "webbrain.openai-compatible";
 export type InstalledPlugin = {
   manifest: ProviderPluginManifest;
   enabled: boolean;
@@ -62,8 +63,12 @@ export class ProviderRegistry {
     pluginId: string,
     version: string,
   ): { manifest: ProviderPluginManifest; adapter: ProviderAdapter } {
+    const resolvedPluginId =
+      pluginId === LEGACY_OPENAI_COMPATIBLE_PLUGIN
+        ? BUILTIN_OPENAI_COMPATIBLE.plugin_id
+        : pluginId;
     const plugin =
-      this.plugins.get(pluginId) ?? fail("PROVIDER_PLUGIN_NOT_FOUND");
+      this.plugins.get(resolvedPluginId) ?? fail("PROVIDER_PLUGIN_NOT_FOUND");
     if (!plugin.enabled) fail("PROVIDER_PLUGIN_NOT_FOUND");
     if (
       Number(plugin.manifest.plugin_version.split(".")[0]) !==

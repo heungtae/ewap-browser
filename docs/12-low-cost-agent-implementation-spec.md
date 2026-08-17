@@ -106,7 +106,7 @@ bundled adapter는 동일 interface를 구현하지만 extension source에 포�
 
 ## 6. lifecycle과 migration
 
-- 기존 `type: "openai_compatible"` provider는 `webbrain.openai-compatible@1`로 one-way migration한다.
+- 기존 `type: "openai_compatible"` provider는 `contextpilot.openai-compatible@1`로 one-way migration한다.
 - plugin이 없거나 disabled이면 연결된 provider를 `PROVIDER_PLUGIN_NOT_FOUND`로 비활성화한다.
 - provider API 또는 plugin major version이 맞지 않으면 `PROVIDER_PLUGIN_INCOMPATIBLE`로 비활성화한다.
 - plugin update가 wire API, auth scheme 또는 capability를 늘리면 사용자가 Settings diff를 승인하기 전까지 기존 범위만 유지한다.
@@ -115,7 +115,7 @@ bundled adapter는 동일 interface를 구현하지만 extension source에 포�
 
 ## 7. permission gate
 
-`PermissionManager`는 `wb_permissions`의 `{capability, host, action, duration}`을 읽는다. `duration: once`는 run 종료 때 폐기하고 `duration: always`만 저장한다. gated tool은 target host를 확인할 수 없으면 거부한다. provider/plugin capability는 browser 행동 권한이 아니며 capability gate에 grant를 추가할 수 없다. master preference가 꺼져도 R2/R3의 explicit confirmation은 유지한다.
+`PermissionManager`는 `contextpilot_permissions`의 `{capability, host, action, duration}`을 읽는다. `duration: once`는 run 종료 때 폐기하고 `duration: always`만 저장한다. gated tool은 target host를 확인할 수 없으면 거부한다. provider/plugin capability는 browser 행동 권한이 아니며 capability gate에 grant를 추가할 수 없다. master preference가 꺼져도 R2/R3의 explicit confirmation은 유지한다.
 
 ## 8. runtime message
 

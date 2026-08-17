@@ -76,7 +76,7 @@ Chrome MV3의 remote-code 금지 경계를 유지하기 위해 runtime import는
 | `headers`        | 사용자가 설정한 정적 `{name,value}` 목록                          |
 | `timeout_ms`     | core가 적용하는 요청 제한                                         |
 
-기존 `type: openai_compatible` 설정은 설치 시 내장 `webbrain.openai-compatible@1` plugin을 가리키도록 one-way migration한다. 원본 key/header 값은 변경하지 않는다.
+기존 `type: openai_compatible` 설정은 설치 시 내장 `contextpilot.openai-compatible@1` plugin을 가리키도록 one-way migration한다. 원본 key/header 값은 변경하지 않는다.
 
 ## 5. 실행 경계
 

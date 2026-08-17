@@ -1,6 +1,6 @@
-# WebBrain 설계서
+# ContextPilot 설계서
 
-WebBrain은 한 사용자가 자신의 Chrome profile에 설치해 현재 로그인 세션을 대상으로 Ask/Act 작업을 실행하는 로컬 우선 MV3 확장이다. 별도 제품 계정, SSO, 조직 RBAC, Cloud Sync는 제공하지 않는다. LLM 연결은 사용자가 설치·선택하는 provider plugin과 로컬 설정으로 구성한다.
+ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 로그인 세션을 대상으로 Ask/Act 작업을 실행하는 로컬 우선 MV3 확장이다. 별도 제품 계정, SSO, 조직 RBAC, Cloud Sync는 제공하지 않는다. LLM 연결은 사용자가 설치·선택하는 provider plugin과 로컬 설정으로 구성한다.
 
 - [아키텍처](01-architecture.md)
 - [보안 및 행동 정책](02-security-policy.md)

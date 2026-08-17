@@ -23,7 +23,7 @@ export const assertSafeRequestPlan = (plan: ProviderRequestPlan): void => {
 };
 
 export const openAiCompatibleAdapter: ProviderAdapter = {
-  id: "webbrain.openai-compatible",
+  id: "contextpilot.openai-compatible",
   plan(request: NormalizedProviderRequest): ProviderRequestPlan {
     const plan: ProviderRequestPlan =
       request.wire_api === "chat_completions"

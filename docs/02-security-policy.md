@@ -28,7 +28,7 @@
 | `network_write`                  | fetch/research 요청  |
 | `download`, `upload`, `schedule` | 파일·예약 작업       |
 
-사용자는 각 `(capability, host)`에 대해 이번 작업 또는 항상 허용을 선택한다. 항상 허용은 `wb_permissions`에 저장하며 Settings에서 개별 또는 전체 철회할 수 있다. 사용자는 필요하면 결과적 행동 질문을 끌 수 있으나, 제출·결제·삭제·외부 공개와 API write는 항상 개별 확인을 요구한다.
+사용자는 각 `(capability, host)`에 대해 이번 작업 또는 항상 허용을 선택한다. 항상 허용은 `contextpilot_permissions`에 저장하며 Settings에서 개별 또는 전체 철회할 수 있다. 사용자는 필요하면 결과적 행동 질문을 끌 수 있으나, 제출·결제·삭제·외부 공개와 API write는 항상 개별 확인을 요구한다.
 
 `execute_js`는 현재 제품 capability와 tool registry에 존재하지 않는다. bounded CDP adapter도 JavaScript 실행 capability를 암묵적으로 만들지 않는다.
 

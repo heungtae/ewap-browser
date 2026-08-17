@@ -36,7 +36,7 @@ const fixture = (
       if (method === "DOM.getNodeForLocation") return { nodeId: 2 };
       if (method === "DOM.getAttributes")
         return {
-          attributes: ["data-webbrain-action-token", action.actionToken],
+          attributes: ["data-contextpilot-action-token", action.actionToken],
         };
       return {};
     },
