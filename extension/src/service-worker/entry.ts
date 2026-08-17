@@ -435,14 +435,16 @@ const runAskChat = async (payload: unknown): Promise<Record<string, unknown>> =>
   ];
   const mcp = new BusinessMcpClient(offscreenFetch);
   for (let step = 1; step <= 3; step += 1) {
-    console.debug("[ContextPilot][LLM request]", {
+    console.debug("[ContextPilot][LLM request final]", {
       step,
-      question: step === 1 ? value.prompt : "tool-result continuation",
-      projection: step === 1 ? modelSnapshot : undefined,
-      tools: tools.map((tool) => tool.function.name),
+      messages: structuredClone(messages),
+      tools: structuredClone(tools),
     });
     const response = await providerRuntime!.chat({ messages, tools });
-    console.debug("[ContextPilot][LLM response]", { step, response });
+    console.debug("[ContextPilot][LLM response final]", {
+      step,
+      message: structuredClone(response),
+    });
     if (response.tool_calls.length === 0) {
       if (!response.content) return fail("PROVIDER_UNAVAILABLE");
       coordinator.runs.terminal(run.id, "VERIFIED");
