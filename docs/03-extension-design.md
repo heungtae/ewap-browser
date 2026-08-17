@@ -5,22 +5,27 @@
 ```text
 extension/
   manifest.json
-  src/service-worker/  # run coordinator, permission gate, provider client
+  src/service-worker/  # run coordinator, permission gate, provider host/transport
   src/content/         # projection, ref registry, DOM executor
+  src/cdp/             # closed command allowlist, action-scoped attach/detach
   src/sidepanel/       # task, permission card, confirmation, result
-  src/settings/        # provider, headers, site permissions
+  src/settings/        # provider plugin, headers, site permissions
+  src/providers/       # registry, plugin SDK, built-in adapters
   src/security/        # redaction, validators, intent digest
   src/contracts/       # runtime and provider schemas
 ```
 
-의존성은 `sidepanel/content → service-worker → contracts/security`다. network 요청은 service worker provider client만 수행한다.
+별도 protocol adapter는 `provider-plugins/<plugin-id>/` workspace package로 개발하고 build 단계에서 generated registry에 결합한다. 각 package는 manifest, side-effect 없는 adapter entry와 conformance test를 가진다. 선언형 plugin은 source package 없이 manifest만 설치한다.
+
+의존성은 `sidepanel/content → service-worker → bounded CDP adapter 또는 provider registry/plugin host → core transport → contracts/security`다. network 요청은 service worker의 core transport만 수행한다. plugin은 `chrome.*`, DOM, CDP, storage와 raw credential에 접근하지 않는다.
 
 ## 2. Manifest
 
 - Chrome MV3 service worker와 Side Panel을 사용한다.
 - 페이지 automation이 필요하므로 content script와 host permission은 사용자가 설치 시 승인한다.
-- `storage`, `tabs`, `scripting`, `activeTab`, `webNavigation`, `downloads`, `alarms`는 도구가 실제 사용할 때만 포함한다.
-- host permission은 WebBrain 호환 broad page access를 제공할 수 있으며, 실제 실행은 capability × host gate가 제한한다.
+- `storage`, `sidePanel`, `activeTab`, `debugger`를 제품 기능에 필요한 기본 권한으로 선언한다. `tabs`, `scripting`, `webNavigation`, `downloads`, `alarms`는 해당 도구가 실제 도입될 때만 추가한다.
+- host permission은 사용자가 승인한 사내 사이트 범위로 제한하며 `<all_urls>`를 기본값으로 사용하지 않는다. `debugger` authority는 host permission만 믿지 않고 service worker가 exact origin, current sender tab과 capability × host gate를 attach 전에 다시 제한한다.
+- `offscreen`은 사용하지 않는다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest 권한이 아니다.
 
 ## 3. 사용자 설정 저장소
 
@@ -30,8 +35,9 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
 {
   "providers": {
     "local": {
-      "type": "openai_compatible",
-      "label": "Company Local LLM",
+      "plugin_id": "webbrain.openai-compatible",
+      "plugin_version": "1.0.0",
+      "label": "Local OpenAI-compatible LLM",
       "base_url": "http://127.0.0.1:8080/v1",
       "wire_api": "chat_completions",
       "model": "qwen",
@@ -49,12 +55,20 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
 
 `api_key_header`의 값은 `authorization_bearer`, `api-key`, `x-goog-api-key`만 허용한다. request builder는 각각 `Authorization: Bearer <key>`, `api-key: <key>`, `x-goog-api-key: <key>`를 만든다. 정적 `headers`는 user agent와 model output에서 분리되며 key와 header 값은 password UI 이외에 다시 표시하지 않는다.
 
+`provider_plugins`에는 검증된 선언형 manifest와 enabled 상태만 저장한다. bundled adapter의 실행 코드는 extension package에 포함되며 storage에 저장하지 않는다. 설정을 읽을 때 registry는 `plugin_id`, API version과 설치된 plugin version을 확인하고, 없거나 호환되지 않으면 provider를 비활성화한다.
+
 ## 4. 문서·도구 계약
 
-content script는 `DOCUMENT_REGISTER`, `CONTENT_SNAPSHOT`, `EXECUTE_ACTION`, `VERIFY_RESULT`만 service worker와 교환한다. sender의 tab, frame, `documentId`, lifecycle을 Chrome API로 검증한다.
+content script는 `DOCUMENT_REGISTER`, `CONTENT_SNAPSHOT`, `EXECUTE_ACTION`, `PREPARE_BOUNDED_CDP_TARGET`, `CLEAR_BOUNDED_CDP_TARGET`, `VERIFY_RESULT`만 service worker와 교환한다. sender의 tab, frame, `documentId`, lifecycle을 Chrome API로 검증한다. CDP prepare/clear message는 service worker만 시작할 수 있고 Side Panel, page와 provider sender는 거부한다.
 
 snapshot에는 redacted role/name/state, document-scoped `ref_id`와 제한된 relation만 들어간다. service worker는 모델 호출 직전에 `ref_id`를 current-run `model_ref`로 치환하고 terminal transition·navigation·worker restart에 즉시 폐기한다.
+
+bounded CDP 경로에서 content script는 preflight가 끝난 target 또는 실제 hit node에 128-bit 이상 무작위 action token을 일시적으로 표시한다. service worker는 token을 모델에 노출하지 않고 current run/action과 결속하며, CDP adapter는 정확히 하나의 live node만 해석한다. token은 dispatch 성공 여부와 관계없이 content script `finally`에서 제거한다. 페이지가 token을 복제·이동해 유일성 또는 hit test가 깨지면 실행하지 않는다.
+
+CDP command와 parameter는 service worker의 typed builder만 생성한다. content script와 Side Panel은 raw command message를 보내지 않으며 provider response에 CDP-shaped field가 있으면 unknown field로 거부한다. 세부 계약은 [15. Bounded CDP adapter](15-bounded-cdp-adapter.md)를 따른다.
 
 ## 5. 값과 확인
 
 텍스트와 select 값은 모델이 target을 제안한 뒤 Side Panel에서 사용자가 제공한다. raw value는 Side Panel, service worker, content script의 현재 action에만 전달하고 storage, provider 요청, audit에는 넣지 않는다. 제출과 R2 행동은 현재 target·값 digest·문서 epoch에 결속된 사용자 확인 뒤에만 실행한다.
+
+CDP `Input.insertText`가 필요한 경우에도 raw value의 수명과 노출 범위는 동일하다. adapter는 이미 확인된 현재 action의 ephemeral value만 받고 command 완료 직후 참조를 폐기한다. CDP path 선택이나 attach는 R2 confirmation을 대신하거나 confirmation binding을 변경하지 않는다.
