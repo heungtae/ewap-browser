@@ -156,7 +156,7 @@ const readActiveSnapshot = async (): Promise<{
   const tabId = tab?.id;
   if (!tab || tabId === undefined)
     return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
-  const origin = pageOrigin(tab.url);
+  let origin = pageOrigin(tab.url);
   const result = await chromeApi!.tabs.sendMessage(tabId, {
     kind: "CONTENT_SNAPSHOT",
   });
@@ -170,9 +170,25 @@ const readActiveSnapshot = async (): Promise<{
   if (
     typeof payload !== "object" ||
     payload === null ||
-    (payload as { origin?: unknown }).origin !== origin
+    typeof (payload as { origin?: unknown }).origin !== "string"
   )
     return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
+  if ((payload as { origin: string }).origin !== origin) {
+    // Search pages can redirect between the initial tab query and the
+    // content-script response (for example, regional Google hosts). Re-read
+    // the tab URL before rejecting the document-origin binding.
+    const latest = (
+      await chromeApi!.tabs.query({
+        active: true,
+        lastFocusedWindow: true,
+      })
+    )[0];
+    if (latest?.id !== tabId)
+      return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
+    origin = pageOrigin(latest.url);
+    if ((payload as { origin: string }).origin !== origin)
+      return Promise.reject(new ContractError("ORIGIN_NOT_ALLOWED"));
+  }
   const snapshot = validateSemanticSnapshot(
     (payload as { snapshot: unknown }).snapshot,
   );

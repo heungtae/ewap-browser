@@ -69,7 +69,13 @@ preview?.addEventListener("click", async () => {
     result === null ||
     !(result as { ok?: unknown }).ok
   ) {
-    status.value = "현재 페이지의 projection을 읽지 못했습니다.";
+    const code =
+      typeof result === "object" &&
+      result !== null &&
+      typeof (result as { code?: unknown }).code === "string"
+        ? (result as { code: string }).code
+        : "UNKNOWN";
+    status.value = `현재 페이지의 projection을 읽지 못했습니다. (${code})`;
     projection.textContent = "";
     return;
   }
