@@ -64,4 +64,33 @@ describe("chat event store", () => {
     });
     expect(store.terminal("run-abcdefghijklmnop")).toBe(true);
   });
+
+  it("restores only closed monotonic event streams after worker recovery", () => {
+    const source = new ChatEventStore();
+    source.append("run-abcdefghijklmnop", {
+      type: "run_started",
+      mode: "ask",
+      permission_mode: "standard",
+    });
+    source.append("run-abcdefghijklmnop", {
+      type: "assistant_delta",
+      text: "safe",
+    });
+    const restored = new ChatEventStore();
+    restored.restore(source.recoverable());
+    expect(restored.since("run-abcdefghijklmnop")).toHaveLength(2);
+    restored.restore([
+      {
+        events: [
+          {
+            type: "assistant_delta",
+            run_id: "run-abcdefghijklmnop",
+            sequence: 2,
+            text: "gap",
+          },
+        ],
+      },
+    ]);
+    expect(restored.recoverable()).toEqual([]);
+  });
 });

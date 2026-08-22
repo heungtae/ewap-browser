@@ -36,12 +36,13 @@ export const permissionHost = (rawUrl: string): string => {
     return fail("ORIGIN_NOT_ALLOWED");
   }
   const host = url.hostname.toLowerCase();
+  const loopback =
+    host === "localhost" || host === "127.0.0.1" || host === "[::1]";
   if (
     restrictedSchemes.has(url.protocol) ||
-    url.protocol !== "https:" ||
-    host === "localhost" ||
-    host.endsWith(".localhost") ||
-    isIp(host) ||
+    (url.protocol !== "https:" && !(url.protocol === "http:" && loopback)) ||
+    (host.endsWith(".localhost") && host !== "localhost") ||
+    (isIp(host) && !loopback) ||
     !host.includes(".")
   )
     return fail("ORIGIN_NOT_ALLOWED");
@@ -86,6 +87,9 @@ export class PermissionManager {
       this.once.set(runId, grants);
       return;
     }
+    // Development loopback is intentionally run-scoped and cannot become an
+    // always grant in product settings.
+    if (isIp(host)) return fail("ORIGIN_NOT_ALLOWED");
     const next: StoredPermission = {
       capability,
       host,

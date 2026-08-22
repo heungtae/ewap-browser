@@ -37,4 +37,15 @@ describe("permission manager", () => {
       manager.decide("click", "chrome://settings", "run", "always"),
     ).toThrow("ORIGIN_NOT_ALLOWED");
   });
+
+  it("given_local_demo_origin_when_granted_once_then_allows_only_the_run", () => {
+    const manager = new PermissionManager();
+    expect(manager.check("click", "http://127.0.0.1:8443", "demo-run")).toBe(
+      "REQUIRE_PERMISSION",
+    );
+    manager.decide("click", "http://127.0.0.1:8443", "demo-run", "once");
+    expect(manager.check("click", "http://127.0.0.1:8443", "demo-run")).toBe(
+      "ALLOW",
+    );
+  });
 });

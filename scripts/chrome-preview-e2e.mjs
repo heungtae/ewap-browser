@@ -179,6 +179,8 @@ try {
         node.visibility === "hidden" &&
         node.hidden_reason === "display_none",
     ) ||
+    typeof snapshot.article_text !== "string" ||
+    !snapshot.article_text.includes("Case 123") ||
     snapshot.nodes?.some((node) => /password/i.test(node.name))
   )
     throw new Error(

@@ -121,6 +121,7 @@ export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {
     "node_count",
     "nodes",
     "visible_text",
+    "article_text",
   ]);
   if (
     !("document_epoch" in snapshot) ||
@@ -133,7 +134,10 @@ export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {
     !Array.isArray(snapshot.nodes) ||
     snapshot.nodes.length > 5_000 ||
     typeof snapshot.visible_text !== "string" ||
-    [...snapshot.visible_text].length > 12_000
+    [...snapshot.visible_text].length > 12_000 ||
+    (snapshot.article_text !== undefined &&
+      (typeof snapshot.article_text !== "string" ||
+        [...snapshot.article_text].length > 50_000))
   )
     return fail("INVALID_ARGUMENT");
   if (
@@ -173,5 +177,8 @@ export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {
       : {}),
     nodes,
     visible_text: snapshot.visible_text,
+    ...(typeof snapshot.article_text === "string"
+      ? { article_text: snapshot.article_text }
+      : {}),
   };
 };

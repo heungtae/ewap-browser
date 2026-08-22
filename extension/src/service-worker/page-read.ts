@@ -102,8 +102,10 @@ export const getPageText = (
 ): { text: string; truncated: boolean } => {
   if (!Number.isInteger(maxChars) || maxChars < 1 || maxChars > 50_000)
     return fail("INVALID_ARGUMENT");
-  const text = snapshot.visible_text.slice(0, maxChars);
-  return { text, truncated: snapshot.visible_text.length > text.length };
+  const source = snapshot.article_text ?? snapshot.visible_text;
+  if ([...source.trim()].length < 10) return fail("PAGE_TEXT_UNAVAILABLE");
+  const text = source.slice(0, maxChars);
+  return { text, truncated: source.length > text.length };
 };
 
 export const findPage = (

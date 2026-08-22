@@ -28,6 +28,9 @@ const actionApprove =
   document.querySelector<HTMLButtonElement>("#action-approve");
 const actionReject =
   document.querySelector<HTMLButtonElement>("#action-reject");
+const actionValueForm =
+  document.querySelector<HTMLFormElement>("#action-value-form");
+const actionValue = document.querySelector<HTMLInputElement>("#action-value");
 const planApprove = document.querySelector<HTMLButtonElement>("#plan-approve");
 const permissionCard = document.querySelector<HTMLElement>("#permission-card");
 const permissionDescription = document.querySelector<HTMLElement>(
@@ -48,10 +51,34 @@ let pendingAction:
   | { sessionId: string; proposalId: string; origin?: string }
   | undefined;
 let pendingPermissionId: string | undefined;
+let pendingValue:
+  | { sessionId: string; proposalId: string; valueKind: "text" | "option" }
+  | undefined;
 const eventSequences = new Map<string, number>();
 const streamingMessages = new Map<string, HTMLParagraphElement>();
+const pendingDeltas = new Map<string, string>();
+let deltaFrame: number | undefined;
 let eventDeliveredForPendingResponse = false;
 let currentPermissionMode = "standard";
+const maxTranscriptItems = 1_000;
+const nearTranscriptBottom = (): boolean => {
+  if (!chatMessages) return false;
+  return (
+    chatMessages.scrollHeight -
+      chatMessages.scrollTop -
+      chatMessages.clientHeight <
+    32
+  );
+};
+const retainTranscriptBudget = (): void => {
+  if (!chatMessages) return;
+  while (chatMessages.children.length > maxTranscriptItems)
+    chatMessages.firstElementChild?.remove();
+};
+const keepTranscriptAnchor = (wasAtBottom: boolean): void => {
+  if (wasAtBottom && chatMessages)
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+};
 const setChatMode = (mode: "ask" | "act"): void => {
   chatMode = mode;
   for (const [button, active] of [
@@ -67,19 +94,72 @@ modeAsk?.addEventListener("click", () => setChatMode("ask"));
 modeAct?.addEventListener("click", () => setChatMode("act"));
 const appendMessage = (role: "user" | "assistant", text: string): void => {
   if (!chatMessages) return;
+  const wasAtBottom = nearTranscriptBottom();
   const item = document.createElement("p");
   item.dataset.role = role;
   item.textContent = `${role === "user" ? "나" : "Agent"}: ${text}`;
   chatMessages.append(item);
+  retainTranscriptBudget();
+  keepTranscriptAnchor(wasAtBottom);
 };
-const appendToolMessage = (text: string): HTMLParagraphElement | undefined => {
+const appendToolMessage = (
+  tool: string,
+  text: string,
+): HTMLParagraphElement | undefined => {
   if (!chatMessages) return undefined;
+  const wasAtBottom = nearTranscriptBottom();
+  const previous = chatMessages.lastElementChild;
+  if (
+    previous instanceof HTMLParagraphElement &&
+    previous.dataset.tool === "read" &&
+    previous.dataset.toolName === tool
+  ) {
+    const count = Number(previous.dataset.count ?? "1") + 1;
+    previous.dataset.count = String(count);
+    previous.textContent = `도구: ${text} (${count}회)`;
+    keepTranscriptAnchor(wasAtBottom);
+    return previous;
+  }
   const item = document.createElement("p");
   item.dataset.role = "assistant";
-  item.dataset.tool = "true";
+  item.dataset.tool = [
+    "read_page",
+    "get_page_text",
+    "find",
+    "read_batch",
+  ].includes(tool)
+    ? "read"
+    : "action";
+  item.dataset.toolName = tool;
+  item.dataset.count = "1";
   item.textContent = `도구: ${text}`;
   chatMessages.append(item);
+  retainTranscriptBudget();
+  keepTranscriptAnchor(wasAtBottom);
   return item;
+};
+const flushDeltas = (): void => {
+  deltaFrame = undefined;
+  for (const [runId, text] of pendingDeltas) {
+    const item = streamingMessages.get(runId);
+    if (item) item.textContent += text;
+    else {
+      appendMessage("assistant", text);
+      const created = chatMessages?.lastElementChild;
+      if (created instanceof HTMLParagraphElement)
+        streamingMessages.set(runId, created);
+    }
+  }
+  pendingDeltas.clear();
+};
+const queueAssistantDelta = (runId: string, text: string): void => {
+  pendingDeltas.set(runId, `${pendingDeltas.get(runId) ?? ""}${text}`);
+  if (deltaFrame !== undefined) return;
+  deltaFrame = requestAnimationFrame(flushDeltas);
+};
+const setRunActive = (active: boolean): void => {
+  cancel?.toggleAttribute("disabled", !active);
+  chatMessages?.setAttribute("aria-busy", String(active));
 };
 const applyChatEvent = (event: unknown): void => {
   if (
@@ -135,28 +215,30 @@ const applyChatEvent = (event: unknown): void => {
       runBanner.hidden = false;
     }
     if (status) status.value = "응답을 생성하는 중입니다.";
+    setRunActive(true);
     return;
   }
   if (value.type === "assistant_delta" && typeof value.text === "string") {
     eventDeliveredForPendingResponse = true;
-    const item = streamingMessages.get(runId);
-    if (item) item.textContent += value.text;
-    else {
-      appendMessage("assistant", value.text);
-      const created = chatMessages?.lastElementChild;
-      if (created instanceof HTMLParagraphElement)
-        streamingMessages.set(runId, created);
-    }
+    queueAssistantDelta(runId, value.text);
     return;
   }
-  if (value.type === "tool_started" && typeof value.summary === "string") {
+  if (
+    value.type === "tool_started" &&
+    typeof value.summary === "string" &&
+    typeof value.tool === "string"
+  ) {
     eventDeliveredForPendingResponse = true;
-    appendToolMessage(value.summary);
+    flushDeltas();
+    appendToolMessage(value.tool, value.summary);
     return;
   }
   if (value.type === "tool_finished") return;
   if (value.type === "run_terminal") {
+    flushDeltas();
     streamingMessages.delete(runId);
+    pendingDeltas.delete(runId);
+    setRunActive(false);
     if (runBanner) runBanner.hidden = true;
     if (status)
       status.value =
@@ -172,6 +254,25 @@ runtime?.onMessage.addListener((message) => {
     (message as { kind?: unknown }).kind === "CHAT_EVENT"
   )
     applyChatEvent((message as { event?: unknown }).event);
+});
+void runtime?.sendMessage({ kind: "CHAT_RECOVER" }).then((response) => {
+  if (
+    typeof response !== "object" ||
+    response === null ||
+    !(response as { ok?: unknown }).ok ||
+    !Array.isArray((response as { streams?: unknown }).streams)
+  )
+    return;
+  for (const stream of (response as { streams: unknown[] }).streams) {
+    if (
+      typeof stream !== "object" ||
+      stream === null ||
+      !Array.isArray((stream as { events?: unknown }).events)
+    )
+      continue;
+    for (const event of (stream as { events: unknown[] }).events)
+      applyChatEvent(event);
+  }
 });
 void runtime
   ?.sendMessage({ kind: "AGENT_PREFERENCES_GET" })
@@ -198,6 +299,9 @@ void runtime
   });
 const hideActionReview = (): void => {
   pendingAction = undefined;
+  pendingValue = undefined;
+  actionValueForm?.setAttribute("hidden", "");
+  if (actionValue) actionValue.value = "";
   actionReviewCard?.setAttribute("hidden", "");
   planApprove?.setAttribute("hidden", "");
 };
@@ -215,7 +319,16 @@ const showActionReview = (response: {
     ...(response.origin ? { origin: response.origin } : {}),
   };
   if (actionReviewDescription) {
-    const action = response.tool === "click_by_ref" ? "클릭" : "선택";
+    const action =
+      response.tool === "click_by_ref"
+        ? "클릭"
+        : response.tool === "set_text_by_ref"
+          ? "입력"
+          : response.tool === "set_checked_by_ref"
+            ? "변경"
+            : response.tool === "press_key_by_ref"
+              ? "키 입력"
+              : "선택";
     actionReviewDescription.textContent = response.suggested_value
       ? `${response.target_name}에서 “${response.suggested_value}”을 ${action}하도록 제안했습니다.`
       : `${response.target_name}을 ${action}하도록 제안했습니다.`;
@@ -250,6 +363,28 @@ const handleActionResponse = (response: unknown): boolean => {
         : {}),
       ...(typeof value.origin === "string" ? { origin: value.origin } : {}),
     });
+    return true;
+  }
+  if (
+    value.state === "VALUE_REQUIRED" &&
+    typeof value.session_id === "string" &&
+    typeof value.proposal_id === "string" &&
+    (value.value_kind === "text" || value.value_kind === "option") &&
+    typeof value.target_name === "string"
+  ) {
+    pendingValue = {
+      sessionId: value.session_id,
+      proposalId: value.proposal_id,
+      valueKind: value.value_kind,
+    };
+    actionReviewCard?.removeAttribute("hidden");
+    actionValueForm?.removeAttribute("hidden");
+    if (actionValue) {
+      actionValue.value = "";
+      actionValue.placeholder = `${value.target_name}에 입력할 값을 작성하세요.`;
+      actionValue.focus();
+    }
+    if (status) status.value = "입력값을 확인한 뒤 적용해 주세요.";
     return true;
   }
   if (
@@ -296,6 +431,7 @@ chatForm?.addEventListener("submit", async (event) => {
   appendMessage("user", prompt);
   chatInput.value = "";
   status.value = "응답을 기다리는 중입니다.";
+  setRunActive(true);
   eventDeliveredForPendingResponse = false;
   let response: unknown;
   try {
@@ -306,6 +442,7 @@ chatForm?.addEventListener("submit", async (event) => {
   } catch (error) {
     console.error("[ContextPilot][Side Panel CHAT_SEND failed]", error);
     status.value = "확장 프로그램 Service Worker 연결에 실패했습니다.";
+    setRunActive(false);
     return;
   }
   if (handleActionResponse(response)) return;
@@ -327,6 +464,7 @@ chatForm?.addEventListener("submit", async (event) => {
         : "UNKNOWN";
     console.warn("[ContextPilot][Side Panel CHAT_SEND rejected]", response);
     status.value = `질문을 처리하지 못했습니다. (${code})`;
+    setRunActive(false);
   }
 });
 
@@ -347,6 +485,29 @@ actionReject?.addEventListener("click", async () => {
     (response as { ok?: unknown }).ok
       ? "작업을 중단했습니다."
       : "작업을 중단하지 못했습니다.";
+});
+actionValueForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!runtime || !pendingValue || !actionValue || !status) return;
+  const value = actionValue.value;
+  if (!value) {
+    status.value = "입력값을 작성해 주세요.";
+    return;
+  }
+  const response = await runtime.sendMessage({
+    kind: "ACT_VALUE_SUBMIT",
+    session_id: pendingValue.sessionId,
+    proposal_id: pendingValue.proposalId,
+    value,
+  });
+  if (handleActionResponse(response)) return;
+  const code =
+    typeof response === "object" &&
+    response !== null &&
+    typeof (response as { code?: unknown }).code === "string"
+      ? (response as { code: string }).code
+      : "UNKNOWN";
+  status.value = `입력값을 적용하지 못했습니다. (${code})`;
 });
 planApprove?.addEventListener("click", async () => {
   if (!runtime || !pendingAction?.origin || !status) return;
@@ -452,6 +613,7 @@ profileResolve?.addEventListener("click", async () => {
 
 cancel?.addEventListener("click", async () => {
   if (!runtime || !status) return;
+  setRunActive(false);
   const result = await runtime.sendMessage({ kind: "CANCEL" });
   status.value =
     typeof result === "object" &&

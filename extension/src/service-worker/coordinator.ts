@@ -97,6 +97,9 @@ export class ServiceCoordinator {
           : {}),
         nodes,
         visible_text: snapshot.visible_text,
+        ...(snapshot.article_text
+          ? { article_text: snapshot.article_text }
+          : {}),
       },
       resolve: (proposal) => {
         const ref = map.get(proposal.target);

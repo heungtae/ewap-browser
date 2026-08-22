@@ -31,6 +31,7 @@ export const userMessage: Record<ErrorCode, string> = {
     "브라우저 입력 연결을 정리하지 못해 이 탭의 작업을 중단했습니다.",
   VISION_CAPTURE_UNAVAILABLE:
     "현재 페이지에서 screenshot을 안전하게 캡처할 수 없습니다.",
+  PAGE_TEXT_UNAVAILABLE: "읽을 수 있는 본문 텍스트를 찾지 못했습니다.",
   PROVIDER_PLUGIN_NOT_FOUND: "선택한 provider plugin을 찾을 수 없습니다.",
   PROVIDER_PLUGIN_INCOMPATIBLE:
     "provider plugin 버전이 현재 확장과 호환되지 않습니다.",

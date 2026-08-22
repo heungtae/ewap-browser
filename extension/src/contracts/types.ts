@@ -49,6 +49,7 @@ export type ErrorCode =
   | "CDP_COMMAND_NOT_ALLOWED"
   | "CDP_CLEANUP_FAILED"
   | "VISION_CAPTURE_UNAVAILABLE"
+  | "PAGE_TEXT_UNAVAILABLE"
   | "PROVIDER_PLUGIN_NOT_FOUND"
   | "PROVIDER_PLUGIN_INCOMPATIBLE"
   | "PROVIDER_PLUGIN_FAILED"
@@ -111,6 +112,7 @@ export type SemanticSnapshot = {
   node_count?: number;
   nodes: SemanticNode[];
   visible_text: string;
+  article_text?: string;
 };
 export type ModelSemanticNode = Omit<
   SemanticNode,
@@ -125,6 +127,7 @@ export type ModelSemanticSnapshot = {
   node_count?: number;
   nodes: ModelSemanticNode[];
   visible_text: string;
+  article_text?: string;
 };
 export type ValueKind = "text" | "option";
 export type ValueBinding = {

@@ -1,5 +1,6 @@
 import { validateSemanticSnapshot } from "../contracts/semantic-snapshot.js";
 import type {
+  ActionIntent,
   ModelActionProposal,
   MutationTool,
   PageReadScope,
@@ -37,7 +38,12 @@ import { ChatEventStore } from "../state/chat-event-store.js";
 import type { ChatEventPayload } from "../contracts/chat-events.js";
 import { findPage, getPageText, readPage } from "./page-read.js";
 import { executeReadBatch } from "./read-batch.js";
-import { normalizeViewportCapture } from "./vision-capture.js";
+import {
+  normalizeViewportCapture,
+  normalizeZoomRegion,
+  zoomViewportCapture,
+  type VisionCapture,
+} from "./vision-capture.js";
 import type {
   ActionDefinition,
   ReadyExecution,
@@ -134,6 +140,7 @@ const localBindings = new Map<string, SessionBinding>();
 const permissions = new PermissionManager();
 const chatEvents = new ChatEventStore();
 const planScopes = new PlanScopeStore();
+const visionCaptures = new Map<string, VisionCapture>();
 let agentPreferences: AgentPreferences = defaultAgentPreferences();
 let offscreenReady: Promise<void> | undefined;
 const ensureOffscreen = async (): Promise<void> => {
@@ -224,17 +231,28 @@ const coordinator = new ServiceCoordinator({
 });
 const publishChatEvent = (runId: string, payload: ChatEventPayload): void => {
   const event = chatEvents.append(runId, payload);
+  void chromeApi?.storage.session
+    .set?.({ chat_event_streams: chatEvents.recoverable() })
+    .catch(() => undefined);
   void chromeApi?.runtime
     .sendMessage({ kind: "CHAT_EVENT", event })
     .catch(() => undefined);
 };
 const publishCancelledChatRun = (run: Run | undefined): void => {
+  if (run) releaseVisionCaptures(run.id);
   if (
     run?.mode === "ask" &&
     chatEvents.has(run.id) &&
     !chatEvents.terminal(run.id)
   )
     publishChatEvent(run.id, { type: "run_terminal", outcome: "CANCELLED" });
+};
+const rememberVisionCapture = (runId: string, capture: VisionCapture): void => {
+  visionCaptures.set(`${runId}:${capture.capture_id}`, capture);
+};
+const releaseVisionCaptures = (runId: string): void => {
+  for (const key of visionCaptures.keys())
+    if (key.startsWith(`${runId}:`)) visionCaptures.delete(key);
 };
 let storageReady = false;
 const bootstrapStorage = async (): Promise<void> => {
@@ -279,6 +297,9 @@ const bootstrapStorage = async (): Promise<void> => {
       agentPreferences = defaultAgentPreferences();
     }
   }
+  const storedChatEvents =
+    await chromeApi?.storage.session.get?.("chat_event_streams");
+  chatEvents.restore(storedChatEvents?.chat_event_streams);
 };
 void bootstrapStorage()
   .then(() => {
@@ -502,6 +523,33 @@ const screenshotTool: ProviderToolDefinition = {
     parameters: { type: "object", additionalProperties: false },
   },
 };
+const zoomTool: ProviderToolDefinition = {
+  type: "function",
+  function: {
+    name: "zoom",
+    description:
+      "Crop a prior transient screenshot using a normalized read-only region. It never creates an action coordinate.",
+    parameters: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        capture_id: { type: "string" },
+        region: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            left: { type: "number", minimum: 0, maximum: 1 },
+            top: { type: "number", minimum: 0, maximum: 1 },
+            right: { type: "number", minimum: 0, maximum: 1 },
+            bottom: { type: "number", minimum: 0, maximum: 1 },
+          },
+          required: ["left", "top", "right", "bottom"],
+        },
+      },
+      required: ["capture_id", "region"],
+    },
+  },
+};
 const tabsContextTool: ProviderToolDefinition = {
   type: "function",
   function: {
@@ -658,6 +706,7 @@ const runAskChat = async (
     getPageTextTool,
     findTool,
     screenshotTool,
+    zoomTool,
     tabsContextTool,
     readBatchTool,
     ...(businessTool ? [businessTool] : []),
@@ -680,7 +729,18 @@ const runAskChat = async (
         tools: structuredClone(tools),
       },
     );
-    const response = await providerRuntime!.chat({ messages, tools });
+    let streamedResponseText = false;
+    const response = await providerRuntime!.chat(
+      { messages, tools },
+      {
+        onDelta: (text) => {
+          if (coordinator.runs.byId(run.id)?.phase !== "TERMINAL") {
+            streamedResponseText = true;
+            publishChatEvent(run.id, { type: "assistant_delta", text });
+          }
+        },
+      },
+    );
     if (run.phase === "TERMINAL")
       return safeFailure("POLICY_DENIED", "run cancelled");
     await writeToPageDevTools(
@@ -694,10 +754,12 @@ const runAskChat = async (
     if (response.tool_calls.length === 0) {
       if (!response.content) return fail("PROVIDER_UNAVAILABLE");
       coordinator.runs.terminal(run.id, "VERIFIED");
-      publishChatEvent(run.id, {
-        type: "assistant_delta",
-        text: response.content,
-      });
+      releaseVisionCaptures(run.id);
+      if (!streamedResponseText)
+        publishChatEvent(run.id, {
+          type: "assistant_delta",
+          text: response.content,
+        });
       publishChatEvent(run.id, { type: "run_terminal", outcome: "VERIFIED" });
       return { ok: true, message: response.content };
     }
@@ -834,7 +896,32 @@ const runAskChat = async (
           activeTab.windowId,
           { format: "jpeg", quality: 75 },
         );
-        result = normalizeViewportCapture(image);
+        const capture = normalizeViewportCapture(image);
+        result = capture;
+        rememberVisionCapture(run.id, capture);
+      } else if (call.name === "zoom") {
+        let args: unknown;
+        try {
+          args = JSON.parse(call.arguments);
+        } catch {
+          return fail("INVALID_ARGUMENT");
+        }
+        if (
+          !isPlainObject(args) ||
+          Object.keys(args).some(
+            (key) => !["capture_id", "region"].includes(key),
+          ) ||
+          typeof args.capture_id !== "string"
+        )
+          return fail("INVALID_ARGUMENT");
+        const capture = visionCaptures.get(`${run.id}:${args.capture_id}`);
+        if (!capture) return fail("VISION_CAPTURE_UNAVAILABLE");
+        const zoomed = await zoomViewportCapture(
+          capture,
+          normalizeZoomRegion(args.region),
+        );
+        result = zoomed;
+        rememberVisionCapture(run.id, zoomed);
       } else if (call.name === "tabs_context") {
         if (call.arguments !== "{}") return fail("INVALID_ARGUMENT");
         const tabs = await chromeApi!.tabs.query({
@@ -978,6 +1065,23 @@ const genericActTools = (
 ): ProviderToolDefinition[] =>
   definitions.flatMap((definition) => {
     if (definition.tool === "click_by_ref") return [genericActClickTool()];
+    if (definition.tool === "set_text_by_ref")
+      return [
+        {
+          type: "function",
+          function: {
+            name: "propose_set_text",
+            description:
+              "Propose a Page Profile-approved text field. The user supplies the value after approval; never ask for a credential.",
+            parameters: {
+              type: "object",
+              additionalProperties: false,
+              properties: { target: { type: "string" } },
+              required: ["target"],
+            },
+          },
+        },
+      ];
     if (definition.tool === "select_option_by_ref" && definition.option_values)
       return [
         {
@@ -1042,7 +1146,7 @@ const genericActTools = (
   });
 type ActProposal = {
   id: string;
-  tool: Exclude<MutationTool, "set_text_by_ref">;
+  tool: MutationTool;
   refId: string;
   targetName: string;
   value?: string;
@@ -1060,6 +1164,11 @@ type ActSession = {
   generic?: boolean;
   profile?: { id: string; version: number };
   definitions?: readonly ProfileActionTool[];
+  awaitingValue?: {
+    runId: string;
+    valueSlotId: string;
+    valueKind: "text" | "option";
+  };
 };
 const actSessions = new Map<string, ActSession>();
 const demoPage = (active: { origin: string; path: string }): boolean =>
@@ -1096,16 +1205,16 @@ const parseActProposal = (
         (
           {
             click_by_ref: "propose_click",
+            set_text_by_ref: "propose_set_text",
             select_option_by_ref: "propose_select_option",
             set_checked_by_ref: "propose_set_checked",
             press_key_by_ref: "propose_press_key",
           } as Partial<Record<MutationTool, string>>
         )[definition.tool],
     );
-    if (!candidate || candidate.tool === "set_text_by_ref")
-      return fail("INVALID_ARGUMENT");
+    if (!candidate) return fail("INVALID_ARGUMENT");
     const expectedKeys =
-      candidate.tool === "click_by_ref"
+      candidate.tool === "click_by_ref" || candidate.tool === "set_text_by_ref"
         ? ["target"]
         : candidate.tool === "select_option_by_ref"
           ? ["target", "value"]
@@ -1332,6 +1441,38 @@ const runActChat = async (
   actSessions.set(session.id, session);
   return runActStep(session);
 };
+const verifySemanticPostcondition = async (
+  run: Run,
+  intent: ActionIntent,
+): Promise<boolean> => {
+  const verifier = intent.verifier;
+  if (
+    verifier.kind !== "semantic-state-transition" ||
+    verifier.required_changes.length === 0
+  )
+    return false;
+  try {
+    const active = await readActiveSnapshot("all_dom");
+    if (
+      active.tabId !== run.tabId ||
+      active.snapshot.document_epoch !== run.documentEpoch
+    )
+      return false;
+    const target = active.snapshot.nodes.find(
+      (node) => node.ref_id === intent.ref_id,
+    );
+    if (!target || digestCanonical(target.state) === verifier.pre_state_digest)
+      return false;
+    return verifier.required_changes.every((change) => {
+      const node = active.snapshot.nodes.find(
+        (candidate) => candidate.ref_id === change.ref_id,
+      );
+      return !!node && node.state[change.field] === change.expected;
+    });
+  } catch {
+    return false;
+  }
+};
 const executeActContent = async (
   run: Run,
   ready: ReadyExecution,
@@ -1362,8 +1503,16 @@ const executeActContent = async (
         : "TARGET_NOT_ACTIONABLE",
     );
   }
-  coordinator.mutations.terminal(run, "VERIFIED");
-  return { ok: true, outcome: "VERIFIED" };
+  const postcondition = (result as { postcondition?: unknown }).postcondition;
+  if (postcondition === "semantic") {
+    coordinator.mutations.terminal(run, "VERIFIED");
+    return { ok: true, outcome: "VERIFIED" };
+  }
+  const verified = await verifySemanticPostcondition(run, ready.intent);
+  coordinator.mutations.terminal(run, verified ? "VERIFIED" : "FAILED");
+  return verified
+    ? { ok: true, outcome: "VERIFIED" }
+    : safeFailure("TARGET_NOT_ACTIONABLE");
 };
 const executeActProposal = async (
   session: ActSession,
@@ -1425,6 +1574,14 @@ const executeActProposal = async (
         verifier: {
           ...proposal.definition.verifier,
           pre_state_digest: digestCanonical(target.state),
+          required_changes: proposal.definition.verifier.required_changes.map(
+            (change) => ({
+              ...change,
+              ...(change.ref_id === "$target"
+                ? { ref_id: proposal.refId }
+                : {}),
+            }),
+          ),
         },
       }
     : {
@@ -1460,8 +1617,29 @@ const executeActProposal = async (
   );
   let ready: ReadyExecution;
   if (next.state === "AWAITING_VALUE") {
-    if (!proposal.value) return fail("VALUE_BINDING_INVALID");
-    coordinator.mutations.submitValue(run, next.valueSlotId, proposal.value);
+    if (!proposal.value) {
+      session.awaitingValue = {
+        runId: run.id,
+        valueSlotId: next.valueSlotId,
+        valueKind: next.valueKind,
+      };
+      return {
+        ok: true,
+        state: "VALUE_REQUIRED",
+        session_id: session.id,
+        proposal_id: proposal.id,
+        value_slot_id: next.valueSlotId,
+        value_kind: next.valueKind,
+        target_name: proposal.targetName,
+      };
+    }
+    const afterValue = coordinator.mutations.submitValue(
+      run,
+      next.valueSlotId,
+      proposal.value,
+    );
+    if (afterValue.state !== "READY_TO_EXECUTE")
+      return fail("CONFIRMATION_INVALID");
     ready = coordinator.mutations.executeR1(run);
   } else if (next.state === "READY_TO_EXECUTE") {
     ready = coordinator.mutations.executeR1(run);
@@ -1476,6 +1654,42 @@ const executeActProposal = async (
     content:
       '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED"}\n[/UNTRUSTED_TOOL_RESULT]',
   });
+  delete session.proposal;
+  return runActStep(session);
+};
+const submitActValue = async (
+  session: ActSession,
+  value: string,
+): Promise<Record<string, unknown>> => {
+  const awaiting = session.awaitingValue;
+  const proposal = session.proposal;
+  const run = awaiting ? coordinator.runs.byId(awaiting.runId) : undefined;
+  if (
+    !awaiting ||
+    !proposal ||
+    !run ||
+    run.phase === "TERMINAL" ||
+    awaiting.valueKind !== "text" ||
+    value.length === 0 ||
+    value.length > 16_384
+  )
+    return fail("VALUE_BINDING_INVALID");
+  const next = coordinator.mutations.submitValue(
+    run,
+    awaiting.valueSlotId,
+    value,
+  );
+  if (next.state !== "READY_TO_EXECUTE") return fail("CONFIRMATION_INVALID");
+  const ready = coordinator.mutations.executeR1(run);
+  const executed = await executeActContent(run, ready);
+  if (!executed.ok) return executed;
+  session.messages.push({
+    role: "tool",
+    tool_call_id: proposal.toolCallId,
+    content:
+      '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED"}\n[/UNTRUSTED_TOOL_RESULT]',
+  });
+  delete session.awaitingValue;
   delete session.proposal;
   return runActStep(session);
 };
@@ -1573,6 +1787,13 @@ const executeFixture = (
               : "TARGET_NOT_ACTIONABLE",
           ),
         );
+      }
+      if (
+        (result as { postcondition?: unknown }).postcondition !== "semantic"
+      ) {
+        coordinator.mutations.terminal(run, "FAILED");
+        respond(safeFailure("TARGET_NOT_ACTIONABLE"));
+        return;
       }
       coordinator.mutations.terminal(run, "VERIFIED");
       respond({ ok: true, outcome: "VERIFIED" });
@@ -1857,6 +2078,14 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     }
     return;
   }
+  if (kind === "CHAT_RECOVER") {
+    if (!isPanelSender(sender) || !exactKeys(message, ["kind"])) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    respond({ ok: true, streams: chatEvents.recoverable() });
+    return;
+  }
   if (kind === "PLAN_APPROVE") {
     const runId = (message as { run_id?: unknown }).run_id;
     const origins = (message as { origins?: unknown }).origins;
@@ -1905,6 +2134,34 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     actSessions.delete(session.id);
     respond({ ok: true, outcome: "CANCELLED" });
     return;
+  }
+  if (kind === "ACT_VALUE_SUBMIT") {
+    const sessionId = (message as { session_id?: unknown }).session_id;
+    const proposalId = (message as { proposal_id?: unknown }).proposal_id;
+    const value = (message as { value?: unknown }).value;
+    const session =
+      typeof sessionId === "string" ? actSessions.get(sessionId) : undefined;
+    if (
+      !isPanelSender(sender) ||
+      !exactKeys(message, ["kind", "session_id", "proposal_id", "value"]) ||
+      !session ||
+      typeof proposalId !== "string" ||
+      session.proposal?.id !== proposalId ||
+      typeof value !== "string"
+    ) {
+      respond(safeFailure("INVALID_ARGUMENT"));
+      return;
+    }
+    void submitActValue(session, value)
+      .then(respond)
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError ? error.code : "INTERNAL_FAILURE",
+          ),
+        ),
+      );
+    return true;
   }
   if (kind === "ACT_APPROVE") {
     const sessionId = (message as { session_id?: unknown }).session_id;

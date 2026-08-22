@@ -14,7 +14,7 @@ const snapshot = {
       enabled: true,
     },
   ],
-  visible_text: "Article",
+  visible_text: "Article body for read batch",
 };
 
 describe("read batch", () => {

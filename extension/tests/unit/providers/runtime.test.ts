@@ -193,6 +193,42 @@ describe("provider runtime", () => {
     });
   });
 
+  it("given_chat_completion_sse_when_chatting_then_emits_ordered_deltas", async () => {
+    let stored: Record<string, unknown> = {};
+    let request: Record<string, unknown> | undefined;
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(async (_input, init) => {
+        request = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        return new Response(
+          [
+            'data: {"choices":[{"delta":{"content":"첫 "}}]}',
+            'data: {"choices":[{"delta":{"content":"응답"}}]}',
+            "data: [DONE]",
+          ].join("\n\n"),
+          { headers: { "content-type": "text/event-stream" } },
+        );
+      }),
+    );
+    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
+    const deltas: string[] = [];
+    await expect(
+      runtime.chat(
+        { messages: [{ role: "user", content: "현재 페이지" }] },
+        { onDelta: (delta) => deltas.push(delta) },
+      ),
+    ).resolves.toEqual({ content: "첫 응답", tool_calls: [] });
+    expect(deltas).toEqual(["첫 ", "응답"]);
+    expect(request).toMatchObject({ stream: true });
+  });
+
   it("given_responses_function_call_when_chatting_then_uses_call_id", async () => {
     let stored: Record<string, unknown> = {};
     const runtime = new ProviderRuntime(

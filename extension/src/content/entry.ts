@@ -253,6 +253,34 @@ const visiblePageText = (): string => {
   }
   return result;
 };
+const normalizePageText = (value: string, maxCharacters: number): string => {
+  let result = "";
+  for (const line of value.split(/\r?\n/)) {
+    const normalized = line
+      .split("")
+      .map((character) => {
+        const code = character.charCodeAt(0);
+        return code <= 31 || code === 127 ? " " : character;
+      })
+      .join("")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!normalized) continue;
+    const next = result ? `${result}\n${normalized}` : normalized;
+    if ([...next].length > maxCharacters) break;
+    result = next;
+  }
+  return result;
+};
+const articlePageText = (): string => {
+  const candidates = [
+    ...document.querySelectorAll<HTMLElement>("article,main,[role=main]"),
+  ].filter((element) => hiddenReasonFor(element) === undefined);
+  const best = candidates
+    .map((element) => normalizePageText(element.innerText, 50_000))
+    .sort((left, right) => right.length - left.length)[0];
+  return best ?? "";
+};
 type ReadScope = "all_dom" | "visible_only" | "interactive";
 const interactiveRoles = new Set([
   "button",
@@ -301,6 +329,7 @@ const projection = (scope: ReadScope = "all_dom"): unknown => ({
     scope,
     truncated: false,
     visible_text: visiblePageText(),
+    article_text: articlePageText(),
     nodes: [
       ...document.querySelectorAll(
         "button,input,textarea,select,a,[role],h1,h2,h3,h4,h5,h6",
@@ -432,7 +461,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       );
       element.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true }));
     }
-    respond({ ok: true });
+    respond({ ok: true, postcondition: "dispatch" });
     return true;
   }
   if (
@@ -606,7 +635,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
         return true;
       }
       consumedDeliveries.add(delivery.value_slot_id);
-      respond({ ok: true });
+      respond({ ok: true, postcondition: "semantic" });
       return true;
     }
     if (
@@ -625,7 +654,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
       return true;
     }
-    respond({ ok: true });
+    respond({ ok: true, postcondition: "semantic" });
     return true;
   }
   if (
@@ -731,7 +760,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       return true;
     }
     consumedDeliveries.add(delivery.value_slot_id);
-    respond({ ok: true });
+    respond({ ok: true, postcondition: "semantic" });
     return true;
   }
   if (

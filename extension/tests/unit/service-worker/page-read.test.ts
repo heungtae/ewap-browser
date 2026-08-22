@@ -52,4 +52,16 @@ describe("page read", () => {
       }),
     ]);
   });
+  it("prefers normalized article text and rejects pages without readable text", () => {
+    expect(
+      getPageText({
+        ...snapshot,
+        visible_text: "Navigation copy that should not win",
+        article_text: "Article body\nwith normalized content",
+      }).text,
+    ).toBe("Article body\nwith normalized content");
+    expect(() =>
+      getPageText({ ...snapshot, visible_text: "short", article_text: "" }),
+    ).toThrow("PAGE_TEXT_UNAVAILABLE");
+  });
 });
