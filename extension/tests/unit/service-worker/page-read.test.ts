@@ -65,20 +65,21 @@ describe("page read", () => {
     ).toThrow("PAGE_TEXT_UNAVAILABLE");
   });
   it("bounds a focused subtree by the closed depth argument", () => {
+    const button = snapshot.nodes[0]!;
     const tree = {
       ...snapshot,
       nodes: [
         {
-          ...snapshot.nodes[0],
+          ...button,
           model_ref: "root-ref-abcdefghijklmnop",
         },
         {
-          ...snapshot.nodes[0],
+          ...button,
           model_ref: "child-ref-abcdefghijklmnop",
           parent_model_ref: "root-ref-abcdefghijklmnop",
         },
         {
-          ...snapshot.nodes[0],
+          ...button,
           model_ref: "grandchild-ref-abcdefghijkl",
           parent_model_ref: "child-ref-abcdefghijklmnop",
         },

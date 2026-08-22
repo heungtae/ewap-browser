@@ -88,7 +88,16 @@ type BrowserRuntime = {
       ) => boolean | void,
     ): void;
   };
+  onConnect: {
+    addListener(listener: (port: BrowserPort) => void): void;
+  };
   lastError?: { message?: string };
+};
+type BrowserPort = {
+  name: string;
+  sender?: { id?: string; url?: string };
+  onMessage: { addListener(listener: (message: unknown) => void): void };
+  onDisconnect: { addListener(listener: () => void): void };
 };
 type BrowserTabs = {
   query(query: Record<string, unknown>): Promise<
@@ -154,6 +163,19 @@ const cdpAuthorizedRuns = new Set<string>();
 const chatEvents = new ChatEventStore();
 const planScopes = new PlanScopeStore();
 const visionCaptures = new Map<string, VisionCapture>();
+type ProviderStream = {
+  chunks: string[];
+  controller?: ReadableStreamDefaultController<Uint8Array>;
+  ended: boolean;
+};
+const providerStreams = new Map<string, ProviderStream>();
+const flushProviderStream = (stream: ProviderStream): void => {
+  if (!stream.controller) return;
+  for (const chunk of stream.chunks)
+    stream.controller.enqueue(new TextEncoder().encode(chunk));
+  stream.chunks = [];
+  if (stream.ended) stream.controller.close();
+};
 const cdpMarkerStore = {
   async set(marker: {
     tabId: number;
@@ -265,6 +287,38 @@ const ensureOffscreen = async (): Promise<void> => {
     });
   await offscreenReady;
 };
+chromeApi?.runtime.onConnect.addListener((port) => {
+  const prefix = "contextpilot-provider:";
+  const streamId = port.name.startsWith(prefix)
+    ? port.name.slice(prefix.length)
+    : "";
+  if (
+    !/^[A-Za-z0-9_-]{22,128}$/.test(streamId) ||
+    port.sender?.id !== chromeApi.runtime.id ||
+    port.sender?.url !== chromeApi.runtime.getURL("offscreen/index.html")
+  )
+    return;
+  const stream = providerStreams.get(streamId);
+  if (!stream) return;
+  port.onMessage.addListener((message) => {
+    if (typeof message !== "object" || message === null) return;
+    const value = message as { type?: unknown; text?: unknown };
+    if (value.type === "chunk" && typeof value.text === "string") {
+      stream.chunks.push(value.text);
+      flushProviderStream(stream);
+    } else if (value.type === "end") {
+      stream.ended = true;
+      flushProviderStream(stream);
+    }
+  });
+  port.onDisconnect.addListener(() => {
+    if (!stream.ended) {
+      stream.ended = true;
+      flushProviderStream(stream);
+    }
+    providerStreams.delete(streamId);
+  });
+});
 const offscreenFetch: typeof fetch = async (input, init) => {
   const url = String(input);
   const headers = Object.fromEntries(new Headers(init?.headers).entries());
@@ -272,8 +326,12 @@ const offscreenFetch: typeof fetch = async (input, init) => {
   const body = typeof init?.body === "string" ? init.body : undefined;
   if (method === "POST" && !body) throw new ContractError("INVALID_ARGUMENT");
   await ensureOffscreen();
+  const streamId = opaqueId();
+  const stream: ProviderStream = { chunks: [], ended: false };
+  providerStreams.set(streamId, stream);
   const response = await chromeApi!.runtime.sendMessage({
     kind: "OFFSCREEN_FETCH",
+    stream_id: streamId,
     url,
     method,
     ...(body === undefined ? {} : { body }),
@@ -284,7 +342,8 @@ const offscreenFetch: typeof fetch = async (input, init) => {
     response === null ||
     !(response as { ok?: unknown }).ok ||
     typeof (response as { status?: unknown }).status !== "number" ||
-    typeof (response as { body?: unknown }).body !== "string"
+    ((response as { stream?: unknown }).stream !== true &&
+      typeof (response as { body?: unknown }).body !== "string")
   )
     throw new ContractError(
       "PROVIDER_UNAVAILABLE",
@@ -294,10 +353,26 @@ const offscreenFetch: typeof fetch = async (input, init) => {
     status: number;
     content_type?: string;
     body: string;
+    stream?: boolean;
   };
   const responseInit: ResponseInit = { status: result.status };
   if (result.content_type)
     responseInit.headers = { "content-type": result.content_type };
+  if (result.stream) {
+    return new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          stream.controller = controller;
+          flushProviderStream(stream);
+        },
+        cancel() {
+          providerStreams.delete(streamId);
+        },
+      }),
+      responseInit,
+    );
+  }
+  providerStreams.delete(streamId);
   return new Response(result.body, {
     ...responseInit,
   });

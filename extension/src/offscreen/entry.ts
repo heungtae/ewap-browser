@@ -1,5 +1,6 @@
 type FetchMessage = {
   kind: "OFFSCREEN_FETCH";
+  stream_id: string;
   url: string;
   method: "GET" | "POST";
   headers: Record<string, string>;
@@ -7,6 +8,10 @@ type FetchMessage = {
 };
 type Runtime = {
   id: string;
+  connect(info: { name: string }): {
+    postMessage(message: unknown): void;
+    disconnect(): void;
+  };
   onMessage: {
     addListener(
       listener: (
@@ -40,6 +45,8 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   if (
     sender.id !== runtime.id ||
     typeof value.url !== "string" ||
+    typeof value.stream_id !== "string" ||
+    !/^[A-Za-z0-9_-]{22,128}$/.test(value.stream_id) ||
     (value.method !== "GET" && value.method !== "POST") ||
     typeof value.headers !== "object" ||
     value.headers === null ||
@@ -48,6 +55,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     respond(safeFailure("INVALID_ARGUMENT"));
     return;
   }
+  const port = runtime.connect({
+    name: `contextpilot-provider:${value.stream_id}`,
+  });
   void fetch(value.url, {
     method: value.method,
     headers: value.headers,
@@ -55,18 +65,36 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     credentials: "omit",
     redirect: "error",
   })
-    .then(async (response) =>
+    .then(async (response) => {
       respond({
         ok: true,
+        stream: true,
         status: response.status,
         content_type: response.headers.get("content-type") ?? "",
-        body: await response.text(),
-      }),
-    )
-    .catch(() =>
+      });
+      const reader = response.body?.getReader();
+      if (!reader) {
+        port.postMessage({ type: "end" });
+        port.disconnect();
+        return;
+      }
+      const decoder = new TextDecoder();
+      for (;;) {
+        const chunk = await reader.read();
+        if (chunk.done) break;
+        const text = decoder.decode(chunk.value, { stream: true });
+        if (text) port.postMessage({ type: "chunk", text });
+      }
+      const tail = decoder.decode();
+      if (tail) port.postMessage({ type: "chunk", text: tail });
+      port.postMessage({ type: "end" });
+      port.disconnect();
+    })
+    .catch(() => {
+      port.disconnect();
       respond(
         safeFailure("PROVIDER_UNAVAILABLE", "network/CORS/PNA request failed"),
-      ),
-    );
+      );
+    });
   return true;
 });
