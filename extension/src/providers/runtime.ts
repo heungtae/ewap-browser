@@ -185,9 +185,33 @@ const parseProviderBody = async (
   onDelta?: (text: string) => void,
 ): Promise<unknown> => {
   if (!body) return fail("PROVIDER_UNAVAILABLE");
-  const text = await new Response(body).text();
-  if (text.split(/\r?\n/).some((line) => line.startsWith("data:")))
-    return parseSseProviderBody(text, onDelta);
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let text = "";
+  let pending = "";
+  let isSse = false;
+  for (;;) {
+    const next = await reader.read();
+    if (next.done) break;
+    const chunk = decoder.decode(next.value, { stream: true });
+    text += chunk;
+    pending += chunk;
+    let newline = pending.indexOf("\n");
+    while (newline >= 0) {
+      const line = pending.slice(0, newline).replace(/\r$/, "");
+      pending = pending.slice(newline + 1);
+      if (line.startsWith("data:")) {
+        isSse = true;
+        // Parse each completed event now for UI deltas; the complete body is
+        // parsed below to assemble fragmented tool calls exactly once.
+        parseSseProviderBody(line, onDelta);
+      }
+      newline = pending.indexOf("\n");
+    }
+  }
+  text += decoder.decode();
+  if (isSse || text.split(/\r?\n/).some((line) => line.startsWith("data:")))
+    return parseSseProviderBody(text);
   try {
     return JSON.parse(text);
   } catch {
