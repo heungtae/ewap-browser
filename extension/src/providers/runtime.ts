@@ -204,7 +204,11 @@ const parseProviderBody = async (
         isSse = true;
         // Parse each completed event now for UI deltas; the complete body is
         // parsed below to assemble fragmented tool calls exactly once.
-        parseSseProviderBody(line, onDelta);
+        // Responses API sends lifecycle events such as `response.created`
+        // before any text or tool-call payload. They are useful only once the
+        // whole stream is assembled, so an individual empty event must not
+        // terminate the request.
+        parseSseProviderBody(line, onDelta, true);
       }
       newline = pending.indexOf("\n");
     }
@@ -222,6 +226,7 @@ const parseProviderBody = async (
 const parseSseProviderBody = (
   body: string,
   onDelta?: (text: string) => void,
+  allowEmpty = false,
 ): unknown => {
   let content = "";
   const calls = new Map<
@@ -307,7 +312,8 @@ const parseSseProviderBody = (
   const toolCalls = [...calls.values()].filter(
     (call) => call.name && call.arguments,
   );
-  if (!content && toolCalls.length === 0) return fail("PROVIDER_UNAVAILABLE");
+  if (!content && toolCalls.length === 0 && !allowEmpty)
+    return fail("PROVIDER_UNAVAILABLE");
   return {
     choices: [
       {

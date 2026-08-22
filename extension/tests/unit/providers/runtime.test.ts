@@ -229,6 +229,45 @@ describe("provider runtime", () => {
     expect(request).toMatchObject({ stream: true });
   });
 
+  it("given_responses_sse_lifecycle_event_when_chatting_then_waits_for_text_delta", async () => {
+    let stored: Record<string, unknown> = {};
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(
+        async () =>
+          new Response(
+            [
+              'data: {"type":"response.created","response":{"id":"resp_1"}}',
+              'data: {"type":"response.output_text.delta","delta":"페이지 "}',
+              'data: {"type":"response.output_text.delta","delta":"요약"}',
+              'data: {"type":"response.completed","response":{"id":"resp_1"}}',
+            ].join("\n\n"),
+            { headers: { "content-type": "text/event-stream" } },
+          ),
+      ),
+    );
+    await runtime.handle("PROVIDER_SAVE", {
+      id: "local",
+      config: { ...config, wire_api: "responses" },
+    });
+    const deltas: string[] = [];
+
+    await expect(
+      runtime.chat(
+        { messages: [{ role: "user", content: "현재 페이지를 요약해" }] },
+        { onDelta: (delta) => deltas.push(delta) },
+      ),
+    ).resolves.toEqual({ content: "페이지 요약", tool_calls: [] });
+    expect(deltas).toEqual(["페이지 ", "요약"]);
+  });
+
   it("given_responses_function_call_when_chatting_then_uses_call_id", async () => {
     let stored: Record<string, unknown> = {};
     const runtime = new ProviderRuntime(
