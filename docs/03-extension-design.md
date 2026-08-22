@@ -24,7 +24,7 @@ extension/
 
 - Chrome MV3 service worker와 Side Panel을 사용한다.
 - 페이지 automation이 필요하므로 content script와 host permission은 사용자가 설치 시 승인한다.
-- `storage`, `sidePanel`, `activeTab`, `debugger`를 제품 기능에 필요한 기본 권한으로 선언한다. S6~S9에서 tab context, focused read, lifecycle과 download가 실제 구현될 때만 `tabs`, `scripting`, `webNavigation`, `downloads`, `alarms`를 추가하고 manifest snapshot review를 수행한다.
+- `storage`, `sidePanel`, `activeTab`, `debugger`, `tabs`를 제품 기능에 필요한 기본 권한으로 선언한다. `tabs`는 [19번 문서](19-tab-scoped-chat-session-design.md)의 tab thread lifecycle과 URL stale 처리를 위한 것이며 manifest snapshot review를 거쳤다. `scripting`, `webNavigation`, `downloads`, `alarms`는 실제 요구가 생길 때만 별도 review 뒤에 추가한다. PageScope 감지는 `DOCUMENT_REGISTER`, `PAGE_SCOPE_REGISTER`, URL 변화로 충족하므로 `webNavigation`은 보류한다.
 - 일반 웹 UI를 지원하므로 host permission과 content script는 `<all_urls>`를 사용한다. 브라우저 제한 페이지(`chrome://`, Web Store 등)는 Chrome이 주입을 차단한다. service worker는 current active tab의 `http(s)` origin과 capability × host gate를 다시 확인하고, provider egress와 Profile Resolver 허용 origin은 별도 allowlist로 유지한다.
 - `offscreen`은 MV3 Service Worker의 localhost/PNA provider POST 프록시를 위해 선언한다. `privateNetworkAccess`는 Chrome 확장 manifest permission이 아니므로 선언하지 않는다. host permission에는 `<all_urls>`와 함께 `http://localhost/*`, `http://127.0.0.1/*`를 명시한다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest 권한이 아니다.
 
@@ -72,6 +72,8 @@ content script는 `DOCUMENT_REGISTER`, `CONTENT_SNAPSHOT`, `EXECUTE_ACTION`, `PR
 schema v2 snapshot에는 role/name/state, `visibility`와 hidden reason, document-scoped `ref_id`, 제한된 relation과 최대 12,000자의 보이는 페이지 텍스트가 들어간다. 기본 scope는 `all_dom`이며 hidden DOM도 semantic node로 포함한다. raw HTML/CSS/script, input current value, password/OTP/token value와 browser credential은 scope와 무관하게 포함하지 않는다. service worker는 모델 호출 직전에 `ref_id`를 current-run `model_ref`로 치환하고 terminal transition·navigation·worker restart에 즉시 폐기한다. hidden model ref는 read focus에만 등록하고 mutation mapping에는 등록하지 않는다.
 
 Side Panel은 provider wire message가 아니라 [17번 문서](17-claude-browser-capability-adoption-design.md)의 sequence가 있는 closed `ChatEvent`만 받는다. reconnect나 sequence gap은 `CHAT_RESYNC` snapshot으로 복구하고 Stop 이후 event는 같은 run transcript를 변경하지 못한다.
+
+탭별 Chat Session을 구현하면 closed `ChatEvent`는 session/thread/tab/run/sequence envelope로 route하며, 복구와 transcript는 현재 활성 탭의 현재 thread로 제한한다. 이 계획의 문맥 저장·redaction·quota·삭제 계약은 [19번 문서](19-tab-scoped-chat-session-design.md)와 [06번 문서](06-data-audit-and-privacy.md)를 따른다.
 
 bounded CDP 경로에서 content script는 preflight가 끝난 target 또는 실제 hit node에 128-bit 이상 무작위 action token을 일시적으로 표시한다. service worker는 token을 모델에 노출하지 않고 current run/action과 결속하며, CDP adapter는 정확히 하나의 live node만 해석한다. token은 dispatch 성공 여부와 관계없이 content script `finally`에서 제거한다. 페이지가 token을 복제·이동해 유일성 또는 hit test가 깨지면 실행하지 않는다.
 

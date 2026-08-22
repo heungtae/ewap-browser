@@ -64,6 +64,7 @@ const base64Url = (bytes: Uint8Array): string =>
 const epochBytes = new Uint8Array(18);
 crypto.getRandomValues(epochBytes);
 const documentEpoch = base64Url(epochBytes);
+let pageScopeEpoch = base64Url(crypto.getRandomValues(new Uint8Array(18)));
 const refs = new WeakMap<Element, string>();
 const consumedDeliveries = new Set<string>();
 type RefRecord = {
@@ -73,6 +74,13 @@ type RefRecord = {
   stale: boolean;
 };
 const refRecords = new Map<string, RefRecord>();
+const clearPageScopeRefs = (): void => {
+  refRecords.clear();
+  consumedDeliveries.clear();
+  for (const marker of boundedMarkers.values())
+    marker.removeAttribute("data-contextpilot-action-token");
+  boundedMarkers.clear();
+};
 type BoundedTargetRequest = {
   kind: "PREPARE_BOUNDED_CDP_TARGET" | "CLEAR_BOUNDED_CDP_TARGET";
   run_id: string;
@@ -862,4 +870,31 @@ const registerDocument = async (attempt = 0): Promise<boolean> => {
   }
   return false;
 };
+const registerPageScope = async (): Promise<void> => {
+  await registerDocument();
+  try {
+    await runtime?.sendMessage({
+      schema_version: 1,
+      kind: "PAGE_SCOPE_REGISTER",
+      document_epoch: documentEpoch,
+      page_scope_epoch: pageScopeEpoch,
+    });
+  } catch {
+    // Snapshot requests still require a registered document and will retry.
+  }
+};
+const advancePageScope = (): void => {
+  clearPageScopeRefs();
+  pageScopeEpoch = base64Url(crypto.getRandomValues(new Uint8Array(18)));
+  void registerPageScope();
+};
+for (const method of ["pushState", "replaceState"] as const) {
+  const original = history[method];
+  history[method] = function (...args: Parameters<typeof original>) {
+    advancePageScope();
+    return original.apply(this, args);
+  };
+}
+window.addEventListener("popstate", advancePageScope);
 void registerDocument();
+void registerPageScope();

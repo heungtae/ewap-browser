@@ -23,6 +23,7 @@ if (
       "offscreen",
       "sidePanel",
       "storage",
+      "tabs",
     ]) ||
   !manifest.host_permissions.includes("<all_urls>") ||
   !manifest.host_permissions.includes("http://localhost/*") ||

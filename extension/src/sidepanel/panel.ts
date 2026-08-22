@@ -17,6 +17,13 @@ export const userMessage: Record<ErrorCode, string> = {
   PAYLOAD_LIMIT_EXCEEDED: "페이지 정보가 허용 범위를 초과했습니다.",
   STORAGE_BOUNDARY_UNAVAILABLE:
     "브라우저 저장소 보안 경계를 설정할 수 없습니다.",
+  PAGE_SCOPE_STALE: "페이지가 변경되어 새 페이지 정보를 확인해야 합니다.",
+  THREAD_LIMIT_REACHED: "이 대화에서 열 수 있는 탭 수에 도달했습니다.",
+  CHAT_STORAGE_QUOTA_EXCEEDED: "이 탭의 대화 저장 한도를 초과했습니다.",
+  SESSION_STREAM_BUSY: "다른 탭에서 응답을 생성하고 있습니다.",
+  CONTEXT_BUDGET_EXCEEDED: "요청이 대화 문맥 한도를 초과했습니다.",
+  INPUT_REDACTED: "민감한 정보가 포함되어 요청을 보낼 수 없습니다.",
+  TRANSFER_STALE: "전달 대상 페이지가 변경되어 대화를 이어갈 수 없습니다.",
   INTERNAL_FAILURE: "작업을 안전하게 완료할 수 없습니다.",
   BUSINESS_MCP_NOT_CONFIGURED: "업무 데이터 연결이 구성되지 않았습니다.",
   BUSINESS_MCP_UNAVAILABLE: "업무 데이터 연결을 사용할 수 없습니다.",
@@ -39,6 +46,51 @@ export const userMessage: Record<ErrorCode, string> = {
   PROVIDER_NOT_CONFIGURED: "사용할 provider를 먼저 설정해야 합니다.",
   PROVIDER_AUTH_FAILED: "provider API key 또는 header를 확인해 주세요.",
   PROVIDER_UNAVAILABLE: "provider에 연결할 수 없습니다.",
+};
+export type FailureHelp = {
+  guidance: string;
+  openSettings?: boolean;
+};
+export const failureHelp = (code?: string): FailureHelp => {
+  switch (code) {
+    case "PROVIDER_NOT_CONFIGURED":
+    case "PROVIDER_PLUGIN_NOT_FOUND":
+    case "PROVIDER_PLUGIN_INCOMPATIBLE":
+      return {
+        guidance:
+          "AI 설정에서 사용할 provider와 모델을 선택한 뒤 다시 시도해 주세요.",
+        openSettings: true,
+      };
+    case "PROVIDER_AUTH_FAILED":
+      return {
+        guidance:
+          "AI 설정에서 API key와 인증 header를 확인한 뒤 연결 테스트를 실행해 주세요.",
+        openSettings: true,
+      };
+    case "PROVIDER_UNAVAILABLE":
+    case "PROVIDER_PLUGIN_FAILED":
+    case "TRANSPORT_FAILED":
+      return {
+        guidance:
+          "AI 설정에서 연결 테스트를 실행하세요. 계속되면 endpoint, 실행 중인 provider, 선택 모델을 확인해 주세요.",
+        openSettings: true,
+      };
+    case "DOCUMENT_NOT_REGISTERED":
+    case "TARGET_STALE":
+      return {
+        guidance: "현재 페이지를 새로고침한 뒤 같은 요청을 다시 시도해 주세요.",
+      };
+    case "PERMISSION_REQUIRED":
+      return {
+        guidance:
+          "주소 표시줄의 확장 프로그램 권한에서 이 사이트 사용을 허용한 뒤 다시 시도해 주세요.",
+      };
+    default:
+      return {
+        guidance:
+          "같은 문제가 반복되면 확장을 다시 로드한 뒤 다시 시도해 주세요.",
+      };
+  }
 };
 export const terminalState = (
   outcome: Outcome,

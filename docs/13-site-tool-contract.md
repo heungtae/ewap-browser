@@ -34,14 +34,15 @@
 
 ### 반도체 데모 Act proposal
 
-내장 반도체 데모의 정확한 HTTPS origin과 `trend-analysis.html`에서만 Act chat은 아래 proposal 도구를 추가로 받는다. proposal은 실행이 아니며, Side Panel의 매 단계 사용자 승인이 필요하다.
+내장 반도체 데모는 시작 페이지에서 `분석 센터 열기` link 하나를, `trend-analysis.html`에서 분석 제어 도구를 추가로 받는다. proposal은 실행이 아니며, Side Panel의 매 단계 사용자 승인이 필요하다.
 
-| 도구                    | 입력                          | 실행 전 검증                                                 |
-| ----------------------- | ----------------------------- | ------------------------------------------------------------ |
-| `propose_select_option` | 현재 `model_ref`, option text | 허용된 demo combobox, visible/enabled 상태, 실제 option 존재 |
-| `propose_click`         | 현재 `model_ref`              | 정확한 `수율 추세 분석 실행` button, visible/enabled 상태    |
+| 도구                    | 입력                          | 실행 전 검증                                                     |
+| ----------------------- | ----------------------------- | ---------------------------------------------------------------- |
+| `propose_select_option` | 현재 `model_ref`, option text | 허용된 demo combobox, visible/enabled 상태, 실제 option 존재     |
+| `propose_click`         | 현재 `model_ref`              | 정확한 `수율 추세 분석 실행` button, visible/enabled 상태        |
+| `propose_click`         | 현재 `model_ref`              | 시작 페이지의 정확한 `분석 센터 열기` link, visible/enabled 상태 |
 
-Service Worker는 proposal ID만 Side Panel에 전달한다. 승인 message는 raw ref나 option value를 다시 받지 않으며, proposal은 한 번만 실행할 수 있다. 선택 후에는 새 projection과 새 run-scoped model ref를 사용해 다음 단계를 제안한다.
+Service Worker는 proposal ID만 Side Panel에 전달한다. 승인 message는 raw ref나 option value를 다시 받지 않으며, proposal은 한 번만 실행할 수 있다. `분석 센터 열기`는 `navigate` host 권한을 별도로 확인하고, query/fragment 없는 정확한 same-origin `trend-analysis.html` 전환이 관찰된 경우에만 `VERIFIED`다. 선택 후에는 새 projection과 새 run-scoped model ref를 사용해 다음 단계를 제안한다.
 
 ## 2. site adapter와 WebMCP
 

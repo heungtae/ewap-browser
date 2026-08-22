@@ -51,4 +51,38 @@ describe("demo Act tools", () => {
       undefined,
     );
   });
+
+  it("exposes the analysis-center link only when the demo navigation flow is enabled", () => {
+    const snapshot = {
+      document_epoch: "epoch-abcdefghijklmnop",
+      frame_id: 0,
+      nodes: [
+        {
+          model_ref: "model-ref-open-analysis",
+          role: "link",
+          name: "분석 센터 열기",
+          state: {},
+          visible: true,
+          enabled: true,
+        },
+      ],
+      visible_text: "",
+    } satisfies ModelSemanticSnapshot;
+
+    expect(demoActTools(snapshot)).toEqual([]);
+    expect(
+      demoActTools(snapshot, { allowAnalysisNavigation: true }),
+    ).toMatchObject([
+      {
+        function: {
+          name: "propose_click",
+          parameters: {
+            properties: {
+              target: { enum: ["model-ref-open-analysis"] },
+            },
+          },
+        },
+      },
+    ]);
+  });
 });

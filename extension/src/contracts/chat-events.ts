@@ -15,6 +15,8 @@ export type ChatActionView = {
   origin?: string;
 };
 export type ChatEventPayload =
+  | { type: "user_message"; text: string }
+  | { type: "page_scope_changed" }
   | { type: "run_started"; mode: ChatMode; permission_mode: string }
   | { type: "assistant_delta"; text: string }
   | { type: "tool_started"; tool_use_id: string; tool: string; summary: string }
@@ -50,6 +52,9 @@ export type ChatEventPayload =
   | { type: "run_terminal"; outcome: Outcome; code?: string };
 
 export type ChatEvent = ChatEventPayload & {
+  session_id: string;
+  thread_id: string;
+  tab_id: number;
   run_id: string;
   sequence: number;
 };
@@ -63,6 +68,9 @@ const outcomes = new Set<Outcome>([
 const modes = new Set<ChatMode>(["ask", "act"]);
 const allowedEventKeys = [
   "type",
+  "session_id",
+  "thread_id",
+  "tab_id",
   "run_id",
   "sequence",
   "mode",
@@ -122,6 +130,11 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
     return fail("INVALID_ARGUMENT");
   if (
     typeof value.type !== "string" ||
+    typeof value.session_id !== "string" ||
+    typeof value.thread_id !== "string" ||
+    typeof value.tab_id !== "number" ||
+    !Number.isInteger(value.tab_id) ||
+    value.tab_id < 0 ||
     typeof value.run_id !== "string" ||
     typeof value.sequence !== "number" ||
     !Number.isInteger(value.sequence) ||
@@ -129,7 +142,19 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
   )
     return fail("INVALID_ARGUMENT");
   const sequence = value.sequence as number;
-  const base = { run_id: opaque(value.run_id), sequence };
+  const base = {
+    session_id: opaque(value.session_id),
+    thread_id: opaque(value.thread_id),
+    tab_id: value.tab_id,
+    run_id: opaque(value.run_id),
+    sequence,
+  };
+  if (value.type === "user_message") {
+    if (typeof value.text !== "string") return fail("INVALID_ARGUMENT");
+    return { ...base, type: "user_message", text: string(value.text, 16_000) };
+  }
+  if (value.type === "page_scope_changed")
+    return { ...base, type: "page_scope_changed" };
   if (value.type === "run_started") {
     if (
       typeof value.mode !== "string" ||

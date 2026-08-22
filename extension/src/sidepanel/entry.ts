@@ -3,16 +3,21 @@ import {
   type ChatEvent,
   validateChatEvent,
 } from "../contracts/chat-events.js";
-import { userMessage } from "./panel.js";
+import { renderMarkdown } from "./markdown.js";
+import { failureHelp, userMessage } from "./panel.js";
 
 type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
+  connect(info: { name: string }): {
+    onMessage: { addListener(listener: (message: unknown) => void): void };
+  };
   openOptionsPage(): Promise<void>;
   onMessage: { addListener(listener: (message: unknown) => void): void };
 };
 const runtime = (
   globalThis as typeof globalThis & { chrome?: { runtime: BrowserRuntime } }
 ).chrome?.runtime;
+const panelPort = runtime?.connect({ name: "contextpilot-panel" });
 const byId = <T extends HTMLElement>(id: string): T | null =>
   document.querySelector<T>("#" + id);
 const chatForm = byId<HTMLFormElement>("chat-form");
@@ -29,8 +34,13 @@ const send = byId<HTMLButtonElement>("chat-send");
 const modeAsk = byId<HTMLButtonElement>("mode-ask");
 const modeAct = byId<HTMLButtonElement>("mode-act");
 const settingsOpen = byId<HTMLButtonElement>("settings-open");
+const newChatOpen = byId<HTMLButtonElement>("new-chat-open");
+const newChatDialog = byId<HTMLDialogElement>("new-chat-dialog");
+const newChatConfirm = byId<HTMLButtonElement>("new-chat-confirm");
+const newChatCancel = byId<HTMLButtonElement>("new-chat-cancel");
 const permissionModeBadge = byId<HTMLElement>("permission-mode-badge");
 const runBanner = byId<HTMLElement>("run-banner");
+const threadScope = byId<HTMLElement>("thread-scope");
 
 let chatMode: "ask" | "act" = "ask";
 let currentPermissionMode = "standard";
@@ -39,6 +49,7 @@ let deltaFrame: number | undefined;
 const eventSequences = new Map<string, number>();
 const streamingMessages = new Map<string, HTMLElement>();
 const pendingDeltas = new Map<string, string>();
+let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
@@ -76,11 +87,21 @@ const message = (role: "user" | "assistant", text: string): HTMLElement => {
   const item = document.createElement("article");
   item.className = "message";
   item.dataset.role = role;
-  item.textContent = text;
+  if (role === "assistant") {
+    assistantMessageText.set(item, text);
+    renderMarkdown(item, text);
+  } else item.textContent = text;
   return item;
 };
 const card = (
-  kind: "tool" | "review" | "permission" | "value" | "confirmation" | "error",
+  kind:
+    | "tool"
+    | "review"
+    | "permission"
+    | "value"
+    | "confirmation"
+    | "error"
+    | "page-scope",
   title: string,
   detail: string,
 ): HTMLElement => {
@@ -138,6 +159,25 @@ const clearAttachment = (): void => {
   if (attachmentInput) attachmentInput.value = "";
   renderAttachment();
 };
+const clearConversation = (): void => {
+  if (deltaFrame !== undefined) cancelAnimationFrame(deltaFrame);
+  deltaFrame = undefined;
+  eventSequences.clear();
+  streamingMessages.clear();
+  pendingDeltas.clear();
+  assistantMessageText = new WeakMap<HTMLElement, string>();
+  tools.clear();
+  deliveredDuringRequest = false;
+  setRunActive(false);
+  chatMessages?.replaceChildren();
+  emptyState?.removeAttribute("hidden");
+  runBanner?.setAttribute("hidden", "");
+  clearAttachment();
+  if (chatInput) {
+    chatInput.value = "";
+    chatInput.focus();
+  }
+};
 const attachmentPrompt = (question: string): string | undefined => {
   if (!attachment) return question || undefined;
   const prefix = question || "첨부한 파일을 분석해 주세요.";
@@ -166,8 +206,18 @@ const showFailure = (code?: string): void => {
     code && code in userMessage
       ? userMessage[code as keyof typeof userMessage]
       : "작업을 안전하게 완료하지 못했습니다.";
-  append(card("error", "작업 결과를 확인할 수 없습니다", detail));
-  setStatus(detail);
+  const help = failureHelp(code);
+  const item = card("error", "작업 결과를 확인할 수 없습니다", detail);
+  const guidance = document.createElement("p");
+  guidance.className = "failure-guidance";
+  guidance.textContent = help.guidance;
+  item.append(guidance);
+  if (help.openSettings)
+    actionRow(item).append(
+      actionButton("AI 설정 열기", "primary", openSettings),
+    );
+  append(item);
+  setStatus(detail + " " + help.guidance);
 };
 const sendRuntime = async (
   payload: unknown,
@@ -243,7 +293,12 @@ const renderPermission = (
   capability: string,
   host: string,
 ): void => {
-  const operation = capability === "type" ? "입력" : "클릭";
+  const operation =
+    capability === "type"
+      ? "입력"
+      : capability === "navigate"
+        ? "화면 전환"
+        : "클릭";
   const item = card(
     "permission",
     "권한 확인",
@@ -350,8 +405,11 @@ const flushDeltas = (): void => {
   deltaFrame = undefined;
   for (const [runId, text] of pendingDeltas) {
     const previous = streamingMessages.get(runId);
-    if (previous) previous.textContent = (previous.textContent ?? "") + text;
-    else {
+    if (previous) {
+      const content = (assistantMessageText.get(previous) ?? "") + text;
+      assistantMessageText.set(previous, content);
+      renderMarkdown(previous, content);
+    } else {
       const item = message("assistant", text);
       streamingMessages.set(runId, item);
       append(item);
@@ -389,6 +447,20 @@ const applyChatEvent = (raw: unknown): void => {
   }
   eventSequences.set(event.run_id, event.sequence);
   deliveredDuringRequest = true;
+  if (event.type === "user_message") {
+    append(message("user", event.text));
+    return;
+  }
+  if (event.type === "page_scope_changed") {
+    append(
+      card(
+        "page-scope",
+        "페이지가 변경됨",
+        "페이지가 변경되어 이전 페이지 근거가 만료되었습니다.",
+      ),
+    );
+    return;
+  }
   if (event.type === "run_started") {
     applyPermissionMode(event.permission_mode);
     if (runBanner) {
@@ -480,16 +552,19 @@ const recoverChatEvents = async (attempt = 0): Promise<void> => {
       typeof response === "object" &&
       response !== null &&
       (response as { ok?: unknown }).ok &&
-      Array.isArray((response as { streams?: unknown }).streams)
+      Array.isArray((response as { events?: unknown }).events)
     ) {
-      for (const stream of (response as { streams: unknown[] }).streams)
-        if (
-          typeof stream === "object" &&
-          stream !== null &&
-          Array.isArray((stream as { events?: unknown }).events)
-        )
-          for (const event of (stream as { events: unknown[] }).events)
-            applyChatEvent(event);
+      const scope = (response as { scope?: unknown }).scope;
+      if (
+        threadScope &&
+        typeof scope === "object" &&
+        scope !== null &&
+        typeof (scope as { origin?: unknown }).origin === "string" &&
+        typeof (scope as { path?: unknown }).path === "string"
+      )
+        threadScope.textContent = `${(scope as { origin: string }).origin}${(scope as { path: string }).path} · 이 탭의 문맥`;
+      for (const event of (response as { events: unknown[] }).events)
+        applyChatEvent(event);
       return;
     }
   } catch {
@@ -499,6 +574,27 @@ const recoverChatEvents = async (attempt = 0): Promise<void> => {
     window.setTimeout(() => void recoverChatEvents(attempt + 1), 100);
 };
 settingsOpen?.addEventListener("click", openSettings);
+newChatOpen?.addEventListener("click", () => {
+  if (newChatDialog?.open) return;
+  newChatDialog?.showModal();
+});
+newChatCancel?.addEventListener("click", () => newChatDialog?.close());
+newChatConfirm?.addEventListener("click", () => {
+  if (!newChatConfirm) return;
+  newChatConfirm.disabled = true;
+  void sendRuntime({ kind: "CHAT_CLEAR" })
+    .then(() => {
+      clearConversation();
+      newChatDialog?.close();
+      setStatus("새 대화를 시작했습니다.");
+    })
+    .catch((error: unknown) =>
+      showFailure(error instanceof Error ? error.message : undefined),
+    )
+    .finally(() => {
+      newChatConfirm.disabled = false;
+    });
+});
 modeAsk?.addEventListener("click", () => {
   chatMode = "ask";
   modeAsk.setAttribute("aria-pressed", "true");
@@ -511,14 +607,16 @@ modeAct?.addEventListener("click", () => {
   modeAct.setAttribute("aria-pressed", "true");
   setStatus("실행 모드입니다.");
 });
-runtime?.onMessage.addListener((message) => {
+const receiveChatEvent = (message: unknown): void => {
   if (
     typeof message === "object" &&
     message !== null &&
     (message as { kind?: unknown }).kind === "CHAT_EVENT"
   )
     applyChatEvent((message as { event?: unknown }).event);
-});
+};
+panelPort?.onMessage.addListener(receiveChatEvent);
+runtime?.onMessage.addListener(receiveChatEvent);
 attachmentTrigger?.addEventListener("click", () => attachmentInput?.click());
 suggestedPrompt?.addEventListener("click", () => {
   if (!chatInput) return;
@@ -572,13 +670,6 @@ chatForm?.addEventListener("submit", (event) => {
     );
     return;
   }
-  append(
-    message(
-      "user",
-      question ||
-        (attachment ? attachment.name + " 파일을 분석해 주세요." : ""),
-    ),
-  );
   if (chatInput) chatInput.value = "";
   deliveredDuringRequest = false;
   setRunActive(true);

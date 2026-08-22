@@ -19,6 +19,7 @@ const expectedPermissions = [
   "offscreen",
   "sidePanel",
   "storage",
+  "tabs",
 ];
 if (
   JSON.stringify([...manifest.permissions].sort()) !==
@@ -27,7 +28,7 @@ if (
   throw new Error("manifest permission snapshot differs from bounded design");
 if (
   manifest.permissions.some((permission) =>
-    ["scripting", "tabs", "webNavigation"].includes(permission),
+    ["scripting", "webNavigation"].includes(permission),
   )
 )
   throw new Error("manifest contains an unsupported permission");

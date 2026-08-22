@@ -177,6 +177,34 @@
         border-bottom-left-radius: 4px;
         background: var(--surface);
       }
+      .message[data-role="assistant"] h1,
+      .message[data-role="assistant"] h2,
+      .message[data-role="assistant"] h3,
+      .message[data-role="assistant"] p,
+      .message[data-role="assistant"] ul {
+        margin: 0;
+      }
+      .message[data-role="assistant"] h1,
+      .message[data-role="assistant"] h2,
+      .message[data-role="assistant"] h3 {
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .message[data-role="assistant"] p + p,
+      .message[data-role="assistant"] h1 + p,
+      .message[data-role="assistant"] h2 + p,
+      .message[data-role="assistant"] h3 + p,
+      .message[data-role="assistant"] p + ul,
+      .message[data-role="assistant"] ul + p {
+        margin-top: 9px;
+      }
+      .message[data-role="assistant"] ul {
+        padding-left: 18px;
+      }
+      .message[data-role="assistant"] li + li {
+        margin-top: 3px;
+      }
       .event-card {
         display: grid;
         gap: 7px;
@@ -204,6 +232,12 @@
       .event-heading b {
         color: var(--text);
         font-size: 12px;
+      }
+      .failure-guidance {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
       }
       .tool-state {
         margin-left: auto;
@@ -382,6 +416,30 @@
         height: 32px;
         min-height: 32px;
       }
+      .header-tools .new-chat {
+        width: 28px;
+        min-width: 28px;
+        height: 28px;
+        min-height: 28px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #d2d7ef;
+      }
+      .header-tools .new-chat:hover {
+        background: #26385e;
+        color: #f2f5ff;
+      }
+      .header-tools .new-chat svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
       .header-tools button svg,
       .attachment-control button svg {
         display: block;
@@ -527,6 +585,56 @@
         max-width: 100%;
         padding-left: 38px;
         color: #aeb9d8;
+        overflow: hidden;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      dialog.new-chat-dialog {
+        width: min(340px, calc(100vw - 40px));
+        margin: auto;
+        padding: 0;
+        color: var(--text);
+        border: 1px solid #35486f;
+        border-radius: 14px;
+        background: #182440;
+        box-shadow: 0 24px 80px rgb(0 0 0 / 48%);
+      }
+      dialog.new-chat-dialog::backdrop {
+        background: rgb(4 8 18 / 68%);
+        backdrop-filter: blur(2px);
+      }
+      .new-chat-dialog form {
+        display: grid;
+        gap: 15px;
+        padding: 20px;
+      }
+      .new-chat-dialog h2,
+      .new-chat-dialog p {
+        margin: 0;
+      }
+      .new-chat-dialog h2 {
+        font-size: 15px;
+      }
+      .new-chat-dialog p {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .new-chat-dialog .dialog-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .new-chat-dialog .dialog-actions button {
+        min-height: 40px;
+      }
+      .new-chat-dialog .confirm-new-chat {
+        color: white;
+        border-color: transparent;
+        background: #d33d4b;
+      }
+      .new-chat-dialog .confirm-new-chat:hover:not(:disabled) {
+        background: #e34e5b;
       }
       @media (max-width: 360px) {
         .header {
@@ -558,16 +666,24 @@
   <body>
     <main class="workspace" aria-label="ContextPilot chat workspace">
       <header class="header">
+        <div class="badge" id="thread-scope" aria-label="현재 탭 문맥">
+          이 탭의 문맥
+        </div>
         <div class="header-bottom">
           <div class="header-tools">
             <span class="badge" id="permission-mode-badge" data-mode="standard"
               >표준 권한</span
             >
-            <button type="button" title="기록" aria-label="기록">
+            <button
+              class="new-chat"
+              id="new-chat-open"
+              type="button"
+              title="새 대화"
+              aria-label="새 대화"
+            >
               <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
-                <path d="M3 12a9 9 0 1 0 3-6.7" />
-                <path d="M3 3v6h6" />
-                <path d="M12 7v5l3 2" />
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" />
               </svg>
             </button>
             <button
@@ -678,6 +794,28 @@
         </div>
         <output class="attachment-name" id="attachment-name" hidden></output>
       </form>
+      <dialog
+        class="new-chat-dialog"
+        id="new-chat-dialog"
+        aria-labelledby="new-chat-title"
+      >
+        <form method="dialog">
+          <div>
+            <h2 id="new-chat-title">새 대화를 시작할까요?</h2>
+            <p>현재 대화의 기록이 삭제됩니다.</p>
+          </div>
+          <div class="dialog-actions">
+            <button id="new-chat-cancel" type="button">취소</button>
+            <button
+              class="confirm-new-chat"
+              id="new-chat-confirm"
+              type="button"
+            >
+              새 대화
+            </button>
+          </div>
+        </form>
+      </dialog>
     </main>
     <script type="module" src="../js/panel.js"></script>
   </body>

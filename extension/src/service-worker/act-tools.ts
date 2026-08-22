@@ -8,9 +8,11 @@ const demoOptions: Record<string, readonly string[]> = {
   "분석 기간": ["최근 12주", "최근 8주", "최근 4주"],
 };
 const demoSubmitName = "수율 추세 분석 실행";
+const demoOpenAnalysisName = "분석 센터 열기";
 
 export const demoActTools = (
   snapshot: ModelSemanticSnapshot,
+  options: { allowAnalysisNavigation?: boolean } = {},
 ): ProviderToolDefinition[] => {
   const selectTargets = snapshot.nodes
     .filter(
@@ -26,8 +28,10 @@ export const demoActTools = (
       (node) =>
         node.visible &&
         node.enabled &&
-        node.role === "button" &&
-        node.name === demoSubmitName,
+        ((node.role === "button" && node.name === demoSubmitName) ||
+          (options.allowAnalysisNavigation &&
+            node.role === "link" &&
+            node.name === demoOpenAnalysisName)),
     )
     .map((node) => node.model_ref);
   const optionValues = [...new Set(Object.values(demoOptions).flat())];
@@ -60,7 +64,7 @@ export const demoActTools = (
             function: {
               name: "propose_click",
               description:
-                "Propose clicking the enabled final yield-trend analysis button. This is not execution. target must be an opaque model_ref from the target enum.",
+                "Propose one enabled semiconductor demo control. This is not execution. target must be an opaque model_ref from the target enum.",
               parameters: {
                 type: "object",
                 additionalProperties: false,
