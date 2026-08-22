@@ -90,6 +90,28 @@ describe("core provider transport", () => {
     });
   });
 
+  it("given_structured_provider_error_when_sending_then_exposes_safe_code_and_message", async () => {
+    const transport = new CoreProviderTransport(
+      async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "invalid_request_error",
+              message: "Unsupported tools payload for model.",
+            },
+          }),
+          { status: 400, headers: { "content-type": "application/json" } },
+        ),
+    );
+    await expect(
+      transport.send(config("none"), openAiCompatibleAdapter, request),
+    ).rejects.toMatchObject({
+      code: "PROVIDER_UNAVAILABLE",
+      detail:
+        "HTTP 400; invalid_request_error; Unsupported tools payload for model.",
+    });
+  });
+
   it("given_fetch_network_error_when_sending_then_classifies_network_boundary", async () => {
     const transport = new CoreProviderTransport(async () => {
       throw new TypeError("Failed to fetch");

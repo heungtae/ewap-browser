@@ -54,13 +54,7 @@ export class ProviderRuntime {
       ...(input.tools ? { tools: input.tools } : {}),
       stream: false,
     });
-    if (!result.body) fail("PROVIDER_UNAVAILABLE");
-    let response: unknown;
-    try {
-      response = JSON.parse(await new Response(result.body).text());
-    } catch {
-      return fail("PROVIDER_UNAVAILABLE");
-    }
+    const response = await parseProviderBody(result.body);
     console.debug("[ContextPilot][LLM response raw]", {
       status: result.status,
       response: structuredClone(response),
@@ -125,6 +119,7 @@ export class ProviderRuntime {
         resolved.adapter,
         value.request as unknown as NormalizedProviderRequest,
       );
+      parseChatResponse(await parseProviderBody(result.body));
       return { ok: true, status: result.status };
     }
     if (kind === "PROVIDER_MODELS") {
@@ -161,19 +156,52 @@ const parseToolCalls = (value: unknown): ProviderToolCall[] => {
     const functionValue = isPlainObject(candidate.function)
       ? candidate.function
       : candidate;
+    const id =
+      typeof candidate.call_id === "string"
+        ? candidate.call_id
+        : typeof candidate.id === "string"
+          ? candidate.id
+          : undefined;
     if (
-      typeof candidate.id !== "string" ||
+      !id ||
       typeof functionValue.name !== "string" ||
       typeof functionValue.arguments !== "string"
     )
       continue;
     calls.push({
-      id: candidate.id,
+      id,
       name: functionValue.name,
       arguments: functionValue.arguments,
     });
   }
   return calls;
+};
+
+const parseProviderBody = async (
+  body: ReadableStream<Uint8Array> | null,
+): Promise<unknown> => {
+  if (!body) return fail("PROVIDER_UNAVAILABLE");
+  try {
+    return JSON.parse(await new Response(body).text());
+  } catch {
+    return fail("PROVIDER_UNAVAILABLE");
+  }
+};
+
+const responseOutputText = (output: unknown): string => {
+  if (!Array.isArray(output)) return "";
+  return output
+    .flatMap((item) => {
+      if (!isPlainObject(item) || !Array.isArray(item.content)) return [];
+      return item.content.flatMap((content) =>
+        isPlainObject(content) &&
+        content.type === "output_text" &&
+        typeof content.text === "string"
+          ? [content.text]
+          : [],
+      );
+    })
+    .join("");
 };
 
 const parseChatResponse = (response: unknown): ProviderChatResponse => {
@@ -182,15 +210,20 @@ const parseChatResponse = (response: unknown): ProviderChatResponse => {
     : fail("PROVIDER_UNAVAILABLE");
   const choices = object.choices;
   const first = Array.isArray(choices) ? choices[0] : undefined;
-  const message = isPlainObject(first) && isPlainObject(first.message)
-    ? first.message
-    : undefined;
+  const message =
+    isPlainObject(first) && isPlainObject(first.message)
+      ? first.message
+      : undefined;
   if (message) {
     const content = typeof message.content === "string" ? message.content : "";
     const toolCalls = parseToolCalls(message.tool_calls);
-    if (content || toolCalls.length > 0) return { content, tool_calls: toolCalls };
+    if (content || toolCalls.length > 0)
+      return { content, tool_calls: toolCalls };
   }
-  const output = typeof object.output_text === "string" ? object.output_text : "";
+  const output =
+    typeof object.output_text === "string"
+      ? object.output_text
+      : responseOutputText(object.output);
   const responseCalls = parseToolCalls(object.output);
   if (output || responseCalls.length > 0)
     return { content: output, tool_calls: responseCalls };

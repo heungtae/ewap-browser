@@ -156,28 +156,29 @@ describe("provider runtime", () => {
           stored = value;
         },
       },
-      new CoreProviderTransport(async () =>
-        new Response(
-          JSON.stringify({
-            choices: [
-              {
-                message: {
-                  content: "",
-                  tool_calls: [
-                    {
-                      id: "call_1",
-                      function: {
-                        name: "read_semantic_projection",
-                        arguments: "{}",
+      new CoreProviderTransport(
+        async () =>
+          new Response(
+            JSON.stringify({
+              choices: [
+                {
+                  message: {
+                    content: "",
+                    tool_calls: [
+                      {
+                        id: "call_1",
+                        function: {
+                          name: "read_semantic_projection",
+                          arguments: "{}",
+                        },
                       },
-                    },
-                  ],
+                    ],
+                  },
                 },
-              },
-            ],
-          }),
-          { headers: { "content-type": "application/json" } },
-        ),
+              ],
+            }),
+            { headers: { "content-type": "application/json" } },
+          ),
       ),
     );
     await runtime.handle("PROVIDER_SAVE", { id: "local", config });
@@ -190,5 +191,97 @@ describe("provider runtime", () => {
         { id: "call_1", name: "read_semantic_projection", arguments: "{}" },
       ],
     });
+  });
+
+  it("given_responses_function_call_when_chatting_then_uses_call_id", async () => {
+    let stored: Record<string, unknown> = {};
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(
+        async () =>
+          new Response(
+            JSON.stringify({
+              output: [
+                {
+                  id: "fc_123",
+                  type: "function_call",
+                  call_id: "call_123",
+                  name: "read_semantic_projection",
+                  arguments: "{}",
+                },
+              ],
+            }),
+            { headers: { "content-type": "application/json" } },
+          ),
+      ),
+    );
+    await runtime.handle("PROVIDER_SAVE", {
+      id: "local",
+      config: { ...config, wire_api: "responses" },
+    });
+
+    await expect(
+      runtime.chat({ messages: [{ role: "user", content: "현재 페이지" }] }),
+    ).resolves.toEqual({
+      content: "",
+      tool_calls: [
+        {
+          id: "call_123",
+          name: "read_semantic_projection",
+          arguments: "{}",
+        },
+      ],
+    });
+  });
+
+  it("given_responses_output_text_when_testing_then_requires_a_parseable_answer", async () => {
+    let stored: Record<string, unknown> = {};
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(
+        async () =>
+          new Response(
+            JSON.stringify({
+              output: [
+                {
+                  type: "message",
+                  content: [{ type: "output_text", text: "연결되었습니다." }],
+                },
+              ],
+            }),
+            { headers: { "content-type": "application/json" } },
+          ),
+      ),
+    );
+    await runtime.handle("PROVIDER_SAVE", {
+      id: "local",
+      config: { ...config, wire_api: "responses" },
+    });
+
+    await expect(
+      runtime.handle("PROVIDER_TEST", {
+        id: "local",
+        request: {
+          wire_api: "responses",
+          model: "fixture",
+          messages: [{ role: "user", content: "connection test" }],
+          stream: false,
+        },
+      }),
+    ).resolves.toEqual({ ok: true, status: 200 });
   });
 });

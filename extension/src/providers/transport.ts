@@ -88,6 +88,31 @@ const providerHeaders = (config: ProviderConfig): Headers => {
   }
   return headers;
 };
+const safeProviderErrorDetail = async (response: Response): Promise<string> => {
+  const status = `HTTP ${response.status}`;
+  const body = await response.text();
+  try {
+    const value = JSON.parse(body) as { error?: unknown };
+    const error = value.error;
+    if (!error || typeof error !== "object") return status;
+    const code =
+      typeof (error as { code?: unknown }).code === "string"
+        ? (error as { code: string }).code
+        : undefined;
+    const message =
+      typeof (error as { message?: unknown }).message === "string"
+        ? (error as { message: string }).message
+            .replace(/(?:sk|sess)-[A-Za-z0-9_-]+/g, "[REDACTED]")
+            .replace(/[\r\n\t]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 320)
+        : undefined;
+    return [status, code, message].filter(Boolean).join("; ");
+  } catch {
+    return status;
+  }
+};
 
 export class CoreProviderTransport {
   public constructor(
@@ -137,7 +162,8 @@ export class CoreProviderTransport {
           "PROVIDER_AUTH_FAILED",
           `HTTP ${response.status}; auth=${config.api_key_header}; key=${config.api_key ? "configured" : "empty"}`,
         );
-      if (!response.ok) fail("PROVIDER_UNAVAILABLE", `HTTP ${response.status}`);
+      if (!response.ok)
+        fail("PROVIDER_UNAVAILABLE", await safeProviderErrorDetail(response));
       const contentType = response.headers.get("content-type") ?? "";
       if (!/(application\/json|text\/event-stream)/i.test(contentType))
         fail("PROVIDER_UNAVAILABLE", "invalid response content type");
@@ -185,7 +211,8 @@ export class CoreProviderTransport {
           "PROVIDER_AUTH_FAILED",
           `HTTP ${response.status}; auth=${config.api_key_header}; key=${config.api_key ? "configured" : "empty"}`,
         );
-      if (!response.ok) fail("PROVIDER_UNAVAILABLE", `HTTP ${response.status}`);
+      if (!response.ok)
+        fail("PROVIDER_UNAVAILABLE", await safeProviderErrorDetail(response));
       const contentType = response.headers.get("content-type") ?? "";
       if (!/application\/json/i.test(contentType))
         fail("PROVIDER_UNAVAILABLE", "invalid response content type");

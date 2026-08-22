@@ -190,6 +190,7 @@ const saveProvider = async (): Promise<{
     parsed.hostname,
   );
   const ollamaEndpoint = loopback && parsed.port === "11434";
+  const openAiEndpoint = parsed.hostname.toLowerCase() === "api.openai.com";
   if (
     parsed.protocol !== "https:" &&
     !(parsed.protocol === "http:" && loopback)
@@ -230,6 +231,7 @@ const saveProvider = async (): Promise<{
   const previousWireApi = previous?.providers?.local?.wire_api;
   if (
     !ollamaEndpoint &&
+    !openAiEndpoint &&
     (previousWireApi === "chat_completions" || previousWireApi === "responses")
   )
     provider.wire_api = previousWireApi;

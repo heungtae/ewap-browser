@@ -2,7 +2,9 @@ import { fail } from "../security/validation.js";
 import type {
   NormalizedProviderRequest,
   ProviderAdapter,
+  ProviderMessage,
   ProviderRequestPlan,
+  ProviderToolDefinition,
 } from "./types.js";
 
 const forbidden = new Set([
@@ -22,6 +24,48 @@ export const assertSafeRequestPlan = (plan: ProviderRequestPlan): void => {
     fail("PROVIDER_PLUGIN_FAILED");
 };
 
+const responseTools = (
+  tools: ProviderToolDefinition[] | undefined,
+): Array<Record<string, unknown>> | undefined =>
+  tools?.map((tool) => ({
+    type: "function",
+    name: tool.function.name,
+    description: tool.function.description,
+    parameters: tool.function.parameters,
+  }));
+
+const responseInput = (
+  messages: ProviderMessage[],
+): Array<Record<string, unknown>> =>
+  messages.flatMap<Record<string, unknown>>((message) => {
+    if (message.role === "tool")
+      return message.tool_call_id
+        ? [
+            {
+              type: "function_call_output",
+              call_id: message.tool_call_id,
+              output: message.content,
+            },
+          ]
+        : [];
+    const assistantContent =
+      message.role === "assistant" && message.tool_calls?.length
+        ? message.content
+          ? [{ role: "assistant", content: message.content }]
+          : []
+        : [{ role: message.role, content: message.content }];
+    const toolCalls =
+      message.role === "assistant"
+        ? (message.tool_calls ?? []).map((call) => ({
+            type: "function_call",
+            call_id: call.id,
+            name: call.name,
+            arguments: call.arguments,
+          }))
+        : [];
+    return [...assistantContent, ...toolCalls];
+  });
+
 export const openAiCompatibleAdapter: ProviderAdapter = {
   id: "contextpilot.openai-compatible",
   plan(request: NormalizedProviderRequest): ProviderRequestPlan {
@@ -40,8 +84,8 @@ export const openAiCompatibleAdapter: ProviderAdapter = {
             path: "/responses",
             body: {
               model: request.model,
-              input: request.messages,
-              ...(request.tools ? { tools: request.tools } : {}),
+              input: responseInput(request.messages),
+              ...(request.tools ? { tools: responseTools(request.tools) } : {}),
               stream: request.stream,
             },
           };
