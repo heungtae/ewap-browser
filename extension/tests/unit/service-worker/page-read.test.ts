@@ -64,4 +64,32 @@ describe("page read", () => {
       getPageText({ ...snapshot, visible_text: "short", article_text: "" }),
     ).toThrow("PAGE_TEXT_UNAVAILABLE");
   });
+  it("bounds a focused subtree by the closed depth argument", () => {
+    const tree = {
+      ...snapshot,
+      nodes: [
+        {
+          ...snapshot.nodes[0],
+          model_ref: "root-ref-abcdefghijklmnop",
+        },
+        {
+          ...snapshot.nodes[0],
+          model_ref: "child-ref-abcdefghijklmnop",
+          parent_model_ref: "root-ref-abcdefghijklmnop",
+        },
+        {
+          ...snapshot.nodes[0],
+          model_ref: "grandchild-ref-abcdefghijkl",
+          parent_model_ref: "child-ref-abcdefghijklmnop",
+        },
+      ],
+    };
+    expect(
+      readPage(tree, {
+        parent_model_ref: "root-ref-abcdefghijklmnop",
+        depth: 1,
+      }).nodes.map((node) => node.model_ref),
+    ).toEqual(["root-ref-abcdefghijklmnop", "child-ref-abcdefghijklmnop"]);
+    expect(() => readPage(tree, { depth: 1 })).toThrow("INVALID_ARGUMENT");
+  });
 });

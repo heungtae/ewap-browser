@@ -574,6 +574,7 @@ const readPageTool: ProviderToolDefinition = {
           enum: ["all_dom", "visible_only", "interactive"],
         },
         parent_model_ref: { type: "string" },
+        depth: { type: "integer", minimum: 0, maximum: 15 },
         max_chars: { type: "integer", minimum: 1, maximum: 200000 },
       },
     },
@@ -902,7 +903,10 @@ const runAskChat = async (
         if (
           !isPlainObject(args) ||
           Object.keys(args).some(
-            (key) => !["scope", "parent_model_ref", "max_chars"].includes(key),
+            (key) =>
+              !["scope", "parent_model_ref", "depth", "max_chars"].includes(
+                key,
+              ),
           )
         )
           return fail("INVALID_ARGUMENT");

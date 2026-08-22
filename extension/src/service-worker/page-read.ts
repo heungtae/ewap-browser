@@ -30,6 +30,7 @@ const isIncluded = (node: ModelSemanticNode, scope: PageReadScope): boolean =>
 export type ReadPageArgs = {
   scope?: PageReadScope;
   parent_model_ref?: string;
+  depth?: number;
   max_chars?: number;
 };
 
@@ -52,11 +53,19 @@ export const readPage = (
   if (!Number.isInteger(maxChars) || maxChars < 1 || maxChars > 200_000)
     return fail("INVALID_ARGUMENT");
   const parent = args.parent_model_ref;
+  const depth = args.depth;
+  if (
+    depth !== undefined &&
+    (!Number.isInteger(depth) || depth < 0 || depth > 15 || !parent)
+  )
+    return fail("INVALID_ARGUMENT");
   const refs = new Set<string>();
+  const depths = new Map<string, number>();
   if (parent) {
     if (!snapshot.nodes.some((node) => node.model_ref === parent))
       return fail("INVALID_ARGUMENT");
     refs.add(parent);
+    depths.set(parent, 0);
     let grew = true;
     while (grew) {
       grew = false;
@@ -64,9 +73,15 @@ export const readPage = (
         if (
           node.parent_model_ref &&
           refs.has(node.parent_model_ref) &&
-          !refs.has(node.model_ref)
+          !refs.has(node.model_ref) &&
+          (depth === undefined ||
+            (depths.get(node.parent_model_ref) ?? depth) < depth)
         ) {
           refs.add(node.model_ref);
+          depths.set(
+            node.model_ref,
+            (depths.get(node.parent_model_ref) ?? 0) + 1,
+          );
           grew = true;
         }
     }
