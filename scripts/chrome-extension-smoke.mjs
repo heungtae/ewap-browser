@@ -99,30 +99,46 @@ try {
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
   }
   if (!panel) throw new Error("ContextPilot Side Panel target was not created");
-  let previewRendered = false;
+  let workspaceRendered = false;
   while (Date.now() < deadline) {
     const evaluation = await cdp(
       panel.webSocketDebuggerUrl,
       "Runtime.evaluate",
       {
         expression:
-          "document.querySelector('#preview') instanceof HTMLButtonElement",
+          "document.querySelector('#chat-input') instanceof HTMLTextAreaElement && document.querySelector('#chat-messages') instanceof HTMLElement && document.querySelector('#permission-mode-badge') instanceof HTMLElement && document.querySelector('#settings-open') instanceof HTMLButtonElement",
         returnByValue: true,
       },
     );
     if (evaluation.result?.value === true) {
-      previewRendered = true;
+      workspaceRendered = true;
       break;
     }
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
   }
-  if (!previewRendered) {
+  if (!workspaceRendered) {
     throw new Error(
-      "ContextPilot Side Panel did not render its preview control",
+      "ContextPilot Side Panel did not render the chat workspace controls",
     );
   }
+  await cdp(panel.webSocketDebuggerUrl, "Runtime.evaluate", {
+    expression: "document.querySelector('#settings-open').click()",
+  });
+  let settings;
+  while (Date.now() < deadline) {
+    const targets = await (
+      await fetch(`http://127.0.0.1:${port}/json/list`)
+    ).json();
+    settings = targets.find(
+      (target) =>
+        target.url === `chrome-extension://${extensionId}/settings/index.html`,
+    );
+    if (settings) break;
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 100));
+  }
+  if (!settings) throw new Error("ContextPilot settings page was not opened");
   console.log(
-    "Chrome for Testing loaded the ContextPilot service worker and Side Panel",
+    "Chrome for Testing loaded the ContextPilot Chat workspace and settings page",
   );
 } finally {
   child.kill("SIGTERM");

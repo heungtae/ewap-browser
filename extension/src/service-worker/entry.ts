@@ -413,11 +413,7 @@ const publishChatEvent = (runId: string, payload: ChatEventPayload): void => {
 };
 const publishCancelledChatRun = (run: Run | undefined): void => {
   if (run) releaseVisionCaptures(run.id);
-  if (
-    run?.mode === "ask" &&
-    chatEvents.has(run.id) &&
-    !chatEvents.terminal(run.id)
-  )
+  if (run && chatEvents.has(run.id) && !chatEvents.terminal(run.id))
     publishChatEvent(run.id, { type: "run_terminal", outcome: "CANCELLED" });
 };
 const rememberVisionCapture = (runId: string, capture: VisionCapture): void => {
@@ -1360,6 +1356,11 @@ type ActSession = {
     valueSlotId: string;
     valueKind: "text" | "option";
   };
+  awaitingConfirmation?: {
+    runId: string;
+    confirmationId: string;
+    confirmationNonce: string;
+  };
 };
 const actSessions = new Map<string, ActSession>();
 const demoPage = (active: { origin: string; path: string }): boolean =>
@@ -1372,8 +1373,27 @@ const actionReview = (session: ActSession, proposal: ActProposal) => ({
   tool: proposal.tool,
   target_name: proposal.targetName,
   origin: session.origin,
+});
+const actionView = (session: ActSession, proposal: ActProposal) => ({
+  session_id: session.id,
+  proposal_id: proposal.id,
+  tool: proposal.tool,
+  target_name: proposal.targetName,
+  origin: session.origin,
   ...(proposal.value === undefined ? {} : { suggested_value: proposal.value }),
 });
+const publishActTerminal = (
+  run: Run,
+  outcome: "VERIFIED" | "FAILED" | "UNKNOWN" | "CANCELLED",
+  code?: string,
+): void => {
+  if (!chatEvents.has(run.id) || chatEvents.terminal(run.id)) return;
+  publishChatEvent(run.id, {
+    type: "run_terminal",
+    outcome,
+    ...(code ? { code } : {}),
+  });
+};
 const parseActProposal = (
   call: { id: string; name: string; arguments: string },
   resolve: (proposal: ModelActionProposal) => string,
@@ -1530,6 +1550,11 @@ const runActStep = async (
     "act",
   );
   session.runId = run.id;
+  publishChatEvent(run.id, {
+    type: "run_started",
+    mode: "act",
+    permission_mode: agentPreferences.permission_mode,
+  });
   const model = coordinator.modelSnapshot(run.id, active.snapshot);
   const requestMessages: ProviderMessage[] = [
     ...session.messages,
@@ -1562,6 +1587,11 @@ const runActStep = async (
   if (response.tool_calls.length === 0) {
     if (!response.content) return fail("PROVIDER_UNAVAILABLE");
     coordinator.runs.terminal(run.id, "VERIFIED");
+    publishChatEvent(run.id, {
+      type: "assistant_delta",
+      text: response.content,
+    });
+    publishActTerminal(run, "VERIFIED");
     permissions.endRun(session.id);
     actSessions.delete(session.id);
     return { ok: true, state: "ANSWER", message: response.content };
@@ -1583,6 +1613,15 @@ const runActStep = async (
     tool_calls: response.tool_calls,
   });
   session.proposal = proposal;
+  if (response.content)
+    publishChatEvent(run.id, {
+      type: "assistant_delta",
+      text: response.content,
+    });
+  publishChatEvent(run.id, {
+    type: "action_review_required",
+    action: actionView(session, proposal),
+  });
   return actionReview(session, proposal);
 };
 const runActChat = async (
@@ -1826,6 +1865,12 @@ const executeActProposal = async (
     proposal.tool === "press_key_by_ref"
       ? "click"
       : "type";
+  publishChatEvent(run.id, {
+    type: "tool_started",
+    tool_use_id: proposal.toolCallId,
+    tool: proposal.tool,
+    summary: `${proposal.targetName} 작업을 준비하는 중입니다.`,
+  });
   const permission = gatePermission(
     permissions,
     agentPreferences,
@@ -1843,6 +1888,13 @@ const executeActProposal = async (
       origin: session.origin,
       expiresAt: Date.now() + 60_000,
       act_session_id: session.id,
+    });
+    publishChatEvent(run.id, {
+      type: "permission_required",
+      request_id: requestId,
+      action: actionView(session, proposal),
+      capability,
+      host: new URL(session.origin).hostname,
     });
     return {
       ok: true,
@@ -1922,6 +1974,11 @@ const executeActProposal = async (
         valueSlotId: next.valueSlotId,
         valueKind: next.valueKind,
       };
+      publishChatEvent(run.id, {
+        type: "value_required",
+        action: actionView(session, proposal),
+        value_kind: next.valueKind,
+      });
       return {
         ok: true,
         state: "VALUE_REQUIRED",
@@ -1942,11 +1999,48 @@ const executeActProposal = async (
     ready = coordinator.mutations.executeR1(run);
   } else if (next.state === "READY_TO_EXECUTE") {
     ready = coordinator.mutations.executeR1(run);
+  } else if (next.state === "AWAITING_CONFIRMATION") {
+    session.awaitingConfirmation = {
+      runId: run.id,
+      confirmationId: next.confirmationId,
+      confirmationNonce: next.confirmationNonce,
+    };
+    publishChatEvent(run.id, {
+      type: "confirmation_required",
+      action: actionView(session, proposal),
+      confirmation_id: next.confirmationId,
+      confirmation_nonce: next.confirmationNonce,
+    });
+    return {
+      ok: true,
+      state: "CONFIRMATION_REQUIRED",
+      session_id: session.id,
+      proposal_id: proposal.id,
+    };
   } else {
     return fail("CONFIRMATION_INVALID");
   }
   const executed = await executeActContent(run, ready, session.origin);
-  if (!executed.ok) return executed;
+  if (!executed.ok) {
+    const code = typeof executed.code === "string" ? executed.code : undefined;
+    publishChatEvent(run.id, {
+      type: "tool_finished",
+      tool_use_id: proposal.toolCallId,
+      result: {
+        outcome: "FAILED",
+        summary: "작업을 완료하지 못했습니다.",
+        ...(code ? { code } : {}),
+      },
+    });
+    publishActTerminal(run, "FAILED", code);
+    return executed;
+  }
+  publishChatEvent(run.id, {
+    type: "tool_finished",
+    tool_use_id: proposal.toolCallId,
+    result: { outcome: "VERIFIED", summary: "작업 결과를 확인했습니다." },
+  });
+  publishActTerminal(run, "VERIFIED");
   session.messages.push({
     role: "tool",
     tool_call_id: proposal.toolCallId,
@@ -1981,7 +2075,26 @@ const submitActValue = async (
   if (next.state !== "READY_TO_EXECUTE") return fail("CONFIRMATION_INVALID");
   const ready = coordinator.mutations.executeR1(run);
   const executed = await executeActContent(run, ready, session.origin);
-  if (!executed.ok) return executed;
+  if (!executed.ok) {
+    const code = typeof executed.code === "string" ? executed.code : undefined;
+    publishChatEvent(run.id, {
+      type: "tool_finished",
+      tool_use_id: proposal.toolCallId,
+      result: {
+        outcome: "FAILED",
+        summary: "입력 작업을 완료하지 못했습니다.",
+        ...(code ? { code } : {}),
+      },
+    });
+    publishActTerminal(run, "FAILED", code);
+    return executed;
+  }
+  publishChatEvent(run.id, {
+    type: "tool_finished",
+    tool_use_id: proposal.toolCallId,
+    result: { outcome: "VERIFIED", summary: "입력 결과를 확인했습니다." },
+  });
+  publishActTerminal(run, "VERIFIED");
   session.messages.push({
     role: "tool",
     tool_call_id: proposal.toolCallId,
@@ -1989,6 +2102,62 @@ const submitActValue = async (
       '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED"}\n[/UNTRUSTED_TOOL_RESULT]',
   });
   delete session.awaitingValue;
+  delete session.proposal;
+  return runActStep(session);
+};
+const confirmActProposal = async (
+  session: ActSession,
+  confirmationId: string,
+  confirmationNonce: string,
+): Promise<Record<string, unknown>> => {
+  const awaiting = session.awaitingConfirmation;
+  const proposal = session.proposal;
+  const run = awaiting ? coordinator.runs.byId(awaiting.runId) : undefined;
+  if (
+    !awaiting ||
+    !proposal ||
+    !run ||
+    run.phase !== "AWAITING_CONFIRMATION" ||
+    awaiting.confirmationId !== confirmationId ||
+    awaiting.confirmationNonce !== confirmationNonce
+  )
+    return fail("CONFIRMATION_INVALID");
+  const ready = coordinator.mutations.confirm(
+    run,
+    confirmationId,
+    confirmationNonce,
+  );
+  const executed = await executeActContent(run, ready, session.origin);
+  if (!executed.ok) {
+    const code = typeof executed.code === "string" ? executed.code : undefined;
+    publishChatEvent(run.id, {
+      type: "tool_finished",
+      tool_use_id: proposal.toolCallId,
+      result: {
+        outcome: "FAILED",
+        summary: "확인 작업을 완료하지 못했습니다.",
+        ...(code ? { code } : {}),
+      },
+    });
+    publishActTerminal(run, "FAILED", code);
+    return executed;
+  }
+  publishChatEvent(run.id, {
+    type: "tool_finished",
+    tool_use_id: proposal.toolCallId,
+    result: {
+      outcome: "VERIFIED",
+      summary: "확인된 작업 결과를 검증했습니다.",
+    },
+  });
+  publishActTerminal(run, "VERIFIED");
+  session.messages.push({
+    role: "tool",
+    tool_call_id: proposal.toolCallId,
+    content:
+      '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED"}\n[/UNTRUSTED_TOOL_RESULT]',
+  });
+  delete session.awaitingConfirmation;
   delete session.proposal;
   return runActStep(session);
 };
@@ -2342,7 +2511,9 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     const payload = (message as { payload?: unknown }).payload;
     const mode = isPlainObject(payload) ? payload.mode : undefined;
     void (mode === "act" ? runActChat(payload) : runAskChat(payload))
-      .then(respond)
+      .then((result) =>
+        respond(mode === "act" && result.ok ? { ok: true } : result),
+      )
       .catch((error) => {
         const code =
           error instanceof ContractError
@@ -2439,8 +2610,10 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     }
     if (session.runId) {
       const run = coordinator.runs.byId(session.runId);
-      if (run && run.phase !== "TERMINAL")
+      if (run && run.phase !== "TERMINAL") {
         coordinator.runs.terminal(run.id, "CANCELLED");
+        publishActTerminal(run, "CANCELLED");
+      }
     }
     permissions.endRun(session.id);
     actSessions.delete(session.id);
@@ -2465,7 +2638,45 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       return;
     }
     void submitActValue(session, value)
-      .then(respond)
+      .then((result) => respond(result.ok ? { ok: true } : result))
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError ? error.code : "INTERNAL_FAILURE",
+          ),
+        ),
+      );
+    return true;
+  }
+  if (kind === "ACT_CONFIRM") {
+    const sessionId = (message as { session_id?: unknown }).session_id;
+    const proposalId = (message as { proposal_id?: unknown }).proposal_id;
+    const confirmationId = (message as { confirmation_id?: unknown })
+      .confirmation_id;
+    const confirmationNonce = (message as { confirmation_nonce?: unknown })
+      .confirmation_nonce;
+    const session =
+      typeof sessionId === "string" ? actSessions.get(sessionId) : undefined;
+    if (
+      !isPanelSender(sender) ||
+      !exactKeys(message, [
+        "kind",
+        "session_id",
+        "proposal_id",
+        "confirmation_id",
+        "confirmation_nonce",
+      ]) ||
+      !session ||
+      typeof proposalId !== "string" ||
+      session.proposal?.id !== proposalId ||
+      typeof confirmationId !== "string" ||
+      typeof confirmationNonce !== "string"
+    ) {
+      respond(safeFailure("CONFIRMATION_INVALID"));
+      return;
+    }
+    void confirmActProposal(session, confirmationId, confirmationNonce)
+      .then((result) => respond(result.ok ? { ok: true } : result))
       .catch((error) =>
         respond(
           safeFailure(
@@ -2491,7 +2702,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       return;
     }
     void executeActProposal(session)
-      .then(respond)
+      .then((result) => respond(result.ok ? { ok: true } : result))
       .catch((error) =>
         respond(
           safeFailure(

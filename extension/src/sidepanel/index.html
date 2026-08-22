@@ -2,27 +2,25 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ContextPilot</title>
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0b0e17;
-        --panel: #111827;
-        --surface: #161d2e;
-        --surface-strong: #1a2233;
-        --border: rgba(255, 255, 255, 0.09);
-        --text: #e4e4ec;
-        --muted: #8b8fa4;
-        --accent: #6c63ff;
-        --accent-2: #a78bfa;
-        --success: #34d399;
-        --warning: #fbbf24;
-        --glow: rgba(108, 99, 255, 0.24);
-        --radius: 16px;
+        --canvas: #0a0f1d;
+        --surface: #121a2d;
+        --surface-raised: #19233a;
+        --border: #2a3651;
+        --text: #edf2ff;
+        --muted: #a6b1c8;
+        --accent: #8b7cff;
+        --accent-strong: #6f62e8;
+        --safe: #42d3a2;
+        --warning: #f6bd58;
+        --danger: #fa7d8d;
+        --radius: 14px;
       }
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
       }
       html,
@@ -33,387 +31,574 @@
       body {
         margin: 0;
         color: var(--text);
-        background: var(--bg);
+        background:
+          radial-gradient(circle at 50% -15%, #26376b 0, transparent 36%),
+          var(--canvas);
         font:
-          13px/1.55 -apple-system,
+          13px/1.5 Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
           BlinkMacSystemFont,
           "Segoe UI",
-          Inter,
           sans-serif;
       }
-      body::before {
-        content: "";
-        position: fixed;
-        z-index: -1;
-        width: 360px;
-        height: 360px;
-        top: -180px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: radial-gradient(circle, var(--glow), transparent 68%);
-        filter: blur(24px);
+      button,
+      textarea,
+      input {
+        font: inherit;
       }
-      main {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        min-height: 100vh;
-        padding: 14px;
+      button {
+        min-height: 34px;
+        padding: 7px 10px;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-raised);
+        cursor: pointer;
       }
-      .panel-header {
-        display: flex;
+      button:hover:not(:disabled) {
+        border-color: #a99fff;
+        background: #253153;
+      }
+      button:focus-visible,
+      textarea:focus-visible,
+      input:focus-visible {
+        outline: 2px solid #b8b0ff;
+        outline-offset: 2px;
+      }
+      button:disabled {
+        cursor: wait;
+        opacity: 0.55;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .workspace {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        height: 100vh;
+        min-height: 460px;
+      }
+
+      /* Keep the composer in the final grid row even when the run banner is hidden. */
+      .header {
+        grid-row: 1;
+      }
+
+      .run-banner {
+        grid-row: 2;
+      }
+
+      .transcript {
+        grid-row: 3;
+      }
+
+      .composer {
+        grid-row: 4;
+      }
+      .header {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
         align-items: center;
         gap: 9px;
-        padding: 2px 2px 12px;
+        padding: 13px 14px 11px;
         border-bottom: 1px solid var(--border);
+        background: rgba(10, 15, 29, 0.8);
       }
-      .brand-mark {
-        display: grid;
-        place-items: center;
-        width: 28px;
-        height: 28px;
-        border-radius: 9px;
-        color: #fff;
-        font-weight: 800;
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        box-shadow: 0 8px 24px var(--glow);
-      }
-      .brand-copy {
-        display: grid;
-        gap: 1px;
-      }
-      .brand-copy strong {
-        font-size: 14px;
-        letter-spacing: 0.01em;
-      }
-      .brand-copy span {
-        color: var(--muted);
-        font-size: 10px;
-      }
-      .connection {
-        margin-left: auto;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        color: var(--muted);
-        font-size: 10px;
-      }
-      .connection::before {
-        content: "";
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--success);
-        box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
-      }
-      #permission-mode-badge {
-        margin-left: auto;
+      .badge {
         padding: 3px 7px;
-        color: var(--muted);
         border: 1px solid var(--border);
         border-radius: 999px;
+        color: var(--muted);
         font-size: 10px;
         font-weight: 700;
+        white-space: nowrap;
       }
-      #permission-mode-badge[data-mode="skip_all_permission_checks"] {
-        color: #fecaca;
-        border-color: rgba(248, 113, 113, 0.5);
-        background: rgba(127, 29, 29, 0.22);
+      .badge[data-mode="skip_all_permission_checks"] {
+        color: #ffd3d9;
+        border-color: #a85262;
+        background: #3d202c;
       }
-      #run-banner {
+      .run-banner {
+        margin: 10px 14px 0;
         padding: 8px 10px;
-        color: #fde68a;
-        border: 1px solid rgba(251, 191, 36, 0.3);
+        border: 1px solid #725d2f;
         border-radius: 10px;
-        background: rgba(120, 79, 12, 0.14);
+        color: #ffe0a2;
+        background: #2d281d;
         font-size: 11px;
       }
-      #chat {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        min-height: 300px;
+      .transcript {
+        position: relative;
+        min-height: 0;
+        overflow: auto;
+        padding: 14px;
+        scroll-behavior: smooth;
       }
-      .section-heading {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin: 2px 0 10px;
-      }
-      h1,
-      h2,
-      p {
-        margin: 0;
-      }
-      h1 {
-        font-size: 18px;
-        letter-spacing: -0.02em;
-      }
-      .section-heading span {
-        color: var(--muted);
-        font-size: 11px;
-      }
-      #chat-messages {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        gap: 10px;
-        min-height: 110px;
-        padding: 4px 0 14px;
-        overflow-y: auto;
-      }
-      #chat-messages[aria-busy="true"]::after {
-        content: "응답을 생성하는 중…";
-        align-self: flex-start;
-        color: var(--muted);
-        font-size: 11px;
-      }
-      #chat-messages:empty::before {
-        content: "현재 페이지에 대해 무엇이든 물어보세요.";
-        margin: auto;
-        padding: 18px;
+      .empty {
+        display: grid;
+        min-height: 180px;
+        place-items: center;
+        padding: 28px;
         color: var(--muted);
         text-align: center;
       }
-      #chat-messages p {
-        max-width: 88%;
-        margin: 0;
-        padding: 9px 12px;
+      .empty strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--text);
+      }
+      .items {
+        display: grid;
+        gap: 10px;
+      }
+      .message {
+        max-width: 94%;
+        padding: 10px 12px;
         border: 1px solid var(--border);
         border-radius: 13px;
-        overflow-wrap: anywhere;
         white-space: pre-wrap;
+        overflow-wrap: anywhere;
       }
-      #chat-messages p[data-role="user"] {
-        align-self: flex-end;
-        color: #fff;
+      .message[data-role="user"] {
+        justify-self: end;
         border-color: transparent;
         border-bottom-right-radius: 4px;
-        background: linear-gradient(135deg, var(--accent), #584ff0);
-        box-shadow: 0 8px 18px rgba(108, 99, 255, 0.18);
+        background: linear-gradient(
+          135deg,
+          var(--accent-strong),
+          var(--accent)
+        );
+        color: white;
       }
-      #chat-messages p[data-role="assistant"] {
-        align-self: flex-start;
+      .message[data-role="assistant"] {
+        justify-self: start;
         border-bottom-left-radius: 4px;
         background: var(--surface);
       }
-      #chat-form {
+      .event-card {
         display: grid;
-        gap: 8px;
-        padding: 10px;
+        gap: 7px;
+        padding: 10px 11px;
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        background: rgba(22, 29, 46, 0.78);
-        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.2);
+        background: rgba(18, 26, 45, 0.9);
       }
-      #mode-toggle {
-        display: flex;
-        gap: 3px;
-        padding: 3px;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        background: rgba(11, 14, 23, 0.62);
+      .event-card[data-kind="error"],
+      .event-card[data-kind="confirmation"] {
+        border-color: #7d4b55;
       }
-      .mode-button {
-        flex: 1;
-        padding: 6px 10px;
-        color: var(--muted);
-        border-color: transparent;
-        background: transparent;
-        box-shadow: none;
-        font-size: 11px;
+      .event-card[data-kind="permission"],
+      .event-card[data-kind="review"] {
+        border-color: #75633b;
       }
-      .mode-button[aria-pressed="true"] {
-        color: #fff;
-        background: var(--accent);
-      }
-      .mode-button[data-mode="act"][aria-pressed="true"] {
-        background: #b7791f;
-      }
-      .chat-actions {
+      .event-heading {
         display: flex;
         align-items: center;
-        gap: 8px;
-      }
-      .chat-actions #chat-send {
-        flex: 1;
-      }
-      #chat-form label {
+        gap: 7px;
         color: var(--muted);
         font-size: 11px;
+        font-weight: 700;
       }
-      textarea,
-      input,
-      select {
+      .event-heading b {
+        color: var(--text);
+        font-size: 12px;
+      }
+      .tool-state {
+        margin-left: auto;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .tool-state[data-outcome="VERIFIED"] {
+        color: var(--safe);
+      }
+      .tool-state[data-outcome="FAILED"],
+      .tool-state[data-outcome="UNKNOWN"] {
+        color: var(--danger);
+      }
+      .card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        padding-top: 2px;
+      }
+      .card-actions .primary {
+        color: #11152a;
+        border-color: transparent;
+        background: #b9b1ff;
+      }
+      .card-actions .danger {
+        color: #ffd4d9;
+        border-color: #804b59;
+        background: #38222a;
+      }
+      .card-actions .warning {
+        color: #fff2c9;
+        border-color: #786234;
+        background: #362e1e;
+      }
+      .value-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 7px;
+      }
+      .value-form input,
+      .composer textarea {
         width: 100%;
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 10px;
-        background: rgba(11, 14, 23, 0.62);
-        font: inherit;
+        background: #0d1424;
       }
-      textarea {
-        resize: vertical;
-        min-height: 72px;
-        padding: 10px 11px;
+      .value-form input {
+        min-height: 34px;
+        padding: 7px 9px;
       }
-      textarea::placeholder,
-      input::placeholder {
-        color: #6e7388;
-      }
-      textarea:focus,
-      input:focus,
-      select:focus {
-        outline: 2px solid var(--accent-2);
-        outline-offset: 1px;
-        border-color: transparent;
-      }
-      button {
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        padding: 8px 12px;
-        color: var(--text);
-        background: var(--surface-strong);
-        font: inherit;
-        font-weight: 600;
-        cursor: pointer;
-        transition: 0.18s ease;
-      }
-      button:hover {
-        border-color: var(--accent-2);
-        background: #252d43;
-        transform: translateY(-1px);
-      }
-      #chat-send {
-        color: #fff;
-        border-color: transparent;
-        background: linear-gradient(135deg, var(--accent), var(--accent-2));
-        box-shadow: 0 8px 18px rgba(108, 99, 255, 0.22);
-      }
-      #cancel {
-        color: #fca5a5;
-        border-color: rgba(248, 113, 113, 0.28);
-        background: rgba(127, 29, 29, 0.18);
-      }
-      details,
-      #permission-card {
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        background: rgba(17, 24, 39, 0.78);
-      }
-      details {
-        padding: 10px 12px;
-      }
-      summary {
-        color: var(--muted);
-        cursor: pointer;
-        font-size: 11px;
-        font-weight: 600;
-      }
-      details[open] summary {
-        color: var(--text);
-        margin-bottom: 10px;
-      }
-      details button {
-        margin: 0 5px 8px 0;
-        font-size: 11px;
-      }
-      pre {
-        max-height: 180px;
-        margin: 4px 0 0;
-        padding: 10px;
-        overflow: auto;
-        color: #c4b5fd;
-        border-radius: 9px;
-        background: #0a0d15;
-        font:
-          11px/1.45 ui-monospace,
-          SFMono-Regular,
-          Menlo,
-          monospace;
-        white-space: pre-wrap;
-      }
-      #permission-card {
-        padding: 12px;
-        border-color: rgba(251, 191, 36, 0.35);
-        background: rgba(120, 79, 12, 0.16);
-      }
-      #action-review-card {
-        padding: 12px;
-        border: 1px solid rgba(96, 165, 250, 0.45);
-        border-radius: var(--radius);
-        background: rgba(30, 58, 138, 0.18);
-      }
-      #action-review-description {
-        margin-bottom: 10px;
-        color: #bfdbfe;
-      }
-      #action-value-form {
+      .composer {
         display: grid;
-        gap: 8px;
-        margin-top: 10px;
+        gap: 9px;
+        padding: 10px 14px 14px;
+        border-top: 1px solid var(--border);
+        background: rgba(10, 15, 29, 0.93);
       }
-      #action-approve {
-        color: #03142c;
-        border-color: transparent;
-        background: #7dd3fc;
+      .mode-row,
+      .composer-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
       }
-      #action-reject {
-        margin-left: 6px;
-        color: #fecaca;
+      .mode-row {
+        justify-content: space-between;
+        min-width: 0;
       }
-      #permission-description {
-        margin-bottom: 10px;
-        color: #fbd38d;
+      .mode-group {
+        display: flex;
+        gap: 4px;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
       }
-      #permission-card button {
-        font-size: 11px;
-      }
-      #permission-always {
-        color: #fff;
-        border-color: transparent;
-        background: var(--accent);
-      }
-      #permission-deny {
-        color: #fecaca;
-      }
-      #cancel {
-        align-self: flex-start;
-        color: #fca5a5;
-        font-size: 11px;
-      }
-      #status {
-        min-height: 18px;
+      .mode-group button {
+        min-height: 29px;
+        padding: 4px 8px;
+        border: 0;
+        background: transparent;
         color: var(--muted);
         font-size: 11px;
+      }
+      .mode-group button[aria-pressed="true"] {
+        color: white;
+        background: var(--accent-strong);
+      }
+      .composer textarea {
+        min-height: 66px;
+        max-height: 180px;
+        padding: 9px 10px;
+        resize: vertical;
+      }
+      .composer-actions {
+        justify-content: space-between;
+      }
+      .attachment-control,
+      .send-controls {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-width: 0;
+      }
+      .attachment-control button {
+        min-height: 30px;
+        padding: 5px 8px;
+        color: var(--muted);
+        background: transparent;
+        font-size: 11px;
+      }
+      .attachment-name {
+        overflow: hidden;
+        max-width: 130px;
+        color: var(--muted);
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .composer-actions .send {
+        color: white;
+        border-color: transparent;
+        background: var(--accent-strong);
+      }
+      .composer-actions .stop {
+        color: #ffd4d9;
+        border-color: #804b59;
+        background: transparent;
+      }
+      .status {
+        min-height: 17px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      /* Compact workspace layout: toolbar, open transcript, and bottom dock. */
+      body {
+        background: #1b1b31;
+      }
+      .header {
+        display: grid;
+        grid-template-columns: none;
+        gap: 10px;
+        padding: 13px 14px 11px;
+        background: #182440;
+      }
+      .header-bottom,
+      .header-tools {
+        display: flex;
+        align-items: center;
+      }
+      .header-bottom {
+        justify-content: flex-end;
+      }
+      .header-tools {
+        gap: 9px;
+      }
+      .header-tools button {
+        display: grid;
+        width: 28px;
+        min-width: 28px;
+        height: 28px;
+        min-height: 28px;
+        padding: 0;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #d2d7ef;
+      }
+      .header-tools button:hover {
+        background: #26385e;
+        color: #f2f5ff;
+      }
+      .header-tools button svg,
+      .attachment-control button svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .attachment-control button svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.25;
+      }
+      .badge {
+        padding: 3px 7px;
+        border-color: #33466f;
+        background: #213152;
+        color: #dfe5fc;
+        font-size: 10px;
+      }
+      .run-banner {
+        margin: 8px 14px 0;
+      }
+      .transcript {
+        padding: 12px 18px;
+      }
+      .empty {
+        display: block;
+        min-height: 0;
+        padding: 0;
+        text-align: left;
+      }
+      .empty button {
+        min-height: 41px;
+        padding: 9px 14px;
+        border-color: #45398c;
+        border-radius: 13px;
+        background: #29244c;
+        color: #e4e2ff;
+        font-size: 12px;
+      }
+      .composer {
+        gap: 8px;
+        padding: 9px 18px 15px;
+        border-top-color: #30456f;
+        background: #182440;
+      }
+      .mode-row {
+        display: block;
+      }
+      .mode-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        gap: 2px;
+        padding: 2px;
+        border-color: #33466f;
+        border-radius: 8px;
+        background: #202d4d;
+      }
+      .mode-group button {
+        min-height: 27px;
+        border-radius: 6px;
+        color: #aab4d3;
+      }
+      .mode-group button[aria-pressed="true"] {
+        background: #353a7d;
+        color: #e6e4ff;
+      }
+      .status {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .input-dock {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 4px 6px;
+        border: 1px solid #33466f;
+        border-radius: 9px;
+        background: #202d4d;
+      }
+      .composer textarea {
+        min-height: 32px;
+        max-height: 96px;
+        flex: 1;
+        padding: 6px 2px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        resize: none;
+      }
+      .composer textarea:focus-visible {
+        outline: 0;
+      }
+      .attachment-control button,
+      .input-dock .send {
+        display: grid;
+        width: 31px;
+        min-width: 31px;
+        height: 31px;
+        min-height: 31px;
+        padding: 0;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #aeb9d8;
+        font-size: 18px;
+      }
+      .input-dock .send {
+        background: #8173ff;
+        color: white;
+      }
+      .input-dock .send svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+      .input-dock .send .stop-icon {
+        display: none;
+      }
+      .input-dock .send[data-state="stop"] .send-icon {
+        display: none;
+      }
+      .input-dock .send[data-state="stop"] .stop-icon {
+        display: block;
+      }
+      .attachment-name {
+        display: block;
+        max-width: 100%;
+        padding-left: 38px;
+        color: #aeb9d8;
+      }
+      @media (max-width: 360px) {
+        .header {
+          padding-inline: 10px;
+        }
+        .transcript,
+        .composer {
+          padding-inline: 10px;
+        }
+        .message {
+          max-width: 97%;
+        }
+        .composer-actions {
+          flex-wrap: wrap;
+        }
+        .attachment-control {
+          order: 3;
+          flex-basis: 100%;
+        }
+      }
+      @media (prefers-contrast: more) {
+        :root {
+          --border: #9eaed0;
+          --muted: #d1daf0;
+        }
       }
     </style>
   </head>
   <body>
-    <main>
-      <header class="panel-header">
-        <span class="brand-mark" aria-hidden="true">✦</span>
-        <span class="brand-copy"
-          ><strong>ContextPilot</strong><span>Page-aware assistant</span></span
-        >
-        <span id="permission-mode-badge" data-mode="standard">표준 권한</span>
-        <span class="connection">Ready</span>
-      </header>
-      <section id="chat" aria-label="Ask chat">
-        <div class="section-heading">
-          <h1>Ask</h1>
-          <span>현재 탭 기반</span>
+    <main class="workspace" aria-label="ContextPilot chat workspace">
+      <header class="header">
+        <div class="header-bottom">
+          <div class="header-tools">
+            <span class="badge" id="permission-mode-badge" data-mode="standard"
+              >표준 권한</span
+            >
+            <button type="button" title="기록" aria-label="기록">
+              <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 3-6.7" />
+                <path d="M3 3v6h6" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+            </button>
+            <button
+              id="settings-open"
+              type="button"
+              title="설정 열기"
+              aria-label="설정 열기"
+            >
+              ⚙
+            </button>
+          </div>
         </div>
-        <aside id="run-banner" hidden aria-live="polite"></aside>
+      </header>
+      <aside
+        class="run-banner"
+        id="run-banner"
+        aria-live="polite"
+        hidden
+      ></aside>
+      <section
+        class="transcript"
+        id="chat-scroll"
+        aria-label="대화 내용"
+        tabindex="0"
+      >
+        <div class="empty" id="empty-state">
+          <button id="suggested-prompt" type="button">
+            이 페이지에서 무엇을 도와드릴까요?
+          </button>
+        </div>
         <div
+          class="items"
           id="chat-messages"
           aria-live="off"
           aria-relevant="additions text"
         ></div>
-        <form id="chat-form">
-          <div id="mode-toggle" role="group" aria-label="작업 모드">
+      </section>
+      <form class="composer" id="chat-form">
+        <div class="mode-row">
+          <div class="mode-group" role="group" aria-label="작업 모드">
             <button
-              class="mode-button"
               data-mode="ask"
               id="mode-ask"
               type="button"
@@ -422,7 +607,6 @@
               질문
             </button>
             <button
-              class="mode-button"
               data-mode="act"
               id="mode-act"
               type="button"
@@ -431,46 +615,54 @@
               실행
             </button>
           </div>
-          <label for="chat-input">내용</label>
+          <span class="status" id="status" aria-live="polite">준비됨</span>
+        </div>
+        <label for="chat-input" hidden>메시지</label>
+        <div class="input-dock">
+          <div class="attachment-control">
+            <input
+              id="attachment-input"
+              type="file"
+              accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+              hidden
+            />
+            <button
+              id="attachment-trigger"
+              type="button"
+              title="텍스트 파일 첨부"
+              aria-label="텍스트 파일 첨부"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="m16 6-8.4 8.6a2 2 0 0 0 2.8 2.8l8.4-8.6a4 4 0 0 0-5.6-5.6l-8.4 8.6a6 6 0 0 0 8.5 8.5l8.4-8.6"
+                />
+              </svg>
+            </button>
+          </div>
           <textarea
             id="chat-input"
-            rows="4"
+            rows="1"
             maxlength="8000"
-            required
-            placeholder="현재 페이지에 대해 질문하세요."
+            placeholder="이 페이지에 대해 무엇이든 물어보세요..."
           ></textarea>
-          <div class="chat-actions">
-            <button id="chat-send" type="submit">보내기</button>
-            <button id="cancel" type="button" disabled>중단</button>
-          </div>
-        </form>
-      </section>
-      <section id="action-review-card" hidden>
-        <p id="action-review-description"></p>
-        <form id="action-value-form" hidden>
-          <label for="action-value">입력값</label>
-          <input id="action-value" type="text" maxlength="16384" />
-          <button id="action-value-submit" type="submit">값 적용</button>
-        </form>
-        <button id="plan-approve" type="button" hidden>
-          현재 도메인을 계획에 승인
-        </button>
-        <button id="action-approve" type="button">제안 실행</button>
-        <button id="action-reject" type="button">중단</button>
-      </section>
-      <details id="developer-preview">
-        <summary>개발자 진단</summary>
-        <button id="preview" type="button">페이지 projection 확인</button>
-        <button id="profile-resolve" type="button">Page Profile 확인</button>
-        <pre id="projection"></pre>
-      </details>
-      <section id="permission-card" hidden>
-        <p id="permission-description"></p>
-        <button id="permission-once" type="button">이번 작업만 허용</button>
-        <button id="permission-always" type="button">항상 허용</button>
-        <button id="permission-deny" type="button">거부</button>
-      </section>
-      <output id="status" aria-live="polite">준비됨</output>
+          <button
+            class="send"
+            id="chat-send"
+            type="submit"
+            data-state="send"
+            aria-label="보내기"
+            title="보내기"
+          >
+            <svg class="send-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+            <svg class="stop-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="7" y="7" width="10" height="10" rx="1.5" />
+            </svg>
+          </button>
+        </div>
+        <output class="attachment-name" id="attachment-name" hidden></output>
+      </form>
     </main>
     <script type="module" src="../js/panel.js"></script>
   </body>

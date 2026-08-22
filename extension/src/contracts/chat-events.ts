@@ -7,14 +7,45 @@ export type SafeToolResult = {
   summary: string;
   code?: string;
 };
+export type ChatActionView = {
+  session_id: string;
+  proposal_id: string;
+  tool: string;
+  target_name: string;
+  origin?: string;
+};
 export type ChatEventPayload =
   | { type: "run_started"; mode: ChatMode; permission_mode: string }
   | { type: "assistant_delta"; text: string }
   | { type: "tool_started"; tool_use_id: string; tool: string; summary: string }
   | {
+      type: "tool_progress";
+      tool_use_id: string;
+      summary: string;
+    }
+  | {
       type: "tool_finished";
       tool_use_id: string;
       result: SafeToolResult;
+    }
+  | { type: "action_review_required"; action: ChatActionView }
+  | {
+      type: "permission_required";
+      request_id: string;
+      action: ChatActionView;
+      capability: string;
+      host: string;
+    }
+  | {
+      type: "value_required";
+      action: ChatActionView;
+      value_kind: "text" | "option";
+    }
+  | {
+      type: "confirmation_required";
+      action: ChatActionView;
+      confirmation_id: string;
+      confirmation_nonce: string;
     }
   | { type: "run_terminal"; outcome: Outcome; code?: string };
 
@@ -41,9 +72,47 @@ const allowedEventKeys = [
   "tool",
   "summary",
   "result",
+  "action",
+  "request_id",
+  "capability",
+  "host",
+  "value_kind",
+  "confirmation_id",
+  "confirmation_nonce",
   "outcome",
   "code",
 ] as const;
+
+const validateActionView = (value: unknown): ChatActionView => {
+  if (
+    !isPlainObject(value) ||
+    Object.keys(value).some(
+      (key) =>
+        ![
+          "session_id",
+          "proposal_id",
+          "tool",
+          "target_name",
+          "origin",
+        ].includes(key),
+    ) ||
+    typeof value.session_id !== "string" ||
+    typeof value.proposal_id !== "string" ||
+    typeof value.tool !== "string" ||
+    typeof value.target_name !== "string" ||
+    (value.origin !== undefined && typeof value.origin !== "string")
+  )
+    return fail("INVALID_ARGUMENT");
+  return {
+    session_id: opaque(value.session_id),
+    proposal_id: opaque(value.proposal_id),
+    tool: string(value.tool, 128),
+    target_name: string(value.target_name, 512),
+    ...(typeof value.origin === "string"
+      ? { origin: string(value.origin, 512) }
+      : {}),
+  };
+};
 
 export const validateChatEvent = (value: unknown): ChatEvent => {
   if (!isPlainObject(value)) return fail("INVALID_ARGUMENT");
@@ -98,6 +167,19 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       summary: string(value.summary, 512),
     };
   }
+  if (value.type === "tool_progress") {
+    if (
+      typeof value.tool_use_id !== "string" ||
+      typeof value.summary !== "string"
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "tool_progress",
+      tool_use_id: opaque(value.tool_use_id),
+      summary: string(value.summary, 512),
+    };
+  }
   if (value.type === "tool_finished") {
     if (
       !isPlainObject(value.result) ||
@@ -142,6 +224,52 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       ...(typeof value.code === "string"
         ? { code: string(value.code, 128) }
         : {}),
+    };
+  }
+  if (value.type === "action_review_required")
+    return {
+      ...base,
+      type: "action_review_required",
+      action: validateActionView(value.action),
+    };
+  if (value.type === "permission_required") {
+    if (
+      typeof value.request_id !== "string" ||
+      typeof value.capability !== "string" ||
+      typeof value.host !== "string"
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "permission_required",
+      request_id: opaque(value.request_id),
+      action: validateActionView(value.action),
+      capability: string(value.capability, 64),
+      host: string(value.host, 255),
+    };
+  }
+  if (value.type === "value_required") {
+    if (value.value_kind !== "text" && value.value_kind !== "option")
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "value_required",
+      action: validateActionView(value.action),
+      value_kind: value.value_kind,
+    };
+  }
+  if (value.type === "confirmation_required") {
+    if (
+      typeof value.confirmation_id !== "string" ||
+      typeof value.confirmation_nonce !== "string"
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "confirmation_required",
+      action: validateActionView(value.action),
+      confirmation_id: opaque(value.confirmation_id),
+      confirmation_nonce: opaque(value.confirmation_nonce),
     };
   }
   return fail("INVALID_ARGUMENT");
