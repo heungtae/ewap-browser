@@ -4,6 +4,8 @@ capability × host 권한 카드, once/always/deny 저장, 철회와 navigation 
 
 bounded CDP는 `docs/15-bounded-cdp-adapter.md`의 `DOM.*`/`Input.*` allowlist만 사용하며 action-scoped attach/detach, current document/ref binding, token 유일성/hit test와 dispatch 후 no-fallback/no-retry를 지켜야 한다. raw command, JavaScript, screenshot, Network/Target domain과 model/page/site-adapter 지정 selector·좌표는 범위 밖이다.
 
+S7는 이 executor를 generic browser Act tool에 연결하고 S8은 permission mode를 추가한다. 둘 다 S2의 credential/R2/R3/binding/preflight/no-retry/verifier 경계를 유지한다. S6 screenshot/zoom은 별도 read capability이며 이 mutation CDP allowlist를 확장하지 않는다.
+
 완료 조건:
 
 - click/type/navigation/download/network write의 권한 경계와 submit 재확인 Chrome E2E

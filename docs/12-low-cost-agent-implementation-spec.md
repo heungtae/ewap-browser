@@ -1,5 +1,7 @@
 # 12. 구현 실행 명세
 
+> 이 문서의 S0~S4 계약은 최초 구현 baseline이다. S5~S9에서 추가하는 Chat workspace, schema v2 `all_dom` projection, Vision/Tab read, generic Act와 permission mode는 [17. Claude 브라우저 기능 채택 설계](17-claude-browser-capability-adoption-design.md)를 구현 규범으로, [18. 검증계획](18-claude-browser-capability-verification-plan.md)을 acceptance 규범으로 사용한다. 충돌 시 17/18의 더 구체적인 S5~S9 계약이 우선한다. 단, credential/R2/R3/restricted origin/target binding/verifier/CDP hard policy는 완화할 수 없다.
+
 ## 1. 기술 구성
 
 | 영역      | 선택                                                            |
@@ -115,7 +117,7 @@ bundled adapter는 동일 interface를 구현하지만 extension source에 포�
 
 ## 7. permission gate
 
-`PermissionManager`는 `contextpilot_permissions`의 `{capability, host, action, duration}`을 읽는다. `duration: once`는 run 종료 때 폐기하고 `duration: always`만 저장한다. gated tool은 target host를 확인할 수 없으면 거부한다. provider/plugin capability는 browser 행동 권한이 아니며 capability gate에 grant를 추가할 수 없다. master preference가 꺼져도 R2/R3의 explicit confirmation은 유지한다.
+`PermissionManager`는 `contextpilot_permissions`의 `{capability, host, action, duration}`을 읽는다. `duration: once`는 run 종료 때 폐기하고 `duration: always`만 저장한다. gated tool은 target host를 확인할 수 없으면 거부한다. provider/plugin capability는 browser 행동 권한이 아니며 capability gate에 grant를 추가할 수 없다. S8의 `skip_all_permission_checks`는 capability/domain-transition prompt만 생략한다. 이 mode와 master preference가 바뀌어도 credential 차단, R2/R3 explicit confirmation, restricted/category/denylist, target binding, typed schema, preflight, executor allowlist와 verifier는 유지한다.
 
 ## 8. runtime message
 

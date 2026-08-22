@@ -44,6 +44,8 @@
 
 실UI E2E harness는 제품 외부에서 더 넓은 remote-debugging CDP를 사용할 수 있다. 해당 harness 권한은 product allowlist를 확장하지 않는다.
 
+S6의 screenshot/zoom은 이 mutation adapter를 확장하지 않고 별도 typed `vision_read` adapter로 구현한다. vision 결과는 semantic target, coordinate 또는 mutation authority를 만들지 않는다.
+
 ## 3. Closed command allowlist
 
 | Domain  | 허용 command                                   | 제한                                                     |

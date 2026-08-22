@@ -4,20 +4,33 @@
 
 모델은 현재 run의 아래 도구만 호출할 수 있다.
 
-| 도구                       | 입력                                    | 결과                            |
-| -------------------------- | --------------------------------------- | ------------------------------- |
-| `read_semantic_projection` | 없음                                    | redacted 현재 snapshot          |
-| `call_page_business_tool`  | Profile 허용 `tool_id`, 문자열 argument | 검증된 Business MCP read result |
-| `find_by_ref`              | `model_ref`                             | target semantic state           |
-| `click_by_ref`             | `model_ref`                             | 실행 결과                       |
-| `set_text_by_ref`          | `model_ref`                             | 값 입력 대기 또는 결과          |
-| `select_option_by_ref`     | `model_ref`                             | 값 입력 대기 또는 결과          |
-| `set_checked_by_ref`       | `model_ref`, boolean                    | 실행 결과                       |
-| `press_key_by_ref`         | `model_ref`, allowlisted key            | 실행 결과                       |
+| 도구                       | 입력                                             | 결과                            |
+| -------------------------- | ------------------------------------------------ | ------------------------------- |
+| `read_semantic_projection` | 없음                                             | redacted 현재 snapshot          |
+| `read_page`                | tab, scope, depth, parent `model_ref`, max chars | visible/hidden 계층형 tree      |
+| `get_page_text`            | tab, max chars                                   | main/article 중심 visible text  |
+| `find`                     | tab, query, scope, limit                         | visibility가 표시된 model refs  |
+| `screenshot`               | tab                                              | current viewport image          |
+| `zoom`                     | tab, capture region                              | cropped/normalized image        |
+| `tabs_context`             | 없음                                             | managed tab group metadata      |
+| `read_batch`               | 최대 8개 read-only action                        | 순서가 보존된 item results      |
+| `update_plan`              | exact domains, high-level steps                  | 사용자 plan review              |
+| `call_page_business_tool`  | Profile 허용 `tool_id`, 문자열 argument          | 검증된 Business MCP read result |
+| `find_by_ref`              | `model_ref`                                      | target semantic state           |
+| `click_by_ref`             | `model_ref`                                      | 실행 결과                       |
+| `set_text_by_ref`          | `model_ref`                                      | 값 입력 대기 또는 결과          |
+| `select_option_by_ref`     | `model_ref`                                      | 값 입력 대기 또는 결과          |
+| `set_checked_by_ref`       | `model_ref`, boolean                             | 실행 결과                       |
+| `press_key_by_ref`         | `model_ref`, allowlisted key                     | 실행 결과                       |
+| `navigate`                 | normalized HTTPS URL                             | navigation/verifier 결과        |
 
 `call_page_business_tool`은 서명된 현재 Profile의 binding에 있는 `tool_id`만 enum으로 노출한다. endpoint, result key, value kind, Profile JWS, request/run nonce와 page digest는 모델 입력이 아니며 service worker가 binding한다. 결과는 untrusted data로만 다음 모델 turn에 전달한다.
 
-모델은 URL, HTTP header, provider ID, API key, raw selector, raw `ref_id`, CDP method/node/session ID/좌표/execution path, page credential, user identity를 받거나 지정할 수 없다.
+모델은 `navigate`와 redacted tab context에서 normalized URL의 origin/path만 지정·확인할 수 있다. HTTP header, provider ID, API key, raw selector, raw `ref_id`, CDP method/node/session ID/좌표/execution path, URL userinfo/query/fragment, page credential과 user identity를 받거나 지정할 수 없다.
+
+`read_page`와 `find`의 기본 scope는 `all_dom`이며 hidden node를 모델에 제공한다. hidden result는 read focus에만 사용할 수 있고 click/type/select/check/key target으로 resolve하지 않는다. screenshot/zoom region도 capture 입력일 뿐 mutation coordinate가 아니다.
+
+`read_batch`에는 `read_page`, `get_page_text`, `find`, screenshot/zoom, `tabs_context`와 Profile-bound read-only Business MCP만 들어갈 수 있다. mutation, navigation, file, JavaScript와 nested batch는 schema validation에서 거부한다.
 
 ### 반도체 데모 Act proposal
 
@@ -36,4 +49,4 @@ site adapter는 확장에 포함된 코드 또는 사용자가 Settings에서 �
 
 ## 3. 결과 계약
 
-provider response의 tool name, JSON schema, `model_ref`, enum 값은 현재 run registry와 정확히 일치해야 한다. provider plugin은 tool을 추가하거나 schema를 완화할 수 없다. unknown tool, extra field, CDP-shaped field, 다른 run ref, stale document는 거부한다. action result에는 `VERIFIED`, `FAILED`, `UNKNOWN`, `CANCELLED`만 사용한다. `CDP_UNAVAILABLE`, `CDP_CONFLICT`, `CDP_COMMAND_NOT_ALLOWED`, `CDP_CLEANUP_FAILED`는 outcome이 아니라 redacted reason/health code다.
+provider response의 tool name, JSON schema, `model_ref`, permission mode와 enum 값은 현재 run registry와 정확히 일치해야 한다. provider plugin은 tool을 추가하거나 schema를 완화할 수 없다. unknown tool, extra field, CDP-shaped field, 다른 run ref, stale document는 거부한다. action result에는 `VERIFIED`, `FAILED`, `UNKNOWN`, `CANCELLED`만 사용한다. `CDP_UNAVAILABLE`, `CDP_CONFLICT`, `CDP_COMMAND_NOT_ALLOWED`, `CDP_CLEANUP_FAILED`는 outcome이 아니라 redacted reason/health code다.

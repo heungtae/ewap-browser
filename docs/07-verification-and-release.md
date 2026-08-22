@@ -12,6 +12,10 @@
 8. Chrome E2E의 projection, stale ref, permission card, confirmation, trusted click/type, verifier와 Stop
 9. CDP attach conflict, dispatch 전/후 failure, navigation/tab close/worker restart cleanup, detach leak 0과 cleanup-failed tab 격리
 10. 외부 E2E remote-debugging CDP와 product `chrome.debugger` allowlist의 권한 분리
+11. hidden DOM 기본 projection, visibility reason, hidden mutation 거부와 credential value 비노출
+12. screenshot/zoom typed command allowlist, image lifecycle과 storage/audit/export 비보존
+13. Chat streaming sequence, resync, Stop race, virtual timeline, 접근성과 safe debug detail
+14. standard/follow-plan/skip-all permission mode와 skip mode의 R2/R3·credential·denylist hard-policy 유지
 
 ## 2. 수동 검증
 
@@ -23,7 +27,11 @@
 - 웹사이트 로그인, password/OTP 화면, 제출·결제·삭제 화면에서 사용자 승인과 차단 동작 확인
 - 사내 staging UI의 controlled input, synthetic click 거부 control과 portal popup에서 DOM 경로와 bounded trusted-input 경로를 구분해 검증
 - DevTools가 이미 attach된 tab의 `CDP_CONFLICT`, Stop 직후 product-owned attached session 0과 다른 debugger를 detach하지 않는지 검증
+- hidden DOM 기본 제공과 permission-less mode의 위험 설명, activation, 고정 badge와 hard-policy 차단을 실제 Side Panel에서 검증
+- worker suspend와 Side Panel close/reopen 뒤 Chat stream/tool timeline이 같은 run sequence로 복구되는지 검증
 
 ## 3. 출시 기준
 
-릴리스는 extension package, browser manifest permission snapshot, bounded CDP method/parameter allowlist와 detach-leak 결과, provider plugin registry와 API version, bundled adapter 목록, settings schema, provider request contract와 검증 결과를 함께 기록한다. API key·header 값·실제 prompt·페이지 데이터·CDP selector/좌표/node ID는 출시 증적에 포함하지 않는다.
+릴리스는 extension package, browser manifest permission snapshot, bounded mutation CDP와 Vision command allowlist, detach-leak 결과, provider plugin registry와 API version, bundled adapter 목록, settings/Chat event/page schema, provider request contract와 검증 결과를 함께 기록한다. API key·header 값·실제 prompt·페이지 데이터·CDP selector/좌표/node ID는 출시 증적에 포함하지 않는다.
+
+S5~S9의 test ID, 환경, evidence format과 NO-GO 조건은 [18. Claude 브라우저 기능 채택 검증계획](18-claude-browser-capability-verification-plan.md)을 따른다.

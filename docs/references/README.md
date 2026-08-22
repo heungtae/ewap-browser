@@ -16,3 +16,4 @@
 
 - [WebBrain 사용자 인증·인가 비교](2026-08-17-webbrain-authn-authz-comparison.md)
 - [WebBrain Chrome CDP·offscreen 아키텍처 비교](2026-08-17-webbrain-chrome-cdp-offscreen-comparison.md)
+- [Claude 1.0.81 브라우저 읽기·제어 비교](2026-08-22-claude-1.0.81-browser-comparison.md)

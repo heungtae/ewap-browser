@@ -11,6 +11,8 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - 공유 kiosk, 다중 사용자 profile, 중앙 작업 실행, headless multi-tenant 서비스와 Cloud Sync는 지원 범위가 아니다.
 - WebBrain의 Ask/Act와 capability × host 사용자 승인 모델을 따르되, password·OTP 처리 금지와 R2/R3 확인 정책은 유지한다.
 - LLM provider는 plugin으로 교체할 수 있지만 인증 정보와 HTTP 실행은 extension core가 소유한다.
+- page read는 hidden DOM을 기본 포함하는 `all_dom` semantic tree, visible article text와 선택적 screenshot을 제공한다. hidden node는 읽기 전용이며 mutation authority가 아니다.
+- 사용자는 `standard`, `follow_a_plan`, `skip_all_permission_checks`를 선택할 수 있다. permission 생략 mode도 credential, R2/R3, denylist, restricted origin, target binding과 verifier hard policy를 우회하지 않는다.
 
 ## 2. 논리 구성
 
@@ -18,6 +20,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 Side Panel ─────────────┐
 Content script ─────────┼── Service worker ── Provider registry/plugin host ── Core HTTP transport ── LLM
                          │          │
+                         │          ├── Page read / Vision adapter ── content + screenshot
                          │          ├── Bounded CDP adapter ── chrome.debugger ── current target tab
                          │          ├── chrome.storage.local
                          │          │    plugin manifest / provider settings / API key / headers / user permissions
@@ -31,17 +34,21 @@ Content script ─────────┼── Service worker ── Provid
 
 ### Content script
 
-현재 문서에서 semantic projection과 문서 범위 `ref_id`를 만들고, service worker가 허용한 단일 DOM 작업만 실행한다. 페이지 DOM, 이벤트, `postMessage`와 모든 페이지 텍스트는 비신뢰 입력이다.
+현재 문서에서 visible/hidden semantic projection과 문서 범위 `ref_id`를 만들고, service worker가 허용한 단일 DOM 작업만 실행한다. hidden node도 기본 projection에 포함하지만 visibility reason을 명시하고 mutation에서는 거부한다. 페이지 DOM, 이벤트, `postMessage`와 모든 페이지 텍스트는 비신뢰 입력이다.
 
 ### Service worker
 
-작업 상태, 모델 요청, capability × host 권한 검사, 사용자 확인, `model_ref → ref_id` 매핑, 실행 전 preflight, DOM 또는 bounded CDP 실행 경로 선택과 실행 후 상태 검증을 담당한다. UI와 content script는 직접 통신하지 않는다.
+작업 상태, 모델 요청, permission mode, capability × host 권한 검사, 사용자 확인, `model_ref → ref_id` 매핑, page read/vision/tab context, 실행 전 preflight, DOM 또는 bounded CDP 실행 경로 선택과 실행 후 상태 검증을 담당한다. UI와 content script는 직접 통신하지 않는다.
+
+### Page read와 Vision adapter
+
+page read orchestrator는 기본 `all_dom` tree, `visible_only`/`interactive` override, focused subtree, article text, find와 managed tab context를 제공한다. input current value, credential, executable source, URL query/fragment와 cross-origin frame DOM은 scope와 무관하게 제거한다. Vision adapter는 viewport screenshot과 region zoom만 typed `Page.captureScreenshot`으로 수행하고 이미지를 current run 밖에 저장하지 않는다.
 
 ### Bounded CDP adapter
 
 bounded CDP adapter는 일반 DOM executor가 trusted input을 만들 수 없는 승인된 R1/R2 도구에서만 service worker가 호출하는 내부 실행 계층이다. 모델, provider plugin, 페이지와 site adapter는 raw CDP method, selector, node ID, 좌표 또는 실행 경로를 지정할 수 없다.
 
-adapter는 현재 run의 `(tab, frame, documentId, documentEpoch, ref_id)`에 결속된 target을 content script가 preflight한 뒤, 고정된 `DOM.*`과 `Input.*` command allowlist만 호출한다. `Runtime.evaluate`, `Network.*`, `Target.*`, `Page.captureScreenshot`과 임의 JavaScript는 제품 runtime에서 허용하지 않는다. attach는 action 실행 직전에 지연 수행하고 검증 직후 `finally`에서 detach한다.
+adapter는 현재 run의 `(tab, frame, documentId, documentEpoch, ref_id)`에 결속된 target을 content script가 preflight한 뒤, 고정된 `DOM.*`과 `Input.*` command allowlist만 호출한다. mutation adapter에는 `Runtime.evaluate`, `Network.*`, `Target.*`, `Page.captureScreenshot`과 임의 JavaScript를 허용하지 않는다. screenshot은 input command가 없는 별도 Vision adapter만 수행한다. attach는 action 실행 직전에 지연 수행하고 검증 직후 `finally`에서 detach한다.
 
 ### Provider registry와 plugin host
 
@@ -72,14 +79,14 @@ provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api
 
 1. 사용자가 Side Panel에서 요청한다.
 2. service worker가 현재 문서를 확인하고 content script에 projection을 요청한다.
-3. 내부 `ref_id`를 run 한정 `model_ref`로 바꾼 redacted snapshot, 읽기 도구 schema와 Ask system prompt를 선택한 provider plugin을 통해 보낸다. snapshot과 이후 tool 결과는 항상 untrusted data 경계로 감싼다.
-4. 모델은 답변을 바로 반환하거나 `read_semantic_projection`/Profile이 허용한 Business MCP read tool을 호출한다. service worker는 이름·schema·현재 Profile binding을 검증하고 result를 다음 모델 turn에 전달한다.
+3. 내부 `ref_id`를 run 한정 `model_ref`로 바꾼 기본 `all_dom` snapshot, 읽기 도구 schema와 Ask system prompt를 선택한 provider plugin을 통해 보낸다. snapshot과 이후 tool 결과는 항상 untrusted data 경계로 감싼다.
+4. 모델은 답변을 바로 반환하거나 `read_page`, `get_page_text`, `find`, screenshot/zoom, tab context, read batch, `read_semantic_projection` 또는 Profile이 허용한 Business MCP read tool을 호출한다. service worker는 이름·schema·현재 binding을 검증하고 result를 다음 모델 turn에 전달한다.
 5. 최대 tool turn을 넘기지 않고 최종 자연어 답변만 Side Panel에 렌더링한다. 현재 웹페이지의 Chrome DevTools Console `Info`와 service worker Console에는 각 turn의 최종 LLM `messages`/tool schema와 정규화된 응답 message를 기록한다. `Verbose`에는 active-tab·projection·Profile·provider dispatch와 원본 provider response를 service worker에만 기록한다. provider credential·browser credential·raw ref mapping은 기록하지 않는다.
 
 ### Act
 
 1. Ask와 같은 snapshot 생성 뒤 모델이 도구와 `model_ref`를 제안한다.
-2. service worker가 capability × host 권한, target 상태, 민감 필드, 도구 schema를 검사한다.
+2. service worker가 현재 run의 permission mode, capability × host 권한, target visibility, 민감 필드, 도구 schema를 검사한다. `skip_all_permission_checks`는 capability prompt만 생략한다.
 3. 권한이 없으면 사용자는 이번 작업만 허용, 항상 허용, 거부 중 하나를 선택한다.
 4. 제출·외부 전송·결제·삭제 같은 결과적 행동은 매 실행마다 별도 확인을 요구한다.
 5. content script가 target을 다시 확인한다. 일반 DOM 경로로 신뢰성 있게 실행할 수 있으면 DOM executor를 사용하고, tool definition이 bounded CDP를 허용하며 trusted input이 필요한 경우에만 CDP adapter를 선택한다.

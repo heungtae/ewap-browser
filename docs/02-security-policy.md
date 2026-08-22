@@ -2,15 +2,15 @@
 
 ## 1. 신뢰 경계
 
-| 입력                            | 처리                                                                                |
-| ------------------------------- | ----------------------------------------------------------------------------------- |
-| 웹 페이지와 content-script 결과 | 비신뢰 데이터로 schema·길이·형식을 검증하고 모델에 명시적으로 표시                  |
-| LLM 텍스트와 tool call          | 비신뢰 제안으로 schema, 현재 run, capability gate를 다시 검증                       |
-| 사용자 Settings                 | 사용자가 소유하는 provider·header·권한 설정                                         |
-| `chrome.storage.local`          | 사용자 기기 저장소. provider key와 header는 암호화되지 않았다고 가정                |
-| 현재 Chrome 로그인 세션         | 웹사이트가 직접 인증한 사용자 세션. 확장은 password·OTP를 읽거나 대신 입력하지 않음 |
-| provider plugin manifest        | 비신뢰 설치 입력. closed schema, 크기, ID, version과 capability를 검증              |
-| CDP target과 event              | 현재 action에 결속되지 않은 target, node, 좌표와 event는 거부                       |
+| 입력                            | 처리                                                                                   |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| 웹 페이지와 content-script 결과 | visible/hidden 모두 비신뢰 데이터로 schema·길이·형식을 검증하고 모델에 명시적으로 표시 |
+| LLM 텍스트와 tool call          | 비신뢰 제안으로 schema, 현재 run, capability gate를 다시 검증                          |
+| 사용자 Settings                 | 사용자가 소유하는 provider·header·권한 설정                                            |
+| `chrome.storage.local`          | 사용자 기기 저장소. provider key와 header는 암호화되지 않았다고 가정                   |
+| 현재 Chrome 로그인 세션         | 웹사이트가 직접 인증한 사용자 세션. 확장은 password·OTP를 읽거나 대신 입력하지 않음    |
+| provider plugin manifest        | 비신뢰 설치 입력. closed schema, 크기, ID, version과 capability를 검증                 |
+| CDP target과 event              | 현재 action에 결속되지 않은 target, node, 좌표와 event는 거부                          |
 
 제품은 로컬 Chrome profile 소유자를 유일한 사용자와 승인 주체로 본다. 제품 로그인, SSO, 조직 역할과 중앙 정책은 권한 근거로 사용하지 않는다. 웹사이트가 부여한 세션 권한과 WebBrain의 runtime 행동 승인은 서로 다른 경계다.
 
@@ -30,16 +30,26 @@
 
 사용자는 각 `(capability, host)`에 대해 이번 작업 또는 항상 허용을 선택한다. 항상 허용은 `contextpilot_permissions`에 저장하며 Settings에서 개별 또는 전체 철회할 수 있다. 사용자는 필요하면 결과적 행동 질문을 끌 수 있으나, 제출·결제·삭제·외부 공개와 API write는 항상 개별 확인을 요구한다.
 
+permission mode는 다음과 같다.
+
+| mode                         | capability/host 처리                       | 유지되는 hard policy                                                              |
+| ---------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------- |
+| `standard`                   | once/always/deny prompt                    | 전체                                                                              |
+| `follow_a_plan`              | 승인한 exact domain plan으로 대체          | 전체 + plan scope                                                                 |
+| `skip_all_permission_checks` | capability와 domain-transition prompt 생략 | restricted/category/denylist, credential, R2/R3, binding, CDP allowlist, verifier |
+
+`skip_all_permission_checks`는 Settings danger flow에서만 활성화하며 model/page/runtime message로 변경하지 못한다. 진행 중 run의 mode는 불변이고 설정 변경은 해당 run을 취소한다.
+
 `execute_js`는 현재 제품 capability와 tool registry에 존재하지 않는다. bounded CDP adapter도 JavaScript 실행 capability를 암묵적으로 만들지 않는다.
 
 ## 3. 행동 등급
 
-| 등급 | 예                                    | 처리                                                                        |
-| ---- | ------------------------------------- | --------------------------------------------------------------------------- |
-| R0   | 읽기, 요약, 요소 찾기                 | capability gate 없음                                                        |
-| R1   | 입력, 선택, 일반 click                | capability × host 허용과 preflight                                          |
-| R2   | 제출, 생성, 전송, 외부 상태 변경      | R1 + 현재 intent의 명시 확인 + 결과 확인                                    |
-| R3   | 결제, 계약 확정, 계정/보안 설정, 삭제 | 기본 거부. 사용자의 명시 작업과 전용 확인 UI가 있을 때만 제한된 도구로 실행 |
+| 등급 | 예                                               | 처리                                                                        |
+| ---- | ------------------------------------------------ | --------------------------------------------------------------------------- |
+| R0   | visible/hidden 읽기, 요약, 요소 찾기, screenshot | permission mode에 따른 read/vision gate, mutation authority 없음            |
+| R1   | 입력, 선택, 일반 click                           | capability × host 허용과 preflight                                          |
+| R2   | 제출, 생성, 전송, 외부 상태 변경                 | R1 + 현재 intent의 명시 확인 + 결과 확인                                    |
+| R3   | 결제, 계약 확정, 계정/보안 설정, 삭제            | 기본 거부. 사용자의 명시 작업과 전용 확인 UI가 있을 때만 제한된 도구로 실행 |
 
 ## 4. 실행 규칙
 
@@ -54,7 +64,10 @@
 9. content script target binding과 CDP hit test가 일치하지 않거나 target이 stale, sensitive, hidden, disabled, occluded 또는 중복 marker이면 `TARGET_NOT_ACTIONABLE`로 실패한다.
 10. DOM 또는 CDP에서 상태 변경 dispatch가 시작된 뒤에는 다른 실행 경로로 fallback하거나 자동 재시도하지 않는다.
 11. CDP attach는 action-scoped다. terminal transition, navigation, Stop, tab close와 service-worker recovery에서 detach를 확인하며 실패한 tab은 `CDP_CLEANUP_FAILED` 상태로 격리한다.
-12. product CDP에는 `Runtime.evaluate`, `Network.*`, `Target.*`, screenshot, file input과 임의 page script 실행을 허용하지 않는다. 외부 Chrome E2E harness의 CDP 권한과 제품 runtime 권한은 별도 경계다.
+12. product mutation CDP에는 `Runtime.evaluate`, `Network.*`, `Target.*`, screenshot, file input과 임의 page script 실행을 허용하지 않는다. 외부 Chrome E2E harness의 CDP 권한과 제품 runtime 권한은 별도 경계다.
+13. hidden DOM은 기본 `all_dom` read에 포함하지만 `visibility=hidden`으로 표시하며 mutation resolver, DOM executor와 bounded CDP target이 될 수 없다.
+14. screenshot은 mutation CDP가 아니라 `Page.captureScreenshot`만 허용한 별도 Vision adapter에서 수행한다. screenshot은 current run 밖에 저장하거나 audit/diagnostics/export에 포함하지 않는다.
+15. permission-less mode에서도 1~14의 hard policy 검사 순서와 결과를 생략하지 않는다.
 
 ## 5. 모델 및 provider 보안
 

@@ -8,7 +8,7 @@ extension/
   src/service-worker/  # run coordinator, permission gate, provider host/transport
   src/offscreen/       # localhost/PNA provider request proxy
   src/content/         # projection, ref registry, DOM executor
-  src/cdp/             # closed command allowlist, action-scoped attach/detach
+  src/cdp/             # bounded mutation allowlist와 input 없는 Vision capture
   src/sidepanel/       # task, permission card, confirmation, result
   src/settings/        # provider plugin, headers, site permissions
   src/providers/       # registry, plugin SDK, built-in adapters
@@ -24,7 +24,7 @@ extension/
 
 - Chrome MV3 service worker와 Side Panel을 사용한다.
 - 페이지 automation이 필요하므로 content script와 host permission은 사용자가 설치 시 승인한다.
-- `storage`, `sidePanel`, `activeTab`, `debugger`를 제품 기능에 필요한 기본 권한으로 선언한다. `tabs`, `scripting`, `webNavigation`, `downloads`, `alarms`는 해당 도구가 실제 도입될 때만 추가한다.
+- `storage`, `sidePanel`, `activeTab`, `debugger`를 제품 기능에 필요한 기본 권한으로 선언한다. S6~S9에서 tab context, focused read, lifecycle과 download가 실제 구현될 때만 `tabs`, `scripting`, `webNavigation`, `downloads`, `alarms`를 추가하고 manifest snapshot review를 수행한다.
 - 일반 웹 UI를 지원하므로 host permission과 content script는 `<all_urls>`를 사용한다. 브라우저 제한 페이지(`chrome://`, Web Store 등)는 Chrome이 주입을 차단한다. service worker는 current active tab의 `http(s)` origin과 capability × host gate를 다시 확인하고, provider egress와 Profile Resolver 허용 origin은 별도 allowlist로 유지한다.
 - `offscreen`은 MV3 Service Worker의 localhost/PNA provider POST 프록시를 위해 선언한다. `privateNetworkAccess`는 Chrome 확장 manifest permission이 아니므로 선언하지 않는다. host permission에는 `<all_urls>`와 함께 `http://localhost/*`, `http://127.0.0.1/*`를 명시한다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest 권한이 아니다.
 
@@ -50,7 +50,14 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
   },
   "activeProvider": "local",
   "contextpilot_permissions": [],
-  "askBeforeConsequentialActions": true
+  "askBeforeConsequentialActions": true,
+  "agent_preferences": {
+    "permission_mode": "standard",
+    "default_read_scope": "all_dom",
+    "screenshot_policy": "manual_or_model",
+    "group_tools_in_timeline": true,
+    "show_tool_debug_details": false
+  }
 }
 ```
 
@@ -62,7 +69,9 @@ Settings와 service worker는 `chrome.storage.local`을 사용한다. content sc
 
 content script는 `DOCUMENT_REGISTER`, `CONTENT_SNAPSHOT`, `EXECUTE_ACTION`, `PREPARE_BOUNDED_CDP_TARGET`, `CLEAR_BOUNDED_CDP_TARGET`, `VERIFY_RESULT`만 service worker와 교환한다. sender의 tab, frame, `documentId`, lifecycle을 Chrome API로 검증한다. CDP prepare/clear message는 service worker만 시작할 수 있고 Side Panel, page와 provider sender는 거부한다.
 
-snapshot에는 redacted role/name/state, document-scoped `ref_id`, 제한된 relation과 최대 12,000자의 보이는 페이지 텍스트(`visible_text`)만 들어간다. `visible_text`는 rendered `innerText`를 줄 단위로 정규화한 것이며 raw HTML/CSS, hidden DOM, password/OTP input value와 browser credential은 포함하지 않는다. service worker는 모델 호출 직전에 `ref_id`를 current-run `model_ref`로 치환하고 terminal transition·navigation·worker restart에 즉시 폐기한다.
+schema v2 snapshot에는 role/name/state, `visibility`와 hidden reason, document-scoped `ref_id`, 제한된 relation과 최대 12,000자의 보이는 페이지 텍스트가 들어간다. 기본 scope는 `all_dom`이며 hidden DOM도 semantic node로 포함한다. raw HTML/CSS/script, input current value, password/OTP/token value와 browser credential은 scope와 무관하게 포함하지 않는다. service worker는 모델 호출 직전에 `ref_id`를 current-run `model_ref`로 치환하고 terminal transition·navigation·worker restart에 즉시 폐기한다. hidden model ref는 read focus에만 등록하고 mutation mapping에는 등록하지 않는다.
+
+Side Panel은 provider wire message가 아니라 [17번 문서](17-claude-browser-capability-adoption-design.md)의 sequence가 있는 closed `ChatEvent`만 받는다. reconnect나 sequence gap은 `CHAT_RESYNC` snapshot으로 복구하고 Stop 이후 event는 같은 run transcript를 변경하지 못한다.
 
 bounded CDP 경로에서 content script는 preflight가 끝난 target 또는 실제 hit node에 128-bit 이상 무작위 action token을 일시적으로 표시한다. service worker는 token을 모델에 노출하지 않고 current run/action과 결속하며, CDP adapter는 정확히 하나의 live node만 해석한다. token은 dispatch 성공 여부와 관계없이 content script `finally`에서 제거한다. 페이지가 token을 복제·이동해 유일성 또는 hit test가 깨지면 실행하지 않는다.
 
