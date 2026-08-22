@@ -86,10 +86,14 @@ type BrowserRuntime = {
   lastError?: { message?: string };
 };
 type BrowserTabs = {
-  query(
-    query: Record<string, unknown>,
-  ): Promise<
-    Array<{ id?: number; url?: string; windowId?: number; title?: string }>
+  query(query: Record<string, unknown>): Promise<
+    Array<{
+      id?: number;
+      url?: string;
+      windowId?: number;
+      title?: string;
+      status?: "loading" | "complete";
+    }>
   >;
   captureVisibleTab(
     windowId?: number,
@@ -637,6 +641,12 @@ const businessMcpTool = (
         },
       };
 const serialiseToolResult = (value: unknown): string => JSON.stringify(value);
+const redactedTabTitle = (value: string | undefined): string =>
+  (value ?? "")
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
 const writeToPageDevTools = async (
   tabId: number,
   label: string,
@@ -936,9 +946,10 @@ const runAskChat = async (
           tabs: [
             {
               active: true,
-              title:
-                typeof tab.title === "string" ? tab.title.slice(0, 160) : "",
+              tab_id: tab.id,
+              title: redactedTabTitle(tab.title),
               url: `${url.origin}${url.pathname}`,
+              loading: tab.status === "loading",
             },
           ],
         };
