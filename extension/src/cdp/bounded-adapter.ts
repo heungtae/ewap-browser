@@ -190,7 +190,8 @@ export class BoundedCdpAdapter {
           includeUserAgentShadowDOM: false,
         },
       );
-      if (nodeId(hit.nodeId) !== boundNode) fail("TARGET_NOT_ACTIONABLE");
+      if (!(await this.isTargetOrDescendant(target, hit.nodeId, boundNode)))
+        fail("TARGET_NOT_ACTIONABLE");
       const attributes = await this.debuggerApi.sendCommand(
         target,
         "DOM.getAttributes",
@@ -296,6 +297,32 @@ export class BoundedCdpAdapter {
         value[index + 1] === token
       )
         return true;
+    return false;
+  }
+
+  private async isTargetOrDescendant(
+    target: Debuggee,
+    hit: unknown,
+    boundNode: number,
+  ): Promise<boolean> {
+    let current = nodeId(hit);
+    for (let depth = 0; depth < 16; depth += 1) {
+      if (current === boundNode) return true;
+      const described = await this.debuggerApi.sendCommand(
+        target,
+        "DOM.describeNode",
+        { nodeId: current, depth: 0, pierce: false },
+      );
+      const node = described.node as Record<string, unknown> | undefined;
+      const parent = node?.parentId;
+      if (
+        typeof parent !== "number" ||
+        !Number.isInteger(parent) ||
+        parent <= 0
+      )
+        return false;
+      current = parent;
+    }
     return false;
   }
 

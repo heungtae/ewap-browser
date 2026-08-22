@@ -395,6 +395,51 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   if (
     typeof message === "object" &&
     message !== null &&
+    (message as { kind?: unknown }).kind ===
+      "CONTENT_VERIFY_BOUNDED_POSTCONDITION"
+  ) {
+    const intent = (message as { intent?: ExecuteIntent }).intent;
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      !intent ||
+      intent.document_epoch !== documentEpoch
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const record = refRecords.get(intent.ref_id);
+    const element = record?.element;
+    if (
+      !record ||
+      !(element instanceof HTMLElement) ||
+      !element.isConnected ||
+      roleFor(element) !== record.role ||
+      nameFor(element) !== record.name
+    ) {
+      respond({ ok: false, code: "TARGET_STALE" });
+      return true;
+    }
+    const state = {
+      ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
+      ...(element instanceof HTMLInputElement &&
+      (element.type === "checkbox" || element.type === "radio")
+        ? { checked: element.checked }
+        : {}),
+      ...(element instanceof HTMLSelectElement
+        ? { selected: element.selectedIndex >= 0 }
+        : {}),
+      ...(element.hasAttribute("aria-expanded")
+        ? { expanded: element.getAttribute("aria-expanded") === "true" }
+        : {}),
+      ...(element.hasAttribute("required") ? { required: true } : {}),
+    };
+    respond({ ok: true, state });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
     (message as { kind?: unknown }).kind === "CONTENT_EXECUTE_R1" &&
     (["click_by_ref", "press_key_by_ref"] as const).includes(
       (message as { intent?: ExecuteIntent }).intent?.tool as

@@ -39,6 +39,11 @@ import type { ChatEventPayload } from "../contracts/chat-events.js";
 import { findPage, getPageText, readPage } from "./page-read.js";
 import { executeReadBatch } from "./read-batch.js";
 import {
+  BoundedCdpAdapter,
+  type BoundedCdpAction,
+  type DebuggerApi,
+} from "../cdp/bounded-adapter.js";
+import {
   normalizeViewportCapture,
   normalizeZoomRegion,
   zoomViewportCapture,
@@ -101,6 +106,7 @@ type BrowserTabs = {
   ): Promise<string>;
   sendMessage(tabId: number, message: unknown): Promise<unknown>;
 };
+type BrowserDebugger = DebuggerApi;
 type BrowserStorageArea = {
   setAccessLevel(level: { accessLevel: "TRUSTED_CONTEXTS" }): Promise<void>;
   get?(key: string): Promise<Record<string, unknown>>;
@@ -124,12 +130,14 @@ const chromeApi = (
     chrome?: {
       runtime: BrowserRuntime;
       tabs: BrowserTabs;
+      debugger?: BrowserDebugger;
       storage: BrowserStorage;
       offscreen?: BrowserOffscreen;
     };
   }
 ).chrome;
-const registered = new Map<string, string>();
+type RegisteredDocument = { epoch: string; documentId: string };
+const registered = new Map<string, RegisteredDocument>();
 const registrationKey = (tabId: number, frameId: number): string =>
   `${tabId}:${frameId}`;
 const safeFailure = (code: string, detail?: string) => ({
@@ -142,9 +150,95 @@ const localPageProfile = { id: "local-page-ui-v1", version: 1 };
 const localSessionBinding = new LocalFixtureSessionBinding();
 const localBindings = new Map<string, SessionBinding>();
 const permissions = new PermissionManager();
+const cdpAuthorizedRuns = new Set<string>();
 const chatEvents = new ChatEventStore();
 const planScopes = new PlanScopeStore();
 const visionCaptures = new Map<string, VisionCapture>();
+const cdpMarkerStore = {
+  async set(marker: {
+    tabId: number;
+    runId: string;
+    actionId: string;
+    phase: "attaching" | "attached";
+  }): Promise<void> {
+    await chromeApi?.storage.session.set?.({
+      contextpilot_cdp_marker: marker,
+    });
+  },
+  async clear(tabId: number): Promise<void> {
+    const stored = await chromeApi?.storage.session.get?.(
+      "contextpilot_cdp_marker",
+    );
+    const marker = stored?.contextpilot_cdp_marker;
+    if (
+      typeof marker !== "object" ||
+      marker === null ||
+      (marker as { tabId?: unknown }).tabId === tabId
+    )
+      await chromeApi?.storage.session.set?.({ contextpilot_cdp_marker: null });
+  },
+};
+const boundedCdp = chromeApi?.debugger
+  ? new BoundedCdpAdapter(
+      chromeApi.debugger,
+      cdpMarkerStore,
+      {
+        async prepare(action) {
+          const result = await chromeApi!.tabs.sendMessage(action.tabId, {
+            kind: "PREPARE_BOUNDED_CDP_TARGET",
+            run_id: action.runId,
+            action_id: action.actionId,
+            tab_id: action.tabId,
+            frame_id: action.frameId,
+            document_id: action.documentId,
+            document_epoch: action.documentEpoch,
+            ref_id: action.refId,
+            action_token: action.actionToken,
+          });
+          if (
+            typeof result !== "object" ||
+            result === null ||
+            !(result as { ok?: unknown }).ok
+          )
+            return fail("TARGET_NOT_ACTIONABLE");
+          const prepared = result as Record<string, unknown>;
+          if (
+            ![
+              "unique",
+              "sensitive",
+              "stale",
+              "visible",
+              "enabled",
+              "occluded",
+            ].every((key) => typeof prepared[key] === "boolean")
+          )
+            return fail("TARGET_NOT_ACTIONABLE");
+          return {
+            unique: prepared.unique as boolean,
+            sensitive: prepared.sensitive as boolean,
+            stale: prepared.stale as boolean,
+            visible: prepared.visible as boolean,
+            enabled: prepared.enabled as boolean,
+            occluded: prepared.occluded as boolean,
+          };
+        },
+        async clear(action) {
+          await chromeApi!.tabs.sendMessage(action.tabId, {
+            kind: "CLEAR_BOUNDED_CDP_TARGET",
+            run_id: action.runId,
+            action_id: action.actionId,
+            tab_id: action.tabId,
+            frame_id: action.frameId,
+            document_id: action.documentId,
+            document_epoch: action.documentEpoch,
+            ref_id: action.refId,
+            action_token: action.actionToken,
+          });
+        },
+      },
+      (_capability, _origin, runId) => cdpAuthorizedRuns.has(runId),
+    )
+  : undefined;
 let agentPreferences: AgentPreferences = defaultAgentPreferences();
 let offscreenReady: Promise<void> | undefined;
 const ensureOffscreen = async (): Promise<void> => {
@@ -403,7 +497,9 @@ const readActiveSnapshot = async (
     node_count: snapshot.nodes.length,
     visible_text_length: snapshot.visible_text.length,
   });
-  if (registered.get(registrationKey(tabId, 0)) !== snapshot.document_epoch)
+  if (
+    registered.get(registrationKey(tabId, 0))?.epoch !== snapshot.document_epoch
+  )
     return Promise.reject(new ContractError("DOCUMENT_NOT_REGISTERED"));
   let path = "/";
   try {
@@ -643,7 +739,12 @@ const businessMcpTool = (
 const serialiseToolResult = (value: unknown): string => JSON.stringify(value);
 const redactedTabTitle = (value: string | undefined): string =>
   (value ?? "")
-    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .split("")
+    .map((character) => {
+      const code = character.charCodeAt(0);
+      return code <= 31 || code === 127 ? " " : character;
+    })
+    .join("")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 160);
@@ -1484,10 +1585,118 @@ const verifySemanticPostcondition = async (
     return false;
   }
 };
+const verifyBoundedTargetPostcondition = async (
+  run: Run,
+  intent: ActionIntent,
+): Promise<boolean> => {
+  if (
+    intent.verifier.kind !== "semantic-state-transition" ||
+    intent.verifier.required_changes.length !== 0
+  )
+    return false;
+  try {
+    const result = await chromeApi!.tabs.sendMessage(run.tabId, {
+      kind: "CONTENT_VERIFY_BOUNDED_POSTCONDITION",
+      intent,
+    });
+    if (
+      typeof result !== "object" ||
+      result === null ||
+      !(result as { ok?: unknown }).ok ||
+      !isPlainObject((result as { state?: unknown }).state)
+    )
+      return false;
+    const state = (result as { state: Record<string, unknown> }).state;
+    if (
+      Object.keys(state).some(
+        (key) =>
+          !["disabled", "checked", "selected", "expanded", "required"].includes(
+            key,
+          ) || typeof state[key] !== "boolean",
+      )
+    )
+      return false;
+    return digestCanonical(state) !== intent.verifier.pre_state_digest;
+  } catch {
+    return false;
+  }
+};
+const executeBoundedCdp = async (
+  run: Run,
+  ready: ReadyExecution,
+  origin: string,
+): Promise<Record<string, unknown>> => {
+  if (!boundedCdp) return safeFailure("CDP_UNAVAILABLE");
+  const document = registered.get(registrationKey(run.tabId, run.frameId));
+  if (!document || document.epoch !== run.documentEpoch)
+    return safeFailure("DOCUMENT_NOT_REGISTERED");
+  const tool = ready.intent.tool;
+  if (
+    tool !== "click_by_ref" &&
+    tool !== "press_key_by_ref" &&
+    tool !== "set_text_by_ref"
+  )
+    return safeFailure("CDP_COMMAND_NOT_ALLOWED");
+  const capability: Capability = tool === "set_text_by_ref" ? "type" : "click";
+  const action: BoundedCdpAction = {
+    runId: run.id,
+    actionId: opaqueId(),
+    tabId: run.tabId,
+    frameId: run.frameId,
+    documentId: document.documentId,
+    documentEpoch: run.documentEpoch,
+    refId: ready.intent.ref_id,
+    tool,
+    risk: ready.intent.risk,
+    actionToken: opaqueId(),
+    origin,
+    capability,
+  };
+  cdpAuthorizedRuns.add(run.id);
+  try {
+    let input: { key?: string; text?: string } | undefined;
+    if (tool === "press_key_by_ref") {
+      const key = ready.intent.argument?.key;
+      if (!key) throw new ContractError("CDP_COMMAND_NOT_ALLOWED");
+      input = { key };
+    }
+    if (tool === "set_text_by_ref") {
+      if (ready.value === undefined)
+        throw new ContractError("VALUE_BINDING_INVALID");
+      input = { text: ready.value };
+    }
+    const execution = await boundedCdp.execute(action, input);
+    if (execution.outcome !== "DISPATCHED") {
+      coordinator.mutations.terminal(run, "FAILED");
+      return safeFailure("TARGET_NOT_ACTIONABLE");
+    }
+    const verified =
+      (await verifySemanticPostcondition(run, ready.intent)) ||
+      (await verifyBoundedTargetPostcondition(run, ready.intent));
+    coordinator.mutations.terminal(run, verified ? "VERIFIED" : "FAILED");
+    return verified
+      ? { ok: true, outcome: "VERIFIED" }
+      : safeFailure("TARGET_NOT_ACTIONABLE");
+  } catch (error) {
+    coordinator.mutations.terminal(run, "FAILED");
+    return safeFailure(
+      error instanceof ContractError ? error.code : "CDP_UNAVAILABLE",
+    );
+  } finally {
+    cdpAuthorizedRuns.delete(run.id);
+  }
+};
 const executeActContent = async (
   run: Run,
   ready: ReadyExecution,
+  origin: string,
 ): Promise<Record<string, unknown>> => {
+  if (
+    ready.intent.tool === "click_by_ref" ||
+    ready.intent.tool === "press_key_by_ref" ||
+    ready.intent.tool === "set_text_by_ref"
+  )
+    return executeBoundedCdp(run, ready, origin);
   const result = await chromeApi!.tabs.sendMessage(run.tabId, {
     kind: "CONTENT_EXECUTE_R1",
     intent: ready.intent,
@@ -1657,7 +1866,7 @@ const executeActProposal = async (
   } else {
     return fail("CONFIRMATION_INVALID");
   }
-  const executed = await executeActContent(run, ready);
+  const executed = await executeActContent(run, ready, session.origin);
   if (!executed.ok) return executed;
   session.messages.push({
     role: "tool",
@@ -1692,7 +1901,7 @@ const submitActValue = async (
   );
   if (next.state !== "READY_TO_EXECUTE") return fail("CONFIRMATION_INVALID");
   const ready = coordinator.mutations.executeR1(run);
-  const executed = await executeActContent(run, ready);
+  const executed = await executeActContent(run, ready, session.origin);
   if (!executed.ok) return executed;
   session.messages.push({
     role: "tool",
@@ -1768,7 +1977,20 @@ const executeFixture = (
   run: Run,
   ready: ReadyExecution,
   respond: (response: unknown) => void,
+  origin: string,
 ): void => {
+  if (
+    ready.intent.tool === "click_by_ref" ||
+    ready.intent.tool === "press_key_by_ref"
+  ) {
+    void executeBoundedCdp(run, ready, origin)
+      .then(respond)
+      .catch(() => {
+        coordinator.mutations.terminal(run, "UNKNOWN");
+        respond(safeFailure("INTERNAL_FAILURE"));
+      });
+    return;
+  }
   void chromeApi!.tabs
     .sendMessage(run.tabId, {
       kind: "CONTENT_EXECUTE_R1",
@@ -1849,7 +2071,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     }
     const key = registrationKey(sender.tab.id, sender.frameId);
     const previous = registered.get(key);
-    if (previous && previous !== epoch) {
+    if (previous && previous.epoch !== epoch) {
       const active = coordinator.runs.get(sender.tab.id);
       if (active) {
         const binding = localBindings.get(active.id);
@@ -1858,7 +2080,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       }
       coordinator.invalidateDocument(sender.tab.id, epoch);
     }
-    registered.set(key, epoch);
+    registered.set(key, { epoch, documentId: sender.documentId });
     respond({ ok: true });
     return;
   }
@@ -2440,7 +2662,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
         }
         if (next.state === "READY_TO_EXECUTE") {
           const ready = coordinator.mutations.executeR1(run);
-          executeFixture(run, ready, respond);
+          executeFixture(run, ready, respond, origin);
           return;
         }
         respond({
@@ -2506,7 +2728,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
             return respond(safeFailure("VALUE_BINDING_INVALID"));
           if (ready.intent.value_binding.value_kind !== payload.value_kind)
             return respond(safeFailure("VALUE_BINDING_INVALID"));
-          executeFixture(run, ready, respond);
+          executeFixture(run, ready, respond, pageOrigin(tabs[0]?.url));
         } catch (error) {
           coordinator.mutations.terminal(run, "FAILED");
           respond(
@@ -2567,7 +2789,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
           );
           localSessionBinding.clear(binding.id);
           localBindings.delete(run.id);
-          executeFixture(run, ready, respond);
+          executeFixture(run, ready, respond, pageOrigin(tabs[0]?.url));
         } catch (error) {
           localSessionBinding.clear(binding.id);
           localBindings.delete(run.id);
