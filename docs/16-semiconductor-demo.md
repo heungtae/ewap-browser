@@ -5,8 +5,10 @@
 ## 실행
 
 1. extension을 build해 `dist-extension/`을 만든다.
-2. Windows에서 `scripts/run-semiconductor-demo.ps1`을 실행한다.
-3. 전용 Chrome profile이 `https://semiconductor-demo.company.test:8443/`를 연다. 이 스크립트는 임시 self-signed certificate, host resolver mapping과 전용 profile만 사용한다.
+2. `pnpm demo:semiconductor`으로 local demo server를 실행한다.
+3. 기존 Chrome profile에서 `http://127.0.0.1:8443/`을 연다. extension 코드를 바꿨다면 `chrome://extensions`에서 ContextPilot을 새로고침하고 페이지도 새로고침한다.
+
+Windows에서는 `scripts/run-semiconductor-demo.ps1`으로 전용 Chrome profile과 함께 실행할 수도 있다.
 
 `index.html`은 정보 전용 Ask 검증 페이지다. `trend-analysis.html`은 `제품군 → 공정 노드 → 생산 캠퍼스 → 분석 기간 → 수율 추세 분석 실행` 순서를 강제한다. 제출은 navigation 없이 SVG 차트, 접근 가능한 status 문구와 `data-trend-state="complete"`를 갱신한다.
 
