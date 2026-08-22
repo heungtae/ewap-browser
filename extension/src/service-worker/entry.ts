@@ -1,7 +1,7 @@
 import { validateSemanticSnapshot } from "../contracts/semantic-snapshot.js";
 import type { SemanticSnapshot } from "../contracts/types.js";
 import { digestCanonical } from "../security/canonical.js";
-import { ContractError, isPlainObject } from "../security/validation.js";
+import { ContractError, fail, isPlainObject } from "../security/validation.js";
 import { opaqueId } from "../security/canonical.js";
 import {
   PermissionManager,
@@ -10,7 +10,10 @@ import {
 } from "../policy/permission-manager.js";
 import { ProviderRuntime } from "../providers/runtime.js";
 import { CoreProviderTransport } from "../providers/transport.js";
-import { BusinessMcpClient, type BusinessMcpBinding } from "../profile/business-mcp-client.js";
+import {
+  BusinessMcpClient,
+  type BusinessMcpBinding,
+} from "../profile/business-mcp-client.js";
 import { ProfileResolver, type ResolvedProfile } from "../profile/resolver.js";
 import { semanticFingerprint } from "../profile/fingerprint.js";
 import { validateProfileResolverSettings } from "../settings/profile-settings.js";
@@ -378,14 +381,21 @@ const businessBindings = (value: unknown): BusinessMcpBinding[] => {
   if (!Array.isArray(value)) return [];
   return value.flatMap((candidate) => {
     if (!isPlainObject(candidate)) return [];
-    const keys = ["server_id", "endpoint", "tool_id", "result_key", "value_kind"];
+    const keys = [
+      "server_id",
+      "endpoint",
+      "tool_id",
+      "result_key",
+      "value_kind",
+    ];
     if (
       Object.keys(candidate).some((key) => !keys.includes(key)) ||
       typeof candidate.server_id !== "string" ||
       typeof candidate.endpoint !== "string" ||
       typeof candidate.tool_id !== "string" ||
       !/^[A-Za-z][A-Za-z0-9_.-]{0,127}$/.test(candidate.tool_id) ||
-      (candidate.result_key !== undefined && typeof candidate.result_key !== "string") ||
+      (candidate.result_key !== undefined &&
+        typeof candidate.result_key !== "string") ||
       typeof candidate.value_kind !== "string"
     )
       return [];
@@ -417,7 +427,10 @@ const businessMcpTool = (
             type: "object",
             additionalProperties: false,
             properties: {
-              tool_id: { type: "string", enum: bindings.map((binding) => binding.tool_id) },
+              tool_id: {
+                type: "string",
+                enum: bindings.map((binding) => binding.tool_id),
+              },
               arguments: {
                 type: "object",
                 additionalProperties: { type: "string" },
@@ -428,7 +441,30 @@ const businessMcpTool = (
         },
       };
 const serialiseToolResult = (value: unknown): string => JSON.stringify(value);
-const runAskChat = async (payload: unknown): Promise<Record<string, unknown>> => {
+const writeToPageDevTools = async (
+  tabId: number,
+  label: string,
+  detail: Record<string, unknown>,
+): Promise<void> => {
+  console.info(label, detail);
+  try {
+    await chromeApi!.tabs.sendMessage(tabId, {
+      kind: "CONTENT_DEVTOOLS_LOG",
+      level: "info",
+      label,
+      detail,
+    });
+  } catch (error) {
+    console.warn("[ContextPilot][page DevTools log unavailable]", {
+      tab_id: tabId,
+      label,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+};
+const runAskChat = async (
+  payload: unknown,
+): Promise<Record<string, unknown>> => {
   const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
   if (
     typeof value.prompt !== "string" ||
@@ -453,9 +489,14 @@ const runAskChat = async (payload: unknown): Promise<Record<string, unknown>> =>
     active.snapshot.document_epoch,
     "ask",
   );
-  const modelSnapshot = coordinator.modelSnapshot(run.id, active.snapshot).snapshot;
+  const modelSnapshot = coordinator.modelSnapshot(
+    run.id,
+    active.snapshot,
+  ).snapshot;
   const pageDigest = digestCanonical(active.snapshot);
-  const resolvedProfile = await resolveProfileFor(active).catch(() => undefined);
+  const resolvedProfile = await resolveProfileFor(active).catch(
+    () => undefined,
+  );
   const bindings = businessBindings(resolvedProfile?.profile.business_mcp);
   const businessTool = businessMcpTool(bindings);
   const tools = [readProjectionTool, ...(businessTool ? [businessTool] : [])];
@@ -468,16 +509,24 @@ const runAskChat = async (payload: unknown): Promise<Record<string, unknown>> =>
   ];
   const mcp = new BusinessMcpClient(offscreenFetch);
   for (let step = 1; step <= 3; step += 1) {
-    console.info("[ContextPilot][LLM request final]", {
-      step,
-      messages: structuredClone(messages),
-      tools: structuredClone(tools),
-    });
+    await writeToPageDevTools(
+      active.tabId,
+      "[ContextPilot][LLM request final]",
+      {
+        step,
+        messages: structuredClone(messages),
+        tools: structuredClone(tools),
+      },
+    );
     const response = await providerRuntime!.chat({ messages, tools });
-    console.debug("[ContextPilot][LLM response final]", {
-      step,
-      message: structuredClone(response),
-    });
+    await writeToPageDevTools(
+      active.tabId,
+      "[ContextPilot][LLM response final]",
+      {
+        step,
+        message: structuredClone(response),
+      },
+    );
     if (response.tool_calls.length === 0) {
       if (!response.content) return fail("PROVIDER_UNAVAILABLE");
       coordinator.runs.terminal(run.id, "VERIFIED");

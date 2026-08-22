@@ -169,6 +169,30 @@ try {
     throw new Error(
       `preview did not return the expected redacted semantic projection: ${JSON.stringify(result.result?.value)}`,
     );
+  const devToolsRelay = await cdp(
+    worker.webSocketDebuggerUrl,
+    "Runtime.evaluate",
+    {
+      expression: `
+        (async () => {
+          const [tab] = await chrome.tabs.query({active: true, lastFocusedWindow: true});
+          if (tab?.id === undefined) return {ok: false, code: 'TAB_NOT_FOUND'};
+          return chrome.tabs.sendMessage(tab.id, {
+            kind: 'CONTENT_DEVTOOLS_LOG',
+            level: 'info',
+            label: '[ContextPilot][LLM request final]',
+            detail: {step: 1, messages: [], tools: []}
+          });
+        })()
+      `,
+      awaitPromise: true,
+      returnByValue: true,
+    },
+  );
+  if (devToolsRelay.result?.value?.ok !== true)
+    throw new Error(
+      `content script did not accept the page DevTools log relay: ${JSON.stringify(devToolsRelay.result?.value)}`,
+    );
   const originalButton = snapshot.nodes.find(
     (node) => node.role === "button" && node.name === "Save",
   );

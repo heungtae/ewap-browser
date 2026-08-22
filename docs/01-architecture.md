@@ -74,7 +74,7 @@ provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api
 2. service worker가 현재 문서를 확인하고 content script에 projection을 요청한다.
 3. 내부 `ref_id`를 run 한정 `model_ref`로 바꾼 redacted snapshot, 읽기 도구 schema와 Ask system prompt를 선택한 provider plugin을 통해 보낸다. snapshot과 이후 tool 결과는 항상 untrusted data 경계로 감싼다.
 4. 모델은 답변을 바로 반환하거나 `read_semantic_projection`/Profile이 허용한 Business MCP read tool을 호출한다. service worker는 이름·schema·현재 Profile binding을 검증하고 result를 다음 모델 turn에 전달한다.
-5. 최대 tool turn을 넘기지 않고 최종 자연어 답변만 Side Panel에 렌더링한다. 개발자 Console의 Info에는 각 turn의 최종 LLM `messages`/tool schema를, Verbose에는 active-tab·projection·Profile·provider dispatch와 원본 provider response를 기록한다. provider credential·browser credential·raw ref mapping은 기록하지 않는다.
+5. 최대 tool turn을 넘기지 않고 최종 자연어 답변만 Side Panel에 렌더링한다. 현재 웹페이지의 Chrome DevTools Console `Info`와 service worker Console에는 각 turn의 최종 LLM `messages`/tool schema와 정규화된 응답 message를 기록한다. `Verbose`에는 active-tab·projection·Profile·provider dispatch와 원본 provider response를 service worker에만 기록한다. provider credential·browser credential·raw ref mapping은 기록하지 않는다.
 
 ### Act
 

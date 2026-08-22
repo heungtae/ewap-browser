@@ -81,6 +81,10 @@ type BoundedTargetRequest = {
 };
 const actionTokenPattern = /^[A-Za-z0-9_-]{22,128}$/;
 const boundedMarkers = new Map<string, HTMLElement>();
+const pageDevToolsLabels = new Set([
+  "[ContextPilot][LLM request final]",
+  "[ContextPilot][LLM response final]",
+]);
 const boundedTarget = (
   request: BoundedTargetRequest,
 ): HTMLElement | undefined => {
@@ -226,7 +230,12 @@ const visiblePageText = (): string => {
     .split(/\r?\n/)
     .map((line) =>
       line
-        .replace(/[\u0000-\u001f\u007f]/g, " ")
+        .split("")
+        .map((character) => {
+          const code = character.charCodeAt(0);
+          return code <= 31 || code === 127 ? " " : character;
+        })
+        .join("")
         .replace(/\s+/g, " ")
         .trim(),
     )
@@ -302,6 +311,34 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   if (
     typeof message === "object" &&
     message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_DEVTOOLS_LOG"
+  ) {
+    const request = message as {
+      kind?: unknown;
+      level?: unknown;
+      label?: unknown;
+      detail?: unknown;
+    };
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      Object.keys(message).length !== 4 ||
+      request.level !== "info" ||
+      typeof request.label !== "string" ||
+      !pageDevToolsLabels.has(request.label) ||
+      typeof request.detail !== "object" ||
+      request.detail === null
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    console.info(request.label, request.detail);
+    respond({ ok: true });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
     ((message as { kind?: unknown }).kind === "PREPARE_BOUNDED_CDP_TARGET" ||
       (message as { kind?: unknown }).kind === "CLEAR_BOUNDED_CDP_TARGET")
   ) {
@@ -337,7 +374,10 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
       return true;
     }
-    element.setAttribute("data-contextpilot-action-token", request.action_token);
+    element.setAttribute(
+      "data-contextpilot-action-token",
+      request.action_token,
+    );
     boundedMarkers.set(markerKey, element);
     respond({
       ok: true,
