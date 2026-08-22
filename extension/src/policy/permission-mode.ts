@@ -89,14 +89,15 @@ export const gatePermission = (
   capability: Capability,
   url: string,
   runId: string,
-  approvedPlanHosts: ReadonlySet<string> = new Set(),
+  approvedPlanOrigins: ReadonlySet<string> = new Set(),
 ): PermissionGateResult => {
-  const host = permissionHost(url);
+  permissionHost(url);
+  const origin = new URL(url).origin;
   const stored = manager.check(capability, url, runId);
   if (stored === "DENY") return "DENY";
   if (preferences.permission_mode === "skip_all_permission_checks")
     return "ALLOW";
   if (preferences.permission_mode === "follow_a_plan")
-    return approvedPlanHosts.has(host) ? "ALLOW" : "PLAN_SCOPE_VIOLATION";
+    return approvedPlanOrigins.has(origin) ? "ALLOW" : "PLAN_SCOPE_VIOLATION";
   return stored;
 };

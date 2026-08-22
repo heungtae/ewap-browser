@@ -33,7 +33,7 @@ describe("permission modes", () => {
       ),
     ).toBe("DENY");
   });
-  it("plan mode denies hosts outside the exact approved set", () => {
+  it("plan mode denies origins outside the exact approved set", () => {
     const manager = new PermissionManager();
     const preferences = {
       ...defaultAgentPreferences(),
@@ -46,7 +46,17 @@ describe("permission modes", () => {
         "navigate",
         "https://other.company.test",
         "run",
-        new Set(["fixture.company.test"]),
+        new Set(["https://fixture.company.test"]),
+      ),
+    ).toBe("PLAN_SCOPE_VIOLATION");
+    expect(
+      gatePermission(
+        manager,
+        preferences,
+        "navigate",
+        "https://fixture.company.test:8443",
+        "run",
+        new Set(["https://fixture.company.test"]),
       ),
     ).toBe("PLAN_SCOPE_VIOLATION");
   });

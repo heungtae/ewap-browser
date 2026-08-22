@@ -1832,7 +1832,7 @@ const executeActProposal = async (
     capability,
     session.origin,
     session.id,
-    planScopes.hosts(session.id),
+    planScopes.origins(session.id),
   );
   if (permission !== "ALLOW") {
     if (permission === "DENY" || permission === "PLAN_SCOPE_VIOLATION")
