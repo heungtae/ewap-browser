@@ -78,12 +78,12 @@ export class ProfileResolver {
     const profile = await verifyProfileJws(profile_jws, this.config.keyRing);
     return {
       profile: verifyProfileClaims(profile, {
-      deploymentId: this.config.deploymentId,
-      nonce,
-      pageContextDigest: input.pageContextDigest,
-      origin: input.origin,
-      path: input.path,
-      fingerprint: input.fingerprint,
+        deploymentId: this.config.deploymentId,
+        nonce,
+        pageContextDigest: input.pageContextDigest,
+        origin: input.origin,
+        path: input.path,
+        fingerprint: input.fingerprint,
       }),
       profile_jws,
     };

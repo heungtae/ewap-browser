@@ -106,6 +106,28 @@
         background: var(--success);
         box-shadow: 0 0 10px rgba(52, 211, 153, 0.7);
       }
+      #permission-mode-badge {
+        margin-left: auto;
+        padding: 3px 7px;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+      #permission-mode-badge[data-mode="skip_all_permission_checks"] {
+        color: #fecaca;
+        border-color: rgba(248, 113, 113, 0.5);
+        background: rgba(127, 29, 29, 0.22);
+      }
+      #run-banner {
+        padding: 8px 10px;
+        color: #fde68a;
+        border: 1px solid rgba(251, 191, 36, 0.3);
+        border-radius: 10px;
+        background: rgba(120, 79, 12, 0.14);
+        font-size: 11px;
+      }
       #chat {
         display: flex;
         flex: 1;
@@ -363,6 +385,7 @@
         <span class="brand-copy"
           ><strong>ContextPilot</strong><span>Page-aware assistant</span></span
         >
+        <span id="permission-mode-badge" data-mode="standard">표준 권한</span>
         <span class="connection">Ready</span>
       </header>
       <section id="chat" aria-label="Ask chat">
@@ -370,7 +393,12 @@
           <h1>Ask</h1>
           <span>현재 탭 기반</span>
         </div>
-        <div id="chat-messages" aria-live="polite"></div>
+        <aside id="run-banner" hidden aria-live="polite"></aside>
+        <div
+          id="chat-messages"
+          aria-live="polite"
+          aria-relevant="additions"
+        ></div>
         <form id="chat-form">
           <div id="mode-toggle" role="group" aria-label="작업 모드">
             <button
@@ -408,6 +436,9 @@
       </section>
       <section id="action-review-card" hidden>
         <p id="action-review-description"></p>
+        <button id="plan-approve" type="button" hidden>
+          현재 도메인을 계획에 승인
+        </button>
         <button id="action-approve" type="button">제안 실행</button>
         <button id="action-reject" type="button">중단</button>
       </section>
@@ -424,7 +455,6 @@
         <button id="permission-deny" type="button">거부</button>
       </section>
       <output id="status" aria-live="polite">준비됨</output>
-      <pre id="projection"></pre>
     </main>
     <script type="module" src="../js/panel.js"></script>
   </body>

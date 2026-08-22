@@ -43,4 +43,17 @@ describe("semantic snapshot contract", () => {
         visible_text: "x".repeat(12_001),
       }),
     ).toThrow("INVALID_ARGUMENT"));
+  it("given_hidden_node_without_a_reason_when_validating_then_denies", () =>
+    expect(() =>
+      validateSemanticSnapshot({
+        ...snapshot,
+        nodes: [
+          {
+            ...snapshot.nodes[0],
+            visible: false,
+            visibility: "hidden",
+          },
+        ],
+      }),
+    ).toThrow("INVALID_ARGUMENT"));
 });

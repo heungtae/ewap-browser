@@ -42,4 +42,26 @@ describe("semantic collector", () => {
       "TARGET_STALE",
     );
   });
+  it("given_hidden_non-sensitive_node_when_default_scope_then_exposes_read_only_visibility", () => {
+    const registry = new RefRegistry("abcdefghijklmnop", 0);
+    const result = collectSemanticProjection(
+      [
+        {
+          isConnected: true,
+          role: "dialog",
+          name: "Advanced options",
+          visible: false,
+          hiddenReason: "display_none",
+          enabled: true,
+        },
+      ],
+      registry,
+    );
+    expect(result).toMatchObject({ schema_version: 2, scope: "all_dom" });
+    expect(result.nodes[0]).toMatchObject({
+      visible: false,
+      visibility: "hidden",
+      hidden_reason: "display_none",
+    });
+  });
 });

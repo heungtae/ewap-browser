@@ -66,13 +66,16 @@ export class ServiceCoordinator {
         ? refs.get(node.parent_ref_id)
         : undefined;
       const label = node.label_ref_id ? refs.get(node.label_ref_id) : undefined;
-      map.set(modelRef, node.ref_id);
+      // A hidden node is useful read context but never an action authority.
+      if (node.visible) map.set(modelRef, node.ref_id);
       return {
         model_ref: modelRef,
         role: node.role,
         name: node.name,
         state: node.state,
         visible: node.visible,
+        ...(node.visibility ? { visibility: node.visibility } : {}),
+        ...(node.hidden_reason ? { hidden_reason: node.hidden_reason } : {}),
         enabled: node.enabled,
         ...(parent ? { parent_model_ref: parent } : {}),
         ...(label ? { label_model_ref: label } : {}),
@@ -80,8 +83,18 @@ export class ServiceCoordinator {
     });
     return {
       snapshot: {
+        ...(snapshot.schema_version === 2
+          ? { schema_version: 2 as const }
+          : {}),
         document_epoch: snapshot.document_epoch,
         frame_id: snapshot.frame_id,
+        ...(snapshot.scope ? { scope: snapshot.scope } : {}),
+        ...(typeof snapshot.truncated === "boolean"
+          ? { truncated: snapshot.truncated }
+          : {}),
+        ...(typeof snapshot.node_count === "number"
+          ? { node_count: snapshot.node_count }
+          : {}),
         nodes,
         visible_text: snapshot.visible_text,
       },

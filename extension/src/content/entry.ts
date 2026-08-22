@@ -19,7 +19,8 @@ type ExecuteIntent = {
     | "set_text_by_ref"
     | "select_option_by_ref"
     | "set_checked_by_ref"
-    | "click_by_ref";
+    | "click_by_ref"
+    | "press_key_by_ref";
   run_id: string;
   tab_id: number;
   frame_id: number;
@@ -31,7 +32,7 @@ type ExecuteIntent = {
     value_kind: "text" | "option";
     value_digest: string;
   };
-  argument?: { checked?: boolean };
+  argument?: { checked?: boolean; key?: "Enter" | "Space" | "Escape" };
 };
 const runtime = (
   globalThis as typeof globalThis & { chrome?: { runtime: BrowserRuntime } }
@@ -252,11 +253,53 @@ const visiblePageText = (): string => {
   }
   return result;
 };
-const projection = (): unknown => ({
+type ReadScope = "all_dom" | "visible_only" | "interactive";
+const interactiveRoles = new Set([
+  "button",
+  "checkbox",
+  "combobox",
+  "link",
+  "radio",
+  "textbox",
+  "tab",
+  "menuitem",
+]);
+const hiddenReasonFor = (element: Element): string | undefined => {
+  let current: Element | null = element;
+  while (current) {
+    if (current.getAttribute("aria-hidden") === "true")
+      return current === element ? "aria_hidden" : "ancestor_hidden";
+    const style = getComputedStyle(current);
+    if (style.display === "none")
+      return current === element ? "display_none" : "ancestor_hidden";
+    if (style.visibility === "hidden" || style.visibility === "collapse")
+      return current === element ? "visibility_hidden" : "ancestor_hidden";
+    if (Number(style.opacity) === 0)
+      return current === element ? "opacity_zero" : "ancestor_hidden";
+    current = current.parentElement;
+  }
+  if (element.closest("details:not([open])")) return "collapsed";
+  const rects = element.getClientRects();
+  if (rects.length === 0) return "zero_box";
+  const rect = rects[0];
+  if (
+    rect &&
+    (rect.bottom < 0 ||
+      rect.top > window.innerHeight ||
+      rect.right < 0 ||
+      rect.left > window.innerWidth)
+  )
+    return "outside_viewport";
+  return undefined;
+};
+const projection = (scope: ReadScope = "all_dom"): unknown => ({
   origin: location.origin,
   snapshot: {
+    schema_version: 2,
     document_epoch: documentEpoch,
     frame_id: 0,
+    scope,
+    truncated: false,
     visible_text: visiblePageText(),
     nodes: [
       ...document.querySelectorAll(
@@ -266,17 +309,21 @@ const projection = (): unknown => ({
       .flatMap((element) => {
         const role = roleFor(element);
         const name = nameFor(element);
-        const style = getComputedStyle(element);
-        const visible =
-          style.display !== "none" &&
-          style.visibility !== "hidden" &&
-          element.getClientRects().length > 0;
+        const hiddenReason = hiddenReasonFor(element);
+        const visible = hiddenReason === undefined;
         const sensitive =
           element instanceof HTMLInputElement &&
           (element.type === "password" ||
+            element.type === "hidden" ||
             /password|secret|otp|mfa|인증|비밀번호/i.test(name) ||
             /one-time-code/i.test(element.autocomplete));
-        if (!role || !visible || sensitive) return [];
+        if (
+          !role ||
+          sensitive ||
+          (scope === "visible_only" && !visible) ||
+          (scope === "interactive" && (!visible || !interactiveRoles.has(role)))
+        )
+          return [];
         const state = {
           ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
           ...(element instanceof HTMLInputElement &&
@@ -297,7 +344,11 @@ const projection = (): unknown => ({
             role,
             name,
             state,
-            visible: true,
+            visible,
+            visibility: visible ? "visible" : "hidden",
+            ...(!visible && hiddenReason
+              ? { hidden_reason: hiddenReason }
+              : {}),
             enabled:
               !(
                 element instanceof HTMLButtonElement ||
@@ -308,7 +359,7 @@ const projection = (): unknown => ({
           },
         ];
       })
-      .slice(0, 500),
+      .slice(0, 5_000),
   },
 });
 runtime?.onMessage.addListener((message, sender, respond) => {
@@ -316,7 +367,11 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     typeof message === "object" &&
     message !== null &&
     (message as { kind?: unknown }).kind === "CONTENT_EXECUTE_R1" &&
-    (message as { intent?: ExecuteIntent }).intent?.tool === "click_by_ref"
+    (["click_by_ref", "press_key_by_ref"] as const).includes(
+      (message as { intent?: ExecuteIntent }).intent?.tool as
+        | "click_by_ref"
+        | "press_key_by_ref",
+    )
   ) {
     const request = message as {
       intent?: ExecuteIntent;
@@ -338,10 +393,20 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     if (
       !record ||
       record.stale ||
-      !(element instanceof HTMLButtonElement) ||
-      record.role !== "button" ||
+      !(element instanceof HTMLElement) ||
+      (intent.tool === "click_by_ref" &&
+        (!(element instanceof HTMLButtonElement) ||
+          record.role !== "button")) ||
+      (intent.tool === "press_key_by_ref" &&
+        !["button", "textbox", "combobox", "tab", "menuitem"].includes(
+          record.role,
+        )) ||
       !element.isConnected ||
-      element.disabled ||
+      ((element instanceof HTMLButtonElement ||
+        element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement ||
+        element instanceof HTMLTextAreaElement) &&
+        element.disabled) ||
       roleFor(element) !== record.role ||
       nameFor(element) !== record.name ||
       getComputedStyle(element).display === "none" ||
@@ -354,7 +419,19 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       });
       return true;
     }
-    element.click();
+    if (intent.tool === "click_by_ref") element.click();
+    else {
+      const key = intent.argument?.key;
+      if (!key || !["Enter", "Space", "Escape"].includes(key)) {
+        respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
+        return true;
+      }
+      element.focus();
+      element.dispatchEvent(
+        new KeyboardEvent("keydown", { key, bubbles: true }),
+      );
+      element.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true }));
+    }
     respond({ ok: true });
     return true;
   }
@@ -662,12 +739,27 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     message !== null &&
     (message as { kind?: unknown }).kind === "CONTENT_SNAPSHOT"
   ) {
+    const scope = (message as { scope?: unknown }).scope;
+    if (
+      scope !== undefined &&
+      scope !== "all_dom" &&
+      scope !== "visible_only" &&
+      scope !== "interactive"
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
     void registerDocument().then((registered) => {
       if (!registered) {
         respond({ ok: false, code: "DOCUMENT_NOT_REGISTERED" });
         return;
       }
-      respond({ ok: true, snapshot: projection() });
+      const result = projection((scope as ReadScope | undefined) ?? "all_dom");
+      const snapshot = (
+        result as { snapshot: Record<string, unknown> & { nodes: unknown[] } }
+      ).snapshot;
+      snapshot.node_count = snapshot.nodes.length;
+      respond({ ok: true, snapshot: result });
     });
     return true;
   }

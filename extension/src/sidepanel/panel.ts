@@ -29,6 +29,8 @@ export const userMessage: Record<ErrorCode, string> = {
   CDP_COMMAND_NOT_ALLOWED: "허용되지 않은 브라우저 입력 요청입니다.",
   CDP_CLEANUP_FAILED:
     "브라우저 입력 연결을 정리하지 못해 이 탭의 작업을 중단했습니다.",
+  VISION_CAPTURE_UNAVAILABLE:
+    "현재 페이지에서 screenshot을 안전하게 캡처할 수 없습니다.",
   PROVIDER_PLUGIN_NOT_FOUND: "선택한 provider plugin을 찾을 수 없습니다.",
   PROVIDER_PLUGIN_INCOMPATIBLE:
     "provider plugin 버전이 현재 확장과 호환되지 않습니다.",

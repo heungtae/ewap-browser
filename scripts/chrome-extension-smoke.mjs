@@ -105,11 +105,12 @@ try {
       panel.webSocketDebuggerUrl,
       "Runtime.evaluate",
       {
-        expression: "document.querySelector('#preview')?.textContent",
+        expression:
+          "document.querySelector('#preview') instanceof HTMLButtonElement",
         returnByValue: true,
       },
     );
-    if (evaluation.result?.value === "페이지 미리보기") {
+    if (evaluation.result?.value === true) {
       previewRendered = true;
       break;
     }

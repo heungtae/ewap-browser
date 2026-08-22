@@ -1,4 +1,9 @@
-type BrowserRuntime = { sendMessage(message: unknown): Promise<unknown> };
+type BrowserRuntime = {
+  sendMessage(message: unknown): Promise<unknown>;
+  onMessage: {
+    addListener(listener: (message: unknown) => void): void;
+  };
+};
 const runtime = (
   globalThis as typeof globalThis & { chrome?: { runtime: BrowserRuntime } }
 ).chrome?.runtime;
@@ -23,6 +28,7 @@ const actionApprove =
   document.querySelector<HTMLButtonElement>("#action-approve");
 const actionReject =
   document.querySelector<HTMLButtonElement>("#action-reject");
+const planApprove = document.querySelector<HTMLButtonElement>("#plan-approve");
 const permissionCard = document.querySelector<HTMLElement>("#permission-card");
 const permissionDescription = document.querySelector<HTMLElement>(
   "#permission-description",
@@ -33,9 +39,19 @@ const permissionAlways =
   document.querySelector<HTMLButtonElement>("#permission-always");
 const permissionDeny =
   document.querySelector<HTMLButtonElement>("#permission-deny");
+const permissionModeBadge = document.querySelector<HTMLElement>(
+  "#permission-mode-badge",
+);
+const runBanner = document.querySelector<HTMLElement>("#run-banner");
 let chatMode: "ask" | "act" = "ask";
-let pendingAction: { sessionId: string; proposalId: string } | undefined;
+let pendingAction:
+  | { sessionId: string; proposalId: string; origin?: string }
+  | undefined;
 let pendingPermissionId: string | undefined;
+const eventSequences = new Map<string, number>();
+const streamingMessages = new Map<string, HTMLParagraphElement>();
+let eventDeliveredForPendingResponse = false;
+let currentPermissionMode = "standard";
 const setChatMode = (mode: "ask" | "act"): void => {
   chatMode = mode;
   for (const [button, active] of [
@@ -56,9 +72,134 @@ const appendMessage = (role: "user" | "assistant", text: string): void => {
   item.textContent = `${role === "user" ? "나" : "Agent"}: ${text}`;
   chatMessages.append(item);
 };
+const appendToolMessage = (text: string): HTMLParagraphElement | undefined => {
+  if (!chatMessages) return undefined;
+  const item = document.createElement("p");
+  item.dataset.role = "assistant";
+  item.dataset.tool = "true";
+  item.textContent = `도구: ${text}`;
+  chatMessages.append(item);
+  return item;
+};
+const applyChatEvent = (event: unknown): void => {
+  if (
+    typeof event !== "object" ||
+    event === null ||
+    typeof (event as { run_id?: unknown }).run_id !== "string" ||
+    !Number.isInteger((event as { sequence?: unknown }).sequence) ||
+    typeof (event as { type?: unknown }).type !== "string"
+  )
+    return;
+  const value = event as Record<string, unknown>;
+  const runId = value.run_id as string;
+  const sequence = value.sequence as number;
+  const previous = eventSequences.get(runId) ?? 0;
+  if (sequence <= previous) return;
+  if (sequence > previous + 1) {
+    void runtime
+      ?.sendMessage({ kind: "CHAT_RESYNC", run_id: runId, sequence: previous })
+      .then((response) => {
+        if (
+          typeof response === "object" &&
+          response !== null &&
+          (response as { ok?: unknown }).ok &&
+          Array.isArray((response as { events?: unknown }).events)
+        )
+          for (const missing of (response as { events: unknown[] }).events)
+            applyChatEvent(missing);
+      });
+    return;
+  }
+  eventSequences.set(runId, sequence);
+  if (value.type === "run_started") {
+    eventDeliveredForPendingResponse = true;
+    const permissionMode =
+      typeof value.permission_mode === "string"
+        ? value.permission_mode
+        : "standard";
+    if (permissionModeBadge) {
+      currentPermissionMode = permissionMode;
+      permissionModeBadge.dataset.mode = permissionMode;
+      permissionModeBadge.textContent =
+        permissionMode === "skip_all_permission_checks"
+          ? "권한 질문 생략"
+          : permissionMode === "follow_a_plan"
+            ? "계획 제한"
+            : "표준 권한";
+    }
+    if (runBanner) {
+      runBanner.textContent =
+        permissionMode === "skip_all_permission_checks"
+          ? "권한 질문이 생략됩니다. credential, 위험 확인, restricted page 차단은 계속 적용됩니다."
+          : "현재 페이지 정보를 안전하게 읽는 중입니다.";
+      runBanner.hidden = false;
+    }
+    if (status) status.value = "응답을 생성하는 중입니다.";
+    return;
+  }
+  if (value.type === "assistant_delta" && typeof value.text === "string") {
+    eventDeliveredForPendingResponse = true;
+    const item = streamingMessages.get(runId);
+    if (item) item.textContent += value.text;
+    else {
+      appendMessage("assistant", value.text);
+      const created = chatMessages?.lastElementChild;
+      if (created instanceof HTMLParagraphElement)
+        streamingMessages.set(runId, created);
+    }
+    return;
+  }
+  if (value.type === "tool_started" && typeof value.summary === "string") {
+    eventDeliveredForPendingResponse = true;
+    appendToolMessage(value.summary);
+    return;
+  }
+  if (value.type === "tool_finished") return;
+  if (value.type === "run_terminal") {
+    streamingMessages.delete(runId);
+    if (runBanner) runBanner.hidden = true;
+    if (status)
+      status.value =
+        value.outcome === "VERIFIED"
+          ? "응답을 받았습니다."
+          : "작업이 종료되었습니다.";
+  }
+};
+runtime?.onMessage.addListener((message) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CHAT_EVENT"
+  )
+    applyChatEvent((message as { event?: unknown }).event);
+});
+void runtime
+  ?.sendMessage({ kind: "AGENT_PREFERENCES_GET" })
+  .then((response) => {
+    if (
+      typeof response !== "object" ||
+      response === null ||
+      !(response as { ok?: unknown }).ok ||
+      typeof (response as { preferences?: unknown }).preferences !== "object" ||
+      (response as { preferences?: unknown }).preferences === null
+    )
+      return;
+    const mode = (response as { preferences: { permission_mode?: unknown } })
+      .preferences.permission_mode;
+    if (typeof mode !== "string" || !permissionModeBadge) return;
+    currentPermissionMode = mode;
+    permissionModeBadge.dataset.mode = mode;
+    permissionModeBadge.textContent =
+      mode === "skip_all_permission_checks"
+        ? "권한 질문 생략"
+        : mode === "follow_a_plan"
+          ? "계획 제한"
+          : "표준 권한";
+  });
 const hideActionReview = (): void => {
   pendingAction = undefined;
   actionReviewCard?.setAttribute("hidden", "");
+  planApprove?.setAttribute("hidden", "");
 };
 const showActionReview = (response: {
   session_id: string;
@@ -66,10 +207,12 @@ const showActionReview = (response: {
   tool: string;
   target_name: string;
   suggested_value?: string;
+  origin?: string;
 }): void => {
   pendingAction = {
     sessionId: response.session_id,
     proposalId: response.proposal_id,
+    ...(response.origin ? { origin: response.origin } : {}),
   };
   if (actionReviewDescription) {
     const action = response.tool === "click_by_ref" ? "클릭" : "선택";
@@ -78,6 +221,8 @@ const showActionReview = (response: {
       : `${response.target_name}을 ${action}하도록 제안했습니다.`;
   }
   actionReviewCard?.removeAttribute("hidden");
+  if (currentPermissionMode === "follow_a_plan" && response.origin)
+    planApprove?.removeAttribute("hidden");
   if (status) status.value = "제안을 검토한 뒤 실행해 주세요.";
 };
 const handleActionResponse = (response: unknown): boolean => {
@@ -103,6 +248,7 @@ const handleActionResponse = (response: unknown): boolean => {
       ...(typeof value.suggested_value === "string"
         ? { suggested_value: value.suggested_value }
         : {}),
+      ...(typeof value.origin === "string" ? { origin: value.origin } : {}),
     });
     return true;
   }
@@ -150,6 +296,7 @@ chatForm?.addEventListener("submit", async (event) => {
   appendMessage("user", prompt);
   chatInput.value = "";
   status.value = "응답을 기다리는 중입니다.";
+  eventDeliveredForPendingResponse = false;
   let response: unknown;
   try {
     response = await runtime.sendMessage({
@@ -168,7 +315,8 @@ chatForm?.addEventListener("submit", async (event) => {
     (response as { ok?: unknown }).ok &&
     typeof (response as { message?: unknown }).message === "string"
   ) {
-    appendMessage("assistant", (response as { message: string }).message);
+    if (!eventDeliveredForPendingResponse)
+      appendMessage("assistant", (response as { message: string }).message);
     status.value = "응답을 받았습니다.";
   } else {
     const code =
@@ -199,6 +347,22 @@ actionReject?.addEventListener("click", async () => {
     (response as { ok?: unknown }).ok
       ? "작업을 중단했습니다."
       : "작업을 중단하지 못했습니다.";
+});
+planApprove?.addEventListener("click", async () => {
+  if (!runtime || !pendingAction?.origin || !status) return;
+  const response = await runtime.sendMessage({
+    kind: "PLAN_APPROVE",
+    run_id: pendingAction.sessionId,
+    origins: [pendingAction.origin],
+  });
+  if (
+    typeof response === "object" &&
+    response !== null &&
+    (response as { ok?: unknown }).ok
+  ) {
+    planApprove.setAttribute("hidden", "");
+    status.value = "현재 도메인을 이번 작업 계획에 승인했습니다.";
+  } else status.value = "도메인 계획 승인을 저장하지 못했습니다.";
 });
 const decidePermission = async (
   decision: "once" | "always" | "deny",

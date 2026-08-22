@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  profileActionTools,
   ProfileReplayStore,
   verifyProfileClaims,
   type Profile,
@@ -45,6 +46,53 @@ describe("profile claims", () => {
     expect(() =>
       verifyProfileClaims(
         { ...profile, extension_override: true } as typeof profile,
+        {
+          deploymentId: "dev",
+          nonce: "nonce",
+          pageContextDigest: "digest",
+          origin: "https://fixture.company.test",
+          path: "/case",
+          fingerprint: "fp",
+          now: new Date("2026-08-15T00:10:00Z"),
+        },
+      ),
+    ).toThrow("PROFILE_UNAVAILABLE");
+  });
+  it("given_closed_profile_action_definition_when_reading_then_returns_it", () => {
+    const tools = profileActionTools({
+      ...profile,
+      tools: [
+        {
+          tool: "click_by_ref",
+          effect: "local-ui-only",
+          risk: "R1",
+          eligible_roles: ["button"],
+          verifier: {
+            kind: "semantic-state-transition",
+            declaration_id: "save-v1",
+            pre_state_digest: "state",
+            required_changes: [],
+          },
+        },
+      ],
+    });
+    expect(tools).toMatchObject([{ tool: "click_by_ref", risk: "R1" }]);
+  });
+  it("given_unbounded_profile_action_definition_when_verifying_then_fails_closed", () => {
+    expect(() =>
+      verifyProfileClaims(
+        {
+          ...profile,
+          tools: [
+            {
+              tool: "click_by_ref",
+              effect: "local-ui-only",
+              risk: "R1",
+              eligible_roles: ["button"],
+              verifier: { kind: "anything" },
+            },
+          ],
+        },
         {
           deploymentId: "dev",
           nonce: "nonce",

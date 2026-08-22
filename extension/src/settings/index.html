@@ -384,6 +384,58 @@
         </form>
         <output id="profile-status" aria-live="polite"></output>
       </section>
+      <section class="settings-card">
+        <h2>Browser Agent</h2>
+        <p>
+          hidden DOM은 기본 읽기 컨텍스트로 제공되지만 실행 대상이 아닙니다.
+          권한 질문 생략은 host/tool 질문만 생략하며 credential, R2/R3 확인과
+          제한 페이지 차단은 유지합니다.
+        </p>
+        <form id="agent-preferences-form">
+          <label
+            >Permission mode
+            <select name="permission_mode">
+              <option value="standard">표준 권한 질문</option>
+              <option value="follow_a_plan">승인된 계획만</option>
+              <option value="skip_all_permission_checks">권한 질문 생략</option>
+            </select>
+          </label>
+          <label
+            >기본 page read 범위
+            <select name="default_read_scope">
+              <option value="all_dom">visible + hidden DOM</option>
+              <option value="visible_only">visible DOM만</option>
+              <option value="interactive">visible interactive만</option>
+            </select>
+          </label>
+          <label
+            >Screenshot policy
+            <select name="screenshot_policy">
+              <option value="manual_or_model">사용자 또는 모델 요청</option>
+              <option value="manual_only">사용자 요청만</option>
+              <option value="disabled">사용 안 함</option>
+            </select>
+          </label>
+          <label
+            ><input name="group_tools_in_timeline" type="checkbox" checked />
+            연속 읽기 도구를 timeline에서 묶기</label
+          >
+          <label
+            ><input name="show_tool_debug_details" type="checkbox" /> 안전한
+            도구 debug detail 표시</label
+          >
+          <label
+            >권한 질문 생략 확인
+            <input
+              name="skip_acknowledgement"
+              autocomplete="off"
+              placeholder="권한 질문 생략"
+            />
+          </label>
+          <button type="submit">Browser Agent 설정 저장</button>
+        </form>
+        <output id="agent-preferences-status" aria-live="polite"></output>
+      </section>
     </main>
     <script type="module" src="../js/settings.js"></script>
   </body>

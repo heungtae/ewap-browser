@@ -525,3 +525,103 @@ profileTest?.addEventListener("click", () => {
     }
   })();
 });
+
+const agentPreferencesForm = document.querySelector<HTMLFormElement>(
+  "#agent-preferences-form",
+);
+const agentPreferencesStatus = document.querySelector<HTMLOutputElement>(
+  "#agent-preferences-status",
+);
+const preferenceField = (
+  name: string,
+): HTMLInputElement | HTMLSelectElement => {
+  const element = agentPreferencesForm?.elements.namedItem(name);
+  if (
+    !(
+      element instanceof HTMLInputElement ||
+      element instanceof HTMLSelectElement
+    )
+  )
+    throw new Error("agent preference field missing");
+  return element;
+};
+const applyPreferences = (value: unknown): void => {
+  if (!value || typeof value !== "object") return;
+  const preferences = value as Record<string, unknown>;
+  for (const name of [
+    "permission_mode",
+    "default_read_scope",
+    "screenshot_policy",
+  ]) {
+    const field = preferenceField(name);
+    if (typeof preferences[name] === "string") field.value = preferences[name];
+  }
+  for (const name of ["group_tools_in_timeline", "show_tool_debug_details"]) {
+    const field = preferenceField(name);
+    if (
+      field instanceof HTMLInputElement &&
+      typeof preferences[name] === "boolean"
+    )
+      field.checked = preferences[name];
+  }
+};
+void runtime
+  ?.sendMessage({ kind: "AGENT_PREFERENCES_GET" })
+  .then((response) => {
+    if (
+      typeof response === "object" &&
+      response !== null &&
+      (response as { ok?: unknown }).ok
+    )
+      applyPreferences((response as { preferences?: unknown }).preferences);
+  });
+agentPreferencesForm?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  void (async () => {
+    if (!runtime) throw new Error("runtime unavailable");
+    const acknowledgement = preferenceField("skip_acknowledgement");
+    const response = await runtime.sendMessage({
+      kind: "AGENT_PREFERENCES_SAVE",
+      payload: {
+        preferences: {
+          permission_mode: preferenceField("permission_mode").value,
+          default_read_scope: preferenceField("default_read_scope").value,
+          screenshot_policy: preferenceField("screenshot_policy").value,
+          group_tools_in_timeline: (
+            preferenceField("group_tools_in_timeline") as HTMLInputElement
+          ).checked,
+          show_tool_debug_details: (
+            preferenceField("show_tool_debug_details") as HTMLInputElement
+          ).checked,
+        },
+        acknowledgement: acknowledgement.value,
+      },
+    });
+    if (
+      !(
+        typeof response === "object" &&
+        response !== null &&
+        (response as { ok?: unknown }).ok
+      )
+    ) {
+      const code =
+        typeof response === "object" &&
+        response !== null &&
+        typeof (response as { code?: unknown }).code === "string"
+          ? (response as { code: string }).code
+          : "UNKNOWN";
+      throw new Error(code);
+    }
+    acknowledgement.value = "";
+    applyPreferences((response as { preferences?: unknown }).preferences);
+    if (agentPreferencesStatus)
+      agentPreferencesStatus.value =
+        "Browser Agent 설정을 저장했습니다. 진행 중 run은 취소되었습니다.";
+  })().catch((error: unknown) => {
+    if (agentPreferencesStatus)
+      agentPreferencesStatus.value =
+        error instanceof Error && error.message === "INVALID_ARGUMENT"
+          ? "권한 질문 생략을 활성화하려면 확인 문구를 정확히 입력하세요."
+          : "Browser Agent 설정을 저장하지 못했습니다.";
+  });
+});
