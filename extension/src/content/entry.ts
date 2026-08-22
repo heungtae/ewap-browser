@@ -15,7 +15,11 @@ type BrowserRuntime = {
   };
 };
 type ExecuteIntent = {
-  tool: "set_text_by_ref" | "select_option_by_ref" | "set_checked_by_ref";
+  tool:
+    | "set_text_by_ref"
+    | "select_option_by_ref"
+    | "set_checked_by_ref"
+    | "click_by_ref";
   run_id: string;
   tab_id: number;
   frame_id: number;
@@ -308,6 +312,52 @@ const projection = (): unknown => ({
   },
 });
 runtime?.onMessage.addListener((message, sender, respond) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_EXECUTE_R1" &&
+    (message as { intent?: ExecuteIntent }).intent?.tool === "click_by_ref"
+  ) {
+    const request = message as {
+      intent?: ExecuteIntent;
+      value_delivery?: unknown;
+    };
+    const intent = request.intent;
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      !intent ||
+      intent.document_epoch !== documentEpoch ||
+      request.value_delivery !== undefined
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const record = refRecords.get(intent.ref_id);
+    const element = record?.element;
+    if (
+      !record ||
+      record.stale ||
+      !(element instanceof HTMLButtonElement) ||
+      record.role !== "button" ||
+      !element.isConnected ||
+      element.disabled ||
+      roleFor(element) !== record.role ||
+      nameFor(element) !== record.name ||
+      getComputedStyle(element).display === "none" ||
+      getComputedStyle(element).visibility === "hidden" ||
+      element.getClientRects().length === 0
+    ) {
+      respond({
+        ok: false,
+        code: record?.stale ? "TARGET_STALE" : "TARGET_NOT_ACTIONABLE",
+      });
+      return true;
+    }
+    element.click();
+    respond({ ok: true });
+    return true;
+  }
   if (
     typeof message === "object" &&
     message !== null &&

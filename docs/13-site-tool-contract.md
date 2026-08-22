@@ -4,20 +4,31 @@
 
 모델은 현재 run의 아래 도구만 호출할 수 있다.
 
-| 도구                       | 입력                         | 결과                   |
-| -------------------------- | ---------------------------- | ---------------------- |
-| `read_semantic_projection` | 없음                         | redacted 현재 snapshot |
+| 도구                       | 입력                                    | 결과                            |
+| -------------------------- | --------------------------------------- | ------------------------------- |
+| `read_semantic_projection` | 없음                                    | redacted 현재 snapshot          |
 | `call_page_business_tool`  | Profile 허용 `tool_id`, 문자열 argument | 검증된 Business MCP read result |
-| `find_by_ref`              | `model_ref`                  | target semantic state  |
-| `click_by_ref`             | `model_ref`                  | 실행 결과              |
-| `set_text_by_ref`          | `model_ref`                  | 값 입력 대기 또는 결과 |
-| `select_option_by_ref`     | `model_ref`                  | 값 입력 대기 또는 결과 |
-| `set_checked_by_ref`       | `model_ref`, boolean         | 실행 결과              |
-| `press_key_by_ref`         | `model_ref`, allowlisted key | 실행 결과              |
+| `find_by_ref`              | `model_ref`                             | target semantic state           |
+| `click_by_ref`             | `model_ref`                             | 실행 결과                       |
+| `set_text_by_ref`          | `model_ref`                             | 값 입력 대기 또는 결과          |
+| `select_option_by_ref`     | `model_ref`                             | 값 입력 대기 또는 결과          |
+| `set_checked_by_ref`       | `model_ref`, boolean                    | 실행 결과                       |
+| `press_key_by_ref`         | `model_ref`, allowlisted key            | 실행 결과                       |
 
 `call_page_business_tool`은 서명된 현재 Profile의 binding에 있는 `tool_id`만 enum으로 노출한다. endpoint, result key, value kind, Profile JWS, request/run nonce와 page digest는 모델 입력이 아니며 service worker가 binding한다. 결과는 untrusted data로만 다음 모델 turn에 전달한다.
 
 모델은 URL, HTTP header, provider ID, API key, raw selector, raw `ref_id`, CDP method/node/session ID/좌표/execution path, page credential, user identity를 받거나 지정할 수 없다.
+
+### 반도체 데모 Act proposal
+
+내장 반도체 데모의 정확한 HTTPS origin과 `trend-analysis.html`에서만 Act chat은 아래 proposal 도구를 추가로 받는다. proposal은 실행이 아니며, Side Panel의 매 단계 사용자 승인이 필요하다.
+
+| 도구                    | 입력                          | 실행 전 검증                                                 |
+| ----------------------- | ----------------------------- | ------------------------------------------------------------ |
+| `propose_select_option` | 현재 `model_ref`, option text | 허용된 demo combobox, visible/enabled 상태, 실제 option 존재 |
+| `propose_click`         | 현재 `model_ref`              | 정확한 `수율 추세 분석 실행` button, visible/enabled 상태    |
+
+Service Worker는 proposal ID만 Side Panel에 전달한다. 승인 message는 raw ref나 option value를 다시 받지 않으며, proposal은 한 번만 실행할 수 있다. 선택 후에는 새 projection과 새 run-scoped model ref를 사용해 다음 단계를 제안한다.
 
 ## 2. site adapter와 WebMCP
 

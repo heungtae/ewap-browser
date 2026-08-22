@@ -184,6 +184,8 @@ export type RuntimeKind =
   | "PROVIDER_TEST"
   | "PROVIDER_EXPORT"
   | "CHAT_SEND"
+  | "ACT_APPROVE"
+  | "ACT_REJECT"
   | "PANEL_STATE"
   | "NATIVE_LLM_REQUEST";
 export type RuntimeEnvelope<T = unknown> = {

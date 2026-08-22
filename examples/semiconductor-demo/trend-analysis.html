@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asteron Semiconductor | Yield trend analysis</title>
+    <link rel="stylesheet" href="./site.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./index.html"
+        >ASTERON <span>SEMICONDUCTOR</span></a
+      >
+      <nav aria-label="주요 메뉴">
+        <a href="./index.html">기업 소개</a>
+        <a aria-current="page" href="./trend-analysis.html">수율 분석 센터</a>
+      </nav>
+    </header>
+    <main>
+      <section class="page-intro" aria-labelledby="analysis-title">
+        <p class="eyebrow">FAB OPERATIONS / SANDBOX</p>
+        <h1 id="analysis-title">수율 추세 분석 센터</h1>
+        <p>
+          조건을 지정하면 같은 화면의 차트가 갱신됩니다. 페이지 이동이나 데이터
+          전송은 없습니다.
+        </p>
+      </section>
+
+      <section class="catalog surface" aria-labelledby="catalog-title">
+        <h2 id="catalog-title">분석 카탈로그</h2>
+        <p>
+          권장 검증 시나리오: AI 가속기 / 2nm GAA / 평택 Campus 3 / 최근 12주
+        </p>
+        <p>
+          제품군: AI 가속기, 차량용 플랫폼, 모바일 SoC. 공정 노드: 2nm GAA, 3nm
+          FinFET, 5nm FinFET.
+        </p>
+        <p>
+          생산 캠퍼스: 평택 Campus 3, 화성 Campus 2, 청주 Campus 1. 분석 기간:
+          최근 12주, 최근 8주, 최근 4주.
+        </p>
+      </section>
+
+      <section class="analysis-layout" aria-label="수율 분석 도구">
+        <form id="trend-form" class="surface control-card">
+          <h2>분석 조건</h2>
+          <p class="form-help">
+            위에서 아래 순서대로 선택해야 다음 조건이 활성화됩니다.
+          </p>
+          <label for="product-family">제품군</label>
+          <select id="product-family" name="product-family" required>
+            <option value="" selected disabled>제품군 선택</option>
+            <option>AI 가속기</option>
+            <option>차량용 플랫폼</option>
+            <option>모바일 SoC</option>
+          </select>
+
+          <label for="process-node">공정 노드</label>
+          <select id="process-node" name="process-node" required disabled>
+            <option value="" selected disabled>공정 노드 선택</option>
+            <option>2nm GAA</option>
+            <option>3nm FinFET</option>
+            <option>5nm FinFET</option>
+          </select>
+
+          <label for="fabrication-campus">생산 캠퍼스</label>
+          <select
+            id="fabrication-campus"
+            name="fabrication-campus"
+            required
+            disabled
+          >
+            <option value="" selected disabled>생산 캠퍼스 선택</option>
+            <option>평택 Campus 3</option>
+            <option>화성 Campus 2</option>
+            <option>청주 Campus 1</option>
+          </select>
+
+          <label for="analysis-period">분석 기간</label>
+          <select id="analysis-period" name="analysis-period" required disabled>
+            <option value="" selected disabled>분석 기간 선택</option>
+            <option>최근 12주</option>
+            <option>최근 8주</option>
+            <option>최근 4주</option>
+          </select>
+
+          <button id="run-trend" type="submit" disabled>
+            수율 추세 분석 실행
+          </button>
+          <button id="reset-analysis" type="button" hidden>새 분석 시작</button>
+        </form>
+
+        <section class="surface chart-card" aria-labelledby="chart-title">
+          <div class="chart-heading">
+            <div>
+              <p class="eyebrow">YIELD MONITOR</p>
+              <h2 id="chart-title">웨이퍼 수율 추세</h2>
+            </div>
+            <span id="chart-state" class="state-pill">조건 입력 대기</span>
+          </div>
+          <svg
+            id="trend-chart"
+            viewBox="0 0 720 300"
+            role="img"
+            aria-label="분석 실행 전 수율 추세 차트"
+          >
+            <g class="grid">
+              <path d="M55 40H690M55 105H690M55 170H690M55 235H690" />
+              <path
+                d="M55 25V245M215 25V245M375 25V245M535 25V245M690 25V245"
+              />
+            </g>
+            <path id="target-line" class="target-line" d="M55 115H690" />
+            <path id="yield-line" class="yield-line" d="M55 210H690" />
+            <g id="yield-points"></g>
+            <text x="12" y="44">100%</text>
+            <text x="20" y="239">90%</text>
+          </svg>
+          <p id="trend-summary" role="status" aria-live="polite">
+            분석 조건을 선택하면 수율 차트가 이 영역에서 갱신됩니다.
+          </p>
+        </section>
+      </section>
+    </main>
+    <footer>
+      Local-only fictional data. No production semiconductor data is used.
+    </footer>
+    <script type="module" src="./trend-analysis.js"></script>
+  </body>
+</html>

@@ -20,6 +20,8 @@ const kinds: readonly RuntimeKind[] = [
   "VERIFY_RESULT",
   "CONFIRM",
   "CANCEL",
+  "ACT_APPROVE",
+  "ACT_REJECT",
   "PANEL_STATE",
   "NATIVE_LLM_REQUEST",
 ];

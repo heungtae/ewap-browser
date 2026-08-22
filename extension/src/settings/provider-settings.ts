@@ -32,6 +32,7 @@ export class ProviderSettings {
     this.validateConfig(config);
     const state = await this.loadPrivate();
     state.providers[id] = structuredClone(config);
+    if (!state.active_provider) state.active_provider = id;
     await this.storage.write(state);
   }
 

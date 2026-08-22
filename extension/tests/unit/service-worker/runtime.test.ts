@@ -38,4 +38,18 @@ describe("runtime authority", () => {
         extra: true,
       }),
     ).toThrow("INVALID_ARGUMENT"));
+
+  it("given_act_approval_envelope_when_validating_then_accepts_the_closed_runtime_kind", () =>
+    expect(
+      validateEnvelope({
+        schema_version: 1,
+        kind: "ACT_APPROVE",
+        message_id: "abcdefghijklmnop",
+        run_id: "r",
+        tab_id: 1,
+        frame_id: 0,
+        document_epoch: "abcdefghijklmnop",
+        payload: {},
+      }).kind,
+    ).toBe("ACT_APPROVE"));
 });
