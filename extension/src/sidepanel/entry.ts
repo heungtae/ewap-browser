@@ -255,24 +255,38 @@ runtime?.onMessage.addListener((message) => {
   )
     applyChatEvent((message as { event?: unknown }).event);
 });
-void runtime?.sendMessage({ kind: "CHAT_RECOVER" }).then((response) => {
-  if (
-    typeof response !== "object" ||
-    response === null ||
-    !(response as { ok?: unknown }).ok ||
-    !Array.isArray((response as { streams?: unknown }).streams)
-  )
-    return;
-  for (const stream of (response as { streams: unknown[] }).streams) {
+const recoverChatEvents = async (attempt = 0): Promise<void> => {
+  try {
+    const response = await runtime?.sendMessage({ kind: "CHAT_RECOVER" });
     if (
-      typeof stream !== "object" ||
-      stream === null ||
-      !Array.isArray((stream as { events?: unknown }).events)
-    )
-      continue;
-    for (const event of (stream as { events: unknown[] }).events)
-      applyChatEvent(event);
+      typeof response === "object" &&
+      response !== null &&
+      (response as { ok?: unknown }).ok &&
+      Array.isArray((response as { streams?: unknown }).streams)
+    ) {
+      for (const stream of (response as { streams: unknown[] }).streams) {
+        if (
+          typeof stream !== "object" ||
+          stream === null ||
+          !Array.isArray((stream as { events?: unknown }).events)
+        )
+          continue;
+        for (const event of (stream as { events: unknown[] }).events)
+          applyChatEvent(event);
+      }
+      return;
+    }
+  } catch {
+    // A suspended worker may be recreating its trusted storage boundary.
   }
+  if (attempt < 20)
+    window.setTimeout(() => {
+      void recoverChatEvents(attempt + 1);
+    }, 100);
+};
+void recoverChatEvents();
+window.addEventListener("focus", () => {
+  void recoverChatEvents();
 });
 void runtime
   ?.sendMessage({ kind: "AGENT_PREFERENCES_GET" })
