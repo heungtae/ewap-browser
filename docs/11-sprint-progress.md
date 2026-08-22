@@ -19,18 +19,18 @@
 
 - S5: closed `ChatEvent`와 sequence resync store, Side Panel timeline/run banner/permission-mode badge, Stop 뒤 terminal event 고정과 late provider response 무시를 구현했다. 단위 테스트는 post-terminal event 거부와 terminal 상태를 검증한다.
 - S6: semantic snapshot v2의 기본 `all_dom` read, hidden reason, read/find/batch, transient viewport capture와 URL redaction을 구현했다. 실제 Chrome fixture는 `display:none` button이 `hidden_reason=display_none`으로 읽히고 password field가 배제됨을 확인한다.
-- S7: signed Profile의 closed action definition을 검증하고, generic Chat Act는 Profile이 허용한 click/select/check/key proposal만 모델 tool schema에 노출한다. hidden model ref는 mutation mapping에서 제외된다. 기존 Chrome fixture는 text/select/check/R2 confirmation/stale ref/document navigation/worker restart를 실제 extension에서 검증한다.
+- S7: signed Profile의 closed action definition을 검증하고, generic Chat Act는 Profile이 허용한 click/select/check/key proposal만 모델 tool schema에 노출한다. hidden model ref는 mutation mapping에서 제외된다. `0c5a598e`에서 서비스 워커가 등록된 document identity, run-scoped permission 전제, transient action marker와 session cleanup을 사용해 bounded CDP click/key/text 경로를 실제로 호출하도록 연결했다. Chrome fixture는 text/select/check/R2 confirmation/stale ref/document navigation/worker restart와 CDP click 뒤 semantic postcondition을 실제 extension에서 검증한다.
 - S8: Settings에서 typed acknowledgement를 요구하는 `skip_all_permission_checks`, `follow_a_plan` exact-host approval, immutable preference save와 run cancellation을 구현했다. skip mode는 stored explicit deny와 R2/R3/ref/preflight/credential 경계를 우회하지 않는다.
 - S9: Linux에서 extension artifact build, package policy, release package smoke와 .NET native host persistent framing smoke를 통과했다.
 
 최근 통과 command:
 
 ```text
-pnpm test                                      # typecheck, lint, build, package, 92 unit, fixture, source E2E
+pnpm test                                      # typecheck, lint, build, package, 97 unit, fixture, source E2E
 pnpm test:chrome-preview                       # Chrome for Testing 실제 extension preview/mutation/restart
 pnpm test:chrome-extension                     # Chrome for Testing service worker + Side Panel 로드
 pnpm test:native-host                          # .NET build + persistent framing smoke
 pnpm test:release                              # release package smoke
 ```
 
-Sprint 상태를 `Done`으로 바꾸지 않은 이유는 명시적 종료 증적이 아직 남아 있기 때문이다. S5는 실제 provider SSE delta와 suspend 뒤 event-store 복구, S6는 vision zoom/tab-group/batch cancellation, S7은 native-host bounded CDP trace와 Profile R2 binding 및 두 일반 Profile fixture, S8은 전체 adversarial hard-policy matrix, S9는 Windows clean profile과 upgrade/rollback을 각각 실제 환경에서 실행해야 한다. 이 항목은 구현되거나 실행되지 않은 상태에서 pass로 대체하지 않는다.
+Sprint 상태를 `Done`으로 바꾸지 않은 이유는 명시적 종료 증적이 아직 남아 있기 때문이다. S5는 실제 provider SSE delta와 suspend 뒤 event-store 복구, S6는 vision zoom/tab-group/batch cancellation, S7은 Profile R2 binding 및 두 일반 Profile fixture, S8은 전체 adversarial hard-policy matrix, S9는 Windows clean profile과 upgrade/rollback을 각각 실제 환경에서 실행해야 한다. 이 항목은 구현되거나 실행되지 않은 상태에서 pass로 대체하지 않는다.
