@@ -806,6 +806,7 @@ chromeApi?.tabs.onUpdated?.addListener((tabId, changeInfo) => {
   if (!changeInfo.url) return;
   stalePageTabs.add(tabId);
   const run = coordinator.runs.get(tabId);
+  if (run?.phase === "VERIFYING_NAVIGATION") return;
   if (run) cancelRunForPageChange(run);
 });
 chromeApi?.tabs.onRemoved?.addListener((tabId) => {
@@ -1847,6 +1848,38 @@ const verifyBoundedTargetPostcondition = async (
     return false;
   }
 };
+const navigationVerificationTimeoutMs = 4_000;
+const navigationVerificationPollMs = 100;
+const verifiedNavigationTarget = (value: unknown): string | undefined => {
+  if (typeof value !== "string") return undefined;
+  try {
+    const target = new URL(value);
+    return ["http:", "https:"].includes(target.protocol)
+      ? target.href
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+const waitForNavigationTarget = async (
+  tabId: number,
+  expectedUrl: string,
+): Promise<boolean> => {
+  const expiresAt = Date.now() + navigationVerificationTimeoutMs;
+  while (Date.now() <= expiresAt) {
+    try {
+      const tab = await chromeApi!.tabs.get(tabId);
+      if (typeof tab.url === "string" && new URL(tab.url).href === expectedUrl)
+        return true;
+    } catch {
+      return false;
+    }
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, navigationVerificationPollMs);
+    });
+  }
+  return false;
+};
 const executeBoundedCdp = async (
   run: Run,
   ready: ReadyExecution,
@@ -1927,6 +1960,8 @@ const executeActContent = async (
     ready.intent.tool === "set_text_by_ref"
   )
     return executeBoundedCdp(run, ready, origin);
+  if (ready.intent.tool === "navigate")
+    coordinator.runs.transition(run.id, "VERIFYING_NAVIGATION");
   const result = await chromeApi!.tabs.sendMessage(run.tabId, {
     kind: "CONTENT_EXECUTE_R1",
     intent: ready.intent,
@@ -1955,8 +1990,18 @@ const executeActContent = async (
   }
   const postcondition = (result as { postcondition?: unknown }).postcondition;
   if (postcondition === "navigation") {
-    coordinator.mutations.terminal(run, "VERIFIED");
-    return { ok: true, outcome: "VERIFIED" };
+    const expectedUrl = verifiedNavigationTarget(
+      (result as { target_url?: unknown }).target_url,
+    );
+    if (!expectedUrl) {
+      coordinator.mutations.terminal(run, "FAILED");
+      return safeFailure("TARGET_NOT_ACTIONABLE");
+    }
+    const verified = await waitForNavigationTarget(run.tabId, expectedUrl);
+    coordinator.mutations.terminal(run, verified ? "VERIFIED" : "UNKNOWN");
+    return verified
+      ? { ok: true, outcome: "VERIFIED" }
+      : { ...safeFailure("NAVIGATION_UNVERIFIED"), outcome: "UNKNOWN" };
   }
   if (postcondition === "semantic") {
     coordinator.mutations.terminal(run, "VERIFIED");
@@ -2450,7 +2495,8 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     const previous = registered.get(key);
     if (previous && previous.epoch !== epoch) {
       const active = coordinator.runs.get(sender.tab.id);
-      if (active) cancelRunForPageChange(active);
+      if (active?.phase !== "VERIFYING_NAVIGATION" && active)
+        cancelRunForPageChange(active);
     }
     registered.set(key, { epoch, documentId: sender.documentId });
     pageScopes.set(sender.tab.id, {
@@ -2494,6 +2540,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     const active = coordinator.runs.get(sender.tab.id);
     if (
       active &&
+      active.phase !== "VERIFYING_NAVIGATION" &&
       (active.documentEpoch !== documentEpoch ||
         previousScope?.page_scope_epoch !== pageScopeEpoch)
     )

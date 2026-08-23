@@ -333,7 +333,13 @@ const interactiveRoles = new Set([
   "menuitem",
 ]);
 const hiddenReasonFor = (element: Element): string | undefined => {
-  let current: Element | null = element;
+  // Native <option> elements are rendered by the browser's select popup, so
+  // they normally have no layout box while their owning <select> is closed.
+  // Their actionable visibility is therefore inherited from that select.
+  const layoutElement =
+    element instanceof HTMLOptionElement ? element.closest("select") : element;
+  if (!layoutElement) return "zero_box";
+  let current: Element | null = layoutElement;
   while (current) {
     if (current.getAttribute("aria-hidden") === "true")
       return current === element ? "aria_hidden" : "ancestor_hidden";
@@ -347,7 +353,7 @@ const hiddenReasonFor = (element: Element): string | undefined => {
     current = current.parentElement;
   }
   if (element.closest("details:not([open])")) return "collapsed";
-  const rects = element.getClientRects();
+  const rects = layoutElement.getClientRects();
   if (rects.length === 0) return "zero_box";
   const rect = rects[0];
   if (
@@ -366,6 +372,9 @@ const linkNavigationKind = (
   if (!(element instanceof HTMLAnchorElement)) return undefined;
   try {
     const target = new URL(element.href, location.href);
+    // Reloading the current URL is not a useful navigation action and can
+    // erase unsaved local UI state while looking like a successful Act.
+    if (target.href === location.href) return undefined;
     if (
       target.origin === location.origin &&
       ["https:", "http:"].includes(target.protocol)
@@ -618,8 +627,17 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     }
     if (intent.tool === "click_by_ref") element.click();
     else if (intent.tool === "navigate") {
+      if (!(element instanceof HTMLAnchorElement)) {
+        respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
+        return true;
+      }
+      const target = new URL(element.href, location.href);
       element.click();
-      respond({ ok: true, postcondition: "navigation" });
+      respond({
+        ok: true,
+        postcondition: "navigation",
+        target_url: target.href,
+      });
       return true;
     } else {
       const key = intent.argument?.key;

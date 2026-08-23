@@ -22,13 +22,24 @@ export const pageDerivedOptionValues = (
   [
     ...new Set(
       snapshot.nodes
-        .filter(
-          (node) =>
-            node.role === "option" &&
-            node.visible &&
-            node.enabled &&
-            (!targetRefId || node.parent_ref_id === targetRefId),
-        )
+        .filter((node) => {
+          if (
+            node.role !== "option" ||
+            !node.visible ||
+            !node.enabled ||
+            (targetRefId && node.parent_ref_id !== targetRefId)
+          )
+            return false;
+          const parent = snapshot.nodes.find(
+            (candidate) => candidate.ref_id === node.parent_ref_id,
+          );
+          return (
+            !!parent &&
+            parent.role === "combobox" &&
+            parent.visible &&
+            parent.enabled
+          );
+        })
         .map((node) => node.name)
         .filter((name) => name.length > 0),
     ),

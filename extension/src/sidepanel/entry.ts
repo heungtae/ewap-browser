@@ -274,7 +274,12 @@ const sendRuntime = async (
   throw new Error(code);
 };
 const actionSummary = (action: ChatActionView): string =>
-  action.target_name + " 작업을 제안했습니다.";
+  action.suggested_value === undefined
+    ? action.target_name + " 작업을 제안했습니다."
+    : action.target_name +
+      "에 '" +
+      action.suggested_value +
+      "' 선택을 제안했습니다.";
 const rejectAction = async (action: ChatActionView): Promise<void> => {
   try {
     await sendRuntime({

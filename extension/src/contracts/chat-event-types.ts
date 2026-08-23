@@ -12,6 +12,7 @@ export type ChatActionView = {
   tool: string;
   target_name: string;
   origin?: string;
+  suggested_value?: string;
 };
 export type ChatEventPayload =
   | { type: "user_message"; text: string }

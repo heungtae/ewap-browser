@@ -90,8 +90,9 @@ describe("tab chat session store", () => {
       action: {
         session_id: "session-abcdefghijklmnop",
         proposal_id: "proposal-abcdefghijklmnop",
-        tool: "click_by_ref",
-        target_name: "Submit",
+        tool: "select_option_by_ref",
+        target_name: "Priority",
+        suggested_value: "Low",
       },
     });
     expect(store.recoverable(1).map((event) => event.type)).toEqual([
@@ -102,6 +103,25 @@ describe("tab chat session store", () => {
     expect(snapshot).toContain("[REDACTED]");
     expect(snapshot).not.toContain("not-for-egress");
     expect(snapshot).not.toContain("action_review_required");
+  });
+
+  it("keeps an option proposal value in the live action review", () => {
+    const store = new TabChatSessionStore();
+    store.bindRun("run-abcdefghijklmnop", 1, scope);
+    expect(
+      store.append("run-abcdefghijklmnop", {
+        type: "action_review_required",
+        action: {
+          session_id: "session-abcdefghijklmnop",
+          proposal_id: "proposal-abcdefghijklmnop",
+          tool: "select_option_by_ref",
+          target_name: "Priority",
+          suggested_value: "Low",
+        },
+      }),
+    ).toMatchObject({
+      action: { suggested_value: "Low" },
+    });
   });
 
   it("removes live action reviews from recovery once their run terminates", () => {

@@ -44,13 +44,16 @@ export const validateActionView = (value: unknown): ChatActionView => {
           "tool",
           "target_name",
           "origin",
+          "suggested_value",
         ].includes(key),
     ) ||
     typeof value.session_id !== "string" ||
     typeof value.proposal_id !== "string" ||
     typeof value.tool !== "string" ||
     typeof value.target_name !== "string" ||
-    (value.origin !== undefined && typeof value.origin !== "string")
+    (value.origin !== undefined && typeof value.origin !== "string") ||
+    (value.suggested_value !== undefined &&
+      typeof value.suggested_value !== "string")
   )
     return fail("INVALID_ARGUMENT");
   return {
@@ -60,6 +63,9 @@ export const validateActionView = (value: unknown): ChatActionView => {
     target_name: string(value.target_name, 512),
     ...(typeof value.origin === "string"
       ? { origin: string(value.origin, 512) }
+      : {}),
+    ...(typeof value.suggested_value === "string"
+      ? { suggested_value: string(value.suggested_value, 512) }
       : {}),
   };
 };

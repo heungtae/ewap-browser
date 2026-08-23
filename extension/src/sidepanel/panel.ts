@@ -10,6 +10,7 @@ export const userMessage: Record<ErrorCode, string> = {
     "등록된 업무 프로필이 없어 읽기 전용으로만 사용할 수 있습니다.",
   TARGET_STALE: "페이지가 변경되어 대상을 다시 확인해야 합니다.",
   TARGET_NOT_ACTIONABLE: "현재 대상에 작업을 수행할 수 없습니다.",
+  NAVIGATION_UNVERIFIED: "페이지 이동 결과를 확인하지 못했습니다.",
   VALUE_BINDING_INVALID: "입력값이 만료되었거나 현재 작업과 일치하지 않습니다.",
   CONFIRMATION_INVALID: "확인이 만료되었거나 변경 내용이 달라졌습니다.",
   AI_HUB_NOT_CONFIGURED: "AI Hub 연결이 아직 구성되지 않았습니다.",
@@ -95,6 +96,11 @@ export const failureHelp = (code?: string): FailureHelp => {
     case "TARGET_STALE":
       return {
         guidance: "현재 페이지를 새로고침한 뒤 같은 요청을 다시 시도해 주세요.",
+      };
+    case "NAVIGATION_UNVERIFIED":
+      return {
+        guidance:
+          "페이지 이동 결과를 확인하지 못했습니다. 현재 페이지를 새로고침한 뒤 다시 시도해 주세요.",
       };
     case "PERMISSION_REQUIRED":
       return {

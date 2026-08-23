@@ -64,6 +64,22 @@ describe("page-derived Act discovery", () => {
     ).toEqual([]);
   });
 
+  it("does not offer values belonging to a disabled combobox", () => {
+    const disabledSelect = { ...snapshot.nodes[1]!, enabled: false };
+    expect(
+      pageDerivedOptionValues({
+        ...snapshot,
+        nodes: [disabledSelect, snapshot.nodes[2]!],
+      }),
+    ).toEqual([]);
+    expect(
+      pageDerivedActionTools({
+        ...snapshot,
+        nodes: [disabledSelect, snapshot.nodes[2]!],
+      }),
+    ).toEqual([]);
+  });
+
   it("allows only observed same-origin links to become navigation candidates", () => {
     const link = {
       ref_id: "link-abcdefghijklmnop",
