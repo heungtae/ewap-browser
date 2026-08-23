@@ -1,98 +1,22 @@
-import { digestCanonical } from "../security/canonical.js";
 import { fail, isPlainObject } from "../security/validation.js";
+import type { MutationTool, Role } from "../contracts/types.js";
+import {
+  isSemanticVerifier,
+  mutationTools,
+  roles,
+} from "./profile-action-validation.js";
 import type {
-  MutationTool,
-  Risk,
-  Role,
-  VerifierPredicate,
-} from "../contracts/types.js";
-export type ProfileResolution = "MATCHED" | "UNKNOWN";
-export type Profile = {
-  schema_version: 1;
-  resolution: ProfileResolution;
-  iss: string;
-  aud: string;
-  resolver_request_nonce: string;
-  page_context_digest: string;
-  issued_at: string;
-  expires_at: string;
-  profile_id?: string;
-  profile_version?: number;
-  matcher?: { origin: string; path_prefix: string };
-  fingerprint: { alg: "semantic-projection-fp-v1"; value: string };
-  tools?: unknown[];
-  business_mcp?: unknown[];
-  authoritative_fields?: unknown[];
-};
-export type ProfileContext = {
-  deploymentId: string;
-  nonce: string;
-  pageContextDigest: string;
-  origin: string;
-  path: string;
-  fingerprint: string;
-  now?: Date;
-};
-export type ProfileActionTool = {
-  tool: MutationTool;
-  effect: "local-ui-only" | "server-side";
-  risk: Extract<Risk, "R1" | "R2">;
-  eligible_roles: readonly Role[];
-  verifier: Extract<VerifierPredicate, { kind: "semantic-state-transition" }>;
-  option_values?: readonly string[];
-};
-
-const mutationTools = new Set<MutationTool>([
-  "set_text_by_ref",
-  "select_option_by_ref",
-  "set_checked_by_ref",
-  "click_by_ref",
-  "press_key_by_ref",
-]);
-const roles = new Set<Role>([
-  "button",
-  "checkbox",
-  "combobox",
-  "heading",
-  "link",
-  "option",
-  "radio",
-  "textbox",
-  "listbox",
-  "tab",
-  "menuitem",
-  "dialog",
-  "alert",
-  "status",
-  "navigation",
-  "main",
-  "form",
-]);
-const isStatePredicate = (value: unknown): boolean =>
-  isPlainObject(value) &&
-  Object.keys(value).every((key) =>
-    ["ref_id", "field", "expected"].includes(key),
-  ) &&
-  typeof value.ref_id === "string" &&
-  ["checked", "selected", "disabled", "expanded"].includes(
-    value.field as string,
-  ) &&
-  typeof value.expected === "boolean";
-const isSemanticVerifier = (
-  value: unknown,
-): value is Extract<VerifierPredicate, { kind: "semantic-state-transition" }> =>
-  isPlainObject(value) &&
-  Object.keys(value).every((key) =>
-    ["kind", "declaration_id", "pre_state_digest", "required_changes"].includes(
-      key,
-    ),
-  ) &&
-  value.kind === "semantic-state-transition" &&
-  typeof value.declaration_id === "string" &&
-  value.declaration_id.length > 0 &&
-  typeof value.pre_state_digest === "string" &&
-  Array.isArray(value.required_changes) &&
-  value.required_changes.every(isStatePredicate);
+  Profile,
+  ProfileActionTool,
+  ProfileContext,
+} from "./profile-types.js";
+export type {
+  Profile,
+  ProfileActionTool,
+  ProfileContext,
+  ProfileResolution,
+} from "./profile-types.js";
+export { definitionDigest, ProfileReplayStore } from "./profile-replay.js";
 
 export const profileActionTools = (profile: Profile): ProfileActionTool[] => {
   if (!Array.isArray(profile.tools)) return [];
@@ -271,44 +195,3 @@ export const verifyProfileClaims = (
   profileActionTools(profile);
   return profile;
 };
-export const definitionDigest = (profile: Profile): string => {
-  if (
-    profile.resolution !== "MATCHED" ||
-    !profile.profile_id ||
-    !profile.profile_version ||
-    !profile.matcher
-  )
-    return fail("PROFILE_UNAVAILABLE");
-  return digestCanonical({
-    schema_version: profile.schema_version,
-    profile_id: profile.profile_id,
-    profile_version: profile.profile_version,
-    matcher: profile.matcher,
-    fingerprint: profile.fingerprint,
-    tools: profile.tools ?? [],
-    authoritative_fields: profile.authoritative_fields ?? [],
-    business_mcp: profile.business_mcp ?? [],
-  });
-};
-export class ProfileReplayStore {
-  private readonly highWater = new Map<
-    string,
-    { version: number; digest: string }
-  >();
-  accept(
-    deploymentId: string,
-    profileId: string,
-    version: number,
-    digest: string,
-  ): "ADVANCED" | "IDEMPOTENT_ACCEPTED" {
-    const key = `${deploymentId}:${profileId}`;
-    const current = this.highWater.get(key);
-    if (!current || version > current.version) {
-      this.highWater.set(key, { version, digest });
-      return "ADVANCED";
-    }
-    if (version === current.version && digest === current.digest)
-      return "IDEMPOTENT_ACCEPTED";
-    return fail("PROFILE_UNAVAILABLE");
-  }
-}

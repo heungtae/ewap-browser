@@ -173,10 +173,6 @@ button[disabled] {
   align-content: start;
   gap: 9px;
 }
-.form-help {
-  margin-bottom: 9px;
-  font-size: 0.86rem;
-}
 label {
   font-weight: 700;
   font-size: 0.9rem;
@@ -198,82 +194,4 @@ select:disabled {
   color: var(--text);
   background: transparent;
   border: 1px solid var(--line);
-}
-.chart-card {
-  min-width: 0;
-}
-.chart-heading {
-  display: flex;
-  align-items: start;
-  justify-content: space-between;
-  gap: 12px;
-}
-.state-pill {
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 4px 9px;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-.state-pill.complete {
-  color: #03261c;
-  border-color: var(--green);
-  background: var(--green);
-}
-svg {
-  width: 100%;
-  height: auto;
-  margin-top: 20px;
-}
-.grid path {
-  stroke: #29425d;
-  stroke-width: 1;
-}
-.target-line {
-  stroke: #ffb86c;
-  stroke-dasharray: 8 7;
-  stroke-width: 2;
-}
-.yield-line {
-  fill: none;
-  stroke: var(--cyan);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-.yield-point {
-  fill: var(--green);
-  stroke: #062032;
-  stroke-width: 3;
-}
-#trend-summary {
-  min-height: 54px;
-  margin-top: 12px;
-  padding: 11px;
-  border-left: 3px solid var(--cyan);
-  background: rgba(0, 0, 0, 0.14);
-  color: #d9ebff;
-}
-footer {
-  padding: 26px 0 42px;
-  color: var(--muted);
-  border-top: 1px solid var(--line);
-  font-size: 0.82rem;
-}
-@media (max-width: 760px) {
-  .site-header {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
-    padding: 18px 0;
-  }
-  .metric-grid,
-  .two-column,
-  .analysis-layout {
-    grid-template-columns: 1fr;
-  }
-  .cta {
-    align-items: flex-start;
-    flex-direction: column;
-  }
 }

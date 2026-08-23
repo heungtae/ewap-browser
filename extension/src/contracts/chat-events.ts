@@ -1,126 +1,19 @@
-import type { Outcome } from "./types.js";
 import { fail, isPlainObject, opaque, string } from "../security/validation.js";
-
-export type ChatMode = "ask" | "act";
-export type SafeToolResult = {
-  outcome: Outcome;
-  summary: string;
-  code?: string;
-};
-export type ChatActionView = {
-  session_id: string;
-  proposal_id: string;
-  tool: string;
-  target_name: string;
-  origin?: string;
-};
-export type ChatEventPayload =
-  | { type: "user_message"; text: string }
-  | { type: "page_scope_changed" }
-  | { type: "run_started"; mode: ChatMode; permission_mode: string }
-  | { type: "assistant_delta"; text: string }
-  | { type: "tool_started"; tool_use_id: string; tool: string; summary: string }
-  | {
-      type: "tool_progress";
-      tool_use_id: string;
-      summary: string;
-    }
-  | {
-      type: "tool_finished";
-      tool_use_id: string;
-      result: SafeToolResult;
-    }
-  | { type: "action_review_required"; action: ChatActionView }
-  | {
-      type: "permission_required";
-      request_id: string;
-      action: ChatActionView;
-      capability: string;
-      host: string;
-    }
-  | {
-      type: "value_required";
-      action: ChatActionView;
-      value_kind: "text" | "option";
-    }
-  | {
-      type: "confirmation_required";
-      action: ChatActionView;
-      confirmation_id: string;
-      confirmation_nonce: string;
-    }
-  | { type: "run_terminal"; outcome: Outcome; code?: string };
-
-export type ChatEvent = ChatEventPayload & {
-  session_id: string;
-  thread_id: string;
-  tab_id: number;
-  run_id: string;
-  sequence: number;
-};
-
-const outcomes = new Set<Outcome>([
-  "VERIFIED",
-  "FAILED",
-  "UNKNOWN",
-  "CANCELLED",
-]);
-const modes = new Set<ChatMode>(["ask", "act"]);
-const allowedEventKeys = [
-  "type",
-  "session_id",
-  "thread_id",
-  "tab_id",
-  "run_id",
-  "sequence",
-  "mode",
-  "permission_mode",
-  "text",
-  "tool_use_id",
-  "tool",
-  "summary",
-  "result",
-  "action",
-  "request_id",
-  "capability",
-  "host",
-  "value_kind",
-  "confirmation_id",
-  "confirmation_nonce",
-  "outcome",
-  "code",
-] as const;
-
-const validateActionView = (value: unknown): ChatActionView => {
-  if (
-    !isPlainObject(value) ||
-    Object.keys(value).some(
-      (key) =>
-        ![
-          "session_id",
-          "proposal_id",
-          "tool",
-          "target_name",
-          "origin",
-        ].includes(key),
-    ) ||
-    typeof value.session_id !== "string" ||
-    typeof value.proposal_id !== "string" ||
-    typeof value.tool !== "string" ||
-    typeof value.target_name !== "string" ||
-    (value.origin !== undefined && typeof value.origin !== "string")
-  )
-    return fail("INVALID_ARGUMENT");
-  return {
-    session_id: opaque(value.session_id),
-    proposal_id: opaque(value.proposal_id),
-    tool: string(value.tool, 128),
-    target_name: string(value.target_name, 512),
-    ...(typeof value.origin === "string"
-      ? { origin: string(value.origin, 512) }
-      : {}),
-  };
-};
+import type { Outcome } from "./core-types.js";
+import type { ChatEvent, ChatMode } from "./chat-event-types.js";
+import {
+  allowedEventKeys,
+  modes,
+  outcomes,
+  validateActionView,
+} from "./chat-event-validation.js";
+export type {
+  ChatActionView,
+  ChatEvent,
+  ChatEventPayload,
+  ChatMode,
+  SafeToolResult,
+} from "./chat-event-types.js";
 
 export const validateChatEvent = (value: unknown): ChatEvent => {
   if (!isPlainObject(value)) return fail("INVALID_ARGUMENT");

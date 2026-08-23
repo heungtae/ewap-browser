@@ -1,109 +1,76 @@
-import type {
-  ActionIntent,
-  ModelActionProposal,
-  MutationTool,
-  Role,
-  VerifierPredicate,
-} from "../contracts/types.js";
 import { digestCanonical } from "../security/canonical.js";
 import { fail } from "../security/validation.js";
-import type { SlotBinding } from "./value-slots.js";
+import { actionIntent, slotBinding } from "./mutation-intent.js";
+import type {
+  ActionDefinition,
+  AwaitingConfirmation,
+  AwaitingValue,
+  MutationProposal,
+  MutationTarget,
+  PendingMutation,
+  ReadyExecution,
+} from "./mutation-types.js";
+export type {
+  ActionDefinition,
+  AwaitingConfirmation,
+  AwaitingValue,
+  MutationTarget,
+  ReadyExecution,
+} from "./mutation-types.js";
 import { RunCoordinator, type Run } from "./run-coordinator.js";
-
-export type ActionDefinition = {
-  tool: MutationTool;
-  effect: "local-ui-only" | "server-side";
-  risk: "R1" | "R2";
-  eligibleRoles: readonly Role[];
-  verifier: VerifierPredicate;
-};
-export type MutationTarget = {
-  refId: string;
-  role: Role;
-  visible: boolean;
-  enabled: boolean;
-  sensitive: boolean;
-  stale: boolean;
-};
-export type AwaitingValue = {
-  state: "AWAITING_VALUE";
-  valueSlotId: string;
-  valueKind: "text" | "option";
-};
-export type AwaitingConfirmation = {
-  state: "AWAITING_CONFIRMATION";
-  confirmationId: string;
-  confirmationNonce: string;
-};
-export type ReadyExecution = {
-  state: "READY_TO_EXECUTE";
-  intent: ActionIntent;
-  value?: string;
-};
-type Pending = {
-  intent: ActionIntent;
-  target: MutationTarget;
-  slot?: SlotBinding & { id: string };
-  value?: string;
-  sessionBindingId?: string;
-};
+import type { SlotBinding } from "./value-slots.js";
 
 export class MutationCoordinator {
-  private readonly pending = new Map<string, Pending>();
+  private readonly pending = new Map<string, PendingMutation>();
   private readonly reserved = new Set<string>();
   public constructor(private readonly runs: RunCoordinator) {}
-
   public propose(
     run: Run,
-    proposal: ModelActionProposal,
+    proposal: MutationProposal,
     target: MutationTarget,
     profile: { id: string; version: number },
     definition: ActionDefinition,
     sessionBindingId?: string,
     now = Date.now(),
   ): AwaitingValue | AwaitingConfirmation | ReadyExecution {
-    if (run.mode !== "act" || run.phase === "TERMINAL")
-      return fail("POLICY_DENIED");
+    if (run.mode !== "act" || run.phase === "TERMINAL") fail("POLICY_DENIED");
     if (
       proposal.tool !== definition.tool ||
       !definition.eligibleRoles.includes(target.role)
     )
-      return fail("TARGET_NOT_ACTIONABLE");
+      fail("TARGET_NOT_ACTIONABLE");
     if (target.sensitive || target.stale || !target.visible || !target.enabled)
-      return fail(target.stale ? "TARGET_STALE" : "TARGET_NOT_ACTIONABLE");
-    const intent = this.intent(run, proposal, target, profile, definition);
+      fail(target.stale ? "TARGET_STALE" : "TARGET_NOT_ACTIONABLE");
+    const intent = actionIntent(run, proposal, target, profile, definition);
     const digest = digestCanonical(intent);
-    if (this.reserved.has(digest)) return fail("POLICY_DENIED");
+    if (this.reserved.has(digest)) fail("POLICY_DENIED");
     this.reserved.add(digest);
-    const pending: Pending = {
+    const pending: PendingMutation = {
       intent,
-      target,
       ...(sessionBindingId ? { sessionBindingId } : {}),
     };
-    if (
-      proposal.tool === "set_text_by_ref" ||
-      proposal.tool === "select_option_by_ref"
-    ) {
-      const valueKind = proposal.tool === "set_text_by_ref" ? "text" : "option";
-      const slotBinding: SlotBinding = {
-        run_id: run.id,
-        tab_id: run.tabId,
-        frame_id: run.frameId,
-        document_epoch: run.documentEpoch,
-        profile_id: profile.id,
-        profile_version: profile.version,
-        tool: proposal.tool,
-        ref_id: target.refId,
-        value_kind: valueKind,
-      };
-      const slot = this.runs.values.create(slotBinding, now);
-      pending.slot = { ...slotBinding, id: slot.id };
-      this.pending.set(run.id, pending);
-      this.runs.transition(run.id, "AWAITING_VALUE");
-      return { state: "AWAITING_VALUE", valueSlotId: slot.id, valueKind };
-    }
     this.pending.set(run.id, pending);
-    return this.afterValue(run, pending, now);
+    if (
+      proposal.tool !== "set_text_by_ref" &&
+      proposal.tool !== "select_option_by_ref"
+    )
+      return this.afterValue(run, pending, now);
+    const valueKind = proposal.tool === "set_text_by_ref" ? "text" : "option";
+    const binding: SlotBinding = {
+      run_id: run.id,
+      tab_id: run.tabId,
+      frame_id: run.frameId,
+      document_epoch: run.documentEpoch,
+      profile_id: profile.id,
+      profile_version: profile.version,
+      tool: proposal.tool,
+      ref_id: target.refId,
+      value_kind: valueKind,
+    };
+    const slot = this.runs.values.create(binding, now);
+    pending.slot = { ...binding, id: slot.id };
+    this.runs.transition(run.id, "AWAITING_VALUE");
+    return { state: "AWAITING_VALUE", valueSlotId: slot.id, valueKind };
   }
 
   public submitValue(
@@ -118,8 +85,13 @@ export class MutationCoordinator {
       !pending.slot ||
       pending.slot.id !== slotId
     )
-      return fail("VALUE_BINDING_INVALID");
-    this.runs.values.validate(slotId, this.binding(pending.slot), value, now);
+      fail("VALUE_BINDING_INVALID");
+    this.runs.values.validate(
+      slotId,
+      slotBinding(pending.slot as NonNullable<PendingMutation["slot"]>),
+      value,
+      now,
+    );
     pending.value = value;
     return this.afterValue(run, pending, now);
   }
@@ -132,7 +104,7 @@ export class MutationCoordinator {
   ): ReadyExecution {
     const pending = this.requirePending(run);
     if (run.phase !== "AWAITING_CONFIRMATION" || !pending.sessionBindingId)
-      return fail("CONFIRMATION_INVALID");
+      fail("CONFIRMATION_INVALID");
     this.runs.confirmations.consume(
       confirmationId,
       confirmationNonce,
@@ -141,7 +113,7 @@ export class MutationCoordinator {
         tab_context: run.tabContext,
         document_epoch: run.documentEpoch,
         intent_digest: digestCanonical(pending.intent),
-        session_binding_id: pending.sessionBindingId,
+        session_binding_id: pending.sessionBindingId as string,
       },
       now,
     );
@@ -151,7 +123,7 @@ export class MutationCoordinator {
   public executeR1(run: Run, now = Date.now()): ReadyExecution {
     const pending = this.requirePending(run);
     if (pending.intent.risk !== "R1" || run.phase !== "PREFLIGHT")
-      return fail("POLICY_DENIED");
+      fail("POLICY_DENIED");
     return this.execute(run, pending, now);
   }
 
@@ -165,7 +137,7 @@ export class MutationCoordinator {
 
   private afterValue(
     run: Run,
-    pending: Pending,
+    pending: PendingMutation,
     now: number,
   ): AwaitingConfirmation | ReadyExecution {
     if (pending.intent.risk === "R1") {
@@ -176,14 +148,14 @@ export class MutationCoordinator {
         ...(pending.value ? { value: pending.value } : {}),
       };
     }
-    if (!pending.sessionBindingId) return fail("CONFIRMATION_INVALID");
+    if (!pending.sessionBindingId) fail("CONFIRMATION_INVALID");
     const token = this.runs.confirmations.issue(
       {
         run_id: run.id,
         tab_context: run.tabContext,
         document_epoch: run.documentEpoch,
         intent_digest: digestCanonical(pending.intent),
-        session_binding_id: pending.sessionBindingId,
+        session_binding_id: pending.sessionBindingId as string,
       },
       now,
     );
@@ -195,14 +167,18 @@ export class MutationCoordinator {
     };
   }
 
-  private execute(run: Run, pending: Pending, now: number): ReadyExecution {
+  private execute(
+    run: Run,
+    pending: PendingMutation,
+    now: number,
+  ): ReadyExecution {
     let value: string | undefined;
     if (pending.slot) {
-      if (pending.value === undefined) return fail("VALUE_BINDING_INVALID");
+      if (pending.value === undefined) fail("VALUE_BINDING_INVALID");
       const consumed = this.runs.values.consume(
         pending.slot.id,
-        this.binding(pending.slot),
-        pending.value,
+        slotBinding(pending.slot),
+        pending.value as string,
         now,
       );
       value = pending.value;
@@ -217,45 +193,7 @@ export class MutationCoordinator {
     };
   }
 
-  private requirePending(run: Run): Pending {
-    const pending = this.pending.get(run.id);
-    return pending ?? fail("INVALID_ARGUMENT");
-  }
-  private binding(slot: SlotBinding & { id: string }): SlotBinding {
-    return {
-      run_id: slot.run_id,
-      tab_id: slot.tab_id,
-      frame_id: slot.frame_id,
-      document_epoch: slot.document_epoch,
-      profile_id: slot.profile_id,
-      profile_version: slot.profile_version,
-      tool: slot.tool,
-      ref_id: slot.ref_id,
-      value_kind: slot.value_kind,
-    };
-  }
-  private intent(
-    run: Run,
-    proposal: ModelActionProposal,
-    target: MutationTarget,
-    profile: { id: string; version: number },
-    definition: ActionDefinition,
-  ): ActionIntent {
-    const base = {
-      tool: proposal.tool,
-      run_id: run.id,
-      tab_id: run.tabId,
-      frame_id: run.frameId,
-      document_epoch: run.documentEpoch,
-      profile,
-      ref_id: target.refId,
-      effect: definition.effect,
-      verifier: definition.verifier,
-    };
-    if (proposal.tool === "set_checked_by_ref")
-      return { ...base, risk: definition.risk, argument: proposal.argument };
-    if (proposal.tool === "press_key_by_ref")
-      return { ...base, risk: definition.risk, argument: proposal.argument };
-    return { ...base, risk: definition.risk };
+  private requirePending(run: Run): PendingMutation {
+    return this.pending.get(run.id) ?? fail("INVALID_ARGUMENT");
   }
 }

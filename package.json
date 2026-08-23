@@ -13,6 +13,8 @@
     "test:chrome-extension": "node scripts/chrome-extension-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",
+    "check:source-size": "node scripts/check-source-size.mjs",
+    "check:module-boundaries": "node scripts/check-module-boundaries.mjs",
     "demo:semiconductor": "node scripts/serve-semiconductor-demo.mjs",
     "test": "pnpm typecheck && pnpm lint && pnpm build && pnpm validate:package && pnpm test:unit && pnpm test:fixture && pnpm test:e2e",
     "validate:package": "node scripts/validate-package.mjs",

@@ -1,0 +1,17 @@
+@media (max-width: 760px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px 0;
+  }
+  .metric-grid,
+  .two-column,
+  .analysis-layout {
+    grid-template-columns: 1fr;
+  }
+  .cta {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

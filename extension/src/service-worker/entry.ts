@@ -41,6 +41,7 @@ import {
   safeChatText,
   type PageScope,
 } from "../state/tab-chat-session-store.js";
+import { ChatPersistence } from "./chat-persistence.js";
 import type { ChatEventPayload } from "../contracts/chat-events.js";
 import { findPage, getPageText, readPage } from "./page-read.js";
 import { executeReadBatch } from "./read-batch.js";
@@ -488,41 +489,17 @@ const coordinator = new ServiceCoordinator({
   profile_resolver_origins: [],
   llm_egress_origins: [],
 });
-const chatPersistenceDelayMs = 250;
-let chatPersistenceTimer: ReturnType<typeof setTimeout> | undefined;
-let chatPersistenceQueue = Promise.resolve();
-const enqueueChatPersistence = (
-  snapshot: ReturnType<typeof chatEvents.snapshot> | null,
-): Promise<void> => {
-  const session = chromeApi?.storage.session;
-  const set = session?.set;
-  if (!set) return Promise.resolve();
-  chatPersistenceQueue = chatPersistenceQueue
-    .catch(() => undefined)
-    .then(() => set.call(session, { chat_session_v1: snapshot }))
-    .catch(() => undefined);
-  return chatPersistenceQueue;
-};
-const flushChatPersistence = (): void => {
-  if (chatPersistenceTimer !== undefined) {
-    clearTimeout(chatPersistenceTimer);
-    chatPersistenceTimer = undefined;
-  }
-  void enqueueChatPersistence(chatEvents.snapshot());
-};
-const scheduleChatPersistence = (immediate = false): void => {
-  if (immediate) return flushChatPersistence();
-  if (chatPersistenceTimer !== undefined) return;
-  chatPersistenceTimer = setTimeout(() => {
-    chatPersistenceTimer = undefined;
-    void enqueueChatPersistence(chatEvents.snapshot());
-  }, chatPersistenceDelayMs);
-};
-const clearScheduledChatPersistence = (): void => {
-  if (chatPersistenceTimer === undefined) return;
-  clearTimeout(chatPersistenceTimer);
-  chatPersistenceTimer = undefined;
-};
+const chatPersistence = new ChatPersistence(
+  chromeApi?.storage.session?.set
+    ? { set: chromeApi.storage.session.set.bind(chromeApi.storage.session) }
+    : undefined,
+  () => chatEvents.snapshot(),
+);
+const flushChatPersistence = (): void => chatPersistence.flush();
+const scheduleChatPersistence = (immediate = false): void =>
+  chatPersistence.schedule(immediate);
+const clearScheduledChatPersistence = (): void =>
+  chatPersistence.clearScheduled();
 const publishChatEvent = (runId: string, payload: ChatEventPayload): void => {
   // The transcript is an observer of an execution, not its state authority.
   // A late browser callback must never turn an already-completed action into a
@@ -3008,7 +2985,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
         coordinator.cancel(active.id);
         clearScheduledChatPersistence();
         chatEvents.clear();
-        await enqueueChatPersistence(null);
+        await chatPersistence.clear();
         respond({ ok: true });
       })
       .catch((error) =>
