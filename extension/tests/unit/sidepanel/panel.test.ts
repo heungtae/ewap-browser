@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { failureHelp } from "../../../src/sidepanel/panel.js";
+import {
+  failureHelp,
+  timelineToolLabel,
+} from "../../../src/sidepanel/panel.js";
 
 describe("sidepanel failure help", () => {
   it("directs provider failures to the AI settings connection test", () => {
@@ -15,5 +18,12 @@ describe("sidepanel failure help", () => {
       guidance:
         "같은 문제가 반복되면 확장을 다시 로드한 뒤 다시 시도해 주세요.",
     });
+  });
+});
+
+describe("timeline tool labels", () => {
+  it("keeps internal mutation identifiers out of the user-facing timeline", () => {
+    expect(timelineToolLabel("click_by_ref")).toBe("클릭");
+    expect(timelineToolLabel("unknown_internal_tool")).toBe("페이지 작업");
   });
 });

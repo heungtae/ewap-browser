@@ -60,6 +60,7 @@ import type {
   ReadyExecution,
 } from "../state/mutation-coordinator.js";
 import type { Run } from "../state/run-coordinator.js";
+import { ActNavigationLifecycle } from "../state/act-navigation-lifecycle.js";
 import {
   LocalFixtureSessionBinding,
   type SessionBinding,
@@ -106,6 +107,7 @@ type BrowserPort = {
   name: string;
   sender?: { id?: string; url?: string; documentId?: string };
   postMessage?(message: unknown): void;
+  disconnect?(): void;
   onMessage: { addListener(listener: (message: unknown) => void): void };
   onDisconnect: { addListener(listener: () => void): void };
 };
@@ -131,6 +133,11 @@ type BrowserTabs = {
         tabId: number,
         changeInfo: { url?: string; status?: string },
       ) => void,
+    ): void;
+  };
+  onActivated?: {
+    addListener(
+      listener: (activeInfo: { tabId: number; windowId: number }) => void,
     ): void;
   };
   onRemoved?: { addListener(listener: (tabId: number) => void): void };
@@ -186,15 +193,21 @@ const pageScopes = new Map<
   { document_epoch: string; page_scope_epoch: string }
 >();
 const stalePageTabs = new Set<number>();
+const actNavigationLifecycle = new ActNavigationLifecycle();
 const planScopes = new PlanScopeStore();
 const visionCaptures = new Map<string, VisionCapture>();
 type ProviderStream = {
   chunks: string[];
-  controller?: ReadableStreamDefaultController<Uint8Array>;
+  controller?: ReadableStreamDefaultController<Uint8Array> | undefined;
+  port?: BrowserPort | undefined;
   ended: boolean;
 };
 const providerStreams = new Map<string, ProviderStream>();
 const panelPorts = new Map<string, { port: BrowserPort; windowId: number }>();
+// Chrome can omit a Side Panel documentId while its extension port is already
+// usable. Keep this fallback notification-only: it never carries transcript
+// data and is enabled only when there is exactly one unbound panel.
+const unboundPanelPorts = new Set<BrowserPort>();
 const flushProviderStream = (stream: ProviderStream): void => {
   if (!stream.controller) return;
   for (const chunk of stream.chunks)
@@ -317,12 +330,18 @@ chromeApi?.runtime.onConnect.addListener((port) => {
   if (port.name === "contextpilot-panel") {
     const documentId = port.sender?.documentId;
     if (
-      !documentId ||
       port.sender?.id !== chromeApi.runtime.id ||
-      port.sender?.url !== chromeApi.runtime.getURL("sidepanel/index.html") ||
-      !chromeApi.runtime.getContexts
+      port.sender?.url !== chromeApi.runtime.getURL("sidepanel/index.html")
     )
       return;
+    const rememberUnboundPanel = (): void => {
+      unboundPanelPorts.add(port);
+      port.onDisconnect.addListener(() => unboundPanelPorts.delete(port));
+    };
+    if (!documentId || !chromeApi.runtime.getContexts) {
+      rememberUnboundPanel();
+      return;
+    }
     void chromeApi.runtime
       .getContexts({
         contextTypes: ["SIDE_PANEL"],
@@ -336,11 +355,17 @@ chromeApi?.runtime.onConnect.addListener((port) => {
             Number.isInteger(context.windowId),
         );
         const windowId = matches[0]?.windowId;
-        if (matches.length !== 1 || windowId === undefined) return;
+        if (matches.length !== 1 || windowId === undefined) {
+          rememberUnboundPanel();
+          return;
+        }
         panelPorts.set(documentId, { port, windowId });
-        port.onDisconnect.addListener(() => panelPorts.delete(documentId));
+        port.onDisconnect.addListener(() => {
+          panelPorts.delete(documentId);
+          unboundPanelPorts.delete(port);
+        });
       })
-      .catch(() => undefined);
+      .catch(rememberUnboundPanel);
     return;
   }
   const prefix = "contextpilot-provider:";
@@ -355,6 +380,7 @@ chromeApi?.runtime.onConnect.addListener((port) => {
     return;
   const stream = providerStreams.get(streamId);
   if (!stream) return;
+  stream.port = port;
   port.onMessage.addListener((message) => {
     if (typeof message !== "object" || message === null) return;
     const value = message as { type?: unknown; text?: unknown };
@@ -367,6 +393,7 @@ chromeApi?.runtime.onConnect.addListener((port) => {
     }
   });
   port.onDisconnect.addListener(() => {
+    stream.port = undefined;
     if (!stream.ended) {
       stream.ended = true;
       flushProviderStream(stream);
@@ -422,6 +449,10 @@ const offscreenFetch: typeof fetch = async (input, init) => {
         },
         cancel() {
           providerStreams.delete(streamId);
+          stream.chunks = [];
+          stream.controller = undefined;
+          stream.ended = true;
+          stream.port?.disconnect?.();
         },
       }),
       responseInit,
@@ -457,11 +488,54 @@ const coordinator = new ServiceCoordinator({
   profile_resolver_origins: [],
   llm_egress_origins: [],
 });
-const publishChatEvent = (runId: string, payload: ChatEventPayload): void => {
-  const event = chatEvents.append(runId, payload);
-  void chromeApi?.storage.session
-    .set?.({ chat_session_v1: chatEvents.snapshot() })
+const chatPersistenceDelayMs = 250;
+let chatPersistenceTimer: ReturnType<typeof setTimeout> | undefined;
+let chatPersistenceQueue = Promise.resolve();
+const enqueueChatPersistence = (
+  snapshot: ReturnType<typeof chatEvents.snapshot> | null,
+): Promise<void> => {
+  const session = chromeApi?.storage.session;
+  const set = session?.set;
+  if (!set) return Promise.resolve();
+  chatPersistenceQueue = chatPersistenceQueue
+    .catch(() => undefined)
+    .then(() => set.call(session, { chat_session_v1: snapshot }))
     .catch(() => undefined);
+  return chatPersistenceQueue;
+};
+const flushChatPersistence = (): void => {
+  if (chatPersistenceTimer !== undefined) {
+    clearTimeout(chatPersistenceTimer);
+    chatPersistenceTimer = undefined;
+  }
+  void enqueueChatPersistence(chatEvents.snapshot());
+};
+const scheduleChatPersistence = (immediate = false): void => {
+  if (immediate) return flushChatPersistence();
+  if (chatPersistenceTimer !== undefined) return;
+  chatPersistenceTimer = setTimeout(() => {
+    chatPersistenceTimer = undefined;
+    void enqueueChatPersistence(chatEvents.snapshot());
+  }, chatPersistenceDelayMs);
+};
+const clearScheduledChatPersistence = (): void => {
+  if (chatPersistenceTimer === undefined) return;
+  clearTimeout(chatPersistenceTimer);
+  chatPersistenceTimer = undefined;
+};
+const publishChatEvent = (runId: string, payload: ChatEventPayload): void => {
+  // The transcript is an observer of an execution, not its state authority.
+  // A late browser callback must never turn an already-completed action into a
+  // runtime `INVALID_ARGUMENT` merely because its timeline is closed.
+  if (!chatEvents.has(runId) || chatEvents.terminal(runId)) {
+    console.debug("[ContextPilot][chat timeline] ignored late event", {
+      run_id: runId,
+      type: payload.type,
+    });
+    return;
+  }
+  const event = chatEvents.append(runId, payload);
+  scheduleChatPersistence(payload.type === "run_terminal");
   for (const [documentId, panel] of panelPorts) {
     void chromeApi?.tabs
       .query({ active: true, windowId: panel.windowId })
@@ -476,6 +550,21 @@ const publishCancelledChatRun = (run: Run | undefined): void => {
   if (run) releaseVisionCaptures(run.id);
   if (run && chatEvents.has(run.id) && !chatEvents.terminal(run.id))
     publishChatEvent(run.id, { type: "run_terminal", outcome: "CANCELLED" });
+};
+const cancelRunForPageChange = (run: Run): void => {
+  if (actNavigationLifecycle.retains(run)) {
+    console.debug("[ContextPilot][lifecycle] retaining expected navigation", {
+      run_id: run.id,
+      tab_id: run.tabId,
+    });
+    return;
+  }
+  actNavigationLifecycle.clearTab(run.tabId);
+  const binding = localBindings.get(run.id);
+  if (binding) localSessionBinding.clear(binding.id);
+  localBindings.delete(run.id);
+  coordinator.cancel(run.tabId);
+  publishCancelledChatRun(run);
 };
 const rememberVisionCapture = (runId: string, capture: VisionCapture): void => {
   visionCaptures.set(`${runId}:${capture.capture_id}`, capture);
@@ -545,6 +634,45 @@ const panelUrl = (): string | undefined =>
   chromeApi?.runtime.getURL("sidepanel/index.html");
 const isPanelSender = (sender: Sender): boolean =>
   sender.id === chromeApi?.runtime.id && sender.url === panelUrl();
+const panelWindowId = async (sender: Sender): Promise<number> => {
+  const documentId = sender.documentId;
+  if (!isPanelSender(sender) || !documentId || !chromeApi?.runtime.getContexts)
+    throw new ContractError("INVALID_ARGUMENT");
+  const matches = (
+    await chromeApi.runtime.getContexts({
+      contextTypes: ["SIDE_PANEL"],
+      documentIds: [documentId],
+    })
+  ).filter(
+    (context) =>
+      context.contextType === "SIDE_PANEL" &&
+      context.documentId === documentId &&
+      Number.isInteger(context.windowId),
+  );
+  const windowId = matches[0]?.windowId;
+  if (matches.length !== 1 || windowId === undefined)
+    throw new ContractError("INVALID_ARGUMENT");
+  return windowId;
+};
+const activeTabForPanel = async (sender: Sender): Promise<{ id: number }> => {
+  let windowId: number | undefined;
+  try {
+    windowId = await panelWindowId(sender);
+  } catch (error) {
+    if (!(error instanceof ContractError) || error.code !== "INVALID_ARGUMENT")
+      throw error;
+  }
+  const tab = (
+    await chromeApi!.tabs.query(
+      windowId === undefined
+        ? { active: true, lastFocusedWindow: true }
+        : { active: true, windowId },
+    )
+  )[0];
+  if (!tab || tab.id === undefined)
+    throw new ContractError("ORIGIN_NOT_ALLOWED");
+  return { id: tab.id };
+};
 const settingsUrl = (): string | undefined =>
   chromeApi?.runtime.getURL("settings/index.html");
 const isSettingsSender = (sender: Sender): boolean =>
@@ -588,10 +716,17 @@ const readActiveSnapshot = async (
   if (stalePageTabs.has(tabId))
     return Promise.reject(new ContractError("PAGE_SCOPE_STALE"));
   let origin = pageOrigin(tab.url);
-  const result = await chromeApi!.tabs.sendMessage(tabId, {
-    kind: "CONTENT_SNAPSHOT",
-    scope,
-  });
+  let result: unknown;
+  try {
+    result = await chromeApi!.tabs.sendMessage(tabId, {
+      kind: "CONTENT_SNAPSHOT",
+      scope,
+    });
+  } catch {
+    // An extension reload invalidates the old content-script context. This is
+    // a page readiness failure, never a provider/plugin failure.
+    throw new ContractError("DOCUMENT_NOT_REGISTERED");
+  }
   console.debug("[ContextPilot][projection] content response", {
     response: structuredClone(result),
   });
@@ -599,8 +734,12 @@ const readActiveSnapshot = async (
     typeof result !== "object" ||
     result === null ||
     !(result as { ok?: unknown }).ok
-  )
-    return Promise.reject(new ContractError("INVALID_ARGUMENT"));
+  ) {
+    const code = (result as { code?: unknown } | undefined)?.code;
+    if (code === "DOCUMENT_NOT_REGISTERED" || code === "PAGE_SCOPE_STALE")
+      return Promise.reject(new ContractError(code));
+    return Promise.reject(new ContractError("DOCUMENT_NOT_REGISTERED"));
+  }
   const payload = (result as { snapshot?: unknown }).snapshot;
   if (
     typeof payload !== "object" ||
@@ -665,12 +804,10 @@ chromeApi?.tabs.onUpdated?.addListener((tabId, changeInfo) => {
   if (!changeInfo.url) return;
   stalePageTabs.add(tabId);
   const run = coordinator.runs.get(tabId);
-  if (run) {
-    coordinator.cancel(tabId);
-    publishCancelledChatRun(run);
-  }
+  if (run) cancelRunForPageChange(run);
 });
 chromeApi?.tabs.onRemoved?.addListener((tabId) => {
+  actNavigationLifecycle.clearTab(tabId);
   const run = coordinator.runs.get(tabId);
   if (run) {
     coordinator.cancel(tabId);
@@ -679,9 +816,14 @@ chromeApi?.tabs.onRemoved?.addListener((tabId) => {
   pageScopes.delete(tabId);
   stalePageTabs.delete(tabId);
   chatEvents.removeTab(tabId);
-  void chromeApi?.storage.session.set?.({
-    chat_session_v1: chatEvents.snapshot(),
-  });
+  flushChatPersistence();
+});
+chromeApi?.tabs.onActivated?.addListener(({ tabId, windowId }) => {
+  for (const panel of panelPorts.values())
+    if (panel.windowId === windowId)
+      panel.port.postMessage?.({ kind: "CHAT_THREAD_CHANGED", tab_id: tabId });
+  if (unboundPanelPorts.size === 1)
+    [...unboundPanelPorts][0]?.postMessage?.({ kind: "CHAT_THREAD_CHANGED" });
 });
 const resolveProfileFor = async (active: {
   tabId: number;
@@ -965,6 +1107,7 @@ const runAskChat = async (
     document_epoch: active.snapshot.document_epoch,
     node_count: active.snapshot.nodes.length,
   });
+  actNavigationLifecycle.clearTab(active.tabId);
   const run = coordinator.runs.start(
     active.tabId,
     active.snapshot.frame_id,
@@ -1023,17 +1166,35 @@ const runAskChat = async (
       },
     );
     let streamedResponseText = false;
-    const response = await providerRuntime!.chat(
-      { messages, tools },
-      {
-        onDelta: (text) => {
-          if (coordinator.runs.byId(run.id)?.phase !== "TERMINAL") {
-            streamedResponseText = true;
-            publishChatEvent(run.id, { type: "assistant_delta", text });
-          }
-        },
-      },
-    );
+    let pendingDeltaText = "";
+    let deltaFlushTimer: ReturnType<typeof setTimeout> | undefined;
+    const flushStreamedDelta = (): void => {
+      if (deltaFlushTimer !== undefined) clearTimeout(deltaFlushTimer);
+      deltaFlushTimer = undefined;
+      const text = pendingDeltaText;
+      pendingDeltaText = "";
+      if (text && coordinator.runs.byId(run.id)?.phase !== "TERMINAL")
+        publishChatEvent(run.id, { type: "assistant_delta", text });
+    };
+    const response = await (async () => {
+      try {
+        return await providerRuntime!.chat(
+          { messages, tools },
+          {
+            onDelta: (text) => {
+              if (coordinator.runs.byId(run.id)?.phase === "TERMINAL") return;
+              streamedResponseText = true;
+              pendingDeltaText += text;
+              if (pendingDeltaText.length >= 4_096) flushStreamedDelta();
+              else if (deltaFlushTimer === undefined)
+                deltaFlushTimer = setTimeout(flushStreamedDelta, 32);
+            },
+          },
+        );
+      } finally {
+        flushStreamedDelta();
+      }
+    })();
     if (run.phase === "TERMINAL")
       return safeFailure("POLICY_DENIED", "run cancelled");
     await writeToPageDevTools(
@@ -1642,6 +1803,7 @@ const runActStep = async (
     (!session.generic && !demoPage(active))
   )
     return fail("PROFILE_UNAVAILABLE");
+  actNavigationLifecycle.clearTab(active.tabId);
   const run = coordinator.runs.start(
     active.tabId,
     active.snapshot.frame_id,
@@ -1865,16 +2027,23 @@ const verifyNavigationPostcondition = async (
   run: Run,
   intent: ActionIntent,
 ): Promise<boolean> => {
-  if (intent.verifier.kind !== "exact-navigation-transition") return false;
-  const expectedPath =
+  const expected = navigationExpectation(intent);
+  if (!expected) return false;
+  return waitForExactNavigation(() => chromeApi!.tabs.get(run.tabId), {
+    origin: expected.origin,
+    pathname: expected.pathname,
+  });
+};
+const navigationExpectation = (
+  intent: ActionIntent,
+): { origin: string; pathname: string } | undefined => {
+  if (intent.verifier.kind !== "exact-navigation-transition") return undefined;
+  const pathname =
     intent.verifier.path_template_id === "asteron-demo-trend-analysis-v1"
       ? demoTrendPath
       : undefined;
-  if (!expectedPath || !demoOrigins.has(intent.verifier.origin)) return false;
-  return waitForExactNavigation(() => chromeApi!.tabs.get(run.tabId), {
-    origin: intent.verifier.origin,
-    pathname: expectedPath,
-  });
+  if (!pathname || !demoOrigins.has(intent.verifier.origin)) return undefined;
+  return { origin: intent.verifier.origin, pathname };
 };
 const executeBoundedCdp = async (
   run: Run,
@@ -1913,6 +2082,8 @@ const executeBoundedCdp = async (
     capability,
   };
   cdpAuthorizedRuns.add(run.id);
+  const expectedNavigation = navigationExpectation(ready.intent);
+  if (expectedNavigation) actNavigationLifecycle.begin(run, expectedNavigation);
   try {
     let input: { key?: string; text?: string } | undefined;
     if (tool === "press_key_by_ref") {
@@ -1926,18 +2097,31 @@ const executeBoundedCdp = async (
       input = { text: ready.value };
     }
     const execution = await boundedCdp.execute(action, input);
-    if (execution.outcome !== "DISPATCHED") {
+    if (
+      execution.outcome !== "DISPATCHED" &&
+      !(expectedNavigation && execution.dispatched)
+    ) {
       coordinator.mutations.terminal(run, "FAILED");
       return safeFailure("TARGET_NOT_ACTIONABLE");
     }
-    const verified =
-      (await verifySemanticPostcondition(run, ready.intent)) ||
-      (await verifyNavigationPostcondition(run, ready.intent)) ||
-      (await verifyBoundedTargetPostcondition(run, ready.intent));
-    coordinator.mutations.terminal(run, verified ? "VERIFIED" : "FAILED");
+    const currentRun = coordinator.runs.byId(run.id);
+    if (!currentRun || currentRun.phase === "TERMINAL")
+      return safeFailure("POLICY_DENIED", "run cancelled");
+    if (expectedNavigation)
+      coordinator.runs.transition(run.id, "VERIFYING_NAVIGATION");
+    const verified = expectedNavigation
+      ? await verifyNavigationPostcondition(run, ready.intent)
+      : (await verifySemanticPostcondition(run, ready.intent)) ||
+        (await verifyBoundedTargetPostcondition(run, ready.intent));
+    const outcome = verified
+      ? "VERIFIED"
+      : expectedNavigation
+        ? "UNKNOWN"
+        : "FAILED";
+    coordinator.mutations.terminal(run, outcome);
     return verified
       ? { ok: true, outcome: "VERIFIED" }
-      : safeFailure("TARGET_NOT_ACTIONABLE");
+      : { ...safeFailure("TARGET_NOT_ACTIONABLE"), outcome };
   } catch (error) {
     coordinator.mutations.terminal(run, "FAILED");
     return safeFailure(
@@ -2184,16 +2368,24 @@ const executeActProposal = async (
   const executed = await executeActContent(run, ready, session.origin);
   if (!executed.ok) {
     const code = typeof executed.code === "string" ? executed.code : undefined;
+    const outcome =
+      (executed as { outcome?: unknown }).outcome === "UNKNOWN"
+        ? "UNKNOWN"
+        : "FAILED";
     publishChatEvent(run.id, {
       type: "tool_finished",
       tool_use_id: proposal.toolCallId,
       result: {
-        outcome: "FAILED",
-        summary: "작업을 완료하지 못했습니다.",
+        outcome,
+        summary:
+          outcome === "UNKNOWN"
+            ? "페이지 전환 뒤 결과를 확정하지 못했습니다."
+            : "작업을 완료하지 못했습니다.",
         ...(code ? { code } : {}),
       },
     });
-    publishActTerminal(run, "FAILED", code);
+    publishActTerminal(run, outcome, code);
+    if (proposal.navigation) actNavigationLifecycle.finish(run);
     return executed;
   }
   publishChatEvent(run.id, {
@@ -2209,6 +2401,7 @@ const executeActProposal = async (
     publishActTerminal(run, "VERIFIED");
     permissions.endRun(session.id);
     actSessions.delete(session.id);
+    actNavigationLifecycle.finish(run);
     return { ok: true, state: "ANSWER", message: "분석 센터를 열었습니다." };
   }
   publishActTerminal(run, "VERIFIED");
@@ -2492,12 +2685,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     const previous = registered.get(key);
     if (previous && previous.epoch !== epoch) {
       const active = coordinator.runs.get(sender.tab.id);
-      if (active) {
-        const binding = localBindings.get(active.id);
-        if (binding) localSessionBinding.clear(binding.id);
-        localBindings.delete(active.id);
-      }
-      coordinator.invalidateDocument(sender.tab.id, epoch);
+      if (active) cancelRunForPageChange(active);
     }
     registered.set(key, { epoch, documentId: sender.documentId });
     pageScopes.set(sender.tab.id, {
@@ -2543,10 +2731,8 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       active &&
       (active.documentEpoch !== documentEpoch ||
         previousScope?.page_scope_epoch !== pageScopeEpoch)
-    ) {
-      coordinator.cancel(sender.tab.id);
-      publishCancelledChatRun(active);
-    }
+    )
+      cancelRunForPageChange(active);
     respond({ ok: true });
     return;
   }
@@ -2609,6 +2795,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
         const tabId = tabs[0]?.id;
         if (tabId === undefined)
           return respond(safeFailure("INVALID_ARGUMENT"));
+        actNavigationLifecycle.clearTab(tabId);
         const run = coordinator.runs.get(tabId);
         if (run) {
           const binding = localBindings.get(run.id);
@@ -2698,9 +2885,14 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
             active: true,
             lastFocusedWindow: true,
           });
-          if (active[0]?.id !== undefined) coordinator.cancel(active[0].id);
-          if (active[0]?.id !== undefined)
-            publishCancelledChatRun(coordinator.runs.get(active[0].id));
+          const tabId = active[0]?.id;
+          const activeRun =
+            tabId === undefined ? undefined : coordinator.runs.get(tabId);
+          if (tabId !== undefined) {
+            actNavigationLifecycle.clearTab(tabId);
+            coordinator.cancel(tabId);
+          }
+          publishCancelledChatRun(activeRun);
           respond({ ok: true, preferences: structuredClone(agentPreferences) });
         })
         .catch(() => respond(safeFailure("STORAGE_BOUNDARY_UNAVAILABLE")));
@@ -2768,7 +2960,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
     try {
       respond({
         ok: true,
-        events: chatEvents.since(runId, sequence as number),
+        events: chatEvents.sinceThreadForRun(runId, sequence as number),
       });
     } catch (error) {
       respond(
@@ -2784,19 +2976,25 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       respond(safeFailure("INVALID_ARGUMENT"));
       return;
     }
-    void chromeApi!.tabs
-      .query({ active: true, lastFocusedWindow: true })
+    void activeTabForPanel(sender)
       .then((active) => {
-        const tabId = active[0]?.id;
-        if (tabId === undefined)
-          return respond(safeFailure("ORIGIN_NOT_ALLOWED"));
+        const tabId = active.id;
         respond({
           ok: true,
+          tab_id: tabId,
           events: chatEvents.recoverable(tabId),
           scope: chatEvents.scope(tabId),
         });
       })
-      .catch(() => respond(safeFailure("STORAGE_BOUNDARY_UNAVAILABLE")));
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError
+              ? error.code
+              : "STORAGE_BOUNDARY_UNAVAILABLE",
+          ),
+        ),
+      );
     return true;
   }
   if (kind === "CHAT_CLEAR") {
@@ -2804,16 +3002,24 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
       respond(safeFailure("INVALID_ARGUMENT"));
       return;
     }
-    void chromeApi!.tabs
-      .query({ active: true, lastFocusedWindow: true })
+    void activeTabForPanel(sender)
       .then(async (active) => {
-        const tabId = active[0]?.id;
-        if (tabId !== undefined) coordinator.cancel(tabId);
-        await chromeApi!.storage.session.set?.({ chat_session_v1: null });
+        actNavigationLifecycle.clearTab(active.id);
+        coordinator.cancel(active.id);
+        clearScheduledChatPersistence();
         chatEvents.clear();
+        await enqueueChatPersistence(null);
         respond({ ok: true });
       })
-      .catch(() => respond(safeFailure("STORAGE_BOUNDARY_UNAVAILABLE")));
+      .catch((error) =>
+        respond(
+          safeFailure(
+            error instanceof ContractError
+              ? error.code
+              : "STORAGE_BOUNDARY_UNAVAILABLE",
+          ),
+        ),
+      );
     return true;
   }
   if (kind === "PLAN_APPROVE") {
@@ -3115,6 +3321,7 @@ chromeApi?.runtime.onMessage.addListener((message, sender, respond) => {
           if (binding) localSessionBinding.clear(binding.id);
           localBindings.delete(previous.id);
         }
+        actNavigationLifecycle.clearTab(tabId);
         coordinator.cancel(tabId);
         const run = coordinator.runs.start(
           tabId,

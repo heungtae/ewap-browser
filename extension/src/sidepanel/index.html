@@ -524,7 +524,8 @@
         white-space: nowrap;
       }
       .input-dock {
-        display: flex;
+        display: grid;
+        grid-template-columns: 31px minmax(0, 1fr) 31px;
         align-items: center;
         gap: 7px;
         min-height: 44px;
@@ -534,9 +535,13 @@
         background: #202d4d;
       }
       .composer textarea {
+        display: block;
+        grid-column: 2;
+        align-self: stretch;
         min-height: 32px;
         max-height: 96px;
-        flex: 1;
+        min-width: 0;
+        width: 100%;
         padding: 6px 2px;
         border: 0;
         border-radius: 0;
@@ -546,8 +551,16 @@
       .composer textarea:focus-visible {
         outline: 0;
       }
+      .composer textarea::placeholder {
+        color: #aeb9d8;
+        opacity: 1;
+      }
+      .attachment-control {
+        grid-column: 1;
+      }
       .attachment-control button,
       .input-dock .send {
+        grid-column: 3;
         display: grid;
         width: 31px;
         min-width: 31px;
@@ -653,6 +666,12 @@
         .attachment-control {
           order: 3;
           flex-basis: 100%;
+        }
+        .input-dock .attachment-control {
+          order: initial;
+          grid-column: 1;
+          grid-row: 1;
+          flex-basis: auto;
         }
       }
       @media (prefers-contrast: more) {

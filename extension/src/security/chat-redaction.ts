@@ -29,6 +29,10 @@ export const redactForChat = (value: string, limit = 16_000): string => {
     .split("")
     .map((character) => {
       const code = character.charCodeAt(0);
+      // Newlines carry safe Markdown block structure; removing them turns a
+      // persisted list into one unrenderable paragraph on thread recovery.
+      if (character === "\n" || character === "\r" || character === "\t")
+        return character;
       return code <= 31 || code === 127 ? " " : character;
     })
     .join("")

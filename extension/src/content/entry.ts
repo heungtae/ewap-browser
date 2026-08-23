@@ -74,6 +74,18 @@ type RefRecord = {
   stale: boolean;
 };
 const refRecords = new Map<string, RefRecord>();
+// A page projection is on the hot path for every question.  Keep both the DOM
+// work and the retained element references bounded: a large SPA can otherwise
+// turn a single snapshot into an unbounded renderer allocation.
+const maxRetainedRefs = 1_200;
+const maxProjectionDomElements = 12_000;
+const maxProjectionCandidates = 1_500;
+const maxProjectionNodes = 1_000;
+const maxArticleCandidates = 4;
+const maxVisibleTextChars = 12_000;
+const maxArticleTextChars = 50_000;
+const projectionSelector =
+  "button,input,textarea,select,a,[role],h1,h2,h3,h4,h5,h6";
 const clearPageScopeRefs = (): void => {
   refRecords.clear();
   consumedDeliveries.clear();
@@ -143,8 +155,18 @@ const refFor = (element: Element, role: string, name: string): string => {
   const existing = refs.get(element);
   if (existing) {
     const record = refRecords.get(existing);
-    if (record && !record.stale && record.role === role && record.name === name)
+    if (
+      record &&
+      !record.stale &&
+      record.role === role &&
+      record.name === name
+    ) {
+      // Refresh insertion order so references in the current projection are
+      // retained when older page state is evicted below.
+      refRecords.delete(existing);
+      refRecords.set(existing, record);
       return existing;
+    }
     refs.delete(element);
   }
   const bytes = new Uint8Array(18);
@@ -152,6 +174,13 @@ const refFor = (element: Element, role: string, name: string): string => {
   const ref = base64Url(bytes);
   refs.set(element, ref);
   refRecords.set(ref, { element, role, name, stale: false });
+  while (refRecords.size > maxRetainedRefs) {
+    const oldest = refRecords.keys().next().value;
+    if (typeof oldest !== "string") break;
+    const record = refRecords.get(oldest);
+    if (record) refs.delete(record.element);
+    refRecords.delete(oldest);
+  }
   return ref;
 };
 const roleFor = (element: Element): string | undefined => {
@@ -172,12 +201,43 @@ const roleFor = (element: Element): string | undefined => {
   const heading = /^H[1-6]$/.test(element.tagName);
   return heading ? "heading" : undefined;
 };
+const normalizeBoundedText = (value: string, maxCharacters: number): string => {
+  let sanitized = "";
+  for (const character of value.slice(0, maxCharacters * 3)) {
+    const code = character.charCodeAt(0);
+    sanitized += code <= 31 || code === 127 ? " " : character;
+  }
+  return sanitized.replace(/\s+/g, " ").trim().slice(0, maxCharacters);
+};
+const boundedTextContent = (
+  root: Node,
+  maxCharacters: number,
+  skipNonContent = false,
+): string => {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  let result = "";
+  for (let node = walker.nextNode(); node && result.length < maxCharacters; ) {
+    const parent = node.parentElement;
+    if (
+      !skipNonContent ||
+      !parent?.closest(
+        "script,style,noscript,template,[hidden],[aria-hidden=true]",
+      )
+    )
+      result += (node.nodeValue ?? "").slice(0, maxCharacters - result.length);
+    node = walker.nextNode();
+  }
+  return result;
+};
 const nameFor = (element: Element): string => {
   const labelledBy = element.getAttribute("aria-labelledby");
   const labelled = labelledBy
     ? labelledBy
         .split(/\s+/)
-        .map((id) => document.getElementById(id)?.textContent ?? "")
+        .map((id) => {
+          const label = document.getElementById(id);
+          return label ? boundedTextContent(label, 160) : "";
+        })
         .join(" ")
     : "";
   const nativeLabel =
@@ -185,25 +245,16 @@ const nameFor = (element: Element): string => {
     element instanceof HTMLTextAreaElement ||
     element instanceof HTMLSelectElement
       ? [...(element.labels ?? [])]
-          .map((label) => label.textContent ?? "")
+          .map((label) => boundedTextContent(label, 160))
           .join(" ")
       : "";
   const candidate =
     element.getAttribute("aria-label") ||
     labelled ||
     nativeLabel ||
-    element.textContent ||
+    boundedTextContent(element, 160) ||
     "";
-  return candidate
-    .split("")
-    .map((character) => {
-      const code = character.charCodeAt(0);
-      return code <= 31 || code === 127 ? " " : character;
-    })
-    .join("")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
+  return normalizeBoundedText(candidate, 160);
 };
 const invalidateAffectedRefs = (target: Node): void => {
   for (const record of refRecords.values()) {
@@ -238,56 +289,34 @@ new MutationObserver((mutations) => {
   ],
 });
 const visiblePageText = (): string => {
-  const raw = document.body?.innerText ?? "";
-  const lines = raw
-    .split(/\r?\n/)
-    .map((line) =>
-      line
-        .split("")
-        .map((character) => {
-          const code = character.charCodeAt(0);
-          return code <= 31 || code === 127 ? " " : character;
-        })
-        .join("")
-        .replace(/\s+/g, " ")
-        .trim(),
-    )
-    .filter(Boolean);
-  let result = "";
-  for (const line of lines) {
-    const next = result ? `${result}\n${line}` : line;
-    if ([...next].length > 12_000) break;
-    result = next;
-  }
-  return result;
-};
-const normalizePageText = (value: string, maxCharacters: number): string => {
-  let result = "";
-  for (const line of value.split(/\r?\n/)) {
-    const normalized = line
-      .split("")
-      .map((character) => {
-        const code = character.charCodeAt(0);
-        return code <= 31 || code === 127 ? " " : character;
-      })
-      .join("")
-      .replace(/\s+/g, " ")
-      .trim();
-    if (!normalized) continue;
-    const next = result ? `${result}\n${normalized}` : normalized;
-    if ([...next].length > maxCharacters) break;
-    result = next;
-  }
-  return result;
+  const body = document.body;
+  return body
+    ? normalizeBoundedText(
+        boundedTextContent(body, maxVisibleTextChars * 2, true),
+        maxVisibleTextChars,
+      )
+    : "";
 };
 const articlePageText = (): string => {
-  const candidates = [
-    ...document.querySelectorAll<HTMLElement>("article,main,[role=main]"),
-  ].filter((element) => hiddenReasonFor(element) === undefined);
-  const best = candidates
-    .map((element) => normalizePageText(element.innerText, 50_000))
-    .sort((left, right) => right.length - left.length)[0];
-  return best ?? "";
+  const candidates = document.querySelectorAll<HTMLElement>(
+    "article,main,[role=main]",
+  );
+  let best = "";
+  for (
+    let index = 0;
+    index < candidates.length && index < maxArticleCandidates;
+    index += 1
+  ) {
+    const element = candidates[index];
+    if (!element) continue;
+    if (hiddenReasonFor(element) !== undefined) continue;
+    const text = normalizeBoundedText(
+      boundedTextContent(element, maxArticleTextChars * 2, true),
+      maxArticleTextChars,
+    );
+    if (text.length > best.length) best = text;
+  }
+  return best;
 };
 type ReadScope = "all_dom" | "visible_only" | "interactive";
 const interactiveRoles = new Set([
@@ -328,55 +357,63 @@ const hiddenReasonFor = (element: Element): string | undefined => {
     return "outside_viewport";
   return undefined;
 };
-const projection = (scope: ReadScope = "all_dom"): unknown => ({
-  origin: location.origin,
-  snapshot: {
-    schema_version: 2,
-    document_epoch: documentEpoch,
-    frame_id: 0,
-    scope,
-    truncated: false,
-    visible_text: visiblePageText(),
-    article_text: articlePageText(),
-    nodes: [
-      ...document.querySelectorAll(
-        "button,input,textarea,select,a,[role],h1,h2,h3,h4,h5,h6",
-      ),
-    ]
-      .flatMap((element) => {
-        const role = roleFor(element);
-        const name = nameFor(element);
+const projectionNodes = (
+  scope: ReadScope,
+): { nodes: unknown[]; truncated: boolean } => {
+  const root = document.body;
+  if (!root) return { nodes: [], truncated: false };
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);
+  const nodes: unknown[] = [];
+  let current: Element | null = root;
+  let visited = 0;
+  let candidates = 0;
+  let truncated = false;
+  while (current) {
+    visited += 1;
+    if (visited > maxProjectionDomElements) {
+      truncated = true;
+      break;
+    }
+    if (current.matches(projectionSelector)) {
+      candidates += 1;
+      if (candidates > maxProjectionCandidates) {
+        truncated = true;
+        break;
+      }
+      const element = current;
+      const role = roleFor(element);
+      const name = nameFor(element);
+      const sensitive =
+        element instanceof HTMLInputElement &&
+        (element.type === "password" ||
+          element.type === "hidden" ||
+          /password|secret|otp|mfa|인증|비밀번호/i.test(name) ||
+          /one-time-code/i.test(element.autocomplete));
+      if (role && !sensitive) {
         const hiddenReason = hiddenReasonFor(element);
         const visible = hiddenReason === undefined;
-        const sensitive =
-          element instanceof HTMLInputElement &&
-          (element.type === "password" ||
-            element.type === "hidden" ||
-            /password|secret|otp|mfa|인증|비밀번호/i.test(name) ||
-            /one-time-code/i.test(element.autocomplete));
         if (
-          !role ||
-          sensitive ||
-          (scope === "visible_only" && !visible) ||
-          (scope === "interactive" && (!visible || !interactiveRoles.has(role)))
-        )
-          return [];
-        const state = {
-          ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
-          ...(element instanceof HTMLInputElement &&
-          (element.type === "checkbox" || element.type === "radio")
-            ? { checked: element.checked }
-            : {}),
-          ...(element instanceof HTMLSelectElement
-            ? { selected: element.selectedIndex >= 0 }
-            : {}),
-          ...(element.hasAttribute("aria-expanded")
-            ? { expanded: element.getAttribute("aria-expanded") === "true" }
-            : {}),
-          ...(element.hasAttribute("required") ? { required: true } : {}),
-        };
-        return [
-          {
+          !(
+            (scope === "visible_only" && !visible) ||
+            (scope === "interactive" &&
+              (!visible || !interactiveRoles.has(role)))
+          )
+        ) {
+          const state = {
+            ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
+            ...(element instanceof HTMLInputElement &&
+            (element.type === "checkbox" || element.type === "radio")
+              ? { checked: element.checked }
+              : {}),
+            ...(element instanceof HTMLSelectElement
+              ? { selected: element.selectedIndex >= 0 }
+              : {}),
+            ...(element.hasAttribute("aria-expanded")
+              ? { expanded: element.getAttribute("aria-expanded") === "true" }
+              : {}),
+            ...(element.hasAttribute("required") ? { required: true } : {}),
+          };
+          nodes.push({
             ref_id: refFor(element, role, name),
             role,
             name,
@@ -393,12 +430,34 @@ const projection = (scope: ReadScope = "all_dom"): unknown => ({
                 element instanceof HTMLSelectElement ||
                 element instanceof HTMLTextAreaElement
               ) || !element.disabled,
-          },
-        ];
-      })
-      .slice(0, 5_000),
-  },
-});
+          });
+          if (nodes.length >= maxProjectionNodes) {
+            truncated = true;
+            break;
+          }
+        }
+      }
+    }
+    current = walker.nextNode() as Element | null;
+  }
+  return { nodes, truncated };
+};
+const projection = (scope: ReadScope = "all_dom"): unknown => {
+  const nodeProjection = projectionNodes(scope);
+  return {
+    origin: location.origin,
+    snapshot: {
+      schema_version: 2,
+      document_epoch: documentEpoch,
+      frame_id: 0,
+      scope,
+      truncated: nodeProjection.truncated,
+      visible_text: visiblePageText(),
+      article_text: articlePageText(),
+      nodes: nodeProjection.nodes,
+    },
+  };
+};
 runtime?.onMessage.addListener((message, sender, respond) => {
   if (
     typeof message === "object" &&

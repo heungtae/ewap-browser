@@ -144,20 +144,33 @@ export class TabChatSessionStore {
     return this.finishedRuns.has(runId);
   }
 
-  public since(runId: string, sequence = 0): ChatEvent[] {
+  /**
+   * Event sequences belong to a tab thread, not an individual run. A panel
+   * that missed an event must therefore receive the rest of that thread's
+   * timeline, including events from an earlier run.
+   */
+  public sinceThreadForRun(runId: string, sequence = 0): ChatEvent[] {
     const binding = this.runs.get(runId);
     const thread = binding ? this.threads.get(binding.tab_id) : undefined;
     if (!thread || !Number.isInteger(sequence) || sequence < 0)
       return fail("INVALID_ARGUMENT");
     return thread.events
-      .filter((event) => event.run_id === runId && event.sequence > sequence)
+      .filter((event) => event.sequence > sequence)
       .map(clone);
   }
 
   public recoverable(tabId: number): ChatEvent[] {
-    return (this.threads.get(tabId)?.events ?? [])
-      .filter(persistent)
-      .map(clone);
+    return (
+      (this.threads.get(tabId)?.events ?? [])
+        // Approval events must never outlive a worker restart, but a newly
+        // connected side panel still needs the live proposal in order to show
+        // its approval controls. Once the run becomes terminal, retain only the
+        // non-executable transcript events just as a restored session does.
+        .filter(
+          (event) => persistent(event) || !this.finishedRuns.has(event.run_id),
+        )
+        .map(clone)
+    );
   }
 
   public scope(tabId: number): PageScope | undefined {

@@ -47,6 +47,16 @@ export const userMessage: Record<ErrorCode, string> = {
   PROVIDER_AUTH_FAILED: "provider API key 또는 header를 확인해 주세요.",
   PROVIDER_UNAVAILABLE: "provider에 연결할 수 없습니다.",
 };
+export const timelineToolLabel = (tool: string): string =>
+  (
+    ({
+      click_by_ref: "클릭",
+      set_text_by_ref: "텍스트 입력",
+      select_option_by_ref: "옵션 선택",
+      set_checked_by_ref: "선택 상태 변경",
+      press_key_by_ref: "키 입력",
+    }) as Record<string, string>
+  )[tool] ?? "페이지 작업";
 export type FailureHelp = {
   guidance: string;
   openSettings?: boolean;

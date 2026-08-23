@@ -67,4 +67,13 @@ describe("one-time action state", () => {
       runs.confirmations.consume(token.id, token.nonce, confirmation),
     ).toThrow("CONFIRMATION_INVALID");
   });
+  it("given_dispatched_navigation_when_verifying_then_marks_the_run_without_authorizing_another_action", () => {
+    const runs = new RunCoordinator();
+    const run = runs.start(1, 0, "epoch", "act");
+    runs.transition(run.id, "EXECUTING");
+
+    runs.transition(run.id, "VERIFYING_NAVIGATION");
+
+    expect(runs.byId(run.id)?.phase).toBe("VERIFYING_NAVIGATION");
+  });
 });

@@ -4,7 +4,8 @@ import {
   validateChatEvent,
 } from "../contracts/chat-events.js";
 import { renderMarkdown } from "./markdown.js";
-import { failureHelp, userMessage } from "./panel.js";
+import { failureHelp, timelineToolLabel, userMessage } from "./panel.js";
+import { redactForChat } from "../security/chat-redaction.js";
 
 type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
@@ -14,9 +15,22 @@ type BrowserRuntime = {
   openOptionsPage(): Promise<void>;
   onMessage: { addListener(listener: (message: unknown) => void): void };
 };
-const runtime = (
-  globalThis as typeof globalThis & { chrome?: { runtime: BrowserRuntime } }
-).chrome?.runtime;
+type BrowserTabs = {
+  onActivated?: {
+    addListener(
+      listener: (activeInfo: { tabId: number; windowId: number }) => void,
+    ): void;
+  };
+};
+const chromeApi = (
+  globalThis as typeof globalThis & {
+    chrome?: {
+      runtime: BrowserRuntime;
+      tabs?: BrowserTabs;
+    };
+  }
+).chrome;
+const runtime = chromeApi?.runtime;
 const panelPort = runtime?.connect({ name: "contextpilot-panel" });
 const byId = <T extends HTMLElement>(id: string): T | null =>
   document.querySelector<T>("#" + id);
@@ -44,9 +58,12 @@ const threadScope = byId<HTMLElement>("thread-scope");
 
 let chatMode: "ask" | "act" = "ask";
 let currentPermissionMode = "standard";
-let deliveredDuringRequest = false;
 let deltaFrame: number | undefined;
-const eventSequences = new Map<string, number>();
+// `sequence` is monotonic within a tab thread. It deliberately does not
+// restart for each run, so a second question begins after the first run's
+// terminal event.
+const threadSequences = new Map<string, number>();
+const resyncingThreads = new Set<string>();
 const streamingMessages = new Map<string, HTMLElement>();
 const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
@@ -54,9 +71,26 @@ const tools = new Map<string, HTMLElement>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
 const maxAttachmentChars = 6_000;
+const maxAssistantMessageChars = 16_000;
+const assistantTruncationMarker = "\n\n[응답이 길어 앞부분만 표시합니다.]";
 const textAttachmentExtensions = new Set(["txt", "md", "csv", "json"]);
 let attachment: { name: string; text: string; truncated: boolean } | undefined;
 let runActive = false;
+let skipNextLiveUserMessage = false;
+let activeThreadTabId: number | undefined;
+let latestRecoveryId = 0;
+
+const boundedAssistantText = (text: string): string => {
+  if (text.length <= maxAssistantMessageChars) return text;
+  return (
+    text.slice(0, maxAssistantMessageChars - assistantTruncationMarker.length) +
+    assistantTruncationMarker
+  );
+};
+const appendAssistantText = (current: string, next: string): string =>
+  current.endsWith(assistantTruncationMarker)
+    ? current
+    : boundedAssistantText(current + next);
 
 const setStatus = (text: string): void => {
   if (status) status.textContent = text;
@@ -88,8 +122,9 @@ const message = (role: "user" | "assistant", text: string): HTMLElement => {
   item.className = "message";
   item.dataset.role = role;
   if (role === "assistant") {
-    assistantMessageText.set(item, text);
-    renderMarkdown(item, text);
+    const bounded = boundedAssistantText(text);
+    assistantMessageText.set(item, bounded);
+    renderMarkdown(item, bounded);
   } else item.textContent = text;
   return item;
 };
@@ -159,15 +194,16 @@ const clearAttachment = (): void => {
   if (attachmentInput) attachmentInput.value = "";
   renderAttachment();
 };
-const clearConversation = (): void => {
+const clearConversation = (focusInput = false): void => {
   if (deltaFrame !== undefined) cancelAnimationFrame(deltaFrame);
   deltaFrame = undefined;
-  eventSequences.clear();
+  threadSequences.clear();
+  resyncingThreads.clear();
   streamingMessages.clear();
   pendingDeltas.clear();
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
-  deliveredDuringRequest = false;
+  skipNextLiveUserMessage = false;
   setRunActive(false);
   chatMessages?.replaceChildren();
   emptyState?.removeAttribute("hidden");
@@ -175,7 +211,7 @@ const clearConversation = (): void => {
   clearAttachment();
   if (chatInput) {
     chatInput.value = "";
-    chatInput.focus();
+    if (focusInput) chatInput.focus();
   }
 };
 const attachmentPrompt = (question: string): string | undefined => {
@@ -406,7 +442,9 @@ const flushDeltas = (): void => {
   for (const [runId, text] of pendingDeltas) {
     const previous = streamingMessages.get(runId);
     if (previous) {
-      const content = (assistantMessageText.get(previous) ?? "") + text;
+      const existing = assistantMessageText.get(previous) ?? "";
+      const content = appendAssistantText(existing, text);
+      if (content === existing) continue;
       assistantMessageText.set(previous, content);
       renderMarkdown(previous, content);
     } else {
@@ -424,30 +462,37 @@ const applyChatEvent = (raw: unknown): void => {
   } catch {
     return;
   }
-  const previous = eventSequences.get(event.run_id) ?? 0;
+  const previous = threadSequences.get(event.thread_id) ?? 0;
   if (event.sequence <= previous) return;
   if (event.sequence > previous + 1) {
-    void runtime
-      ?.sendMessage({
-        kind: "CHAT_RESYNC",
-        run_id: event.run_id,
-        sequence: previous,
-      })
-      .then((response) => {
-        if (
-          typeof response === "object" &&
-          response !== null &&
-          (response as { ok?: unknown }).ok &&
-          Array.isArray((response as { events?: unknown }).events)
-        )
-          for (const missing of (response as { events: unknown[] }).events)
-            applyChatEvent(missing);
-      });
+    if (!resyncingThreads.has(event.thread_id)) {
+      resyncingThreads.add(event.thread_id);
+      void runtime
+        ?.sendMessage({
+          kind: "CHAT_RESYNC",
+          run_id: event.run_id,
+          sequence: previous,
+        })
+        .then((response) => {
+          if (
+            typeof response === "object" &&
+            response !== null &&
+            (response as { ok?: unknown }).ok &&
+            Array.isArray((response as { events?: unknown }).events)
+          )
+            for (const missing of (response as { events: unknown[] }).events)
+              applyChatEvent(missing);
+        })
+        .finally(() => resyncingThreads.delete(event.thread_id));
+    }
     return;
   }
-  eventSequences.set(event.run_id, event.sequence);
-  deliveredDuringRequest = true;
+  threadSequences.set(event.thread_id, event.sequence);
   if (event.type === "user_message") {
+    if (skipNextLiveUserMessage) {
+      skipNextLiveUserMessage = false;
+      return;
+    }
     append(message("user", event.text));
     return;
   }
@@ -493,7 +538,7 @@ const applyChatEvent = (raw: unknown): void => {
       if (detail) detail.textContent = event.summary;
       return;
     }
-    const item = card("tool", event.tool, event.summary);
+    const item = card("tool", timelineToolLabel(event.tool), event.summary);
     tools.set(event.tool_use_id, item);
     append(item);
     return;
@@ -545,15 +590,26 @@ const applyChatEvent = (raw: unknown): void => {
   else if (event.outcome === "CANCELLED") setStatus("작업을 중단했습니다.");
   else showFailure(event.code);
 };
+const selectThread = (tabId: number): void => {
+  if (activeThreadTabId === tabId) return;
+  activeThreadTabId = tabId;
+  clearConversation();
+  if (threadScope) threadScope.textContent = "이 탭의 문맥";
+};
 const recoverChatEvents = async (attempt = 0): Promise<void> => {
+  const recoveryId = ++latestRecoveryId;
   try {
     const response = await runtime?.sendMessage({ kind: "CHAT_RECOVER" });
     if (
+      recoveryId === latestRecoveryId &&
       typeof response === "object" &&
       response !== null &&
       (response as { ok?: unknown }).ok &&
       Array.isArray((response as { events?: unknown }).events)
     ) {
+      const tabId = (response as { tab_id?: unknown }).tab_id;
+      if (!Number.isInteger(tabId)) throw new Error("missing recovered tab");
+      selectThread(tabId as number);
       const scope = (response as { scope?: unknown }).scope;
       if (
         threadScope &&
@@ -570,7 +626,7 @@ const recoverChatEvents = async (attempt = 0): Promise<void> => {
   } catch {
     // A suspended worker can still be restoring trusted session storage.
   }
-  if (attempt < 20)
+  if (attempt < 20 && recoveryId === latestRecoveryId)
     window.setTimeout(() => void recoverChatEvents(attempt + 1), 100);
 };
 settingsOpen?.addEventListener("click", openSettings);
@@ -584,7 +640,7 @@ newChatConfirm?.addEventListener("click", () => {
   newChatConfirm.disabled = true;
   void sendRuntime({ kind: "CHAT_CLEAR" })
     .then(() => {
-      clearConversation();
+      clearConversation(true);
       newChatDialog?.close();
       setStatus("새 대화를 시작했습니다.");
     })
@@ -611,12 +667,23 @@ const receiveChatEvent = (message: unknown): void => {
   if (
     typeof message === "object" &&
     message !== null &&
+    (message as { kind?: unknown }).kind === "CHAT_THREAD_CHANGED"
+  ) {
+    const tabId = (message as { tab_id?: unknown }).tab_id;
+    if (Number.isInteger(tabId)) selectThread(tabId as number);
+    void recoverChatEvents();
+    return;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
     (message as { kind?: unknown }).kind === "CHAT_EVENT"
   )
     applyChatEvent((message as { event?: unknown }).event);
 };
 panelPort?.onMessage.addListener(receiveChatEvent);
 runtime?.onMessage.addListener(receiveChatEvent);
+chromeApi?.tabs?.onActivated?.addListener(() => void recoverChatEvents());
 attachmentTrigger?.addEventListener("click", () => attachmentInput?.click());
 suggestedPrompt?.addEventListener("click", () => {
   if (!chatInput) return;
@@ -670,15 +737,28 @@ chatForm?.addEventListener("submit", (event) => {
     );
     return;
   }
+  skipNextLiveUserMessage = true;
+  append(
+    message(
+      "user",
+      redactForChat(
+        question ||
+          (attachment ? `${attachment.name} 파일을 분석해 주세요.` : ""),
+      ),
+    ),
+  );
   if (chatInput) chatInput.value = "";
-  deliveredDuringRequest = false;
   setRunActive(true);
   setStatus("응답을 기다리는 중입니다.");
   void sendRuntime({ kind: "CHAT_SEND", payload: { prompt, mode: chatMode } })
-    .then((response) => {
+    .then(() => {
       clearAttachment();
-      if (!deliveredDuringRequest && typeof response.message === "string")
-        append(message("assistant", response.message));
+      // A response can return before (or after a transient loss of) the panel
+      // port. This especially matters for Act: its successful response has no
+      // display text, only a live action-review event. Reconcile the
+      // sequence-addressable timeline after every completed request; already
+      // rendered events are ignored by their thread sequence.
+      void recoverChatEvents();
     })
     .catch((error: unknown) => {
       setRunActive(false);

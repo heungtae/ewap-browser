@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { ProviderRuntime } from "../../../src/providers/runtime.js";
+import {
+  maxProviderAssistantChars,
+  ProviderRuntime,
+} from "../../../src/providers/runtime.js";
 import { CoreProviderTransport } from "../../../src/providers/transport.js";
 import type { ProviderConfig } from "../../../src/providers/types.js";
 
@@ -227,6 +230,56 @@ describe("provider runtime", () => {
     ).resolves.toEqual({ content: "첫 응답", tool_calls: [] });
     expect(deltas).toEqual(["첫 ", "응답"]);
     expect(request).toMatchObject({ stream: true });
+  });
+
+  it("given_an_oversized_streamed_answer_when_chatting_then_cancels_before_rendering", async () => {
+    let stored: Record<string, unknown> = {};
+    let cancelled = false;
+    const runtime = new ProviderRuntime(
+      {
+        async get() {
+          return stored;
+        },
+        async set(value) {
+          stored = value;
+        },
+      },
+      new CoreProviderTransport(
+        async () =>
+          new Response(
+            new ReadableStream<Uint8Array>({
+              start(controller) {
+                controller.enqueue(
+                  new TextEncoder().encode(
+                    `data: ${JSON.stringify({
+                      choices: [
+                        {
+                          delta: {
+                            content: "x".repeat(maxProviderAssistantChars + 1),
+                          },
+                        },
+                      ],
+                    })}\n\n`,
+                  ),
+                );
+              },
+              cancel() {
+                cancelled = true;
+              },
+            }),
+            { headers: { "content-type": "text/event-stream" } },
+          ),
+      ),
+    );
+    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
+
+    await expect(
+      runtime.chat(
+        { messages: [{ role: "user", content: "현재 페이지" }] },
+        { onDelta: () => undefined },
+      ),
+    ).rejects.toThrow("PROVIDER_UNAVAILABLE");
+    expect(cancelled).toBe(true);
   });
 
   it("given_responses_sse_lifecycle_event_when_chatting_then_waits_for_text_delta", async () => {

@@ -35,7 +35,7 @@ Chat Session (새 대화부터 다음 새 대화까지)
 
 ## 3. 탭·페이지 전환 규칙
 
-1. Side Panel이 활성 탭을 관찰하면 service worker가 그 탭의 `TabThread`를 선택한다. thread가 없으면 빈 thread를 만든다.
+1. Side Panel이 활성 탭을 관찰하면 service worker가 그 panel binding의 `window_id`에서 활성 탭을 다시 조회해 `TabThread`를 선택한다. worker의 `tabs.onActivated` push는 지연될 수 있는 최적화일 뿐이며, panel도 같은 activation을 감지해 `CHAT_RECOVER`를 요청하고 반환된 `tab_id`가 바뀌면 먼저 기존 transcript와 scope label을 비운다. Chrome이 Side Panel의 `documentId` binding을 제공하지 못한 경우에는 정확히 하나의 unbound panel에만 transcript 없는 refresh 신호를 보내고, worker가 `lastFocusedWindow`를 다시 조회한다. 이 fallback은 여러 panel/window 사이에 event나 transcript를 broadcast하지 않는다. thread가 없으면 빈 thread를 만든다.
 2. 같은 탭으로 돌아오면 그 thread의 대화 화면과 안전한 문맥을 복원한다. 다른 thread의 메시지는 화면에도 모델 요청에도 기본 포함하지 않는다.
 3. full navigation, origin/path 변경, `document_epoch` 또는 `page_scope_epoch` 변경은 새 `PageScope`를 연다. 이전 page projection, `model_ref`, action token, permission/confirmation binding은 즉시 무효다.
 4. content script는 main frame에서 `pushState`, `replaceState`, `popstate`를 감시한다. 변경을 감지하면 먼저 local ref registry를 비우고 새 `page_scope_epoch`를 만든 뒤 `PAGE_SCOPE_REGISTER`를 보낸다. service worker는 sender의 tab URL을 스스로 canonicalize해 origin/path를 정하며 content message가 보낸 URL을 신뢰하지 않는다. `tabs.onUpdated`의 main-frame URL 변경도 즉시 해당 tab을 stale로 표시한다. 새 register와 현재 tab URL이 일치할 때까지 Act와 추가 tool call은 `PAGE_SCOPE_STALE`로 거부한다.
@@ -86,9 +86,9 @@ tab 종료 통지가 늦어 남은 record는 먼저 제거한다. 그 뒤에도 
 
 ## 6. 실행·권한 안전성
 
-- 전송 시 service worker는 `sender.id`, extension side-panel URL 및 `sender.documentId`를 확인하고 `runtime.getContexts({ contextTypes: ["SIDE_PANEL"], documentIds: [sender.documentId] })` 결과가 정확히 하나인지 검증한다. 그 context의 `windowId`에 대해 `tabs.query({ active: true, windowId })`가 반환한 tab만 선택한다. panel이 보낸 `tab_id`, `window_id`, `thread_id`는 권한 판단에 사용하지 않는다. 이 binding은 panel 종료, context 불일치 또는 window 종료 때 폐기한다.
+- 전송과 `CHAT_RECOVER`/`CHAT_CLEAR` 시 service worker는 `sender.id`, extension side-panel URL 및 `sender.documentId`를 확인하고 `runtime.getContexts({ contextTypes: ["SIDE_PANEL"], documentIds: [sender.documentId] })` 결과가 정확히 하나인지 검증한다. 그 context의 `windowId`에 대해 `tabs.query({ active: true, windowId })`가 반환한 tab만 선택한다. Chrome이 context binding을 반환하지 않는 호환성 경우에는 하나의 unbound panel에 한해 worker가 `lastFocusedWindow`를 직접 다시 조회할 수 있다. 이때 panel은 tab/window/thread key를 보내지 않고, worker는 transcript event를 broadcast하지 않는다. panel이 보낸 `tab_id`, `window_id`, `thread_id`는 권한 판단에 사용하지 않는다. 이 binding은 panel 종료, context 불일치 또는 window 종료 때 폐기한다.
 - Ask run은 시작 tab/PageScope에 고정된다. 사용자가 다른 탭을 보더라도 완료 event는 원래 thread에만 기록된다.
-- Act run은 시작 탭이 비활성이 되거나 PageScope가 바뀌면 자동으로 행동을 계속하지 않는다. pending proposal은 `TARGET_STALE` 또는 `PAUSED`, resume은 새 projection·새 proposal·필요한 새 확인을 요구한다.
+- Act run은 시작 탭이 비활성이 되거나 PageScope가 바뀌면 자동으로 행동을 계속하지 않는다. pending proposal은 `TARGET_STALE` 또는 `PAUSED`, resume은 새 projection·새 proposal·필요한 새 확인을 요구한다. 단, 이미 dispatch한 closed `exact-navigation-transition`은 예외적으로 `VERIFYING_NAVIGATION` 상태에서 정확한 origin/path만 확인한다. 이 상태에서도 이전 ref·권한·confirmation·action token은 즉시 무효이며 추가 입력은 허용하지 않는다. 정확한 목적지가 확인되면 `VERIFIED`, 다른 URL·timeout·중단이면 재시도 없이 `UNKNOWN` 또는 `CANCELLED`로 한 번만 끝낸다.
 - permission, `skip_all_permission_checks` mode, plan host approval, R2 confirmation과 action token은 run·tab·PageScope에 결속된다. 탭/페이지/thread 간 상속은 없다. “권한 질문 생략”도 hard policy, stale 검증, R2/R3 제한을 생략하지 않는다.
 - provider stream은 session 전체에서 한 번에 하나만 실행한다. 다른 탭으로 전환해도 기존 run을 몰래 취소하지 않으며, 새 send는 Stop 또는 terminal state 뒤에만 가능하다.
 

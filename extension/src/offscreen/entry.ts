@@ -11,6 +11,7 @@ type Runtime = {
   connect(info: { name: string }): {
     postMessage(message: unknown): void;
     disconnect(): void;
+    onDisconnect: { addListener(listener: () => void): void };
   };
   onMessage: {
     addListener(
@@ -28,6 +29,7 @@ const chromeApi = (
   }
 ).chrome;
 const runtime = chromeApi?.runtime;
+const maxProviderStreamBytes = 2 * 1024 * 1024;
 const safeFailure = (code: string, detail?: string) => ({
   ok: false,
   code,
@@ -58,15 +60,24 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   const port = runtime.connect({
     name: `contextpilot-provider:${value.stream_id}`,
   });
+  const abort = new AbortController();
+  let responded = false;
+  const respondOnce = (response: unknown): void => {
+    if (responded) return;
+    responded = true;
+    respond(response);
+  };
+  port.onDisconnect.addListener(() => abort.abort());
   void fetch(value.url, {
     method: value.method,
     headers: value.headers,
     ...(value.body === undefined ? {} : { body: value.body }),
     credentials: "omit",
     redirect: "error",
+    signal: abort.signal,
   })
     .then(async (response) => {
-      respond({
+      respondOnce({
         ok: true,
         stream: true,
         status: response.status,
@@ -79,11 +90,21 @@ runtime?.onMessage.addListener((message, sender, respond) => {
         return;
       }
       const decoder = new TextDecoder();
+      let received = 0;
       for (;;) {
         const chunk = await reader.read();
         if (chunk.done) break;
+        received += chunk.value.byteLength;
+        if (received > maxProviderStreamBytes) {
+          abort.abort();
+          break;
+        }
         const text = decoder.decode(chunk.value, { stream: true });
         if (text) port.postMessage({ type: "chunk", text });
+      }
+      if (abort.signal.aborted) {
+        port.disconnect();
+        return;
       }
       const tail = decoder.decode();
       if (tail) port.postMessage({ type: "chunk", text: tail });
@@ -92,7 +113,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     })
     .catch(() => {
       port.disconnect();
-      respond(
+      respondOnce(
         safeFailure("PROVIDER_UNAVAILABLE", "network/CORS/PNA request failed"),
       );
     });

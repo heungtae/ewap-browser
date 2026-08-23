@@ -16,6 +16,14 @@ export type ProviderRuntimeStorage = {
   set(value: Record<string, unknown>): Promise<void>;
 };
 
+// The side panel renders streaming text incrementally. Keep both the raw
+// protocol buffer and visible model text bounded so an abnormal local provider
+// response cannot exhaust the extension renderer.
+export const maxProviderBodyChars = 2 * 1024 * 1024;
+export const maxProviderAssistantChars = 16_000;
+const providerResponseTooLarge = (): never =>
+  fail("PROVIDER_UNAVAILABLE", "provider response exceeded the safe limit");
+
 export class ProviderRuntime {
   public readonly registry = new ProviderRegistry();
   private readonly settings: ProviderSettings;
@@ -190,36 +198,56 @@ const parseProviderBody = async (
   let text = "";
   let pending = "";
   let isSse = false;
-  for (;;) {
-    const next = await reader.read();
-    if (next.done) break;
-    const chunk = decoder.decode(next.value, { stream: true });
-    text += chunk;
-    pending += chunk;
-    let newline = pending.indexOf("\n");
-    while (newline >= 0) {
-      const line = pending.slice(0, newline).replace(/\r$/, "");
-      pending = pending.slice(newline + 1);
-      if (line.startsWith("data:")) {
-        isSse = true;
-        // Parse each completed event now for UI deltas; the complete body is
-        // parsed below to assemble fragmented tool calls exactly once.
-        // Responses API sends lifecycle events such as `response.created`
-        // before any text or tool-call payload. They are useful only once the
-        // whole stream is assembled, so an individual empty event must not
-        // terminate the request.
-        parseSseProviderBody(line, onDelta, true);
-      }
-      newline = pending.indexOf("\n");
-    }
-  }
-  text += decoder.decode();
-  if (isSse || text.split(/\r?\n/).some((line) => line.startsWith("data:")))
-    return parseSseProviderBody(text);
+  let streamedAssistantChars = 0;
+  const emitDelta = (delta: string): void => {
+    streamedAssistantChars += delta.length;
+    if (streamedAssistantChars > maxProviderAssistantChars)
+      providerResponseTooLarge();
+    onDelta?.(delta);
+  };
   try {
-    return JSON.parse(text);
-  } catch {
-    return fail("PROVIDER_UNAVAILABLE");
+    for (;;) {
+      const next = await reader.read();
+      if (next.done) break;
+      const chunk = decoder.decode(next.value, { stream: true });
+      if (text.length + chunk.length > maxProviderBodyChars)
+        providerResponseTooLarge();
+      text += chunk;
+      pending += chunk;
+      if (pending.length > maxProviderBodyChars) providerResponseTooLarge();
+      let newline = pending.indexOf("\n");
+      while (newline >= 0) {
+        const line = pending.slice(0, newline).replace(/\r$/, "");
+        pending = pending.slice(newline + 1);
+        if (line.startsWith("data:")) {
+          isSse = true;
+          // Parse each completed event now for UI deltas; the complete body is
+          // parsed below to assemble fragmented tool calls exactly once.
+          // Responses API sends lifecycle events such as `response.created`
+          // before any text or tool-call payload. They are useful only once the
+          // whole stream is assembled, so an individual empty event must not
+          // terminate the request.
+          parseSseProviderBody(line, emitDelta, true);
+        }
+        newline = pending.indexOf("\n");
+      }
+    }
+    const tail = decoder.decode();
+    if (text.length + tail.length > maxProviderBodyChars)
+      providerResponseTooLarge();
+    text += tail;
+    if (isSse || text.split(/\r?\n/).some((line) => line.startsWith("data:")))
+      return parseSseProviderBody(text);
+    try {
+      return JSON.parse(text);
+    } catch {
+      return fail("PROVIDER_UNAVAILABLE");
+    }
+  } catch (error) {
+    await reader.cancel().catch(() => undefined);
+    throw error;
+  } finally {
+    reader.releaseLock();
   }
 };
 
@@ -362,6 +390,7 @@ const parseChatResponse = (response: unknown): ProviderChatResponse => {
   if (message) {
     const content = typeof message.content === "string" ? message.content : "";
     const toolCalls = parseToolCalls(message.tool_calls);
+    if (content.length > maxProviderAssistantChars) providerResponseTooLarge();
     if (content || toolCalls.length > 0)
       return { content, tool_calls: toolCalls };
   }
@@ -370,6 +399,7 @@ const parseChatResponse = (response: unknown): ProviderChatResponse => {
       ? object.output_text
       : responseOutputText(object.output);
   const responseCalls = parseToolCalls(object.output);
+  if (output.length > maxProviderAssistantChars) providerResponseTooLarge();
   if (output || responseCalls.length > 0)
     return { content: output, tool_calls: responseCalls };
   return fail("PROVIDER_UNAVAILABLE");

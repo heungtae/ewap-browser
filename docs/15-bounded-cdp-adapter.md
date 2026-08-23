@@ -126,7 +126,7 @@ service worker는 attach 전에 `chrome.storage.session`에 secret 없는 `{tabI
 
 worker 시작 시 marker를 복구하되 `attached`라는 저장값만으로 소유권을 단정하지 않는다. exact tab에 allowlisted no-input ownership probe를 보내 현재 extension session이 command를 보낼 수 있는 경우에만 detach한다. probe가 “not attached”를 반환하면 다른 extension, DevTools 또는 외부 harness를 detach하지 않는다. attach 성공 여부가 불명확하거나 probe 자체가 실패하면 tab을 `CDP_CLEANUP_FAILED`로 격리하고 상태 변경을 계속하지 않는다.
 
-다음 사건은 즉시 dispatch 중단과 cleanup을 요구한다.
+다음 사건은 즉시 dispatch 중단과 cleanup을 요구한다. 단, 이미 dispatch한 closed exact-navigation verifier는 새 문서의 정확한 origin/path를 확인하는 짧은 `VERIFYING_NAVIGATION` 단계만 유지한다. 이 예외는 추가 input, ref 재사용 또는 permission/confirmation 상속을 허용하지 않으며, mismatch·timeout은 자동 재시도 없이 `UNKNOWN`이다.
 
 - Stop 또는 run cancellation
 - navigation, frame 교체와 document epoch 변경
