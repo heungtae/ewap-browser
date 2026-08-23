@@ -70,6 +70,7 @@ const streamingMessages = new Map<string, HTMLElement>();
 const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
+const reviewItems = new Map<string, HTMLElement>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
 const maxAttachmentChars = 6_000;
@@ -185,6 +186,23 @@ const setRunActive = (active: boolean): void => {
   send.setAttribute("aria-label", active ? "중지" : "보내기");
   send.title = active ? "중지" : "보내기";
 };
+const lockReview = (runId: string, stateText: string): void => {
+  const item = reviewItems.get(runId);
+  if (!item) return;
+  const controls = item.querySelectorAll<HTMLButtonElement>(
+    ".card-actions button",
+  );
+  for (const control of controls) control.disabled = true;
+  const primary = item.querySelector<HTMLButtonElement>(
+    ".card-actions button.primary",
+  );
+  if (primary && stateText === "완료") primary.textContent = "실행됨";
+  if (primary && stateText === "중단됨") primary.textContent = "중단됨";
+  item.dataset.decision = "locked";
+  item.setAttribute("aria-busy", "false");
+  const state = item.querySelector<HTMLElement>(".tool-state");
+  if (state) state.textContent = stateText;
+};
 const renderAttachment = (): void => {
   if (!attachmentName) return;
   attachmentName.hidden = !attachment;
@@ -206,6 +224,7 @@ const clearConversation = (focusInput = false): void => {
   pendingDeltas.clear();
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
+  reviewItems.clear();
   skipNextLiveUserMessage = false;
   setRunActive(false);
   chatMessages?.replaceChildren();
@@ -323,7 +342,7 @@ const approveAction = async (action: ChatActionView): Promise<void> => {
     void recoverChatEvents();
   }
 };
-const renderReview = (action: ChatActionView): void => {
+const renderReview = (action: ChatActionView, runId: string): void => {
   const item = card("review", "작업 제안", actionSummary(action));
   const row = actionRow(item);
   let selected = false;
@@ -332,6 +351,8 @@ const renderReview = (action: ChatActionView): void => {
     selected = true;
     for (const control of row.querySelectorAll<HTMLButtonElement>("button"))
       control.disabled = true;
+    const primary = row.querySelector<HTMLButtonElement>("button.primary");
+    if (primary && decision === "approve") primary.textContent = "실행 중";
     item.dataset.decision = decision;
     row.setAttribute("aria-busy", "true");
     if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
@@ -367,6 +388,7 @@ const renderReview = (action: ChatActionView): void => {
     actionButton("중단", "danger", () => selectDecision("reject")),
   );
   append(item);
+  reviewItems.set(runId, item);
   setStatus("작업 제안을 검토해 주세요.");
 };
 const workflowCandidateFrom = (
@@ -401,22 +423,24 @@ const renderWorkflowPlan = (
     `${candidate.title} · ${candidate.detail}\n${candidate.origin}${candidate.path_prefix} · ${candidate.step_count}단계`,
   );
   const row = actionRow(item);
-  row.append(
-    actionButton("분석 시작", "primary", async () => {
-      try {
-        setRunActive(true);
-        skipNextLiveUserMessage = true;
-        await sendRuntime({
-          kind: "WORKFLOW_START",
-          selection_id: selectionId,
-        });
-        void recoverChatEvents();
-      } catch (error) {
-        setRunActive(false);
-        showFailure(error instanceof Error ? error.message : undefined);
-      }
-    }),
-  );
+  const startButton = actionButton("분석 시작", "primary", async () => {
+    startButton.disabled = true;
+    row.setAttribute("aria-busy", "true");
+    setStatus("워크플로우를 실행하는 중입니다.");
+    try {
+      setRunActive(true);
+      skipNextLiveUserMessage = true;
+      await sendRuntime({
+        kind: "WORKFLOW_START",
+        selection_id: selectionId,
+      });
+      void recoverChatEvents();
+    } catch (error) {
+      setRunActive(false);
+      showFailure(error instanceof Error ? error.message : undefined);
+    }
+  });
+  row.append(startButton);
   if (candidate.source === "runtime")
     row.append(
       actionButton("내 워크플로우로 저장", "", async () => {
@@ -450,8 +474,15 @@ const renderWorkflowAnalysisConsent = (
     "페이지 코드 분석 동의",
     `스크립트 ${preview.script_count}개(${preview.inline_chars.toLocaleString()}자 inline)를 선택한 provider에 전달합니다. 출처: ${preview.origins.join(", ") || "inline only"}`,
   );
-  actionRow(item).append(
-    actionButton("코드 전송 후 초안 만들기", "warning", async () => {
+  const row = actionRow(item);
+  const analyzeButton = actionButton(
+    "코드 전송 후 초안 만들기",
+    "warning",
+    async () => {
+      analyzeButton.disabled = true;
+      cancelButton.disabled = true;
+      row.setAttribute("aria-busy", "true");
+      analyzeButton.textContent = "분석 중";
       try {
         const response = await sendRuntime({
           kind: "WORKFLOW_ANALYZE",
@@ -462,14 +493,19 @@ const renderWorkflowAnalysisConsent = (
         if (!candidate) throw new Error("INVALID_ARGUMENT");
         renderWorkflowCandidates(selectionId, [candidate], true);
       } catch (error) {
+        analyzeButton.disabled = false;
+        cancelButton.disabled = false;
+        analyzeButton.textContent = "코드 전송 후 초안 만들기";
+        row.setAttribute("aria-busy", "false");
         showFailure(error instanceof Error ? error.message : undefined);
       }
-    }),
-    actionButton("취소", "danger", () => {
-      item.remove();
-      setStatus("코드 분석을 취소했습니다.");
-    }),
+    },
   );
+  const cancelButton = actionButton("취소", "danger", () => {
+    item.remove();
+    setStatus("코드 분석을 취소했습니다.");
+  });
+  row.append(analyzeButton, cancelButton);
   append(item);
 };
 const renderWorkflowCandidates = (
@@ -496,6 +532,13 @@ const renderWorkflowCandidates = (
       ? "코드 초안"
       : "페이지 제공";
   };
+  const lockChoices = (): void => {
+    for (const control of item.querySelectorAll<HTMLButtonElement>(
+      ".card-actions button",
+    ))
+      control.disabled = true;
+    item.dataset.decision = "locked";
+  };
   item.append(divider());
   for (const candidate of candidates) {
     const row = actionRow(item);
@@ -504,6 +547,9 @@ const renderWorkflowCandidates = (
       candidate.status === "stale" ? "" : "primary",
       async () => {
         if (candidate.status === "stale") return;
+        lockChoices();
+        button.disabled = true;
+        row.setAttribute("aria-busy", "true");
         try {
           const response = await sendRuntime({
             kind: "WORKFLOW_SELECT",
@@ -526,8 +572,12 @@ const renderWorkflowCandidates = (
   }
   if (!appendOnly) {
     item.append(divider());
-    actionRow(item).append(
-      actionButton("페이지 코드로 초안 만들기", "warning", async () => {
+    const choiceRow = actionRow(item);
+    const codeDraftButton = actionButton(
+      "페이지 코드로 초안 만들기",
+      "warning",
+      async () => {
+        lockChoices();
         try {
           const response = await sendRuntime({
             kind: "WORKFLOW_ANALYSIS_PREVIEW",
@@ -551,23 +601,25 @@ const renderWorkflowCandidates = (
         } catch (error) {
           showFailure(error instanceof Error ? error.message : undefined);
         }
-      }),
-      actionButton("일반 한 단계 실행", "", async () => {
-        try {
-          setRunActive(true);
-          skipNextLiveUserMessage = true;
-          await sendRuntime({
-            kind: "WORKFLOW_DISMISS",
-            selection_id: selectionId,
-          });
-          item.remove();
-          void recoverChatEvents();
-        } catch (error) {
-          setRunActive(false);
-          showFailure(error instanceof Error ? error.message : undefined);
-        }
-      }),
+      },
     );
+    const oneStepButton = actionButton("일반 한 단계 실행", "", async () => {
+      lockChoices();
+      try {
+        setRunActive(true);
+        skipNextLiveUserMessage = true;
+        await sendRuntime({
+          kind: "WORKFLOW_DISMISS",
+          selection_id: selectionId,
+        });
+        item.remove();
+        void recoverChatEvents();
+      } catch (error) {
+        setRunActive(false);
+        showFailure(error instanceof Error ? error.message : undefined);
+      }
+    });
+    choiceRow.append(codeDraftButton, oneStepButton);
   }
   append(item);
   // Candidate discovery does not create a run/user_message event. Set the
@@ -784,6 +836,7 @@ const applyChatEvent = (raw: unknown): void => {
     return;
   }
   if (event.type === "tool_started") {
+    lockReview(event.run_id, "실행 중");
     flushDeltas();
     const existing = tools.get(event.tool_use_id);
     if (existing) {
@@ -803,6 +856,10 @@ const applyChatEvent = (raw: unknown): void => {
     return;
   }
   if (event.type === "tool_finished") {
+    lockReview(
+      event.run_id,
+      event.result.outcome === "VERIFIED" ? "완료" : "처리됨",
+    );
     const item = tools.get(event.tool_use_id);
     const detail = item?.querySelector<HTMLElement>(".event-detail");
     if (detail) detail.textContent = event.result.summary;
@@ -819,23 +876,37 @@ const applyChatEvent = (raw: unknown): void => {
     return;
   }
   if (event.type === "action_review_required")
-    return renderReview(event.action);
-  if (event.type === "permission_required")
+    return renderReview(event.action, event.run_id);
+  if (event.type === "permission_required") {
+    lockReview(event.run_id, "권한 대기");
     return renderPermission(
       event.request_id,
       event.action,
       event.capability,
       event.host,
     );
-  if (event.type === "value_required")
+  }
+  if (event.type === "value_required") {
+    lockReview(event.run_id, "입력 대기");
     return renderValue(event.action, event.value_kind);
-  if (event.type === "confirmation_required")
+  }
+  if (event.type === "confirmation_required") {
+    lockReview(event.run_id, "추가 확인 대기");
     return renderConfirmation(
       event.action,
       event.confirmation_id,
       event.confirmation_nonce,
     );
+  }
   flushDeltas();
+  lockReview(
+    event.run_id,
+    event.outcome === "VERIFIED"
+      ? "완료"
+      : event.outcome === "CANCELLED"
+        ? "중단됨"
+        : "처리됨",
+  );
   streamingMessages.delete(event.run_id);
   if (runBanner) runBanner.hidden = true;
   setRunActive(false);
