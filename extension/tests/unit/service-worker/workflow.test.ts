@@ -156,4 +156,26 @@ describe("declarative Act workflow", () => {
       ),
     ).toBe(false);
   });
+
+  it("rejects disconnected workflow steps", () => {
+    expect(() =>
+      validateWorkflowDeclaration({
+        schema_version: 1,
+        id: "disconnected-v1",
+        title: "연결되지 않음",
+        steps: [
+          {
+            id: "first",
+            tool: "click_by_ref",
+            target: { role: "button", name: "실행" },
+          },
+          {
+            id: "unreachable",
+            tool: "click_by_ref",
+            target: { role: "button", name: "다시 시도" },
+          },
+        ],
+      }),
+    ).toThrow();
+  });
 });

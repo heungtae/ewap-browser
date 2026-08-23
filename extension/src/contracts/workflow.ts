@@ -145,6 +145,17 @@ export const validateWorkflowDeclaration = (
       item.branches?.some((branch) => !ids.has(branch.next))
     )
       return fail("INVALID_ARGUMENT");
+  const reachable = new Set<string>();
+  const visit = (id: string): void => {
+    if (reachable.has(id)) return;
+    reachable.add(id);
+    const current = steps.find((item) => item.id === id);
+    if (!current) return;
+    if (current.next) visit(current.next);
+    for (const branch of current.branches ?? []) visit(branch.next);
+  };
+  visit(steps[0]!.id);
+  if (reachable.size !== steps.length) return fail("INVALID_ARGUMENT");
   return {
     schema_version: 1,
     id: string(value.id, 80),
