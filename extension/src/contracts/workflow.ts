@@ -166,6 +166,19 @@ export const workflowTarget = (
   );
   return candidates.length === 1 ? candidates[0] : undefined;
 };
+export const workflowTargetsMatchSnapshot = (
+  snapshot: SemanticSnapshot,
+  workflow: WorkflowDeclaration,
+): boolean =>
+  workflow.steps.every(
+    (step) =>
+      snapshot.nodes.filter(
+        (node) =>
+          node.role === step.target.role &&
+          node.name === step.target.name &&
+          node.visible,
+      ).length === 1,
+  );
 const workflowStateTarget = (
   snapshot: SemanticSnapshot,
   expected: WorkflowTarget,

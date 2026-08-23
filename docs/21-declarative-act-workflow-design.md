@@ -42,6 +42,10 @@ permission/confirmation, value binding과 postcondition을 다시 검증한다.
 Side Panel은 기존 action review card를 유지하고 workflow가 선택된 경우 현재 단계만 제안한다.
 workflow 선언 원문과 branch 값은 진단·provider egress·영구 transcript에 추가하지 않는다.
 
+코드 분석 초안은 untrusted script와 함께 현재 페이지의 visible control role/name 목록을 제공받는다.
+생성 직후 모든 단계의 target이 현재 semantic snapshot에 정확히 하나씩 존재하는지 검증하며,
+이 검증을 통과하지 못한 초안은 실행 후보로 노출하지 않는다.
+
 후보를 고른 뒤의 5분짜리 선택 계획은 `chrome.storage.session`에 선언형 후보·scope·redacted prompt만 저장해
 Service Worker 재시작을 복구한다. confirmation nonce, model ref, action value, 실행 대상 ref와 원본 코드에는
 저장소 복구 경로가 없으며 browser 종료·만료·실행·일반 한 단계 실행 때 폐기한다.

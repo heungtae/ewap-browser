@@ -3,6 +3,7 @@ import {
   nextWorkflowStep,
   validateWorkflowDeclaration,
   workflowTarget,
+  workflowTargetsMatchSnapshot,
 } from "../../../src/contracts/workflow.js";
 
 const snapshot = {
@@ -124,5 +125,35 @@ describe("declarative Act workflow", () => {
         ],
       }),
     ).toThrow();
+  });
+
+  it("matches every declared target by exact visible role and name", () => {
+    const workflow = validateWorkflowDeclaration({
+      schema_version: 1,
+      id: "target-match-v1",
+      title: "대상 확인",
+      steps: [
+        {
+          id: "product",
+          tool: "select_option_by_ref",
+          target: { role: "combobox", name: "제품군" },
+        },
+      ],
+    });
+    expect(workflowTargetsMatchSnapshot(snapshot, workflow)).toBe(true);
+    expect(
+      workflowTargetsMatchSnapshot(
+        snapshot,
+        validateWorkflowDeclaration({
+          ...workflow,
+          steps: [
+            {
+              ...workflow.steps[0]!,
+              target: { role: "combobox", name: "제품군 선택" },
+            },
+          ],
+        }),
+      ),
+    ).toBe(false);
   });
 });
