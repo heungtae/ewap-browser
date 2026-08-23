@@ -85,8 +85,75 @@ const maxProjectionNodes = 1_000;
 const maxArticleCandidates = 4;
 const maxVisibleTextChars = 12_000;
 const maxArticleTextChars = 50_000;
+const maxWorkflowDeclarationChars = 16_384;
+const maxWorkflowScriptCount = 12;
+const maxWorkflowInlineScriptChars = 256 * 1024;
 const projectionSelector =
   "button,input,textarea,select,option,a,[role],h1,h2,h3,h4,h5,h6";
+const workflowDeclaration = (): unknown | undefined => {
+  const declarations = document.querySelectorAll(
+    'script[type="application/contextpilot-workflow+json"]',
+  );
+  if (declarations.length !== 1) return undefined;
+  const source = declarations[0]?.textContent?.trim() ?? "";
+  if (!source || source.length > maxWorkflowDeclarationChars) return undefined;
+  try {
+    return JSON.parse(source) as unknown;
+  } catch {
+    return undefined;
+  }
+};
+type RecordedWorkflowStep = {
+  tool: "select_option_by_ref" | "set_checked_by_ref" | "click_by_ref";
+  target: {
+    role: "combobox" | "checkbox" | "radio" | "button" | "tab" | "menuitem";
+    name: string;
+  };
+};
+let workflowRecording:
+  | { id: string; steps: RecordedWorkflowStep[]; documentEpoch: string }
+  | undefined;
+const workflowScripts = () =>
+  Array.from(document.scripts)
+    .slice(0, maxWorkflowScriptCount)
+    .map((script) => ({
+      ...(script.src ? { src: new URL(script.src, location.href).href } : {}),
+      ...(!script.src && script.textContent
+        ? { inline: script.textContent.slice(0, maxWorkflowInlineScriptChars) }
+        : {}),
+    }))
+    .filter((item) => item.src || item.inline);
+const recordWorkflowTarget = (event: Event): void => {
+  const recording = workflowRecording;
+  if (!recording || !event.isTrusted || !(event.target instanceof Element))
+    return;
+  const element = event.target;
+  const role = roleFor(element);
+  const name = role ? nameFor(element) : "";
+  const tool =
+    element instanceof HTMLSelectElement && role === "combobox"
+      ? "select_option_by_ref"
+      : element instanceof HTMLInputElement &&
+          (element.type === "checkbox" || element.type === "radio") &&
+          (role === "checkbox" || role === "radio")
+        ? "set_checked_by_ref"
+        : role && ["button", "tab", "menuitem"].includes(role)
+          ? "click_by_ref"
+          : undefined;
+  if (!tool || !name) return;
+  const step = { tool, target: { role, name } } as RecordedWorkflowStep;
+  const previous = recording.steps.at(-1);
+  if (
+    previous &&
+    previous.tool === step.tool &&
+    previous.target.role === step.target.role &&
+    previous.target.name === step.target.name
+  )
+    return;
+  if (recording.steps.length < 12) recording.steps.push(step);
+};
+document.addEventListener("change", recordWorkflowTarget, true);
+document.addEventListener("click", recordWorkflowTarget, true);
 const clearPageScopeRefs = (): void => {
   refRecords.clear();
   consumedDeliveries.clear();
@@ -502,6 +569,7 @@ const projectionNodes = (
 };
 const projection = (scope: ReadScope = "all_dom"): unknown => {
   const nodeProjection = projectionNodes(scope);
+  const workflow = workflowDeclaration();
   return {
     origin: location.origin,
     snapshot: {
@@ -514,9 +582,75 @@ const projection = (scope: ReadScope = "all_dom"): unknown => {
       article_text: articlePageText(),
       nodes: nodeProjection.nodes,
     },
+    ...(workflow === undefined ? {} : { workflow }),
   };
 };
 runtime?.onMessage.addListener((message, sender, respond) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_WORKFLOW_SCRIPTS"
+  ) {
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js")
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    respond({
+      ok: true,
+      document_epoch: documentEpoch,
+      scripts: workflowScripts(),
+    });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_WORKFLOW_RECORD_START"
+  ) {
+    const id = (message as { recording_id?: unknown }).recording_id;
+    const epoch = (message as { document_epoch?: unknown }).document_epoch;
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      typeof id !== "string" ||
+      typeof epoch !== "string" ||
+      epoch !== documentEpoch
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    workflowRecording = { id, documentEpoch, steps: [] };
+    respond({ ok: true });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_WORKFLOW_RECORD_STOP"
+  ) {
+    const id = (message as { recording_id?: unknown }).recording_id;
+    const recording = workflowRecording;
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      !recording ||
+      typeof id !== "string" ||
+      id !== recording.id
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    workflowRecording = undefined;
+    respond({
+      ok: true,
+      document_epoch: recording.documentEpoch,
+      steps: recording.steps,
+    });
+    return true;
+  }
   if (
     typeof message === "object" &&
     message !== null &&

@@ -57,6 +57,11 @@ const providerModelSelectionConfirm = document.querySelector<HTMLButtonElement>(
   "#provider-model-selection-confirm",
 );
 const profileTest = document.querySelector<HTMLButtonElement>("#profile-test");
+const workflowRecords =
+  document.querySelector<HTMLElement>("#workflow-records");
+const workflowRecordsStatus = document.querySelector<HTMLOutputElement>(
+  "#workflow-records-status",
+);
 const field = (name: string): HTMLInputElement | HTMLSelectElement => {
   const element = form?.elements.namedItem(name);
   if (
@@ -535,6 +540,104 @@ profileTest?.addEventListener("click", () => {
     }
   })();
 });
+
+type WorkflowRecordView = {
+  id: string;
+  title: string;
+  enabled: boolean;
+  origin: string;
+  path_prefix: string;
+  updated_at: string;
+  declaration: { steps: unknown[] };
+};
+const updateWorkflowRecord = async (
+  operation: "rename" | "set_enabled" | "delete",
+  item: WorkflowRecordView,
+  title = item.title,
+  enabled = item.enabled,
+): Promise<void> => {
+  const response = await runtime?.sendMessage({
+    kind: "WORKFLOW_CATALOG_UPDATE",
+    operation,
+    id: item.id,
+    title,
+    enabled,
+  });
+  if (
+    !response ||
+    typeof response !== "object" ||
+    (response as { ok?: unknown }).ok !== true
+  )
+    throw new Error("워크플로우를 저장하지 못했습니다.");
+  await refreshWorkflowRecords();
+};
+const renderWorkflowRecords = (items: WorkflowRecordView[]): void => {
+  if (!workflowRecords) return;
+  workflowRecords.replaceChildren();
+  if (items.length === 0) {
+    workflowRecords.textContent = "저장된 워크플로우가 없습니다.";
+    return;
+  }
+  for (const item of items) {
+    const row = document.createElement("div");
+    row.className = "header-row";
+    const title = document.createElement("input");
+    title.value = item.title;
+    title.setAttribute("aria-label", "워크플로우 이름");
+    const detail = document.createElement("span");
+    detail.textContent = `${item.origin}${item.path_prefix} · ${item.declaration.steps.length}단계`;
+    const enabled = document.createElement("input");
+    enabled.type = "checkbox";
+    enabled.checked = item.enabled;
+    enabled.setAttribute("aria-label", `${item.title} 사용`);
+    const save = document.createElement("button");
+    save.type = "button";
+    save.textContent = "이름 저장";
+    save.addEventListener(
+      "click",
+      () => void updateWorkflowRecord("rename", item, title.value.trim()),
+    );
+    enabled.addEventListener(
+      "change",
+      () =>
+        void updateWorkflowRecord(
+          "set_enabled",
+          item,
+          item.title,
+          enabled.checked,
+        ),
+    );
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "삭제";
+    remove.addEventListener(
+      "click",
+      () => void updateWorkflowRecord("delete", item),
+    );
+    row.append(title, detail, enabled, save, remove);
+    workflowRecords.append(row);
+  }
+};
+const refreshWorkflowRecords = async (): Promise<void> => {
+  try {
+    const response = await runtime?.sendMessage({
+      kind: "WORKFLOW_CATALOG_LIST",
+    });
+    const records =
+      response &&
+      typeof response === "object" &&
+      (response as { ok?: unknown }).ok === true &&
+      Array.isArray((response as { records?: unknown }).records)
+        ? (response as { records: WorkflowRecordView[] }).records
+        : [];
+    renderWorkflowRecords(records);
+    if (workflowRecordsStatus) workflowRecordsStatus.value = "";
+  } catch {
+    if (workflowRecordsStatus)
+      workflowRecordsStatus.value = "저장된 워크플로우를 불러오지 못했습니다.";
+  }
+};
+void refreshWorkflowRecords();
 
 const agentPreferencesForm = document.querySelector<HTMLFormElement>(
   "#agent-preferences-form",

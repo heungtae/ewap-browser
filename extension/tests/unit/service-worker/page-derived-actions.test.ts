@@ -80,6 +80,31 @@ describe("page-derived Act discovery", () => {
     ).toEqual([]);
   });
 
+  it("requires a workflow to disambiguate multiple enabled comboboxes", () => {
+    const secondSelect = {
+      ...snapshot.nodes[1]!,
+      ref_id: "second-select-abcdefghij",
+      name: "Region",
+    };
+    const secondOption = {
+      ...snapshot.nodes[2]!,
+      ref_id: "second-option-abcdefghij",
+      name: "EMEA",
+      parent_ref_id: secondSelect.ref_id,
+    };
+    expect(
+      pageDerivedActionTools({
+        ...snapshot,
+        nodes: [
+          snapshot.nodes[1]!,
+          snapshot.nodes[2]!,
+          secondSelect,
+          secondOption,
+        ],
+      }).map((tool) => tool.tool),
+    ).toEqual([]);
+  });
+
   it("allows only observed same-origin links to become navigation candidates", () => {
     const link = {
       ref_id: "link-abcdefghijklmnop",

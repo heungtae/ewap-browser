@@ -1,4 +1,5 @@
 import { fail, isPlainObject } from "../security/validation.js";
+import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import type { MutationTool, Role } from "../contracts/types.js";
 import {
   isSemanticVerifier,
@@ -123,6 +124,7 @@ export const verifyProfileClaims = (
     "matcher",
     "fingerprint",
     "tools",
+    "workflow",
     "business_mcp",
     "authoritative_fields",
   ];
@@ -165,6 +167,7 @@ export const verifyProfileClaims = (
       profile.profile_id ||
       profile.profile_version ||
       profile.tools ||
+      profile.workflow ||
       profile.matcher ||
       profile.business_mcp ||
       profile.authoritative_fields
@@ -191,6 +194,7 @@ export const verifyProfileClaims = (
     profile.matcher.origin !== context.origin ||
     !context.path.startsWith(profile.matcher.path_prefix) ||
     (profile.tools !== undefined && !Array.isArray(profile.tools)) ||
+    (profile.workflow !== undefined && !isPlainObject(profile.workflow)) ||
     (profile.business_mcp !== undefined &&
       !Array.isArray(profile.business_mcp)) ||
     (profile.authoritative_fields !== undefined &&
@@ -198,5 +202,7 @@ export const verifyProfileClaims = (
   )
     fail("PROFILE_UNAVAILABLE");
   profileActionTools(profile);
+  if (profile.workflow !== undefined)
+    validateWorkflowDeclaration(profile.workflow);
   return profile;
 };

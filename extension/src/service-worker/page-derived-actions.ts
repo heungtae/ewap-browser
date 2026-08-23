@@ -102,8 +102,22 @@ export const pageDerivedActionTools = (
       eligible_roles: observedCheckedRoles,
       verifier: verifier("page-derived-checked-v1"),
     });
-  const optionValues = pageDerivedOptionValues(snapshot);
-  if (visibleEnabled(snapshot, "combobox") && optionValues.length > 0)
+  const selectableTargets = snapshot.nodes.filter(
+    (node) =>
+      node.role === "combobox" &&
+      node.visible &&
+      node.enabled &&
+      pageDerivedOptionValues(snapshot, node.ref_id).length > 0,
+  );
+  // One generic tool schema cannot safely bind different option enums to
+  // several combobox targets. A declared workflow narrows this to one target;
+  // otherwise leave the ambiguous selection out of generic Act discovery.
+  const selectableTarget =
+    selectableTargets.length === 1 ? selectableTargets[0] : undefined;
+  const optionValues = selectableTarget
+    ? pageDerivedOptionValues(snapshot, selectableTarget.ref_id)
+    : [];
+  if (optionValues.length > 0)
     definitions.push({
       tool: "select_option_by_ref",
       effect: "local-ui-only",

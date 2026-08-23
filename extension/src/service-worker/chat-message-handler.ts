@@ -81,9 +81,7 @@ export const createChatMessageHandler = (
           ? dependencies.runActChat(payload)
           : dependencies.runAskChat(payload)
       )
-        .then((result) =>
-          respond(mode === "act" && result.ok ? { ok: true } : result),
-        )
+        .then((result) => respond(result))
         .catch((error) => {
           const code = failureCode(error, "PROVIDER_PLUGIN_FAILED");
           console.error("[ContextPilot][CHAT_SEND failed before/at LLM]", {

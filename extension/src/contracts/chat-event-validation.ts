@@ -9,6 +9,8 @@ export const outcomes = new Set<Outcome>([
   "CANCELLED",
 ]);
 export const modes = new Set<ChatMode>(["ask", "act"]);
+const positiveInteger = (value: unknown): value is number =>
+  typeof value === "number" && Number.isInteger(value) && value >= 1;
 export const allowedEventKeys = [
   "type",
   "session_id",
@@ -45,6 +47,9 @@ export const validateActionView = (value: unknown): ChatActionView => {
           "target_name",
           "origin",
           "suggested_value",
+          "workflow_title",
+          "workflow_step",
+          "workflow_total",
         ].includes(key),
     ) ||
     typeof value.session_id !== "string" ||
@@ -53,7 +58,16 @@ export const validateActionView = (value: unknown): ChatActionView => {
     typeof value.target_name !== "string" ||
     (value.origin !== undefined && typeof value.origin !== "string") ||
     (value.suggested_value !== undefined &&
-      typeof value.suggested_value !== "string")
+      typeof value.suggested_value !== "string") ||
+    (value.workflow_title !== undefined &&
+      typeof value.workflow_title !== "string") ||
+    (value.workflow_step !== undefined &&
+      !positiveInteger(value.workflow_step)) ||
+    (value.workflow_total !== undefined &&
+      !positiveInteger(value.workflow_total)) ||
+    (positiveInteger(value.workflow_step) &&
+      positiveInteger(value.workflow_total) &&
+      value.workflow_step > value.workflow_total)
   )
     return fail("INVALID_ARGUMENT");
   return {
@@ -66,6 +80,15 @@ export const validateActionView = (value: unknown): ChatActionView => {
       : {}),
     ...(typeof value.suggested_value === "string"
       ? { suggested_value: string(value.suggested_value, 512) }
+      : {}),
+    ...(typeof value.workflow_title === "string"
+      ? { workflow_title: string(value.workflow_title, 160) }
+      : {}),
+    ...(typeof value.workflow_step === "number"
+      ? { workflow_step: value.workflow_step }
+      : {}),
+    ...(typeof value.workflow_total === "number"
+      ? { workflow_total: value.workflow_total }
       : {}),
   };
 };

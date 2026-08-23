@@ -13,6 +13,9 @@ export type ChatActionView = {
   target_name: string;
   origin?: string;
   suggested_value?: string;
+  workflow_title?: string;
+  workflow_step?: number;
+  workflow_total?: number;
 };
 export type ChatEventPayload =
   | { type: "user_message"; text: string }

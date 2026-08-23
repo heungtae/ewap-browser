@@ -20,6 +20,7 @@ export type Profile = {
   matcher?: { origin: string; path_prefix: string };
   fingerprint: { alg: "semantic-projection-fp-v1"; value: string };
   tools?: unknown[];
+  workflow?: unknown;
   business_mcp?: unknown[];
   authoritative_fields?: unknown[];
 };

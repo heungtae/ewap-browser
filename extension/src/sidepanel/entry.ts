@@ -6,6 +6,7 @@ import {
 import { renderMarkdown } from "./markdown.js";
 import { failureHelp, timelineToolLabel, userMessage } from "./panel.js";
 import { redactForChat } from "../security/chat-redaction.js";
+import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
 
 type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
@@ -52,6 +53,7 @@ const newChatOpen = byId<HTMLButtonElement>("new-chat-open");
 const newChatDialog = byId<HTMLDialogElement>("new-chat-dialog");
 const newChatConfirm = byId<HTMLButtonElement>("new-chat-confirm");
 const newChatCancel = byId<HTMLButtonElement>("new-chat-cancel");
+const workflowRecordButton = byId<HTMLButtonElement>("workflow-record");
 const permissionModeBadge = byId<HTMLElement>("permission-mode-badge");
 const runBanner = byId<HTMLElement>("run-banner");
 const threadScope = byId<HTMLElement>("thread-scope");
@@ -79,6 +81,7 @@ let runActive = false;
 let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
+let workflowRecordingId: string | undefined;
 
 const boundedAssistantText = (text: string): string => {
   if (text.length <= maxAssistantMessageChars) return text;
@@ -274,12 +277,20 @@ const sendRuntime = async (
   throw new Error(code);
 };
 const actionSummary = (action: ChatActionView): string =>
-  action.suggested_value === undefined
+  (action.workflow_title
+    ? action.workflow_title +
+      " (" +
+      action.workflow_step +
+      "/" +
+      action.workflow_total +
+      "): "
+    : "") +
+  (action.suggested_value === undefined
     ? action.target_name + " 작업을 제안했습니다."
     : action.target_name +
       "에 '" +
       action.suggested_value +
-      "' 선택을 제안했습니다.";
+      "' 선택을 제안했습니다.");
 const rejectAction = async (action: ChatActionView): Promise<void> => {
   try {
     await sendRuntime({
@@ -357,6 +368,213 @@ const renderReview = (action: ChatActionView): void => {
   );
   append(item);
   setStatus("작업 제안을 검토해 주세요.");
+};
+const workflowCandidateFrom = (
+  value: unknown,
+): WorkflowCandidate | undefined => {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    typeof (value as { id?: unknown }).id !== "string" ||
+    !["profile", "recorded", "runtime"].includes(
+      (value as { source?: unknown }).source as string,
+    ) ||
+    typeof (value as { title?: unknown }).title !== "string" ||
+    typeof (value as { origin?: unknown }).origin !== "string" ||
+    typeof (value as { path_prefix?: unknown }).path_prefix !== "string" ||
+    typeof (value as { step_count?: unknown }).step_count !== "number" ||
+    !["verified", "draft", "stale"].includes(
+      (value as { status?: unknown }).status as string,
+    ) ||
+    typeof (value as { detail?: unknown }).detail !== "string"
+  )
+    return undefined;
+  return value as WorkflowCandidate;
+};
+const renderWorkflowPlan = (
+  selectionId: string,
+  candidate: WorkflowCandidate,
+): void => {
+  const item = card(
+    "review",
+    "워크플로우 계획 확인",
+    `${candidate.title} · ${candidate.detail}\n${candidate.origin}${candidate.path_prefix} · ${candidate.step_count}단계`,
+  );
+  const row = actionRow(item);
+  row.append(
+    actionButton("분석 시작", "primary", async () => {
+      try {
+        setRunActive(true);
+        skipNextLiveUserMessage = true;
+        await sendRuntime({
+          kind: "WORKFLOW_START",
+          selection_id: selectionId,
+        });
+        void recoverChatEvents();
+      } catch (error) {
+        setRunActive(false);
+        showFailure(error instanceof Error ? error.message : undefined);
+      }
+    }),
+  );
+  if (candidate.source === "runtime")
+    row.append(
+      actionButton("내 워크플로우로 저장", "", async () => {
+        try {
+          const title = window.prompt(
+            "저장할 워크플로우 이름",
+            candidate.title,
+          );
+          if (title === null) return;
+          await sendRuntime({
+            kind: "WORKFLOW_SAVE",
+            selection_id: selectionId,
+            candidate_id: candidate.id,
+            title,
+          });
+          setStatus("내 워크플로우로 저장했습니다.");
+        } catch (error) {
+          showFailure(error instanceof Error ? error.message : undefined);
+        }
+      }),
+    );
+  append(item);
+  setStatus("계획을 확인한 뒤 분석 시작을 선택해 주세요.");
+};
+const renderWorkflowAnalysisConsent = (
+  selectionId: string,
+  preview: { script_count: number; origins: string[]; inline_chars: number },
+): void => {
+  const item = card(
+    "confirmation",
+    "페이지 코드 분석 동의",
+    `스크립트 ${preview.script_count}개(${preview.inline_chars.toLocaleString()}자 inline)를 선택한 provider에 전달합니다. 출처: ${preview.origins.join(", ") || "inline only"}`,
+  );
+  actionRow(item).append(
+    actionButton("코드 전송 후 초안 만들기", "warning", async () => {
+      try {
+        const response = await sendRuntime({
+          kind: "WORKFLOW_ANALYZE",
+          selection_id: selectionId,
+          consent: true,
+        });
+        const candidate = workflowCandidateFrom(response.candidate);
+        if (!candidate) throw new Error("INVALID_ARGUMENT");
+        renderWorkflowCandidates(selectionId, [candidate], true);
+      } catch (error) {
+        showFailure(error instanceof Error ? error.message : undefined);
+      }
+    }),
+    actionButton("취소", "danger", () => {
+      item.remove();
+      setStatus("코드 분석을 취소했습니다.");
+    }),
+  );
+  append(item);
+};
+const renderWorkflowCandidates = (
+  selectionId: string,
+  candidates: readonly WorkflowCandidate[],
+  appendOnly = false,
+): void => {
+  const item = card(
+    "review",
+    "워크플로우 보기",
+    appendOnly
+      ? "코드 분석 결과는 이번 실행에만 사용할 수 있습니다."
+      : "출처와 현재 검증 상태를 비교한 뒤 하나를 선택하세요.",
+  );
+  const divider = (): HTMLHRElement => {
+    const line = document.createElement("hr");
+    line.className = "workflow-divider";
+    return line;
+  };
+  const sourceLabel = (candidate: WorkflowCandidate): string => {
+    if (candidate.source === "profile") return "Profile";
+    if (candidate.source === "recorded") return "기록";
+    return candidate.runtime_kind === "code-analysis"
+      ? "코드 초안"
+      : "페이지 제공";
+  };
+  item.append(divider());
+  for (const candidate of candidates) {
+    const row = actionRow(item);
+    const button = actionButton(
+      `${candidate.title} · ${sourceLabel(candidate)} · ${candidate.step_count}단계 실행`,
+      candidate.status === "stale" ? "" : "primary",
+      async () => {
+        if (candidate.status === "stale") return;
+        try {
+          const response = await sendRuntime({
+            kind: "WORKFLOW_SELECT",
+            selection_id: selectionId,
+            candidate_id: candidate.id,
+          });
+          const selected = workflowCandidateFrom(response.candidate);
+          if (!selected) throw new Error("INVALID_ARGUMENT");
+          renderWorkflowPlan(selectionId, selected);
+        } catch (error) {
+          showFailure(error instanceof Error ? error.message : undefined);
+        }
+      },
+    );
+    if (candidate.status === "stale") {
+      button.disabled = true;
+      button.textContent = `${candidate.title} · ${sourceLabel(candidate)} · 페이지 변경됨`;
+    }
+    row.append(button);
+  }
+  if (!appendOnly) {
+    item.append(divider());
+    actionRow(item).append(
+      actionButton("페이지 코드로 초안 만들기", "warning", async () => {
+        try {
+          const response = await sendRuntime({
+            kind: "WORKFLOW_ANALYSIS_PREVIEW",
+            selection_id: selectionId,
+          });
+          const scriptCount = response.script_count;
+          const origins = response.origins;
+          const inlineChars = response.inline_chars;
+          if (
+            typeof scriptCount !== "number" ||
+            !Array.isArray(origins) ||
+            origins.some((origin) => typeof origin !== "string") ||
+            typeof inlineChars !== "number"
+          )
+            throw new Error("INVALID_ARGUMENT");
+          renderWorkflowAnalysisConsent(selectionId, {
+            script_count: scriptCount,
+            origins,
+            inline_chars: inlineChars,
+          });
+        } catch (error) {
+          showFailure(error instanceof Error ? error.message : undefined);
+        }
+      }),
+      actionButton("일반 한 단계 실행", "", async () => {
+        try {
+          setRunActive(true);
+          skipNextLiveUserMessage = true;
+          await sendRuntime({
+            kind: "WORKFLOW_DISMISS",
+            selection_id: selectionId,
+          });
+          item.remove();
+          void recoverChatEvents();
+        } catch (error) {
+          setRunActive(false);
+          showFailure(error instanceof Error ? error.message : undefined);
+        }
+      }),
+    );
+  }
+  append(item);
+  // Candidate discovery does not create a run/user_message event. Set the
+  // duplicate guard only when the selected candidate starts Act.
+  skipNextLiveUserMessage = false;
+  setRunActive(false);
+  setStatus("워크플로우 후보를 선택해 계획을 확인해 주세요.");
 };
 const renderPermission = (
   requestId: string,
@@ -807,8 +1025,22 @@ chatForm?.addEventListener("submit", (event) => {
   setRunActive(true);
   setStatus("응답을 기다리는 중입니다.");
   void sendRuntime({ kind: "CHAT_SEND", payload: { prompt, mode: chatMode } })
-    .then(() => {
+    .then((response) => {
       clearAttachment();
+      if (response.state === "WORKFLOW_CANDIDATES") {
+        const selectionId = response.selection_id;
+        const candidates = Array.isArray(response.candidates)
+          ? response.candidates
+              .map(workflowCandidateFrom)
+              .filter(
+                (candidate): candidate is WorkflowCandidate => !!candidate,
+              )
+          : [];
+        if (typeof selectionId !== "string" || candidates.length === 0)
+          throw new Error("INVALID_ARGUMENT");
+        renderWorkflowCandidates(selectionId, candidates);
+        return;
+      }
       // A response can return before (or after a transient loss of) the panel
       // port. This especially matters for Act: its successful response has no
       // display text, only a live action-review event. Reconcile the
@@ -820,6 +1052,39 @@ chatForm?.addEventListener("submit", (event) => {
       setRunActive(false);
       showFailure(error instanceof Error ? error.message : undefined);
     });
+});
+workflowRecordButton?.addEventListener("click", () => {
+  if (runActive) return;
+  if (!workflowRecordingId) {
+    void sendRuntime({ kind: "WORKFLOW_RECORD_START" })
+      .then((response) => {
+        if (typeof response.recording_id !== "string")
+          throw new Error("INVALID_ARGUMENT");
+        workflowRecordingId = response.recording_id;
+        workflowRecordButton.textContent = "■";
+        workflowRecordButton.title = "워크플로우 기록 종료";
+        workflowRecordButton.setAttribute("aria-label", "워크플로우 기록 종료");
+        setStatus("페이지에서 수행할 단계를 기록 중입니다.");
+      })
+      .catch((error) =>
+        showFailure(error instanceof Error ? error.message : undefined),
+      );
+    return;
+  }
+  const id = workflowRecordingId;
+  void sendRuntime({ kind: "WORKFLOW_RECORD_STOP", recording_id: id })
+    .then(() => {
+      workflowRecordingId = undefined;
+      workflowRecordButton.textContent = "◎";
+      workflowRecordButton.title = "워크플로우 기록 시작";
+      workflowRecordButton.setAttribute("aria-label", "워크플로우 기록 시작");
+      setStatus(
+        "기록한 워크플로우를 저장했습니다. 설정에서 관리할 수 있습니다.",
+      );
+    })
+    .catch((error) =>
+      showFailure(error instanceof Error ? error.message : undefined),
+    );
 });
 const cancelRun = (): void => {
   if (!runActive) return;

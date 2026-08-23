@@ -16,11 +16,13 @@ const eligibleTargets = (
   definition: ProfileActionTool,
   modelSnapshot: ModelSemanticSnapshot,
   snapshot: SemanticSnapshot,
+  allowedRefIds?: ReadonlySet<string>,
 ): string[] =>
   modelSnapshot.nodes.flatMap((node, index) => {
     const source = snapshot.nodes[index];
     if (
       !source ||
+      (allowedRefIds && !allowedRefIds.has(source.ref_id)) ||
       !node.visible ||
       !node.enabled ||
       !definition.eligible_roles.includes(node.role)
@@ -77,9 +79,15 @@ export const genericActTools = (
   definitions: readonly ProfileActionTool[],
   modelSnapshot: ModelSemanticSnapshot,
   snapshot: SemanticSnapshot,
+  allowedRefIds?: ReadonlySet<string>,
 ): ProviderToolDefinition[] =>
   definitions.flatMap((definition) => {
-    const targets = eligibleTargets(definition, modelSnapshot, snapshot);
+    const targets = eligibleTargets(
+      definition,
+      modelSnapshot,
+      snapshot,
+      allowedRefIds,
+    );
     if (targets.length === 0) return [];
     if (definition.tool === "click_by_ref")
       return [genericActClickTool(targets)];

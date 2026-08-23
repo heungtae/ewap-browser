@@ -67,4 +67,38 @@ describe("generic Act tools", () => {
       },
     });
   });
+
+  it("limits a workflow step to its current target", () => {
+    const tools = genericActTools(
+      [
+        {
+          tool: "navigate",
+          effect: "local-ui-only",
+          risk: "R1",
+          eligible_roles: ["link"],
+          verifier: {
+            kind: "semantic-state-transition",
+            declaration_id: "test",
+            pre_state_digest: "",
+            required_changes: [],
+          },
+        },
+      ],
+      {
+        document_epoch: snapshot.document_epoch,
+        frame_id: 0,
+        nodes: snapshot.nodes.map((node, index) => ({
+          ...node,
+          model_ref: `model-ref-${index}-abcdefghijkl`,
+        })),
+        visible_text: "",
+      },
+      snapshot,
+      new Set(["analysis-link-abcdefghij"]),
+    );
+
+    expect(tools[0]?.function.parameters).toMatchObject({
+      properties: { target: { enum: ["model-ref-1-abcdefghijkl"] } },
+    });
+  });
 });

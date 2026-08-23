@@ -127,6 +127,44 @@
     <footer>
       Local-only fictional data. No production semiconductor data is used.
     </footer>
+    <script type="application/contextpilot-workflow+json">
+      {
+        "schema_version": 1,
+        "id": "yield-trend-analysis-v1",
+        "title": "수율 추세 분석",
+        "steps": [
+          {
+            "id": "product",
+            "tool": "select_option_by_ref",
+            "target": { "role": "combobox", "name": "제품군" },
+            "next": "process"
+          },
+          {
+            "id": "process",
+            "tool": "select_option_by_ref",
+            "target": { "role": "combobox", "name": "공정 노드" },
+            "next": "campus"
+          },
+          {
+            "id": "campus",
+            "tool": "select_option_by_ref",
+            "target": { "role": "combobox", "name": "생산 캠퍼스" },
+            "next": "period"
+          },
+          {
+            "id": "period",
+            "tool": "select_option_by_ref",
+            "target": { "role": "combobox", "name": "분석 기간" },
+            "next": "run"
+          },
+          {
+            "id": "run",
+            "tool": "click_by_ref",
+            "target": { "role": "button", "name": "수율 추세 분석 실행" }
+          }
+        ]
+      }
+    </script>
     <script type="module" src="./trend-analysis.js"></script>
   </body>
 </html>
