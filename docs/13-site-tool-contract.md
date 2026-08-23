@@ -22,38 +22,41 @@
 | `select_option_by_ref`     | `model_ref`                                      | 값 입력 대기 또는 결과          |
 | `set_checked_by_ref`       | `model_ref`, boolean                             | 실행 결과                       |
 | `press_key_by_ref`         | `model_ref`, allowlisted key                     | 실행 결과                       |
-| `navigate`                 | normalized HTTPS URL                             | navigation/verifier 결과        |
+| `navigate`                 | observed HTTP(S) link의 `model_ref`              | navigation/verifier 결과        |
 
 `call_page_business_tool`은 서명된 현재 Profile의 binding에 있는 `tool_id`만 enum으로 노출한다. endpoint, result key, value kind, Profile JWS, request/run nonce와 page digest는 모델 입력이 아니며 service worker가 binding한다. 결과는 untrusted data로만 다음 모델 turn에 전달한다.
 
-모델은 `navigate`와 redacted tab context에서 normalized URL의 origin/path만 지정·확인할 수 있다. HTTP header, provider ID, API key, raw selector, raw `ref_id`, CDP method/node/session ID/좌표/execution path, URL userinfo/query/fragment, page credential과 user identity를 받거나 지정할 수 없다.
+모델은 `navigate`에서 현재 snapshot의 opaque `model_ref`만 지정할 수 있다. Service Worker와 content script가 dispatch 직전에 observed HTTP(S) anchor인지 다시 확인하고, external origin 이동도 Side Panel의 명시적 승인과 navigation permission을 거친다. HTTP header, provider ID, API key, raw selector, raw `ref_id`, CDP method/node/session ID/좌표/execution path, URL userinfo/query/fragment, page credential과 user identity를 받거나 지정할 수 없다.
 
 `read_page`와 `find`의 기본 scope는 `all_dom`이며 hidden node를 모델에 제공한다. hidden result는 read focus에만 사용할 수 있고 click/type/select/check/key target으로 resolve하지 않는다. screenshot/zoom region도 capture 입력일 뿐 mutation coordinate가 아니다.
 
 `read_batch`에는 `read_page`, `get_page_text`, `find`, screenshot/zoom, `tabs_context`와 Profile-bound read-only Business MCP만 들어갈 수 있다. mutation, navigation, file, JavaScript와 nested batch는 schema validation에서 거부한다.
 
-### Profile 우선 Act discovery
+### 현재 페이지 우선 Act discovery
 
-Profile은 현재 페이지의 정보를 대체하는 필수 전제가 아니라, 페이지 snapshot만으로
-확정할 수 없는 business action의 추가 계약이다. Service Worker는 매 Act run에서 아래
-순서로 tool set을 만든다.
+현재 페이지의 semantic snapshot은 Act discovery의 SSoT다. Profile은 현재 페이지에서
+관찰할 수 없는 business action 또는 verifier 정보를 보완하는 추가 계약이며, snapshot을
+대체하거나 우선하지 않는다. Service Worker는 매 Act run에서 아래 순서로 tool set을
+만든다.
 
-1. 유효하고 현재 document/fingerprint와 일치하는 Profile이 있으면 Profile action
-   definition만 노출한다. 이 definition은 위험도, effect, 허용 role, option 값 및
-   semantic verifier의 authority다.
-2. 그런 Profile이 없으면 현재 semantic snapshot에서 확인한 visible, enabled,
-   non-sensitive interactive element로 page-derived tool set을 만든다. 모델은 opaque
-   `model_ref`만 받으며 한 번에 하나의 action만 제안한다.
-3. Profile 부재는 Ask fallback이나 `PROFILE_UNAVAILABLE`의 사유가 아니다. safe
-   candidate가 없을 때만 해당 Act run을 `PROFILE_UNAVAILABLE`으로 끝낸다.
+1. 현재 semantic snapshot에서 확인한 visible, enabled, non-sensitive interactive
+   element로 page-derived tool set을 먼저 만든다. 모델은 opaque `model_ref`만 받으며
+   한 번에 하나의 action만 제안한다.
+2. page-derived safe candidate가 없고, 유효하며 현재 document/fingerprint와 일치하는
+   Profile이 있을 때만 Profile action definition을 사용한다. 이 definition은 snapshot
+   만으로 확정할 수 없는 위험도, effect, 허용 role, option 값 및 semantic verifier를
+   보완한다.
+3. Profile 부재는 Ask fallback이나 `PROFILE_UNAVAILABLE`의 사유가 아니다. page-derived
+   candidate와 보완 가능한 Profile definition이 모두 없을 때만 해당 Act run을
+   `PROFILE_UNAVAILABLE`으로 끝낸다.
 
 Page-derived action은 현재 페이지에서 관찰된 UI를 쓰는 좁은 기본 경로다. link는
-현재 snapshot에서 visible/enabled로 확인된 anchor만, 다른 input control은 실제 role,
+현재 snapshot에서 visible/enabled로 확인된 HTTP(S) anchor만, 다른 input control은 실제 role,
 상태 및 allowlisted 입력 형태가 실행 직전에 다시 일치할 때만 후보가 된다. 민감한
 textbox, password/OTP/autofill field, hidden/occluded/stale target, selector·좌표·raw
-URL·JavaScript는 후보가 될 수 없다. 외부 origin 이동, server-side effect, 또는
-의미 있는 postcondition을 snapshot만으로 확인할 수 없는 action은 Profile definition이
-필요하다.
+URL·JavaScript는 후보가 될 수 없다. server-side effect 또는 의미 있는 postcondition을
+snapshot만으로 확인할 수 없는 action은 Profile definition이 필요하다. external origin
+이동은 Profile 대신 별도의 navigation permission과 명시적 승인으로 경계를 유지한다.
 
 모든 proposal은 Side Panel의 명시적 승인, capability permission, document/ref
 preflight를 거친다. 승인 message는 raw ref나 사용자 값을 다시 받지 않고, proposal은

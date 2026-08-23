@@ -55,6 +55,7 @@ export const timelineToolLabel = (tool: string): string =>
       select_option_by_ref: "옵션 선택",
       set_checked_by_ref: "선택 상태 변경",
       press_key_by_ref: "키 입력",
+      navigate: "페이지 이동",
     }) as Record<string, string>
   )[tool] ?? "페이지 작업";
 export type FailureHelp = {
@@ -86,6 +87,11 @@ export const failureHelp = (code?: string): FailureHelp => {
         openSettings: true,
       };
     case "DOCUMENT_NOT_REGISTERED":
+      return {
+        guidance:
+          "AI 설정에서 페이지 연결 자동 복구 권한을 허용한 뒤 다시 시도해 주세요. 계속되면 현재 페이지를 새로고침해 주세요.",
+        openSettings: true,
+      };
     case "TARGET_STALE":
       return {
         guidance: "현재 페이지를 새로고침한 뒤 같은 요청을 다시 시도해 주세요.",

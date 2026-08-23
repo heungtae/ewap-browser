@@ -9,7 +9,11 @@ const flush = async (): Promise<void> => {
 const createHandler = () => {
   const calls: string[] = [];
   const handler = createChatMessageHandler({
-    activeTabForPanel: async () => ({ id: 7 }),
+    activeTabForPanel: async () => ({
+      id: 7,
+      title: "Google 검색 결과",
+      url: "https://www.google.com/search?q=contextpilot#top",
+    }),
     cancelActiveTab: (tabId) => calls.push(`cancel:${tabId}`),
     chatEvents: {
       clear: () => calls.push("events:clear"),
@@ -98,6 +102,7 @@ describe("chat runtime message handler", () => {
       tab_id: 7,
       events: ["event:7"],
       scope: { tabId: 7 },
+      page: { title: "Google 검색 결과", origin: "https://www.google.com" },
     });
 
     handler.handle({ kind: "CHAT_CLEAR" }, { url: "panel" }, clear);

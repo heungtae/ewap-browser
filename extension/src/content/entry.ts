@@ -20,7 +20,8 @@ type ExecuteIntent = {
     | "select_option_by_ref"
     | "set_checked_by_ref"
     | "click_by_ref"
-    | "press_key_by_ref";
+    | "press_key_by_ref"
+    | "navigate";
   run_id: string;
   tab_id: number;
   frame_id: number;
@@ -85,7 +86,7 @@ const maxArticleCandidates = 4;
 const maxVisibleTextChars = 12_000;
 const maxArticleTextChars = 50_000;
 const projectionSelector =
-  "button,input,textarea,select,a,[role],h1,h2,h3,h4,h5,h6";
+  "button,input,textarea,select,option,a,[role],h1,h2,h3,h4,h5,h6";
 const clearPageScopeRefs = (): void => {
   refRecords.clear();
   consumedDeliveries.clear();
@@ -197,6 +198,7 @@ const roleFor = (element: Element): string | undefined => {
           : "textbox";
   if (element instanceof HTMLTextAreaElement) return "textbox";
   if (element instanceof HTMLSelectElement) return "combobox";
+  if (element instanceof HTMLOptionElement) return "option";
   if (element instanceof HTMLAnchorElement) return "link";
   const heading = /^H[1-6]$/.test(element.tagName);
   return heading ? "heading" : undefined;
@@ -283,6 +285,7 @@ new MutationObserver((mutations) => {
     "role",
     "disabled",
     "aria-expanded",
+    "aria-selected",
     "required",
     "type",
     "autocomplete",
@@ -357,6 +360,24 @@ const hiddenReasonFor = (element: Element): string | undefined => {
     return "outside_viewport";
   return undefined;
 };
+const linkNavigationKind = (
+  element: Element,
+): "same-origin" | "cross-origin" | undefined => {
+  if (!(element instanceof HTMLAnchorElement)) return undefined;
+  try {
+    const target = new URL(element.href, location.href);
+    if (
+      target.origin === location.origin &&
+      ["https:", "http:"].includes(target.protocol)
+    )
+      return "same-origin";
+    return ["https:", "http:"].includes(target.protocol)
+      ? "cross-origin"
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
 const projectionNodes = (
   scope: ReadScope,
 ): { nodes: unknown[]; truncated: boolean } => {
@@ -392,6 +413,11 @@ const projectionNodes = (
       if (role && !sensitive) {
         const hiddenReason = hiddenReasonFor(element);
         const visible = hiddenReason === undefined;
+        // An anchor can expose a non-link ARIA role (for example
+        // <a role="button">). Navigation authority follows the semantic role,
+        // not the underlying DOM tag.
+        const navigationKind =
+          role === "link" ? linkNavigationKind(element) : undefined;
         if (
           !(
             (scope === "visible_only" && !visible) ||
@@ -407,6 +433,9 @@ const projectionNodes = (
               : {}),
             ...(element instanceof HTMLSelectElement
               ? { selected: element.selectedIndex >= 0 }
+              : {}),
+            ...(element.hasAttribute("aria-selected")
+              ? { selected: element.getAttribute("aria-selected") === "true" }
               : {}),
             ...(element.hasAttribute("aria-expanded")
               ? { expanded: element.getAttribute("aria-expanded") === "true" }
@@ -428,8 +457,28 @@ const projectionNodes = (
                 element instanceof HTMLButtonElement ||
                 element instanceof HTMLInputElement ||
                 element instanceof HTMLSelectElement ||
-                element instanceof HTMLTextAreaElement
+                element instanceof HTMLTextAreaElement ||
+                element instanceof HTMLOptionElement
               ) || !element.disabled,
+            ...(navigationKind === "same-origin"
+              ? { same_origin_link: true }
+              : navigationKind === "cross-origin"
+                ? { cross_origin_link: true }
+                : {}),
+            ...(element instanceof HTMLOptionElement
+              ? (() => {
+                  const parent = element.closest("select");
+                  return parent
+                    ? {
+                        parent_ref_id: refFor(
+                          parent,
+                          "combobox",
+                          nameFor(parent),
+                        ),
+                      }
+                    : {};
+                })()
+              : {}),
           });
           if (nodes.length >= maxProjectionNodes) {
             truncated = true;
@@ -496,6 +545,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       ...(element instanceof HTMLSelectElement
         ? { selected: element.selectedIndex >= 0 }
         : {}),
+      ...(element.hasAttribute("aria-selected")
+        ? { selected: element.getAttribute("aria-selected") === "true" }
+        : {}),
       ...(element.hasAttribute("aria-expanded")
         ? { expanded: element.getAttribute("aria-expanded") === "true" }
         : {}),
@@ -508,10 +560,11 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     typeof message === "object" &&
     message !== null &&
     (message as { kind?: unknown }).kind === "CONTENT_EXECUTE_R1" &&
-    (["click_by_ref", "press_key_by_ref"] as const).includes(
+    (["click_by_ref", "press_key_by_ref", "navigate"] as const).includes(
       (message as { intent?: ExecuteIntent }).intent?.tool as
         | "click_by_ref"
-        | "press_key_by_ref",
+        | "press_key_by_ref"
+        | "navigate",
     )
   ) {
     const request = message as {
@@ -536,8 +589,11 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       record.stale ||
       !(element instanceof HTMLElement) ||
       (intent.tool === "click_by_ref" &&
-        (!(element instanceof HTMLButtonElement) ||
-          record.role !== "button")) ||
+        !["button", "tab", "menuitem"].includes(record.role)) ||
+      (intent.tool === "navigate" &&
+        (!(element instanceof HTMLAnchorElement) ||
+          record.role !== "link" ||
+          !linkNavigationKind(element))) ||
       (intent.tool === "press_key_by_ref" &&
         !["button", "textbox", "combobox", "tab", "menuitem"].includes(
           record.role,
@@ -561,7 +617,11 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       return true;
     }
     if (intent.tool === "click_by_ref") element.click();
-    else {
+    else if (intent.tool === "navigate") {
+      element.click();
+      respond({ ok: true, postcondition: "navigation" });
+      return true;
+    } else {
       const key = intent.argument?.key;
       if (!key || !["Enter", "Space", "Escape"].includes(key)) {
         respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
@@ -753,7 +813,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     if (
       !(element instanceof HTMLInputElement) ||
       (element.type !== "checkbox" && element.type !== "radio") ||
-      record.role !== "checkbox" ||
+      !["checkbox", "radio"].includes(record.role) ||
       typeof intent.argument?.checked !== "boolean" ||
       element.checked === intent.argument.checked ||
       delivery !== undefined

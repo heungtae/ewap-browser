@@ -66,10 +66,15 @@ export const profileActionTools = (profile: Profile): ProfileActionTool[] => {
           value.eligible_roles[0] !== "textbox")) ||
       (value.tool === "click_by_ref" &&
         (value.eligible_roles.length !== 1 ||
-          value.eligible_roles[0] !== "button")) ||
+          !["button", "tab", "menuitem"].includes(
+            value.eligible_roles[0] ?? "",
+          ))) ||
+      (value.tool === "navigate" &&
+        (value.eligible_roles.length !== 1 ||
+          value.eligible_roles[0] !== "link")) ||
       (value.tool === "set_checked_by_ref" &&
         (value.eligible_roles.length !== 1 ||
-          value.eligible_roles[0] !== "checkbox")) ||
+          !["checkbox", "radio"].includes(value.eligible_roles[0] ?? ""))) ||
       (value.tool === "press_key_by_ref" &&
         value.eligible_roles.some(
           (role) =>

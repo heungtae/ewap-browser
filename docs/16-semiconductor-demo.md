@@ -19,8 +19,9 @@ origin, path, 링크명, option 값 또는 실행 전용 adapter를 넣지 않�
 ## Act 경계
 
 Profile이 없더라도 이 example의 visible/enabled UI는 일반 page-derived Act discovery의
-후보가 된다. Profile을 설치하면 그 Profile이 더 좁은 action/verifier 계약을
-우선한다. Side Panel은 각 target과 제안 값을 표시하고 사용자가 승인해야 하며,
+후보가 된다. 현재 페이지 snapshot이 SSoT이며, Profile은 snapshot만으로 알 수 없는
+action/verifier 정보를 보완해야 할 때만 사용한다. Side Panel은 각 target과 제안 값을
+표시하고 사용자가 승인해야 하며,
 권한은 현재 origin 기준으로 별도 확인한다.
 
 모델에는 raw `ref_id`, selector, CDP 정보, action token과 credential을 주지 않는다. 모델의 option 값은 untrusted proposal이며, content script가 현재 select option과 대상의 visible/enabled 상태를 다시 확인한다.

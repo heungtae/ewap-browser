@@ -9,6 +9,8 @@ schema v2 snapshot의 기본 scope는 `all_dom`이다. 현재 문서에서 수�
 - `disabled`, `checked`, `selected`, `expanded`, `required`
 - `visibility: "visible" | "hidden"`과 closed enum `hidden_reason`
 - 제한된 label/landmark relation
+- HTTP(S) anchor가 same-origin/cross-origin인지 나타내는 closed boolean marker
+  (`same_origin_link` 또는 `cross_origin_link`; URL 자체는 제외)
 - document-scoped opaque `ref_id`
 
 raw HTML, CSS, script/event handler, current input value, password/OTP/token value, browser credential, browser AX node ID, URL query/fragment와 closed shadow DOM은 포함하지 않는다. screenshot은 snapshot field가 아니며 별도 `vision_read` capability의 transient 입력이다.

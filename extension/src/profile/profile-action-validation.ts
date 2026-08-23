@@ -11,6 +11,7 @@ export const mutationTools = new Set<MutationTool>([
   "set_checked_by_ref",
   "click_by_ref",
   "press_key_by_ref",
+  "navigate",
 ]);
 export const roles = new Set<Role>([
   "button",

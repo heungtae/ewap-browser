@@ -1,11 +1,16 @@
 import { ContractError, isPlainObject } from "../security/validation.js";
+import {
+  canonicalPageScope,
+  redactForChat,
+} from "../security/chat-redaction.js";
 
 type Sender = { url?: string };
 type Respond = (response: unknown) => void;
 type ChatResult = { ok?: boolean };
+type ActiveTab = { id: number; title?: string; url?: string };
 
 export type ChatMessageHandlerDependencies = {
-  activeTabForPanel(sender: Sender): Promise<{ id: number }>;
+  activeTabForPanel(sender: Sender): Promise<ActiveTab>;
   cancelActiveTab(tabId: number): void;
   chatEvents: {
     clear(): void;
@@ -30,6 +35,21 @@ const exactKeys = (value: object, keys: readonly string[]): boolean =>
 
 const failureCode = (error: unknown, fallback: string): string =>
   error instanceof ContractError ? error.code : fallback;
+
+/**
+ * This label is display-only. Do not return a query, fragment, DOM text, or
+ * any other page content through the recovery path.
+ */
+const pageLabel = (
+  tab: ActiveTab,
+): { title: string; origin?: string } | undefined => {
+  const title = redactForChat(tab.title ?? "", 160)
+    .replace(/\s+/g, " ")
+    .trim();
+  const origin = canonicalPageScope(tab.url)?.origin;
+  if (!title && !origin) return;
+  return { title: title || origin!, ...(origin ? { origin } : {}) };
+};
 
 export const createChatMessageHandler = (
   dependencies: ChatMessageHandlerDependencies,
@@ -119,14 +139,16 @@ export const createChatMessageHandler = (
       }
       void dependencies
         .activeTabForPanel(sender)
-        .then((active) =>
+        .then((active) => {
+          const page = pageLabel(active);
           respond({
             ok: true,
             tab_id: active.id,
             events: dependencies.chatEvents.recoverable(active.id),
             scope: dependencies.chatEvents.scope(active.id),
-          }),
-        )
+            ...(page ? { page } : {}),
+          });
+        })
         .catch((error) =>
           respond(
             dependencies.safeFailure(

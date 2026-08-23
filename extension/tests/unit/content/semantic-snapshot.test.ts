@@ -36,6 +36,32 @@ describe("semantic snapshot contract", () => {
         nodes: [{ ...snapshot.nodes[0], parent_ref_id: "qrstuvwxyzABCDEF" }],
       }),
     ).toThrow("INVALID_ARGUMENT"));
+  it("given_same_origin_link_marker_when_validating_then_keeps_only_safe_metadata", () =>
+    expect(
+      validateSemanticSnapshot({
+        ...snapshot,
+        nodes: [
+          {
+            ...snapshot.nodes[0],
+            role: "link",
+            same_origin_link: true,
+          },
+        ],
+      }).nodes[0],
+    ).toMatchObject({ role: "link", same_origin_link: true }));
+  it("given_cross_origin_link_marker_when_validating_then_keeps_only_safe_metadata", () =>
+    expect(
+      validateSemanticSnapshot({
+        ...snapshot,
+        nodes: [
+          {
+            ...snapshot.nodes[0],
+            role: "link",
+            cross_origin_link: true,
+          },
+        ],
+      }).nodes[0],
+    ).toMatchObject({ role: "link", cross_origin_link: true }));
   it("given_oversized_visible_text_when_validating_then_denies", () =>
     expect(() =>
       validateSemanticSnapshot({
@@ -56,4 +82,18 @@ describe("semantic snapshot contract", () => {
         ],
       }),
     ).toThrow("INVALID_ARGUMENT"));
+  it("given_invalid_node_when_validating_then_reports_only_its_index", () => {
+    try {
+      validateSemanticSnapshot({
+        ...snapshot,
+        nodes: [snapshot.nodes[0], { ...snapshot.nodes[0], value: "secret" }],
+      });
+      throw new Error("expected validation to fail");
+    } catch (error) {
+      expect(error).toMatchObject({
+        message: "INVALID_ARGUMENT",
+        detail: "semantic snapshot node 1",
+      });
+    }
+  });
 });

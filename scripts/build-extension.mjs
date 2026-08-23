@@ -27,6 +27,7 @@ await writeFile(
   new URL("manifest.json", output),
   `${JSON.stringify(manifest, null, 2)}\n`,
 );
+await cp("extension/assets", new URL("assets/", output), { recursive: true });
 await mkdir(new URL("sidepanel/", output), { recursive: true });
 await cp(
   "extension/src/sidepanel/index.html",

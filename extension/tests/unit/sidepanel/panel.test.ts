@@ -19,6 +19,14 @@ describe("sidepanel failure help", () => {
         "같은 문제가 반복되면 확장을 다시 로드한 뒤 다시 시도해 주세요.",
     });
   });
+
+  it("directs a disconnected page to automatic recovery settings", () => {
+    expect(failureHelp("DOCUMENT_NOT_REGISTERED")).toEqual({
+      guidance:
+        "AI 설정에서 페이지 연결 자동 복구 권한을 허용한 뒤 다시 시도해 주세요. 계속되면 현재 페이지를 새로고침해 주세요.",
+      openSettings: true,
+    });
+  });
 });
 
 describe("timeline tool labels", () => {

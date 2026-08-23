@@ -1,12 +1,12 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.8",
+  "version": "0.1.11",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint extension/src extension/tests --max-warnings=0 && prettier --check --ignore-unknown package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json tsconfig.build.json eslint.config.mjs extension deployment scripts native-host",
-    "build": "tsc -p tsconfig.build.json && node scripts/build-extension.mjs",
+    "build": "tsc -p tsconfig.build.json && node scripts/bump-extension-version.mjs && node scripts/build-extension.mjs",
     "test:unit": "vitest run extension/tests/unit",
     "test:fixture": "vitest run extension/tests/fixture",
     "test:e2e": "vitest run extension/tests/e2e",

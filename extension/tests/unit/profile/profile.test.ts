@@ -78,6 +78,32 @@ describe("profile claims", () => {
     });
     expect(tools).toMatchObject([{ tool: "click_by_ref", risk: "R1" }]);
   });
+  it("given_profile_tab_or_menu_action_when_reading_then_returns_it", () => {
+    const action = {
+      effect: "local-ui-only" as const,
+      risk: "R1" as const,
+      verifier: {
+        kind: "semantic-state-transition" as const,
+        declaration_id: "menu-v1",
+        pre_state_digest: "state",
+        required_changes: [],
+      },
+    };
+    expect(
+      profileActionTools({
+        ...profile,
+        tools: [{ ...action, tool: "click_by_ref", eligible_roles: ["tab"] }],
+      }),
+    ).toMatchObject([{ eligible_roles: ["tab"] }]);
+    expect(
+      profileActionTools({
+        ...profile,
+        tools: [
+          { ...action, tool: "click_by_ref", eligible_roles: ["menuitem"] },
+        ],
+      }),
+    ).toMatchObject([{ eligible_roles: ["menuitem"] }]);
+  });
   it("given_unbounded_profile_action_definition_when_verifying_then_fails_closed", () => {
     expect(() =>
       verifyProfileClaims(

@@ -6,7 +6,13 @@ import type {
   SemanticSnapshot,
   SemanticState,
 } from "./types.js";
-import { closedObject, fail, opaque, string } from "../security/validation.js";
+import {
+  closedObject,
+  ContractError,
+  fail,
+  opaque,
+  string,
+} from "../security/validation.js";
 
 const roles = new Set<Role>([
   "button",
@@ -59,6 +65,8 @@ const parseNode = (value: unknown): SemanticNode => {
     "visibility",
     "hidden_reason",
     "enabled",
+    "same_origin_link",
+    "cross_origin_link",
     "parent_ref_id",
     "label_ref_id",
   ]);
@@ -82,7 +90,12 @@ const parseNode = (value: unknown): SemanticNode => {
       (typeof node.hidden_reason !== "string" ||
         !hiddenReasons.has(node.hidden_reason as HiddenReason))) ||
     (node.visibility === "visible" && node.hidden_reason !== undefined) ||
-    typeof node.enabled !== "boolean"
+    typeof node.enabled !== "boolean" ||
+    (node.same_origin_link !== undefined &&
+      (node.role !== "link" || typeof node.same_origin_link !== "boolean")) ||
+    (node.cross_origin_link !== undefined &&
+      (node.role !== "link" || typeof node.cross_origin_link !== "boolean")) ||
+    (node.same_origin_link === true && node.cross_origin_link === true)
   )
     return fail("INVALID_ARGUMENT");
   if (
@@ -107,6 +120,8 @@ const parseNode = (value: unknown): SemanticNode => {
       ? { hidden_reason: node.hidden_reason as HiddenReason }
       : {}),
     enabled: node.enabled,
+    ...(node.same_origin_link ? { same_origin_link: true } : {}),
+    ...(node.cross_origin_link ? { cross_origin_link: true } : {}),
     ...(parent ? { parent_ref_id: parent } : {}),
     ...(label ? { label_ref_id: label } : {}),
   };
@@ -154,7 +169,18 @@ export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {
         snapshot.node_count < snapshot.nodes.length))
   )
     return fail("INVALID_ARGUMENT");
-  const nodes = snapshot.nodes.map(parseNode);
+  const nodes = snapshot.nodes.map((node, index) => {
+    try {
+      return parseNode(node);
+    } catch (error) {
+      // Page content is deliberately not included in diagnostics.  The index
+      // is enough to identify a producer/consumer contract mismatch without
+      // sending page text, selectors, or refs to the recovery path.
+      if (error instanceof ContractError && error.code === "INVALID_ARGUMENT")
+        return fail("INVALID_ARGUMENT", `semantic snapshot node ${index}`);
+      throw error;
+    }
+  });
   const ids = new Set(nodes.map((node) => node.ref_id));
   for (const node of nodes)
     if (

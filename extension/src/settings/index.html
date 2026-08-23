@@ -107,6 +107,27 @@
         font-size: 12px;
         font-weight: 600;
       }
+      .checkbox-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .checkbox-row input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        flex: 0 0 auto;
+        margin: 0;
+        padding: 0;
+        accent-color: var(--accent-2);
+      }
+      .content-recovery-control {
+        display: grid;
+        gap: 4px;
+      }
+      .content-recovery-control output {
+        margin-top: 0;
+      }
       .headers-field {
         display: grid;
         gap: 8px;
@@ -416,14 +437,21 @@
               <option value="disabled">사용 안 함</option>
             </select>
           </label>
-          <label
-            ><input name="group_tools_in_timeline" type="checkbox" checked />
-            연속 읽기 도구를 timeline에서 묶기</label
-          >
-          <label
-            ><input name="show_tool_debug_details" type="checkbox" /> 안전한
-            도구 debug detail 표시</label
-          >
+          <label class="checkbox-row">
+            <input name="group_tools_in_timeline" type="checkbox" checked />
+            연속 읽기 도구를 timeline에서 묶기
+          </label>
+          <label class="checkbox-row">
+            <input name="show_tool_debug_details" type="checkbox" />
+            안전한 도구 debug detail 표시
+          </label>
+          <div class="content-recovery-control">
+            <label class="checkbox-row">
+              <input id="content-recovery-enable" type="checkbox" />
+              페이지 연결 자동 복구 사용
+            </label>
+            <output id="content-recovery-status" aria-live="polite"></output>
+          </div>
           <label
             >권한 질문 생략 확인
             <input

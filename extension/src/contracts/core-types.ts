@@ -8,6 +8,7 @@ export const COMPANY_TOOLS = [
   "set_checked_by_ref",
   "click_by_ref",
   "press_key_by_ref",
+  "navigate",
   "get_authoritative_field",
 ] as const;
 
@@ -19,6 +20,7 @@ export type MutationTool = Extract<
   | "set_checked_by_ref"
   | "click_by_ref"
   | "press_key_by_ref"
+  | "navigate"
 >;
 export type Mode = "ask" | "act";
 export type Risk = "R0" | "R1" | "R2" | "R3";

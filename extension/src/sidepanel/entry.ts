@@ -626,6 +626,26 @@ const selectThread = (tabId: number): void => {
   clearConversation();
   if (threadScope) threadScope.textContent = "이 탭의 문맥";
 };
+const updatePageLabel = (page: unknown): void => {
+  if (
+    !threadScope ||
+    typeof page !== "object" ||
+    page === null ||
+    typeof (page as { title?: unknown }).title !== "string"
+  )
+    return;
+  const title = (page as { title: string }).title;
+  const origin =
+    typeof (page as { origin?: unknown }).origin === "string"
+      ? (page as { origin: string }).origin
+      : undefined;
+  threadScope.textContent = origin ? `${title} · ${origin}` : title;
+  threadScope.setAttribute(
+    "aria-label",
+    origin ? `현재 페이지: ${title}, ${origin}` : `현재 페이지: ${title}`,
+  );
+  threadScope.title = origin ? `${title} · ${origin}` : title;
+};
 const recoverChatEvents = async (attempt = 0): Promise<void> => {
   const recoveryId = ++latestRecoveryId;
   try {
@@ -649,6 +669,7 @@ const recoverChatEvents = async (attempt = 0): Promise<void> => {
         typeof (scope as { path?: unknown }).path === "string"
       )
         threadScope.textContent = `${(scope as { origin: string }).origin}${(scope as { path: string }).path} · 이 탭의 문맥`;
+      updatePageLabel((response as { page?: unknown }).page);
       for (const event of (response as { events: unknown[] }).events)
         applyChatEvent(event);
       return;

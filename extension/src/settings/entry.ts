@@ -5,6 +5,11 @@ type StorageArea = {
 type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
 };
+type BrowserPermissions = {
+  contains(query: { permissions: string[] }): Promise<boolean>;
+  request(query: { permissions: string[] }): Promise<boolean>;
+  remove(query: { permissions: string[] }): Promise<boolean>;
+};
 import { validateProfileResolverSettings } from "./profile-settings.js";
 const storage = (
   globalThis as typeof globalThis & {
@@ -16,6 +21,11 @@ const runtime = (
     chrome?: { runtime: BrowserRuntime };
   }
 ).chrome?.runtime;
+const browserPermissions = (
+  globalThis as typeof globalThis & {
+    chrome?: { permissions?: BrowserPermissions };
+  }
+).chrome?.permissions;
 
 const form = document.querySelector<HTMLFormElement>("#provider-form");
 const status = document.querySelector<HTMLOutputElement>("#settings-status");
@@ -532,6 +542,46 @@ const agentPreferencesForm = document.querySelector<HTMLFormElement>(
 const agentPreferencesStatus = document.querySelector<HTMLOutputElement>(
   "#agent-preferences-status",
 );
+const contentRecoveryEnable = document.querySelector<HTMLInputElement>(
+  "#content-recovery-enable",
+);
+const contentRecoveryStatus = document.querySelector<HTMLOutputElement>(
+  "#content-recovery-status",
+);
+const refreshContentRecoveryPermission = async (): Promise<void> => {
+  const enabled = await browserPermissions
+    ?.contains({ permissions: ["scripting"] })
+    .catch(() => false);
+  if (contentRecoveryEnable) {
+    contentRecoveryEnable.checked = enabled ?? false;
+    contentRecoveryEnable.disabled = !browserPermissions;
+  }
+  if (contentRecoveryStatus)
+    contentRecoveryStatus.value = enabled
+      ? "자동 복구가 허용되었습니다."
+      : "연결이 끊긴 페이지를 새로고침 없이 복구하려면 권한을 허용하세요.";
+};
+contentRecoveryEnable?.addEventListener("change", () => {
+  void (async () => {
+    if (!browserPermissions || !contentRecoveryEnable) return;
+    contentRecoveryEnable.disabled = true;
+    try {
+      const changed = contentRecoveryEnable.checked
+        ? await browserPermissions.request({ permissions: ["scripting"] })
+        : await browserPermissions.remove({ permissions: ["scripting"] });
+      if (!changed && contentRecoveryStatus)
+        contentRecoveryStatus.value = contentRecoveryEnable.checked
+          ? "자동 복구 권한이 허용되지 않았습니다."
+          : "자동 복구 권한을 해제하지 못했습니다.";
+      await refreshContentRecoveryPermission();
+    } catch {
+      if (contentRecoveryStatus)
+        contentRecoveryStatus.value = "자동 복구 권한을 변경하지 못했습니다.";
+      await refreshContentRecoveryPermission();
+    }
+  })();
+});
+void refreshContentRecoveryPermission();
 const preferenceField = (
   name: string,
 ): HTMLInputElement | HTMLSelectElement => {

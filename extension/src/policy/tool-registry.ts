@@ -10,6 +10,7 @@ export const mutationTools: readonly MutationTool[] = [
   "set_checked_by_ref",
   "click_by_ref",
   "press_key_by_ref",
+  "navigate",
 ];
 export const isMutationTool = (tool: string): tool is MutationTool =>
   mutationTools.includes(tool as MutationTool);

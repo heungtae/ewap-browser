@@ -26,6 +26,8 @@ export type SemanticNode = {
   visibility?: "visible" | "hidden";
   hidden_reason?: HiddenReason;
   enabled: boolean;
+  same_origin_link?: boolean;
+  cross_origin_link?: boolean;
   parent_ref_id?: string;
   label_ref_id?: string;
 };

@@ -59,4 +59,4 @@ export type ModelActionProposal =
       tool: "press_key_by_ref";
       argument: { key: "Enter" | "Space" | "Escape" };
     }
-  | { target: string; tool: "click_by_ref" };
+  | { target: string; tool: "click_by_ref" | "navigate" };
