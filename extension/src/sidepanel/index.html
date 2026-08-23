@@ -221,6 +221,11 @@
       .event-card[data-kind="review"] {
         border-color: #75633b;
       }
+      .event-card[data-kind="review"][data-decision]
+        .card-actions
+        button:disabled {
+        cursor: not-allowed;
+      }
       .event-heading {
         display: flex;
         align-items: center;

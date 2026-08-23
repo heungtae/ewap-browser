@@ -285,6 +285,11 @@ const rejectAction = async (action: ChatActionView): Promise<void> => {
     setStatus("작업을 중단했습니다.");
   } catch (error) {
     showFailure(error instanceof Error ? error.message : undefined);
+  } finally {
+    // A Side Panel port notification can be missed while this decision is in
+    // flight. Reconcile the durable, sequenced timeline instead of waiting
+    // for a later window-focus event to make the terminal result visible.
+    void recoverChatEvents();
   }
 };
 const approveAction = async (action: ChatActionView): Promise<void> => {
@@ -296,11 +301,36 @@ const approveAction = async (action: ChatActionView): Promise<void> => {
     });
   } catch (error) {
     showFailure(error instanceof Error ? error.message : undefined);
+  } finally {
+    // See rejectAction: the result must be rendered without requiring the
+    // user to focus the transcript.
+    void recoverChatEvents();
   }
 };
 const renderReview = (action: ChatActionView): void => {
   const item = card("review", "작업 제안", actionSummary(action));
   const row = actionRow(item);
+  let selected = false;
+  const selectDecision = (decision: "approve" | "reject"): void => {
+    if (selected) return;
+    selected = true;
+    for (const control of row.querySelectorAll<HTMLButtonElement>("button"))
+      control.disabled = true;
+    item.dataset.decision = decision;
+    row.setAttribute("aria-busy", "true");
+    if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
+    setStatus(
+      decision === "approve"
+        ? "제안을 실행하는 중입니다."
+        : "작업을 중단하는 중입니다.",
+    );
+    // Start recovery immediately as well as after the runtime reply. This
+    // covers the early tool-started event during a longer Act execution.
+    void recoverChatEvents();
+    void (decision === "approve"
+      ? approveAction(action)
+      : rejectAction(action));
+  };
   if (currentPermissionMode === "follow_a_plan" && action.origin)
     row.append(
       actionButton("도메인 계획 승인", "warning", async () => {
@@ -317,8 +347,8 @@ const renderReview = (action: ChatActionView): void => {
       }),
     );
   row.append(
-    actionButton("제안 실행", "primary", () => approveAction(action)),
-    actionButton("중단", "danger", () => rejectAction(action)),
+    actionButton("제안 실행", "primary", () => selectDecision("approve")),
+    actionButton("중단", "danger", () => selectDecision("reject")),
   );
   append(item);
   setStatus("작업 제안을 검토해 주세요.");
