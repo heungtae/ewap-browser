@@ -13,6 +13,12 @@ schema v2 snapshot의 기본 scope는 `all_dom`이다. 현재 문서에서 수�
 
 raw HTML, CSS, script/event handler, current input value, password/OTP/token value, browser credential, browser AX node ID, URL query/fragment와 closed shadow DOM은 포함하지 않는다. screenshot은 snapshot field가 아니며 별도 `vision_read` capability의 transient 입력이다.
 
+JavaScript는 원문, AST, 전역 변수, closure, network response나 실행 권한으로 수집하지
+않는다. 대신 script가 현재 document에 반영한 DOM·accessibility tree·visible text·role·
+enabled/state 변화는 다음 projection을 다시 읽을 때 일반 DOM과 동일하게 수집한다.
+따라서 동적으로 생성된 링크와 control은 관찰 가능한 상태만 사용해 Ask/Act 후보가 될
+수 있지만, script 안에만 있는 비공개 값이나 실행 경로는 모델 입력이 아니다.
+
 bounded CDP adapter 도입 후에도 projection schema는 변하지 않는다. CDP node ID, target token, selector, 좌표, box, execution path와 debugger 상태는 snapshot과 fingerprint에 포함하지 않는다.
 
 hidden node도 run 한정 `model_ref`를 받을 수 있지만 `read_page` focus에만 사용할 수 있다. hidden node는 mutation resolver와 DOM/CDP executor mapping에 등록하지 않는다.

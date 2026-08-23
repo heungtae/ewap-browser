@@ -32,17 +32,33 @@
 
 `read_batch`에는 `read_page`, `get_page_text`, `find`, screenshot/zoom, `tabs_context`와 Profile-bound read-only Business MCP만 들어갈 수 있다. mutation, navigation, file, JavaScript와 nested batch는 schema validation에서 거부한다.
 
-### 반도체 데모 Act proposal
+### Profile 우선 Act discovery
 
-내장 반도체 데모는 시작 페이지에서 `분석 센터 열기` link 하나를, `trend-analysis.html`에서 분석 제어 도구를 추가로 받는다. proposal은 실행이 아니며, Side Panel의 매 단계 사용자 승인이 필요하다.
+Profile은 현재 페이지의 정보를 대체하는 필수 전제가 아니라, 페이지 snapshot만으로
+확정할 수 없는 business action의 추가 계약이다. Service Worker는 매 Act run에서 아래
+순서로 tool set을 만든다.
 
-| 도구                    | 입력                          | 실행 전 검증                                                     |
-| ----------------------- | ----------------------------- | ---------------------------------------------------------------- |
-| `propose_select_option` | 현재 `model_ref`, option text | 허용된 demo combobox, visible/enabled 상태, 실제 option 존재     |
-| `propose_click`         | 현재 `model_ref`              | 정확한 `수율 추세 분석 실행` button, visible/enabled 상태        |
-| `propose_click`         | 현재 `model_ref`              | 시작 페이지의 정확한 `분석 센터 열기` link, visible/enabled 상태 |
+1. 유효하고 현재 document/fingerprint와 일치하는 Profile이 있으면 Profile action
+   definition만 노출한다. 이 definition은 위험도, effect, 허용 role, option 값 및
+   semantic verifier의 authority다.
+2. 그런 Profile이 없으면 현재 semantic snapshot에서 확인한 visible, enabled,
+   non-sensitive interactive element로 page-derived tool set을 만든다. 모델은 opaque
+   `model_ref`만 받으며 한 번에 하나의 action만 제안한다.
+3. Profile 부재는 Ask fallback이나 `PROFILE_UNAVAILABLE`의 사유가 아니다. safe
+   candidate가 없을 때만 해당 Act run을 `PROFILE_UNAVAILABLE`으로 끝낸다.
 
-Service Worker는 proposal ID만 Side Panel에 전달한다. 승인 message는 raw ref나 option value를 다시 받지 않으며, proposal은 한 번만 실행할 수 있다. `분석 센터 열기`는 `navigate` host 권한을 별도로 확인하고, query/fragment 없는 정확한 same-origin `trend-analysis.html` 전환이 관찰된 경우에만 `VERIFIED`다. 선택 후에는 새 projection과 새 run-scoped model ref를 사용해 다음 단계를 제안한다.
+Page-derived action은 현재 페이지에서 관찰된 UI를 쓰는 좁은 기본 경로다. link는
+현재 snapshot에서 visible/enabled로 확인된 anchor만, 다른 input control은 실제 role,
+상태 및 allowlisted 입력 형태가 실행 직전에 다시 일치할 때만 후보가 된다. 민감한
+textbox, password/OTP/autofill field, hidden/occluded/stale target, selector·좌표·raw
+URL·JavaScript는 후보가 될 수 없다. 외부 origin 이동, server-side effect, 또는
+의미 있는 postcondition을 snapshot만으로 확인할 수 없는 action은 Profile definition이
+필요하다.
+
+모든 proposal은 Side Panel의 명시적 승인, capability permission, document/ref
+preflight를 거친다. 승인 message는 raw ref나 사용자 값을 다시 받지 않고, proposal은
+한 번만 실행한다. dispatch 뒤에는 재시도하지 않으며 verifier가 결과를 확인하지
+못하면 `UNKNOWN` 또는 `FAILED`로 끝낸다.
 
 ## 2. site adapter와 WebMCP
 

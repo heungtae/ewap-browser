@@ -10,18 +10,25 @@
 
 Windows에서는 `scripts/run-semiconductor-demo.ps1`으로 전용 Chrome profile과 함께 실행할 수도 있다.
 
-`index.html`은 Ask 검증 페이지이면서, Act에서 정확한 `분석 센터 열기` link를 승인해 분석 화면으로 전환하는 시작점이다. 전환은 query/fragment 없는 same-origin `trend-analysis.html` URL이 확인된 경우에만 성공으로 처리한다. `trend-analysis.html`은 `제품군 → 공정 노드 → 생산 캠퍼스 → 분석 기간 → 수율 추세 분석 실행` 순서를 강제한다. 제출은 navigation 없이 SVG 차트, 접근 가능한 status 문구와 `data-trend-state="complete"`를 갱신한다.
+`index.html`과 `trend-analysis.html`은 현재 페이지 Ask와 동적으로 바뀌는 semantic
+projection을 사람이 확인하는 완전 가상 사이트다. 확장 프로그램에는 이 사이트의
+origin, path, 링크명, option 값 또는 실행 전용 adapter를 넣지 않는다. 분석 화면은
+`제품군 → 공정 노드 → 생산 캠퍼스 → 분석 기간 → 수율 추세 분석 실행` 순서를 강제하고,
+제출은 navigation 없이 SVG 차트, 접근 가능한 status 문구와 `data-trend-state="complete"`를 갱신한다.
 
 ## Act 경계
 
-Act chat은 정확한 demo origin에서만 proposal 도구를 받는다. 시작 페이지에서는 `분석 센터 열기` link만 제안할 수 있으며 `navigate` 권한을 별도로 확인한다. 분석 path에서는 모델이 한 번에 하나의 `propose_select_option` 또는 `propose_click`만 제안한다. Side Panel은 target과 제안 값을 표시하고 사용자가 승인해야 실행한다. `type`, `click`, `navigate` 권한은 현재 host 기준으로 별도 확인하며, 이번 작업만 허용은 Act session이 끝날 때 제거된다.
+Profile이 없더라도 이 example의 visible/enabled UI는 일반 page-derived Act discovery의
+후보가 된다. Profile을 설치하면 그 Profile이 더 좁은 action/verifier 계약을
+우선한다. Side Panel은 각 target과 제안 값을 표시하고 사용자가 승인해야 하며,
+권한은 현재 origin 기준으로 별도 확인한다.
 
 모델에는 raw `ref_id`, selector, CDP 정보, action token과 credential을 주지 않는다. 모델의 option 값은 untrusted proposal이며, content script가 현재 select option과 대상의 visible/enabled 상태를 다시 확인한다.
 
 ## 수동 확인 문장
 
 - 정보 페이지에서: `2nm GAA를 준비 중인 제품군과 생산 캠퍼스를 알려줘.`
-- 정보 페이지 Act에서: `분석 센터를 열어줘.`
+- 정보 페이지 Act에서: `수율 분석 센터로 이동해.`
 - 분석 페이지 Ask에서: `권장 검증 시나리오는 무엇인가요?`
 - 분석 페이지 실행에서: `AI 가속기, 2nm GAA, 평택 Campus 3, 최근 12주 조건으로 수율 추세를 분석해줘.`
 
