@@ -3,9 +3,15 @@ import {
   canonicalPageScope,
   redactForChat,
 } from "../security/chat-redaction.js";
+import {
+  exactKeys,
+  failureCode,
+  type Respond,
+  type RoutedMessage,
+  type RuntimeSender,
+} from "./runtime-message-router.js";
 
-type Sender = { url?: string };
-type Respond = (response: unknown) => void;
+type Sender = RuntimeSender;
 type ChatResult = { ok?: boolean };
 type ActiveTab = { id: number; title?: string; url?: string };
 
@@ -26,15 +32,6 @@ export type ChatMessageHandlerDependencies = {
   runAskChat(payload: unknown): Promise<ChatResult>;
   safeFailure(code: string, detail?: string): unknown;
 };
-
-export type RoutedMessage = { handled: boolean; keepAlive?: boolean };
-
-const exactKeys = (value: object, keys: readonly string[]): boolean =>
-  Object.keys(value).every((key) => keys.includes(key)) &&
-  keys.every((key) => key in value);
-
-const failureCode = (error: unknown, fallback: string): string =>
-  error instanceof ContractError ? error.code : fallback;
 
 /**
  * This label is display-only. Do not return a query, fragment, DOM text, or
