@@ -22,6 +22,8 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [Claude 브라우저 기능 채택 검증계획](18-claude-browser-capability-verification-plan.md)
 - [탭 범위 Chat Session과 LLM 문맥 설계](19-tab-scoped-chat-session-design.md)
 - [안정성 중심 구조 리팩터링 설계](20-stability-refactoring-design.md)
+- [선언형 다단계 Act Workflow 설계](21-declarative-act-workflow-design.md)
+- [Page Profile Provider와 Git 기반 MCP Registry 설계](22-page-profile-provider-design.md)
 
 ## 비규범 참고자료
 
