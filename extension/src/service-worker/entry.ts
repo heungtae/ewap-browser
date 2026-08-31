@@ -1,1 +1,3 @@
-import "./application.js";
+import { startServiceWorker } from "./bootstrap.js";
+
+startServiceWorker();

@@ -24,6 +24,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [안정성 중심 구조 리팩터링 설계](20-stability-refactoring-design.md)
 - [선언형 다단계 Act Workflow 설계](21-declarative-act-workflow-design.md)
 - [Page Profile Provider와 Git 기반 MCP Registry 설계](22-page-profile-provider-design.md)
+- [Service Worker composition 리팩터링 계획](23-service-worker-composition-refactoring-plan.md)
 
 ## 비규범 참고자료
 
