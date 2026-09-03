@@ -3,6 +3,7 @@ import { exactOrigin } from "../security/origin-matcher.js";
 import { fail } from "../security/validation.js";
 import { verifyProfileJws } from "./jws.js";
 import { verifyProfileClaims, type Profile } from "./profile.js";
+import { definitionDigest, ProfileReplayStore } from "./profile-replay.js";
 export type ResolverConfig = {
   deploymentId: string;
   url?: string;
@@ -23,6 +24,7 @@ export class ProfileResolver {
   public constructor(
     private readonly config: ResolverConfig,
     private readonly fetcher: typeof fetch = fetch,
+    private readonly replay?: ProfileReplayStore,
   ) {}
   public async resolve(input: ResolveInput): Promise<Profile> {
     return (await this.resolveWithProof(input)).profile;
@@ -76,15 +78,28 @@ export class ProfileResolver {
       return fail("PROFILE_UNAVAILABLE");
     const profile_jws = await response.text();
     const profile = await verifyProfileJws(profile_jws, this.config.keyRing);
+    const verified = verifyProfileClaims(profile, {
+      deploymentId: this.config.deploymentId,
+      nonce,
+      pageContextDigest: input.pageContextDigest,
+      origin: input.origin,
+      path: input.path,
+      fingerprint: input.fingerprint,
+    });
+    if (
+      this.replay &&
+      verified.resolution === "MATCHED" &&
+      verified.profile_id &&
+      verified.profile_version
+    )
+      this.replay.accept(
+        this.config.deploymentId,
+        verified.profile_id,
+        verified.profile_version,
+        definitionDigest(verified),
+      );
     return {
-      profile: verifyProfileClaims(profile, {
-        deploymentId: this.config.deploymentId,
-        nonce,
-        pageContextDigest: input.pageContextDigest,
-        origin: input.origin,
-        path: input.path,
-        fingerprint: input.fingerprint,
-      }),
+      profile: verified,
       profile_jws,
     };
   }

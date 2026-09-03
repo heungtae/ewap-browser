@@ -6,6 +6,13 @@ import type {
 } from "../contracts/types.js";
 
 export type ProfileResolution = "MATCHED" | "UNKNOWN";
+export type ProfileModelContext = {
+  title: string;
+  summary: string;
+  facts: Array<{ label: string; value: string }>;
+  glossary: Array<{ term: string; definition: string }>;
+  limitations: string[];
+};
 export type Profile = {
   schema_version: 1;
   resolution: ProfileResolution;
@@ -19,6 +26,7 @@ export type Profile = {
   profile_version?: number;
   matcher?: { origin: string; path_prefix: string };
   fingerprint: { alg: "semantic-projection-fp-v1"; value: string };
+  model_context?: unknown;
   tools?: unknown[];
   workflow?: unknown;
   business_mcp?: unknown[];

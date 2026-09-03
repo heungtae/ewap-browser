@@ -24,4 +24,18 @@ describe("security boundaries", () => {
     expect(() =>
       serializeAudit({ event: "policy", value: "secret" } as never),
     ).toThrow("INVALID_ARGUMENT"));
+  it("given_redacted_enterprise_correlation_when_serializing_then_accepts_it", () =>
+    expect(
+      serializeAudit({
+        event: "policy",
+        run_id: "run-1",
+        origin: "https://portal.company.test",
+        profile_id: "manufacturing",
+        profile_version: 3,
+        capability: "click",
+        risk: "R2",
+        decision: "ALLOW",
+        stage: "authorized",
+      }),
+    ).toContain("portal.company.test"));
 });

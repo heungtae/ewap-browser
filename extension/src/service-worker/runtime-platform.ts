@@ -5,6 +5,8 @@ import { ContentScriptRecovery } from "./content-script-recovery.js";
 import { createPageSenderContext } from "./page-sender-context.js";
 import { createWorkflowCatalogRuntime } from "./workflow-catalog-runtime.js";
 import { createWorkflowSourceAnalysis } from "./workflow-source-analysis.js";
+import { createManagedEnterprisePolicy } from "./enterprise-policy-runtime.js";
+import { createRuntimeEvidenceSink } from "./runtime-evidence.js";
 import type { BrowserChromeApi } from "./browser-api.js";
 
 export const chromeApi = (
@@ -30,4 +32,6 @@ export const workflowCatalogRuntime = createWorkflowCatalogRuntime({
 export const providerTransport = new CoreProviderTransport(
   providerBridge.fetch,
 );
+export const enterprisePolicy = createManagedEnterprisePolicy(chromeApi);
+export const runtimeEvidence = createRuntimeEvidenceSink(chromeApi);
 export { opaqueId };

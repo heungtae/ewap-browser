@@ -8,6 +8,7 @@ import { digestCanonical } from "../security/canonical.js";
 import { ContractError } from "../security/validation.js";
 import { semanticFingerprint } from "../profile/fingerprint.js";
 import { ProfileResolver, type ResolvedProfile } from "../profile/resolver.js";
+import { ProfileReplayStore } from "../profile/profile-replay.js";
 import { validateProfileResolverSettings } from "../settings/profile-settings.js";
 import type { PageScope } from "../state/tab-chat-session-store.js";
 import type { BrowserChromeApi } from "./browser-api.js";
@@ -32,6 +33,7 @@ type Dependencies = {
 };
 
 export const createPageContextRuntime = (dependencies: Dependencies) => {
+  const replay = new ProfileReplayStore();
   const read = async (
     scope = dependencies.defaultScope(),
   ): Promise<ActivePage> => {
@@ -140,12 +142,16 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     if (!stored?.profile_resolver)
       throw new ContractError("PROFILE_UNAVAILABLE");
     const settings = validateProfileResolverSettings(stored.profile_resolver);
-    const resolver = new ProfileResolver({
-      deploymentId: settings.deployment_id,
-      url: settings.url,
-      allowedOrigins: settings.allowed_origins,
-      keyRing: settings.key_ring,
-    });
+    const resolver = new ProfileResolver(
+      {
+        deploymentId: settings.deployment_id,
+        url: settings.url,
+        allowedOrigins: settings.allowed_origins,
+        keyRing: settings.key_ring,
+      },
+      fetch,
+      replay,
+    );
     const resolved = await resolver.resolveWithProof({
       origin: active.origin,
       path: active.path,

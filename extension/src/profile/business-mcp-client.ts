@@ -1,13 +1,8 @@
 import { fail } from "../security/validation.js";
 import { validateMcpResult } from "./mcp.js";
+import type { BusinessMcpBinding } from "./mcp-binding.js";
 
-export type BusinessMcpBinding = {
-  server_id: string;
-  endpoint: string;
-  tool_id: string;
-  result_key?: string;
-  value_kind: string;
-};
+export type { BusinessMcpBinding } from "./mcp-binding.js";
 
 export class BusinessMcpClient {
   public constructor(private readonly fetcher: typeof fetch = fetch) {}
@@ -60,9 +55,14 @@ export class BusinessMcpClient {
       kind: "CALL_PAGE_BUSINESS_TOOL_RESULT",
       requestId: expected.requestId,
       id: binding.tool_id,
-      ...(binding.result_key ? { resultKey: binding.result_key } : {}),
+      resultKey: binding.result_key,
       valueKind: binding.value_kind,
     });
+    const text = (result as { result?: Record<string, unknown> }).result?.[
+      binding.result_key
+    ];
+    if (typeof text !== "string" || text.length > binding.max_result_chars)
+      return fail("BUSINESS_MCP_PROTOCOL_ERROR");
     return result;
   }
 }

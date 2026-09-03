@@ -1,10 +1,12 @@
 import { digestCanonical } from "../security/canonical.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import { BusinessMcpClient } from "../profile/business-mcp-client.js";
+import { businessMcpBindings } from "../profile/mcp-binding.js";
+import { profileModelContext } from "../profile/profile-model-context.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { ProviderMessage } from "../providers/types.js";
 import { createAskToolExecutor } from "./ask-tool-executor.js";
-import { businessBindings, businessMcpTool } from "./ask-tools.js";
+import { businessMcpTool } from "./business-mcp-tools.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
 
 export const createAskChatRunner =
@@ -43,7 +45,12 @@ export const createAskChatRunner =
     const profile = await dependencies
       .resolveProfile(active)
       .catch(() => undefined);
-    const bindings = businessBindings(profile?.profile.business_mcp);
+    const bindings = profile?.profile.business_mcp
+      ? businessMcpBindings(profile.profile.business_mcp)
+      : [];
+    const context = profile?.profile.model_context
+      ? profileModelContext(profile.profile.model_context)
+      : undefined;
     const tool = businessMcpTool(bindings);
     const tools = [...dependencies.askTools, ...(tool ? [tool] : [])];
     const messages: ProviderMessage[] = [
@@ -51,7 +58,7 @@ export const createAskChatRunner =
       ...dependencies.threadContext(active.tabId),
       {
         role: "user",
-        content: `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\nUser question: ${safeChatText(value.prompt)}`,
+        content: `${context ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(context)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]\n\n` : ""}[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\nUser question: ${safeChatText(value.prompt)}`,
       },
     ];
     const mcp = new BusinessMcpClient(dependencies.providerFetch);
@@ -86,6 +93,7 @@ export const createAskChatRunner =
         );
       },
       redactTitle: dependencies.redactedTitle,
+      businessBindings: bindings,
     });
     for (let step = 1; step <= 3; step += 1) {
       await dependencies.write(

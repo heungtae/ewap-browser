@@ -16,7 +16,9 @@ export const definitionDigest = (profile: Profile): string => {
     profile_version: profile.profile_version,
     matcher: profile.matcher,
     fingerprint: profile.fingerprint,
+    model_context: profile.model_context ?? null,
     tools: profile.tools ?? [],
+    workflow: profile.workflow ?? null,
     authoritative_fields: profile.authoritative_fields ?? [],
     business_mcp: profile.business_mcp ?? [],
   });

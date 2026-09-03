@@ -3,6 +3,7 @@ import type {
   WorkflowStep,
 } from "../contracts/workflow.js";
 import type { ProfileActionTool } from "../profile/profile.js";
+import type { ProfileModelContext } from "../profile/profile-types.js";
 import type { ProviderMessage } from "../providers/types.js";
 import type { ParsedActProposal } from "./act-proposal-parser.js";
 
@@ -20,6 +21,7 @@ export type ActSession = {
   runId?: string;
   proposal?: ActProposal;
   profile: { id: string; version: number };
+  modelContext?: ProfileModelContext;
   discovery: "profile" | "page-derived";
   definitions: readonly ProfileActionTool[];
   profileDefinitions: readonly ProfileActionTool[];

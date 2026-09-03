@@ -5,6 +5,10 @@ import type { ModelSemanticSnapshot } from "../contracts/types.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import type { BrowserTabs } from "./browser-api.js";
 import { createAskVisionToolExecutor } from "./ask-vision-tool-executor.js";
+import {
+  businessMcpArguments,
+  type BusinessMcpBinding,
+} from "../profile/mcp-binding.js";
 
 type ToolCall = { name: string; arguments: string };
 type Dependencies = {
@@ -16,6 +20,7 @@ type Dependencies = {
   capture(id: string): VisionCapture | undefined;
   remember(capture: VisionCapture): void;
   callBusiness(toolId: string, args: Record<string, string>): Promise<unknown>;
+  businessBindings: readonly BusinessMcpBinding[];
   redactTitle(value: string | undefined): string;
 };
 
@@ -162,15 +167,16 @@ export const createAskToolExecutor = (dependencies: Dependencies) => {
         if (
           !isPlainObject(args) ||
           typeof args.tool_id !== "string" ||
-          !isPlainObject(args.arguments) ||
-          Object.values(args.arguments).some(
-            (value) => typeof value !== "string",
-          )
+          !isPlainObject(args.arguments)
         )
           return fail("INVALID_ARGUMENT");
+        const binding = dependencies.businessBindings.find(
+          (candidate) => candidate.tool_id === args.tool_id,
+        );
+        if (!binding) return fail("BUSINESS_MCP_NOT_CONFIGURED");
         return dependencies.callBusiness(
           args.tool_id,
-          args.arguments as Record<string, string>,
+          businessMcpArguments(binding, args.arguments),
         );
       }
       return fail("INVALID_ARGUMENT");

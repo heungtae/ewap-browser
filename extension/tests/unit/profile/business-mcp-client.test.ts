@@ -1,6 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { BusinessMcpClient } from "../../../src/profile/business-mcp-client.js";
 
+const binding = {
+  server_id: "server",
+  endpoint: "https://mcp.company.test",
+  tool_id: "field",
+  title: "Field",
+  description: "Read a field.",
+  arguments: {
+    type: "object" as const,
+    additionalProperties: false as const,
+    properties: {},
+    required: [],
+  },
+  result_key: "value",
+  value_kind: "text" as const,
+  max_result_chars: 100,
+};
+
 describe("business MCP client", () => {
   it("given_profile_bound_tool_when_calling_then_closed_result_is_returned", async () => {
     let request: Record<string, unknown> | undefined;
@@ -21,13 +38,7 @@ describe("business MCP client", () => {
     });
     await expect(
       client.call(
-        {
-          server_id: "server",
-          endpoint: "https://mcp.company.test",
-          tool_id: "field",
-          result_key: "value",
-          value_kind: "text",
-        },
+        binding,
         { kind: "CALL_PAGE_BUSINESS_TOOL", arguments: {} },
         {
           requestId: "request",
@@ -50,12 +61,7 @@ describe("business MCP client", () => {
     const client = new BusinessMcpClient();
     await expect(
       client.call(
-        {
-          server_id: "server",
-          endpoint: "http://mcp.company.test",
-          tool_id: "field",
-          value_kind: "text",
-        },
+        { ...binding, endpoint: "http://mcp.company.test" },
         {},
         {
           requestId: "request",

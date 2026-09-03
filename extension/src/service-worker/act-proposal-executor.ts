@@ -20,6 +20,11 @@ import type { ActProposal, ActSession } from "./act-session-types.js";
 import { completeActProposal } from "./act-proposal-completion.js";
 import { createActProposalFollowup } from "./act-proposal-followup.js";
 import { prepareActProposal } from "./act-proposal-readiness.js";
+import type {
+  EnterprisePolicyDecision,
+  EnterprisePolicyRequest,
+} from "../policy/enterprise-policy.js";
+import type { AuditEvent } from "../security/audit.js";
 
 type Execution = Record<string, unknown>;
 type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
@@ -28,6 +33,10 @@ type Dependencies = {
   coordinator: ServiceCoordinator;
   permissions: PermissionManager;
   preferences(): AgentPreferences;
+  authorizeEnterprise(
+    request: EnterprisePolicyRequest,
+  ): Promise<EnterprisePolicyDecision>;
+  evidence(event: AuditEvent): Promise<void>;
   planScopes: PlanScopeStore;
   readActive(): Promise<ActivePage>;
   getRun(runId: string): Run | undefined;
@@ -65,20 +74,42 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
     if (!proposal || !run || run.phase === "TERMINAL")
       return fail("INVALID_ARGUMENT");
     const capability = capabilityFor(proposal);
+    const enterprise = await dependencies.authorizeEnterprise({
+      run_id: run.id,
+      tab_id: run.tabId,
+      document_epoch: run.documentEpoch,
+      origin: session.origin,
+      capability,
+      risk: proposal.definition.risk,
+      profile: session.profile,
+    });
+    void dependencies.evidence({
+      event: "policy",
+      run_id: run.id,
+      origin: session.origin,
+      profile_id: session.profile.id,
+      profile_version: session.profile.version,
+      capability,
+      risk: proposal.definition.risk,
+      decision: enterprise.decision,
+      stage: "authorized",
+    });
     dependencies.publish(run.id, {
       type: "tool_started",
       tool_use_id: proposal.toolCallId,
       tool: proposal.tool,
       summary: `${proposal.targetName} 작업을 준비하는 중입니다.`,
     });
-    const permission = gatePermission(
-      dependencies.permissions,
-      dependencies.preferences(),
-      capability,
-      session.origin,
-      session.id,
-      dependencies.planScopes.origins(session.id),
-    );
+    const permission = enterprise.managed_auto
+      ? "ALLOW"
+      : gatePermission(
+          dependencies.permissions,
+          dependencies.preferences(),
+          capability,
+          session.origin,
+          session.id,
+          dependencies.planScopes.origins(session.id),
+        );
     if (permission !== "ALLOW") {
       if (permission === "DENY" || permission === "PLAN_SCOPE_VIOLATION")
         return fail("POLICY_DENIED");

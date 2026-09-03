@@ -15,6 +15,8 @@ import { chatRunLifecycle, providerRuntime } from "./runtime-lifecycle.js";
 import {
   chromeApi,
   opaqueId,
+  enterprisePolicy,
+  runtimeEvidence,
   providerBridge,
   workflowCatalogRuntime,
 } from "./runtime-platform.js";
@@ -134,6 +136,8 @@ const proposalExecutor = createActProposalExecutor({
   coordinator,
   permissions,
   preferences: () => agentPreferences,
+  authorizeEnterprise: enterprisePolicy.authorize,
+  evidence: runtimeEvidence.emit,
   planScopes,
   readActive: readActiveSnapshot,
   getRun: (runId) => coordinator.runs.byId(runId),

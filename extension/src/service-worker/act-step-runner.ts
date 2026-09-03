@@ -11,7 +11,6 @@ import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { ProviderMessage } from "../providers/types.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
 import type { ActStepDependencies } from "./act-step-dependencies.js";
-
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
   const runStep = async (
     session: ActSession,
@@ -68,9 +67,15 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       active.snapshot,
     );
     const projection = `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]`;
+    const profileContext = session.modelContext
+      ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(session.modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]`
+      : undefined;
     const messages: ProviderMessage[] = session.workflow
       ? [
           session.messages.at(0)!,
+          ...(profileContext
+            ? [{ role: "user" as const, content: profileContext }]
+            : []),
           {
             role: "user",
             content: `Workflow step ${session.workflow.count + 1}/${session.workflow.declaration.steps.length}. Propose exactly one call to the supplied tool for this fixed current step. For option selection, choose exactly one supplied enum value. Do not repeat a previous tool call or target. User execution request: ${safeChatText(session.prompt)}`,
@@ -79,6 +84,9 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         ]
       : [
           session.messages.at(0)!,
+          ...(profileContext
+            ? [{ role: "user" as const, content: profileContext }]
+            : []),
           ...dependencies.threadContext(active.tabId),
           ...session.messages.slice(1),
           { role: "user", content: projection },

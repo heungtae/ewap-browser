@@ -6,6 +6,9 @@ export const userMessage: Record<ErrorCode, string> = {
   POLICY_DENIED: "회사 정책상 이 작업을 할 수 없습니다.",
   ORIGIN_NOT_ALLOWED: "이 사이트에서는 사용할 수 없습니다.",
   PROFILE_UNAVAILABLE: "이 페이지의 업무 프로필을 확인할 수 없습니다.",
+  ENTERPRISE_POLICY_UNAVAILABLE:
+    "회사 정책 서비스를 확인할 수 없어 변경 작업을 중단했습니다.",
+  ENTERPRISE_POLICY_DENIED: "회사 정책상 이 작업을 승인할 수 없습니다.",
   UNKNOWN_PROFILE:
     "등록된 업무 프로필이 없어 읽기 전용으로만 사용할 수 있습니다.",
   TARGET_STALE: "페이지가 변경되어 대상을 다시 확인해야 합니다.",

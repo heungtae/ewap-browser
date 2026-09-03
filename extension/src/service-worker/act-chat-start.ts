@@ -1,5 +1,6 @@
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import { profileActionTools } from "../profile/profile.js";
+import { profileModelContext } from "../profile/profile-model-context.js";
 import type { ResolvedProfile } from "../profile/resolver.js";
 import { ContractError, fail, isPlainObject } from "../security/validation.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -84,6 +85,11 @@ export const createActChatStart =
       selected.discovery === "profile" && matchedProfile
         ? { id: matchedProfile.id, version: matchedProfile.version }
         : { id: "page-derived-ui-v1", version: 1 };
+    const modelContext =
+      resolved?.profile.resolution === "MATCHED" &&
+      resolved.profile.model_context !== undefined
+        ? profileModelContext(resolved.profile.model_context)
+        : undefined;
     const candidates = await dependencies.candidates(active, matchedProfile);
     if (candidates.length > 0) {
       const id = dependencies.createId();
@@ -120,6 +126,7 @@ export const createActChatStart =
         { role: "user", content: `User execution request: ${value.prompt}` },
       ],
       profile,
+      ...(modelContext ? { modelContext } : {}),
       discovery: selected.discovery,
       definitions: selected.definitions,
       profileDefinitions: matchedProfile?.definitions ?? [],
