@@ -25,6 +25,11 @@ tool을 현재 페이지에서 쓸 수 있는지 결정한다.
 ## 2. 소유권과 저장소
 
 Page Profile 원본은 확장 저장소와 분리된 전용 Git 저장소를 source of truth로 한다.
+현재 호환 단계에서 MCP server/tool 원본도 이 release source의 `mcp-servers/`에 둔다.
+다만 Enterprise Studio Registry를 도입한 뒤에는 Studio의 승인된 server, environment,
+catalog, trust release가 MCP server/tool의 source of truth가 된다. Git은 Studio가 내보낸
+불변 release binding의 검토·보관용 export이거나 Profile source만을 위한 저장소여야 한다.
+동일 server/catalog을 Git과 Studio에서 독립적으로 수정하는 이중 쓰기는 허용하지 않는다.
 
 ```text
 page-profile-registry/
@@ -41,6 +46,12 @@ private signing key, Resolver deployment credential 또는 Business MCP credenti
 `main` 병합 CI는 모든 source file을 검증하고 불변 release artifact를 만든다. Provider는
 완전히 검증된 artifact만 읽기 전용으로 로드하며, 새 artifact는 전체 검증 뒤 원자적으로
 교체한다. 부분 Git checkout, branch 작업물, 미승인 PR은 Resolver 결과에 영향을 주지 않는다.
+
+Studio Registry를 사용하는 release에서는 CI가 Git의 `mcp-servers/`를 직접 전개하지
+않는다. 대신 revision ID, 대상 environment와 Profile의 논리적 `serverRef`를 Studio
+read-only release binding API에 보내며, 승인·동결된 adapter view만 artifact에 넣는다.
+따라서 Profile Provider는 운영 중 `tools/list`나 Registry mutation API를 호출하지 않고,
+항상 release에 고정된 binding만 읽는다.
 
 ## 3. Source Profile과 MCP Registry 계약
 
@@ -122,6 +133,38 @@ Registry endpoint는 HTTPS여야 하며 userinfo, query, fragment와 임의 head
 `server_id/tool_id` 참조가 Registry에 존재하고, tool ID가 전역적으로 모호하지 않으며,
 argument/result schema가 닫혀 있는지 확인한다.
 
+### 3.3 Enterprise Studio Registry와 Profile binding
+
+Studio가 연결된 경우 Profile source는 endpoint나 raw schema 대신 다음 논리 binding을
+선언한다. `serverRef`는 안정적인 Registry server ID이며 URL이 아니다. `toolOverrides`는
+Registry catalog에 이미 존재하는 tool의 선택·표시 우선순위만 조정할 수 있고 capability,
+risk, schema, endpoint 또는 credential을 완화할 수 없다.
+
+```yaml
+contexts:
+  - id: manufacturingContext
+    provider: { type: mcp, serverRef: manufacturing-data }
+    capabilityPolicy:
+      allow: [manufacturing.yield.read]
+      maxRisk: READ
+    toolOverrides:
+      get_yield_definition: { preferred: true }
+```
+
+Registry는 `serverRef`별 environment binding, transport family, trust policy,
+approved catalog checksum, capability/risk overlay와 health 상태를 소유한다. release
+validator는 Profile revision, server release, catalog release, environment binding을 함께
+동결한다. 이 중 하나라도 변경·폐기·health fail 또는 catalog compatibility 실패이면 기존
+artifact를 조용히 최신 catalog로 바꾸지 않고 새 Profile release를 다시 검증해야 한다.
+
+`PROFILE_BOUND_HTTP_V1`에서는 동결된 adapter가 기존 `business_mcp` 형식
+(`server_id`, approved endpoint, closed argument/result schema)을 만든다. 표준
+`MCP_STREAMABLE_HTTP`에서는 Discovery Worker가 `tools/list`를 읽어 catalog snapshot과
+checksum을 만든 뒤 Registry overlay를 적용한다. discovery caller는 Studio worker이며
+Profile Provider나 확장이 아니다. refresh TTL, stale-use 기간, probe identity와 revoke
+정책은 Registry release policy로 명시하고, TTL 초과 또는 revoked/failed 상태에서는
+새 resolve/실행을 `MCP_BINDING_STALE` 또는 `MCP_SERVER_REVOKED`로 fail closed한다.
+
 ## 4. Resolver 발급 계약
 
 확장은 기존 Resolver 요청을 유지한다.
@@ -146,23 +189,33 @@ compact JWS를 발급한다. JWS에는 다음을 넣는다.
   fingerprint, `issued_at`, `expires_at`, `profile_id`, `profile_version`
 - 검증된 `model_context`, action `tools`, `workflow`
 - Registry에서 전개한 `business_mcp` binding: `server_id`, `endpoint`, `tool_id`,
-  `result_key`, `value_kind` 및 model-visible tool metadata
+  `result_key`, `value_kind`, closed argument schema, `catalog_checksum`,
+  `server_release_id`, `environment` 및 model-visible tool metadata
 
 JWS 수명은 24시간 이하이고 전체 크기는 64 KiB 이하다. private key는 Provider의 배포
 secret에만 두며 `kid`와 공개 PEM은 확장 Settings의 key ring으로 배포한다. Provider는
-release ID와 source commit만 audit metadata로 남기고 Profile 원문이나 요청 page payload를
-장기 저장하지 않는다.
+release ID, source commit, Profile revision, server/catalog release와 environment만 audit
+metadata로 남기고 Profile 원문이나 요청 page payload를 장기 저장하지 않는다.
 
 ## 5. Ask·Act와 Business MCP 흐름
 
 ```text
+Studio: configured MCP server
+  → Discovery/health + catalog checksum
+  → capability/risk overlay
+  → Profile serverRef/tool policy validation
+  → Profile revision + server/catalog/environment release freeze
+  → release-bound adapter view
+  → Provider signed Profile artifact
+
 Content script snapshot
   → Service Worker: digest + fingerprint
-  → HTTPS Resolver: signed Profile JWS
+  → HTTPS Resolver: frozen signed Profile JWS
   → Service Worker: JWS/binding 검증
       ├─ Ask/Act model message: safe model_context
       └─ Ask tool call: Profile-bound Business MCP read
-           → current page binding 재확인 → Registry-expanded endpoint
+           → current profile/release/server/catalog/environment/run/page-digest 재확인
+           → Enterprise MCP Gateway (기본) 또는 승인된 direct-route 예외
            → bounded result 검증 → 다음 모델 turn의 untrusted data
 ```
 
@@ -178,9 +231,19 @@ argument schema는 Registry에서 오며, endpoint, JWS, nonce, digest, credenti
 digest와 Profile binding을 다시 확인한다. 페이지가 변했으면 결과를 재사용하지 않고
 Profile을 다시 resolve한다.
 
+Gateway는 issuer/audience, Profile/release, environment, server/tool, request/run nonce와
+page digest를 consumer contract가 제공하는 범위에서 모두 bind한 뒤 capability, risk,
+PDP/policy, closed input schema, size와 timeout을 검증한다. Gateway만 approved route와
+server-side credential을 해석한다. 운영 환경의 기본 경로는 Gateway이며 direct endpoint는
+Security Admin이 environment별로 승인하고 audit한 예외만 허용한다.
+
 Business MCP 응답은 Registry의 결과 schema와 `max_result_chars`를 통과해야 하며,
 `[UNTRUSTED_TOOL_RESULT]`로만 다음 모델 turn에 전달한다. Business MCP 오류에는 DOM
-추측이나 다른 endpoint fallback을 하지 않는다.
+추측이나 다른 endpoint fallback을 하지 않는다. 실행 오류는 endpoint, secret, raw
+request/response 또는 PDP 내부 정보를 노출하지 않는 안정 코드
+`MCP_SERVER_NOT_REGISTERED`, `MCP_SERVER_REVOKED`, `MCP_CATALOG_INCOMPATIBLE`,
+`MCP_CAPABILITY_DENIED`, `MCP_POLICY_DENIED`, `MCP_BINDING_STALE`, `MCP_TIMEOUT`,
+`MCP_PROTOCOL_ERROR`로 정규화한다.
 
 Act에서는 page-derived visible/enabled candidate가 우선이다. Profile의 action definition은
 기존처럼 후보가 부족할 때 위험도, 허용 role, option enum과 semantic verifier를 보완한다.
@@ -206,22 +269,28 @@ postcondition verifier를 계속 거친다.
 
 ## 7. 구현·검증 순서
 
-1. 전용 Git 저장소의 source/Registry JSON Schema, fixtures, validator와 merge CI artifact를
-   만든다.
-2. HTTPS Provider에 artifact loader, matcher, ES256 dev signer와 `/v1/resolve`를 구현한다.
-3. local stdio MCP에 읽기·검증·branch/commit/PR-preparation 도구를 구현한다.
-4. 확장 Profile claim validator에 `model_context`와 Registry tool metadata를 추가하고,
+1. 전용 Git 저장소의 Profile source/호환 Registry JSON Schema, fixtures, validator와 merge
+   CI artifact를 만든다.
+2. Studio Registry에 server/environment/trust/catalog/overlay 관리, discovery·health,
+   Profile binding validation과 release freeze API를 구현한다.
+3. Registry release adapter가 `PROFILE_BOUND_HTTP_V1` binding을 기존 consumer payload로
+   전개하고, Gateway가 release/profile/server/tool/run/page-digest binding을 강제하게 한다.
+4. HTTPS Provider에 artifact loader, matcher, ES256 dev signer와 `/v1/resolve`를 구현한다.
+5. local stdio MCP에 읽기·검증·branch/commit/PR-preparation 도구를 구현한다.
+6. 확장 Profile claim validator에 `model_context`와 Registry tool metadata를 추가하고,
    Ask/Act projection 및 tool별 argument/result 검증을 연결한다.
-5. Profile replay high-water를 실제 resolve path에 연결해 같은
+7. Profile replay high-water를 실제 resolve path에 연결해 같은
    `(deployment_id, profile_id, profile_version)`의 정의 digest 충돌을 거부한다.
 
 단위 테스트는 source/Registry schema, 참조 오류, matcher 모호성, version 역행, endpoint
-제한, JWS binding·만료·UNKNOWN을 다룬다. MCP 테스트는 임시 Git checkout에서 branch/commit
-생성과 signing key 비접근을 검증한다. 확장 테스트는 Ask/Act에 model context가 포함되고
-endpoint/JWS/nonce/credential은 제외됨, stale page Business MCP 호출 거부, page-derived Act
-우선, Business MCP 결과 schema·크기 제한을 확인한다. 마지막으로 local HTTPS Provider와
-Business MCP fixture를 사용해 Chrome E2E의 resolve → Ask context → business read → Act
-proposal 흐름을 검증한다.
+제한, JWS binding·만료·UNKNOWN을 다룬다. Studio 테스트는 transport별 discovery/checksum,
+TTL·stale/revoke, capability/risk filter, Profile/server/catalog/environment 동결, direct-route
+예외와 Gateway의 stable error/binding 검증을 다룬다. MCP 테스트는 임시 Git checkout에서
+branch/commit 생성과 signing key 비접근을 검증한다. 확장 테스트는 Ask/Act에 model context가
+포함되고 endpoint/JWS/nonce/credential은 제외됨, stale page Business MCP 호출 거부,
+page-derived Act 우선, Business MCP 결과 schema·크기 제한을 확인한다. 마지막으로 local
+HTTPS Provider, Studio adapter/Gateway와 Business MCP fixture를 사용해 Chrome E2E의
+resolve → Ask context → gateway business read → Act proposal 흐름을 검증한다.
 
 v1 검증은 서버 구현과 local Chrome 증적까지의 범위이며, 사용자별 업무 데이터, OIDC,
 KMS/HSM, key rotation, 운영 배포/rollback 승인과 production qualification은 후속 slice다.

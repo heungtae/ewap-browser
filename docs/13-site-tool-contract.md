@@ -5,13 +5,21 @@
 `call_page_business_tool`의 고정 `tool_id` 열거 모델은 Enterprise
 모드에서 다음 discovery pipeline으로 대체한다.
 
-`MCP tools/list → Registry capability/risk overlay → Signed Page Profile capabilityPolicy/toolOverrides → Enterprise PDP/RBAC → current user/device/run binding → LLM-visible Tool Catalog`
+`configured MCP server → Studio discovery/health and catalog checksum → Registry capability/risk overlay → Signed Page Profile serverRef/capabilityPolicy/toolOverrides → frozen profile/server/catalog/environment release → Enterprise PDP/RBAC → current user/device/run/page-digest binding → LLM-visible Tool Catalog`
 
 Page Profile은 MCP tool schema를 복제하지 않는다. Workflow가 특정 tool을
 명시적으로 참조하는 경우에만 publish/validation 단계에서 해당 tool의
 존재와 schema compatibility를 강하게 검사한다. MCP result는 typed/schema
 validation 후에도 instruction authority가 아닌 untrusted business
 data다.
+
+`tools/list` discovery의 caller와 cache owner는 Studio Registry Worker다. Profile Provider와
+확장은 live discovery 결과를 직접 읽지 않으며, release에 동결된 adapter binding만 소비한다.
+`PROFILE_BOUND_HTTP_V1`은 discovery 대신 closed contract와 health probe를 checksum으로
+검증한다. TTL 초과, revoked server 또는 catalog compatibility 실패는 최신 catalog로의
+자동 교체가 아니라 새 release 검증 또는 `MCP_BINDING_STALE` fail-closed 처리를 요구한다.
+운영 실행은 Enterprise MCP Gateway가 기본이며, direct endpoint는 environment별 승인·감사된
+Registry 예외에서만 가능하다.
 
 ## 1. 모델에 제공하는 도구
 
