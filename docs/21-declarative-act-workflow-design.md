@@ -1,5 +1,21 @@
 # 선언형 다단계 Act Workflow 설계
 
+## 구현 상태와 Platform Target (2026-09-06)
+
+현재 로컬 Workflow Runtime은 **Partially Implemented (Platform 기준)**다. source validator와 실행기는 최대 12단계, select_option_by_ref/set_checked_by_ref/click_by_ref, role+name target과 제한된 branch를 지원한다. 이 문서의 기존 본문은 이 로컬 선언 모델을 설명한다.
+
+| 구분 | 계약 | 현재 Browser 지원 |
+| --- | --- | --- |
+| Browser local declaration | schema_version 1, id/title/steps, 첫 step에서 시작 | Implemented, Profile inline 또는 사용자/page 후보 |
+| Shared EWAP Workflow | ewap/v1, kind Workflow, metadata, spec.start/steps.type/with | Not Implemented; step mapping/검증 필요 |
+| Platform target | enterprise-web-ai/v1alpha1, kind WorkflowDefinition, entryStepId, typed variables/CEL/다양한 step | Planned; 별도 resource와 atomic release bundle |
+
+공유 EWAP 계약이 우선이며 Platform의 WorkflowDefinition을 현재 소비 계약으로 조용히 대체하지 않는다. [C02](platform-alignment.md)에서 vocabulary, entry/reference/version, terminal outcome, loop/parallel bounds와 supported subset을 결정한다. 지원하지 않는 mcp-call/approval/parallel/foreach 등을 삭제하거나 UI click으로 추측 변환해서는 안 된다.
+
+Target에서 Platform은 authoring/review/approval/signing/dependency freeze를 소유하고 Browser는 검증된 bundle의 지원 step 실행과 preflight/PDP/confirmation/verifier를 소유한다. Profile의 workflow reference는 release의 exact version/digest로 해석하며 부분 bundle은 활성화하지 않는다. current local catalog와 signed release cache는 별도 저장소 책임이다.
+
+현재 local 확인은 중앙 approval step/token 단회 소비가 아니다. release/workflowRun/step audit, authenticated ingest와 current trust는 후속 P1이다. Profile 후보의 UI “조직 검증됨”은 현재 local key ring 서명 검사 범위이며 Platform 승인/SSO 증거가 아니다. page 선언과 사용자 기록은 자동으로 조직 승인 workflow가 되지 않는다.
+
 ## 목적
 
 여러 화면 구성 요소가 순서·분기·완료 조건으로 묶인 경우에도 ContextPilot은 한 번에 하나의

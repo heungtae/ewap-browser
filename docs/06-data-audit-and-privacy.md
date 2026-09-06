@@ -1,111 +1,68 @@
 # 06. 데이터, 감사 및 개인정보 경계
 
-## Enterprise Web AI Platform 정렬 (2026-08-31)
+> 2026-09-06 문서 정렬. [Platform alignment](platform-alignment.md)의 revision을 기준으로 현재 저장/출력과 목표 감사 계약을 구분한다. 중앙 Audit Service 통합 완료를 주장하지 않는다.
 
-로컬 저장 최소화 원칙은 유지하면서 Enterprise Audit을 별도 계층으로
-추가한다.
+## 1. 현재 저장 위치와 수명
 
-Enterprise `AuditEvent`에는 organization/user, session/run/workflowRun,
-redacted origin/path, profile/version, workflow/version, MCP
-server/tool, policy version/decision, capability/risk, execution
-path/stage/outcome/reason code를 기록할 수 있다.
+| 위치 | 현재 용도 | 경계 |
+| --- | --- | --- |
+| chrome.storage.local | provider/plugin/API key/static headers, permissions, preferences, Profile Resolver URL/public key ring, 사용자 workflow catalog | 사용자 기기 저장소이며 secret vault가 아니다. Profile artifact persistent cache와 enterprise access-token 관리 기능은 없음 |
+| chrome.storage.session | bounded/redacted 탭별 chat, CDP ownership metadata, 5분 workflow 선택 계획 | 실행 ref/value/confirmation token을 복원하는 저장소가 아님 |
+| Service Worker memory | run/model-ref mapping, action value/confirmation, resolved Profile proof, replay high-water | worker 재시작을 넘는 Profile anti-replay 또는 audit queue가 아님 |
+| Content script / CDP action memory | document refs, preflight, transient target/input | 종료된 action 권한으로 재사용 금지 |
+| Vision run memory | screenshot/zoom capture | audit/cache/export 대상으로 삼지 않음 |
+| chrome.storage.managed read ports | enterprise_policy, enterprise_identity, runtime_evidence | read 코드가 있지만 manifest managed_schema가 없어 관리형 배포는 미완성 |
 
-다음은 central audit에도 기본 금지한다: password/OTP/token, raw
-prompt/page content, raw tool result, action value,
-selector/ref/node/coordinate, provider credential. 규제상 business value
-audit이 필요하면 일반 Runtime audit와 분리된 명시적 domain audit
-schema/retention policy로 opt-in한다.
+[storage bootstrap](../extension/src/service-worker/storage-bootstrap.ts)은 trusted contexts 접근을 설정하고 local permissions/preferences와 session chat/선택을 복구한다. [19번](19-tab-scoped-chat-session-design.md)의 chat 수명·크기 제한을 유지한다. persistent Profile cache는 [22번](22-page-profile-provider-design.md)의 Planned 기능이다.
 
-## 1. 저장 위치
+Provider API key/static header는 모델·페이지·감사·export에 전달하지 않는 별도 core transport 경계다. 웹사이트 로그인 세션, LLM credential, 향후 Platform access token은 서로 대체할 수 없다.
 
-  ------------------------------------------------------------------------------------------------------
-  위치                       저장 대상                                       저장 금지
-  -------------------------- ----------------------------------------------- ---------------------------
-  `chrome.storage.local`     plugin manifest, provider 설정, API key, 정적   executable plugin code, raw
-                             header, site permission, UI preference,         page value, password/OTP,
-                             redacted run summary, 사용자 저장 workflow의    action value, workflow 원문
-                             선언형 순서·scope·fingerprint·메타데이터        HTML/JS·selector/ref, 모델
-                                                                             tool mapping
+## 2. 현재 감사 전송과 로컬 이벤트
 
-  `chrome.storage.session`   CDP attach ownership의 tab/run/action과         target token, ref/node ID,
-                             `attaching`/`attached` phase, [19번             좌표/box, action value, raw
-                             문서](19-tab-scoped-chat-session-design.md)의   page content와 image,
-                             redacted·bounded Chat Session/thread context,   confirmation nonce·실행
-                             5분 이내 workflow 후보·선택 계획(선언형 target  대상 ref·코드 원문
-                             이름/역할·scope·redacted prompt)                
+[AuditEvent](../extension/src/security/audit.ts)의 event enum은 policy/terminal/mcp/workflow다. enum에 존재하는 것과 실제 emit은 다르다. 프로덕션 연결은 [Act proposal executor](../extension/src/service-worker/act-proposal-executor.ts)의 authorize 성공 후 `policy`, `decision=ALLOW`, `stage=authorized` 전송뿐이다. DENY는 client가 throw하므로 이 emit에 도달하지 않는다. Community ALLOW도 이 경로를 지나므로 수신 이벤트를 중앙 PDP의 검증된 결정으로 해석할 수 없다.
 
-  service worker run memory  model_ref mapping, current permission,          terminal 이후 retained
-                             confirmation, action value digest               value
+[runtime evidence sink](../extension/src/service-worker/runtime-evidence.ts)는 managed endpoint가 유효할 때만 HTTPS POST한다. 인증 header, event ID/timestamp/receipt, durable queue, retry/deduplication이 없고 HTTP 성공 여부를 확인하지 않으며 network failure를 삼킨다. endpoint가 없으면 아무것도 보내지 않는다. 이는 **Partially Implemented / best-effort**이고 Platform Audit Service의 durable 수신 증거가 아니다.
 
-  content script memory      현재 document ref registry와 단일 action value  provider credential, audit,
-                                                                             persistent data
+| Event | Currently emitted to evidence sink | Currently logged locally / UI stream | Planned audit event / Platform integration required |
+| --- | --- | --- | --- |
+| Profile loaded | 없음 | page-context-runtime의 resolved metadata Console | release/digest/environment/trust 확인 후 loaded |
+| Profile rejected | 없음 | 호출자 오류 처리 또는 generic fallback; 전용 rejection event 없음 | bounded reason/version/correlation의 rejected |
+| Agent started | 없음 | Ask/Act chat run_started | authenticated agent/run started |
+| Workflow started | 없음 | 후보/선택 UI와 단계별 run; 독립 중앙 workflow-start event 없음 | workflowRun/release/workflow version 시작 |
+| Browser action | 없음 | tool_started/tool_finished, review/confirmation UI | preflight/dispatch/verifier outcome |
+| MCP tool call | 없음 | Ask generic tool_started/tool_finished | server/tool/release/policy + outcome, raw arguments/result 제외 |
+| Policy allowed | optional policy ALLOW POST | proposal 진행 | 실제 decisionId/policyVersion/expiry와 authenticated actor 결속 |
+| Policy denied | 없음 | 오류 처리, denial 전용 중앙 event 없음 | deny/error와 안정 reason code |
+| User approval | 없음 | permission/confirmation UI 메시지 | central approval ID/consumed outcome; token/nonce 제외 |
+| Workflow completed | 없음 | step terminal/최종 UI 결과 | 별도 workflowRun terminal과 전체 결과 |
+| Workflow failed | 없음 | step 실패/run terminal; 일부 UNKNOWN | workflow/step/result correlation과 failed/unknown |
 
-  CDP action memory          current binding, 일회용 target token,           terminal 이후
-                             node/box와 ephemeral input                      token/node/좌표/value,
-                                                                             screenshot, console/network
-                                                                             data
+[Chat lifecycle](../extension/src/service-worker/chat-run-lifecycle.ts)의 UI event와 redacted session history는 중앙 audit가 아니다. 현재 `run_terminal`을 `AuditEvent.event=terminal`로 변환해 전송하는 호출 경로도 없다.
 
-  Vision run memory          current viewport screenshot/zoom과 capture      terminal 이후 image,
-                             metadata                                        persistent cache와 audit
-                                                                             copy
+## 3. 진단 출력의 AS-IS와 알려진 차이
 
-  Local LLM endpoint         사용자가 선택한 prompt와 tool schema            API key 외의 브라우저
-                                                                             credential, password/OTP,
-                                                                             raw secret field
-  ------------------------------------------------------------------------------------------------------
+`page-context-runtime.ts`는 active tab URL, content snapshot response, origin/path를 `console.debug`로 출력한다. `ask-chat-runner.ts`와 Act 경로는 최종 모델 messages/tool schema를 출력하고, `runtime-chat.ts`는 이를 Service Worker 및 페이지 DevTools 로그로 전달한다. 따라서 “raw URL/page content/model context는 모든 diagnostics에서 제외된다”는 기존 문장은 현재 구현에 대한 정확한 설명이 아니다. redacted projection이라도 업무 텍스트와 경로가 남을 수 있다.
 
-## 2. provider secret
+Console은 휘발성 개발 출력이며 audit 보존 체계가 아니다. 자동으로 저장하지 않는다는 사실도 금지 데이터를 출력하지 않는다는 보장은 아니다. 이 작업에서는 로그 코드를 변경하지 않는다. 후속 **P1 T08**에서 payload 출력 제거/허용 metadata 제한과 redaction 경로를 검증해야 한다. 현재 Console 출력을 Platform telemetry로 전달해서는 안 된다.
 
-API key와 static header 값은 사용자 기기 `chrome.storage.local`에
-저장된다. 이 저장소는 OS 계정 접근과 확장 권한을 가진 주체에 노출될 수
-있으므로 비밀 저장소로 간주하지 않는다. export, audit, diagnostics와
-모델 대화에는 provider secret을 포함하지 않는다.
+현재 일반 page read는 DOM/ARIA semantic projection을 수집한다. 사용자가 동의한 workflow 코드 분석은 별도 제한된 초안 생성 경로로 script를 읽으므로 “모든 기능에서 script를 전혀 읽지 않는다”는 주장도 피한다. 그 기능은 [21번](21-declarative-act-workflow-design.md)의 경계이며 Platform capture 권한이 아니다.
 
-plugin manifest는 secret이 아닌 설정으로 저장한다. bundled adapter
-code는 extension package에만 존재한다. plugin export에는 manifest와
-secret 없는 provider binding만 포함하며 API key와 static header 값은
-포함하지 않는다. 제품은 Cloud Sync를 제공하지 않는다.
+## 4. Target Audit / Telemetry Client — Planned
 
-## 3. 페이지와 행동 데이터
+Platform은 중앙 감사 저장·조회·retention·조직 scope를 소유하고 Browser는 정확한 runtime event 생성, 로컬 최소화, 인증된 전송과 전송 상태를 소유한다. [Platform governance](../../ewap-platform/docs/aidlc/modules/governance-trust-release.md)의 actor/organization/correlation/release/workflow/policy/outcome 정보를 목표로 하되 공유 event wire schema는 [C06](platform-alignment.md)에 남아 있다. Browser body의 actor 주장을 신뢰하지 않고 서버가 인증 context와 결속해야 한다.
 
-semantic projection은 role, redacted accessible name, 제한된 state,
-visibility/hidden reason, 최대 12,000자의 visible text와 run 한정
-`model_ref`를 모델에 보낸다. 기본 `all_dom` scope이므로 hidden semantic
-node도 전송한다. raw HTML/CSS/script, input current value,
-password/OTP/token value, cookie, Authorization header, API key, raw ref
-mapping과 사용자가 Act에서 넣는 값은 scope와 무관하게 모델/provider
-요청에 보내지 않는다. CDP method, node/session ID, target token,
-selector, 좌표, box와 execution path도 모델/provider 입력에 포함하지
-않는다.
+목표 event에는 version, event ID, occurredAt, run/workflowRun/step, profile/workflow/release identity와 digest, environment, policy decision/approval reference, capability/risk, execution stage/path/outcome/reason을 closed schema로 정한다. 원문 URL은 logical page/route identity로 대체한다. raw prompt/page text/tool result/action value, HTML/JS, selector/ref/node/coordinate, screenshot, credential/token/approval nonce는 감사 payload에 넣지 않는다. business-value 감사가 필요하면 Platform의 별도 domain audit 계약으로 다룬다.
 
-사용자가 허용한 screenshot/zoom은 해당 tool turn의 provider 요청과
-terminal 전 run memory에만 존재한다. image/base64, crop region과 page
-content는 storage, audit, diagnostics와 export에 넣지 않는다. hidden DOM
-기본 제공과 screenshot policy는 Settings와 onboarding에 공개한다.
+전송은 runtime audience 인증, bounded queue/quota/retention, event-ID 기반 중복 제거, receipt 확인, 제한된 retry/backoff와 명시적 delivery-failure 상태를 설계한다. action 재실행과 event 재전송은 별개다. 실패한 감사 전송 때문에 action을 자동 재실행하지 않는다. 중앙 policy가 durable audit를 필수로 요구하는 행동은 receipt 확보 등 공유 계약의 admission 조건을 충족하지 못하면 dispatch하지 않는다. 이미 dispatch된 행동의 불명 결과는 verifier와 incident로 기록하며 rollback을 가장하지 않는다. 구체적인 queue 저장 위치·한도·offline admission은 C06 review에서 확정한다.
 
-## 4. 감사
+## 5. Platform Change Detector / Impact Analyzer 입력 — Planned
 
-Local audit은 timestamp, plugin ID/version, host, Ask/Act와 permission
-mode, capability, tool, execution path, CDP lifecycle stage, outcome,
-reason code를 기록한다. Enterprise central audit은 검증된
-organization/user/profile/workflow/policy correlation을 추가할 수 있다.
-prompt, 페이지 원문, selector, ref/model/node/session ID, target token,
-좌표/box, action argument, API key/header는 어느 audit에도 기본 기록하지
-않는다.
+Browser는 scoped metadata, sanitized DOM/ARIA observation, Profile mismatch, workflow/action failure와 verifier outcome을 제공할 수 있다. native AX 관찰은 해당 adapter 도입 후에만 가능하다. Platform이 baseline/diff/classification, graph/impact score와 revalidation을 소유한다.
 
-## 5. Chat Session 문맥
+일반 runtime telemetry와 [capture-session evidence](../../ewap-platform/docs/aidlc/contracts/evidence-jobs.md)는 audience와 권한이 다르다. capture는 명시된 session/origin/application/environment, 짧은 token 수명과 sanitization policy를 필요로 한다. completeness/sequence/algorithmVersion을 포함해 누락 frame이나 algorithm mismatch를 성공적인 관찰로 보고하지 않는다. Browser의 기존 fingerprint를 Platform semantic-v1 digest로 표기하지 않는다.
 
-`새 대화`부터 다음 새 대화까지의 탭별 대화 문맥은 browser-lifetime
-`chrome.storage.session`에만 저장한다. 저장 전 credential/API
-key/token/password/OTP와 알려진 secret 형식을 redaction하며, session당 1
-MiB·thread당 128 KiB·최대 8개 live thread의 상한을 적용한다. browser
-종료, 탭 종료, 새 대화 또는 명시 삭제 시 [19번
-문서](19-tab-scoped-chat-session-design.md)의 수명 규칙에 따라 폐기한다.
+Platform evidence/job retention은 서버 책임이며 Browser chat storage를 중앙 evidence 저장소로 승격하지 않는다. test-only `studio/semantic-impact.ts`와 `studio/validation.ts`는 실제 Change Detector/Impact Analyzer 또는 L5 검증 엔진이 아니다.
 
-대화 문맥은 사용자가 입력한 redacted message, assistant의 redacted
-message, 안전한 요약, redacted origin/path와 결과 code로 제한한다. raw
-page projection/text, screenshot, attachment, raw tool result,
-ref/node/selector/CDP ID, action/confirmation 값, provider secret과 HTTP
-credential은 대화 문맥·audit·export·persistent diagnostics에 넣지
-않는다. provider request를 점검하는 개발용 Console 출력도 redactor를
-거친 휘발성 출력이며 audit 또는 storage가 아니다.
+## 6. 검증 경계
+
+현재 소스의 emit call site와 storage 경로를 읽어 위 표를 작성했다. 이번 작업은 runtime/Chrome 테스트, 실제 sink receipt, SSO, 중앙 감사 보존·복구 검증을 수행하지 않는다. 후속 task는 event coverage, denial/approval, auth failure, duplicate delivery, quota/offline, expiry/revoke와 로그·전송·저장 privacy를 각각 검증해야 한다.

@@ -1,22 +1,19 @@
 # 03. Chrome MV3 확장 설계
 
-## Enterprise Web AI Platform 정렬 (2026-08-31)
+## Platform integration ports와 구현 상태 (2026-09-06)
 
-Extension은 Enterprise Data Plane의 Browser Runtime이다. 기존 MV3 모듈에
-다음 integration port를 추가한다.
+Extension은 EWAP Browser execution plane이다. 아래 port 이름은 책임을 설명하는 개념이며 동일 이름의 class 존재나 배포 완료를 뜻하지 않는다.
 
--   `ProfileResolverClient`: signed Page Profile
-    resolve/cache/revocation 확인
--   `EnterprisePolicyClient`: PDP decision/approval constraint 조회
--   `McpRegistryClient` 또는 Enterprise MCP Gateway client: `serverRef`
-    해석과 discovery
--   `EnterpriseAuditSink`: redacted Runtime Evidence/AuditEvent 전송
--   `ManagedConfigAdapter`: enterprise Chrome managed storage/policy
-    적용
+| Port | 현재 상태 | Target Browser 책임 |
+| --- | --- | --- |
+| Profile Loader / Resolver | Partial: HTTPS POST + compact ES256, memory replay | shared resource/Platform release mapping, distribution/cache/current trust |
+| Enterprise Policy Client | Partial: 일부 Act의 managed ALLOW/DENY | authenticated policy/approval, dispatch와 재개 시 enforcement |
+| Governed MCP Client | Partial: direct proprietary Business HTTP | Gateway auth와 release tool allow-list. Registry discovery와 serverRef 관리/승인은 Platform 소유 |
+| Audit / Telemetry Client | Partial: optional policy ALLOW POST | event coverage, authenticated receipt, delivery failure 처리 |
+| Managed Configuration Adapter | Partial: managed read 코드, manifest managed_schema 없음 | 필수 조직/environment/trust configuration과 identity 연결 |
+| Native Accessibility Adapter | Planned | 필요성이 확정되면 DOM/ARIA projection과 구분된 AX 관찰 adapter |
 
-`chrome.storage.session`에는 복구 가능한 redacted ownership metadata만
-두며 modelRef, raw ref/node/coordinate/action value는 복구하지 않는다.
-Profile/Policy/MCP 연결 장애가 write path에 영향을 주면 fail-closed한다.
+[platform-alignment](platform-alignment.md)와 [22번](22-page-profile-provider-design.md)은 현재/목표 diagram 및 cache/signature 차이를 제공한다. Browser에 Registry 관리자, signer, Change Detector/Impact Analyzer를 추가하지 않는다. Profile·Policy·MCP 장애 시 모든 write가 차단된다는 기존 주장은 목표다. 현재 generic fallback과 PDP 호출 범위는 [02번](02-security-policy.md)에 명시한다.
 
 ## 1. 모듈
 
@@ -31,7 +28,10 @@ extension/
   src/settings/        # provider plugin, headers, site permissions
   src/providers/       # registry, plugin SDK, built-in adapters
   src/security/        # redaction, validators, intent digest
-  src/contracts/       # runtime and provider schemas
+  src/contracts/       # local runtime/workflow schemas; shared ewap/v1 consumer 아님
+  src/profile/         # proprietary resolver/JWS, context, MCP bindings, memory replay
+  src/policy/          # local enforcement와 partial enterprise PDP client
+  src/studio/          # test-only helper; Platform services 아님
 ```
 
 별도 protocol adapter는 `provider-plugins/<plugin-id>/` workspace
@@ -55,8 +55,8 @@ message로 전달하지 않고 `chrome.storage.local` 경계에서 읽는다.
     기능에 필요한 기본 권한으로 선언한다. `tabs`는 [19번
     문서](19-tab-scoped-chat-session-design.md)의 tab thread lifecycle과
     URL stale 처리를 위한 것이며 manifest snapshot review를 거쳤다.
-    `scripting`, `webNavigation`, `downloads`, `alarms`는 실제 요구가
-    생길 때만 별도 review 뒤에 추가한다. PageScope 감지는
+    `scripting`은 현재 optional permission이다. `webNavigation`, `downloads`,
+    `alarms`는 현재 manifest에 없으며 요구가 생길 때 별도 review한다. PageScope 감지는
     `DOCUMENT_REGISTER`, `PAGE_SCOPE_REGISTER`, URL 변화로 충족하므로
     `webNavigation`은 보류한다.
 -   일반 웹 UI를 지원하므로 host permission과 content script는

@@ -1,13 +1,15 @@
 # 01. 시스템 아키텍처
 
-## 1. 제품 모델
+> 2026-09-06 정렬. 아래는 현재 로컬 구현이며 Platform 통합 목표는 마지막 절과 [platform-alignment](platform-alignment.md)를 따른다. 코드 이름 ContextPilot은 유지한다.
+
+## 1. 현재 제품 모델
 
 ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 브라우저 세션과 선택한 LLM provider를 연결하는 로컬 단일 사용자용 MV3 브라우저 에이전트다. 사용자는 Settings에서 provider plugin, 모델 연결과 실행 권한을 직접 관리한다.
 
 제품 경계는 다음과 같다.
 
 - 현재 Chrome profile을 사용하는 한 명의 로컬 사용자가 설치·설정·승인의 주체다.
-- 웹사이트 인증은 현재 Chrome 로그인 세션을 사용한다. 제품 계정, SSO, 조직 RBAC, service account와 사용자 대행 token은 제공하지 않는다.
+- 웹사이트 인증은 현재 Chrome 로그인 세션을 사용한다. 검증된 제품 계정/SSO/조직 RBAC/token lifecycle은 없다. managed identity 문자열과 PDP 연결 코드는 부분 구현이며 사용자 인증 증명이 아니다.
 - 공유 kiosk, 다중 사용자 profile, 중앙 작업 실행, headless multi-tenant 서비스와 Cloud Sync는 지원 범위가 아니다.
 - WebBrain의 Ask/Act와 capability × host 사용자 승인 모델을 따르되, password·OTP 처리 금지와 R2/R3 확인 정책은 유지한다.
 - LLM provider는 plugin으로 교체할 수 있지만 인증 정보와 HTTP 실행은 extension core가 소유한다.
@@ -34,7 +36,7 @@ Content script ─────────┼── Service worker ── Provid
 
 ### Content script
 
-현재 문서에서 visible/hidden semantic projection과 문서 범위 `ref_id`를 만들고, service worker가 허용한 단일 DOM 작업만 실행한다. hidden node도 기본 projection에 포함하지만 visibility reason을 명시하고 mutation에서는 거부한다. 페이지 DOM, 이벤트, `postMessage`와 모든 페이지 텍스트는 비신뢰 입력이다.
+현재 문서의 DOM/ARIA에서 visible/hidden semantic projection과 문서 범위 `ref_id`를 만들고, service worker가 허용한 단일 DOM 작업만 실행한다. hidden node도 기본 projection에 포함하지만 visibility reason을 명시하고 mutation에서는 거부한다. 페이지 DOM, 이벤트, `postMessage`와 모든 페이지 텍스트는 비신뢰 입력이다. native Chrome AX tree 또는 CDP `Accessibility.*` 수집은 연결되어 있지 않다.
 
 ### Service worker
 
@@ -46,7 +48,7 @@ page read orchestrator는 기본 `all_dom` tree, `visible_only`/`interactive` ov
 
 ### Bounded CDP adapter
 
-bounded CDP adapter는 일반 DOM executor가 trusted input을 만들 수 없는 승인된 R1/R2 도구에서만 service worker가 호출하는 내부 실행 계층이다. 모델, provider plugin, 페이지와 site adapter는 raw CDP method, selector, node ID, 좌표 또는 실행 경로를 지정할 수 없다.
+bounded CDP adapter는 service worker가 호출하는 내부 실행 계층이다. 현재 `act-execution-runtime.ts`는 click_by_ref/press_key_by_ref/set_text_by_ref를 CDP로 보내며, 다른 도구는 content executor로 보낸다. DOM 실패 후 자동으로 CDP로 전환하는 탐색 경로가 아니다. 모델, provider plugin, 페이지와 site adapter는 raw CDP method, selector, node ID, 좌표 또는 실행 경로를 지정할 수 없다.
 
 adapter는 현재 run의 `(tab, frame, documentId, documentEpoch, ref_id)`에 결속된 target을 content script가 preflight한 뒤, 고정된 `DOM.*`과 `Input.*` command allowlist만 호출한다. mutation adapter에는 `Runtime.evaluate`, `Network.*`, `Target.*`, `Page.captureScreenshot`과 임의 JavaScript를 허용하지 않는다. screenshot은 input command가 없는 별도 Vision adapter만 수행한다. attach는 action 실행 직전에 지연 수행하고 검증 직후 `finally`에서 detach한다.
 
@@ -89,7 +91,7 @@ provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api
 2. service worker가 현재 run의 permission mode, capability × host 권한, target visibility, 민감 필드, 도구 schema를 검사한다. `skip_all_permission_checks`는 capability prompt만 생략한다.
 3. 권한이 없으면 사용자는 이번 작업만 허용, 항상 허용, 거부 중 하나를 선택한다.
 4. 제출·외부 전송·결제·삭제 같은 결과적 행동은 매 실행마다 별도 확인을 요구한다.
-5. content script가 target을 다시 확인한다. 일반 DOM 경로로 신뢰성 있게 실행할 수 있으면 DOM executor를 사용하고, tool definition이 bounded CDP를 허용하며 trusted input이 필요한 경우에만 CDP adapter를 선택한다.
+5. content script가 target을 다시 확인한다. 현재 runtime은 click/key/text에 bounded CDP, 나머지 도구에 content 경로를 선택한다. preflight와 tool hard guard는 계속 적용한다.
 6. CDP 경로는 현재 target에 결속된 내부 hit-test token을 해석하고 allowlisted trusted input 한 건을 전송한다. dispatch가 시작된 뒤에는 DOM/CDP 경로를 바꾸거나 자동 재시도하지 않는다.
 7. service worker가 navigation 또는 semantic 상태 변화를 확인하고 CDP를 detach한다. 효과가 불명확하면 `UNKNOWN`으로 끝낸다.
 
@@ -102,3 +104,13 @@ provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api
 - CDP session은 action에만 유효하다. 완료·실패·불명·취소, navigation, tab close와 Stop은 detach를 요구하며 cleanup이 확인되지 않은 tab의 다음 Act를 차단한다.
 - attach 전에 실패하면 `CDP_UNAVAILABLE` 또는 `CDP_CONFLICT`로 dispatch 없이 종료한다. dispatch 이후 연결이 끊기고 verifier가 결과를 확정하지 못하면 `UNKNOWN`이며 자동 재시도하지 않는다.
 - `UNKNOWN`은 성공으로 처리하지 않으며 자동 재시도하지 않는다.
+
+## 6. Target aligned architecture — Planned integration
+
+[Platform alignment의 AS-IS/TO-BE diagrams](platform-alignment.md)는 모든 component의 상태를 표시한다. Chrome/Side Panel/Agent/DOM·CDP/local guard는 현재 구현을 유지한다. Profile·Workflow·MCP·central policy/audit는 부분 구현이며, native AX와 release cache/trust는 별도 계획이다.
+
+Platform은 Profile Repository/Studio/distribution, Registry/Gateway, policy authoring, signing, 중앙 audit와 Change Detector/Impact Analyzer를 소유한다. Browser는 승인된 release를 로드·검증하고 현재 페이지에서 정책을 강제한다. Browser가 Platform의 DB, signer, catalog discovery, baseline/impact graph를 소유하지 않는다.
+
+Target 연결은 `Profile Loader → Schema/Signature/Policy/Trust → validated cache → Runtime`이다. 현재 compact ES256 검증은 존재하지만 shared ewap/v1과 Platform flattened SignedRelease를 바로 소비하지 못한다. [22번](22-page-profile-provider-design.md)의 version/expiry/revoke/rollback 계약 결정이 먼저 필요하다.
+
+현재 Profile 실패 시 generic Ask/Act가 가능하고 Business HTTP는 signed endpoint를 직접 호출한다. 조직의 Profile 필수 route, PROD Gateway, 인증된 PDP와 중앙 audit는 목표 요구사항이다. local Chrome 세션과 provider credential은 Platform identity를 대신하지 않는다. [02번](02-security-policy.md)과 [06번](06-data-audit-and-privacy.md)은 현재 coverage 및 privacy 차이를 기록한다.

@@ -1,25 +1,24 @@
 # 02. 보안 및 행동 정책
 
-## Enterprise Web AI Platform 정렬 (2026-08-31)
+## Platform 정렬: 현재 구현과 목표 (2026-09-06)
 
-보안 판단은 다음 계층을 순서대로 적용한다.
+현재 local permission/confirmation/preflight/verifier는 구현되어 있다. Enterprise 통합은 **Partially Implemented**다. [policy client](../extension/src/policy/enterprise-policy.ts)는 managed configuration과 identity 문자열을 사용해 PDP에 ALLOW/DENY를 질의한다. 웹사이트 로그인, LLM credential, Platform identity, 행동 승인은 별도 경계다.
 
-`Chrome permission → Local capability×host → Signed Page Profile → Enterprise PDP/RBAC → User/Device authorization → Risk/Approval → Runtime hard guard → Executor/Verifier`
+[Act proposal executor](../extension/src/service-worker/act-proposal-executor.ts)는 proposal 실행 준비에서 PDP를 호출한다. managed_auto가 true이면 capability prompt를 생략하지만 mutation hard guard는 유지한다. [confirmation/value 재개](../extension/src/service-worker/act-proposal-followup.ts)는 이 authorize를 다시 호출하지 않으며 Ask/Business MCP 경로에도 PDP가 없다. approval_token은 응답에서 허용되지만 사용/소비하는 실행 경로가 없다. managed identity는 검증된 OAuth/OIDC principal이 아니고 manifest managed_schema도 없어 배포 계약이 미완성이다. 설정이 없으면 community로 처리하는 현재 동작을 enterprise fail-closed 보장으로 해석하지 않는다.
 
--   기존 R0\~R3는 Browser Runtime의 local risk 분류로 유지한다.
-    Enterprise Profile/Policy의 READ/WRITE/PRIVILEGED/CRITICAL과
-    매핑한다.
--   제품 사용자는 로컬 Chrome profile 소유자로 한정하지 않는다.
-    Enterprise 모드에서는 검증된 enterprise identity, organization,
-    role/device context가 추가된다.
--   Page/DOM/AX/Vision/Tab/MCP result/LLM tool call은 모두 untrusted
-    data다. 관리형 MCP endpoint의 신뢰와 MCP가 반환한 content의
-    instruction authority는 구분한다.
--   `skip_all_permission_checks`는 Community 호환 명칭이다. Enterprise
-    UI에서는 `managed-auto`로 정규화할 수 있으며 중앙 정책이 비활성화할
-    수 있다. 어떤 경우에도 local hard guard는 유지한다.
--   WRITE/PRIVILEGED/CRITICAL에서 정책 서비스가 필요한데 사용할 수
-    없으면 fail-closed한다.
+| 책임 | Platform (Target) | Browser (현재 / Target) |
+| --- | --- | --- |
+| Policy authoring/storage/distribution | 조직 정책과 version, 중앙 governance, 승인 주체 관리 | authoring을 복제하지 않고 검증된 정책 소비. EnterprisePolicy resource loader는 Planned |
+| Local enforcement | Browser guard보다 느슨하게 허용할 수 없음 | 현재 capability/host·risk·preflight·confirmation·tool 제한 유지 |
+| Pre-action validation / deny | authenticated subject와 현재 policy로 결정 | Target은 모든 해당 Ask/MCP/Act dispatch와 승인 재개 시 재검사. deny/unknown/outage는 필수 정책 경로에서 거부 |
+| Approval | decisionId/policyVersion/validUntil, REQUIRE_APPROVAL 및 단회 소비 | 현재 로컬 확인은 구현. 중앙 approval 결속/소비는 Planned |
+| Tool/action restrictions | 조직 allowed/denied domains/actions/servers/tools | Target은 Profile/Registry allow-list와 조직 policy, runtime 지원 집합의 교집합; explicit deny 우선 |
+
+Target authority chain은 `Chrome capability → organizational restrictions + local permission → verified release/trust → current PDP/identity → approval → hard guard → executor/verifier`다. 이는 현재 모든 경로에 연결된 호출 순서가 아니다. 정책 권한과 관찰의 사실은 별개여서, 중앙 allow도 현재 존재하지 않는 target을 만들지 못하며 현재 DOM도 중앙 deny를 무효화하지 못한다.
+
+Browser R0~R3를 유지한다. Platform의 READ/LOW_WRITE/BUSINESS_WRITE/PRIVILEGED_WRITE/CRITICAL와의 mapping은 effect와 action semantics를 포함한 [C04](platform-alignment.md) 결정 사항이다. 공유 EnterprisePolicy에 없는 새 field나 임의 risk alias를 이 문서로 추가하지 않는다.
+
+Target의 Profile 필수 route에서 invalid/revoked/expired Profile은 차단한다. 현재 optional community generic Act와 구분한다. enterprise identity 검증, managed config 필수화, policy expiry, 단회 approval, 재개 시 재인가는 모두 후속 P0/P1 task다.
 
 ## 1. 신뢰 경계
 
@@ -48,8 +47,8 @@
   -----------------------------------------------------------------------------
 
 Community 모드는 로컬 Chrome profile 소유자를 승인 주체로 사용할 수
-있다. Enterprise 모드는 검증된 SSO/user/organization/RBAC/device
-context와 중앙 PDP를 추가 권한 근거로 사용한다. 웹사이트 세션 권한,
+있다. Target Enterprise 모드는 검증된 SSO/user/organization/RBAC/device
+context와 중앙 PDP를 추가 권한 근거로 요구한다. 현재는 일부 Act의 managed PDP 연결만 있다. 웹사이트 세션 권한,
 enterprise identity, provider credential, Browser Runtime 행동 승인은
 서로 다른 경계다.
 

@@ -1,7 +1,10 @@
-# ContextPilot 설계서
+# EWAP Browser / ContextPilot 설계서
 
-ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 로그인 세션을 대상으로 Ask/Act 작업을 실행하는 로컬 우선 MV3 확장이다. 별도 제품 계정, SSO, 조직 RBAC, Cloud Sync는 제공하지 않는다. LLM 연결은 사용자가 설치·선택하는 provider plugin과 로컬 설정으로 구성한다.
+ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 로그인 세션을 대상으로 Ask/Act 작업을 실행하는 로컬 우선 MV3 확장이다. 현재 검증된 제품 계정/SSO/조직 RBAC/Cloud Sync는 없으며 managed PDP/evidence 연결은 부분 구현이다. LLM 연결은 사용자가 설치·선택하는 provider plugin과 로컬 설정으로 구성한다.
 
+[Platform alignment](platform-alignment.md)는 2026-09-06의 실제 구현 인벤토리, AS-IS/TO-BE, 계약 충돌과 후속 과제의 기준이다. 공유 EWAP 계약이 최우선이며 Platform 설계의 Proposed 기능을 현재 Browser 지원으로 읽지 않는다. 과거 sprint·참고자료는 당시 기록이며 최신 통합 상태를 대체하지 않는다.
+
+- [Platform 정렬과 AS-IS/TO-BE](platform-alignment.md)
 - [아키텍처](01-architecture.md)
 - [보안 및 행동 정책](02-security-policy.md)
 - [확장 설계](03-extension-design.md)
@@ -23,7 +26,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [탭 범위 Chat Session과 LLM 문맥 설계](19-tab-scoped-chat-session-design.md)
 - [안정성 중심 구조 리팩터링 설계](20-stability-refactoring-design.md)
 - [선언형 다단계 Act Workflow 설계](21-declarative-act-workflow-design.md)
-- [Page Profile Provider와 Git 기반 MCP Registry 설계](22-page-profile-provider-design.md)
+- [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md)
 - [Service Worker composition 리팩터링 계획](23-service-worker-composition-refactoring-plan.md)
 
 ## 비규범 참고자료

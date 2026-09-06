@@ -1,18 +1,14 @@
 # 14. Semantic Projection 계약
 
-## Enterprise Web AI Platform 정렬 (2026-08-31)
+## 현재 observation과 Platform 분석 경계 (2026-09-06)
 
-Semantic Projection은 Runtime observation의 SSoT이며 Page Profile의
-semantic element resolution과 Change Detector의 baseline 입력이다.
+현재 semantic projection은 content script가 DOM/ARIA에서 수집한다. native Chrome Accessibility Tree 또는 CDP Accessibility.* adapter가 구현되었다는 뜻은 아니다. visible/hidden scope는 현재 snapshot의 표현이며 mutation authority는 visible/enabled target으로 제한된다.
 
-Semantic fingerprint는 raw DOM hash가 아니라
-role/name/state/visibility/relation/link-boundary와 Profile에 매핑되는
-semantic identity를 기반으로 한다. CDP node/session ID, selector,
-coordinate, raw HTML과 transient ref는 fingerprint에 포함하지 않는다.
+[Browser fingerprint](../extension/src/profile/fingerprint.ts)의 `semantic-projection-fp-v1`은 visible node 순서, role, 정규화한 label category, parent/label ordinal과 state capability를 hash한다. accessible name 전체, 모든 현재 상태/visibility/cardinality feature를 그대로 hash하는 알고리즘이 아니다. 예를 들어 Search/Find는 같은 search category가 될 수 있다.
 
-Change Detector는
-`Projection Diff → semanticId Resolution Impact → Action/Verifier Impact → Workflow/MCP Dependency Impact → Production Exposure`
-순서로 분석한다.
+Platform [semantic-v1](../../ewap-platform/docs/aidlc/contracts/change-impact.md)은 별도의 name 정규화, cardinality/visibility/relation 및 scope를 사용한다. 두 fingerprint는 직접 비교하거나 같은 이름으로 바꿀 수 없다. 공유 계약의 algorithm/observation/versioned adapter와 golden vectors는 [C07](platform-alignment.md) 후속 과제다.
+
+Target Browser는 허용된 scope의 sanitized observation과 mismatch/failure만 제공한다. Platform Change Detector가 baseline/diff/classification, Impact Analyzer가 dependency graph/score를 소유한다. incomplete observation/누락 frame/algorithm 차이는 INCOMPARABLE로 처리하며 Browser가 baseline을 갱신하거나 영향 없음으로 판정하지 않는다. `extension/src/studio/*`의 test-only helper는 이 서비스 구현이 아니다.
 
 ## 1. snapshot
 
@@ -35,8 +31,9 @@ query/fragment와 closed shadow DOM은 포함하지 않는다. screenshot은
 snapshot field가 아니며 별도 `vision_read` capability의 transient
 입력이다.
 
-JavaScript는 원문, AST, 전역 변수, closure, network response나 실행
-권한으로 수집하지 않는다. 대신 script가 현재 document에 반영한
+일반 semantic projection 경로는 JavaScript 원문, AST, 전역 변수, closure,
+network response나 실행 권한을 수집하지 않는다. 사용자 동의 기반 workflow 코드 분석은
+[21번](21-declarative-act-workflow-design.md)의 별도 경로이며 observation 권한과 혼용하지 않는다. 대신 script가 현재 document에 반영한
 DOM·accessibility tree·visible text·role· enabled/state 변화는 다음
 projection을 다시 읽을 때 일반 DOM과 동일하게 수집한다. 따라서 동적으로
 생성된 링크와 control은 관찰 가능한 상태만 사용해 Ask/Act 후보가 될 수

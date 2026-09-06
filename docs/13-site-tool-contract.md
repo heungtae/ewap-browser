@@ -1,25 +1,16 @@
 # 13. 사이트 도구 및 모델 계약
 
-## Enterprise Web AI Platform 정렬 (2026-08-31)
+## MCP: AS-IS와 Target 구분 (2026-09-06)
 
-`call_page_business_tool`의 고정 `tool_id` 열거 모델은 Enterprise
-모드에서 다음 discovery pipeline으로 대체한다.
+현재 `call_page_business_tool`은 signed Profile의 closed business_mcp binding에서 tool_id enum을 만들고 직접 HTTPS POST한다. 표준 MCP discovery/streaming client나 enterprise Gateway admission은 구현되어 있지 않다. 고정 allow-list를 없애는 설계로 바꾸지 않는다.
 
-`configured MCP server → Studio discovery/health and catalog checksum → Registry capability/risk overlay → Signed Page Profile serverRef/capabilityPolicy/toolOverrides → frozen profile/server/catalog/environment release → Enterprise PDP/RBAC → current user/device/run/page-digest binding → LLM-visible Tool Catalog`
+Target은 `Platform Registry discovery/health → approved catalog/overlay → frozen release → Browser verified binding → current identity/PDP/tool allow-list → Gateway → enterprise server`다. discovery caller와 catalog owner는 Platform Worker이며 Browser는 관리자 API를 호출하지 않는다. PROD는 Gateway 필수, DEV/TEST/STAGE direct는 승인된 환경별 예외와 동등한 auth/trust/policy/audit/revoke 검증이 있을 때만 허용하는 목표다.
 
-Page Profile은 MCP tool schema를 복제하지 않는다. Workflow가 특정 tool을
-명시적으로 참조하는 경우에만 publish/validation 단계에서 해당 tool의
-존재와 schema compatibility를 강하게 검사한다. MCP result는 typed/schema
-validation 후에도 instruction authority가 아닌 untrusted business
-data다.
+공유 PageProfile.mcpServers의 id/name/url/transport/tools와 현재 server_id/endpoint/tool_id/arguments의 차이는 [22번](22-page-profile-provider-design.md)에 mapping을 기록한다. Platform logical serverRef-only source와 공유 inline endpoint schema의 충돌은 [C03](platform-alignment.md)이며 이번 문서로 해결하거나 API를 바꾸지 않는다.
 
-`tools/list` discovery의 caller와 cache owner는 Studio Registry Worker다. Profile Provider와
-확장은 live discovery 결과를 직접 읽지 않으며, release에 동결된 adapter binding만 소비한다.
-`PROFILE_BOUND_HTTP_V1`은 discovery 대신 closed contract와 health probe를 checksum으로
-검증한다. TTL 초과, revoked server 또는 catalog compatibility 실패는 최신 catalog로의
-자동 교체가 아니라 새 release 검증 또는 `MCP_BINDING_STALE` fail-closed 처리를 요구한다.
-운영 실행은 Enterprise MCP Gateway가 기본이며, direct endpoint는 environment별 승인·감사된
-Registry 예외에서만 가능하다.
+현재 executor는 tool_id membership과 해당 tool의 closed argument schema를 검사하고 결과 schema/크기를 검증한다. Target은 조직 policy의 allowedTools/allowedMcpServers, Profile 선택, approved catalog와 Browser 지원 집합의 교집합을 실행 allow-list로 삼고 explicit deny를 우선한다. endpoint/credential/JWS/nonces/digest는 model catalog에 포함하지 않는다. MCP result는 항상 untrusted data다.
+
+현재 Ask는 최초 Profile/JWS/page digest를 재사용하며 매 business call 직전 fresh snapshot/expiry/revoke/PDP 검사를 하지 않는다. catalog_checksum/server_release_id/environment는 현재 binding validator가 거부하는 field다. MCP_* Platform 오류 정규화, freshness와 governed auth는 Planned이며 현재 BUSINESS_MCP_* 코드와 구분한다.
 
 ## 1. 모델에 제공하는 도구
 
@@ -46,7 +37,7 @@ Registry 예외에서만 가능하다.
   `zoom`                       tab, capture region              cropped/normalized
                                                                 image
 
-  `tabs_context`               없음                             managed tab group
+  `tabs_context`               없음                             current active tab
                                                                 metadata
 
   `read_batch`                 최대 8개 read-only action        순서가 보존된 item
@@ -94,8 +85,8 @@ user identity를 받거나 지정할 수 없다.
 click/type/select/check/key target으로 resolve하지 않는다.
 screenshot/zoom region도 capture 입력일 뿐 mutation coordinate가 아니다.
 
-`read_batch`에는 `read_page`, `get_page_text`, `find`, screenshot/zoom,
-`tabs_context`와 Profile-bound read-only Business MCP만 들어갈 수 있다.
+현재 `read_batch` 실행기는 `read_page`, `get_page_text`, `find`만 허용한다.
+screenshot/zoom, tabs_context와 Business MCP의 batch 지원은 구현되어 있지 않다.
 mutation, navigation, file, JavaScript와 nested batch는 schema
 validation에서 거부한다.
 

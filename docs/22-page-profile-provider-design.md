@@ -1,296 +1,144 @@
-# 22. Page Profile Provider와 Git 기반 MCP Registry 설계
+# 22. Page Profile distribution, trust and MCP design
 
-## 1. 목적과 범위
+> Aligned 2026-09-06. See [platform-alignment](platform-alignment.md) for pinned revisions, evidence, contract gaps and future tasks. Current implementation and target architecture are explicitly separate. No implementation is changed by this design.
 
-Page Profile Provider는 현재 페이지의 semantic snapshot만으로 알 수 없는 업무 문맥과
-허용된 업무 데이터 읽기 도구를 제공한다. 확장은 현재 페이지의 `origin`, `path`, semantic
-fingerprint, page context digest를 Provider에 보내고, Provider가 발급한 서명 Profile을
-검증한 뒤 Ask와 Act에 사용한다.
+## 1. Ownership and contract precedence
 
-v1은 비민감 공용 업무 데이터만 다룬다. 제품 계정, 사용자별 권한, OAuth/OIDC token,
-Business MCP용 API key와 user-specific 결과는 범위 밖이다. TLS는 Chrome이 신뢰하는
-HTTPS endpoint를 사용하며, 개발용 self-signed는 Profile JWS 서명키만 뜻한다.
+Workspace `ewap/v1` schemas are the shared authority. Platform owns Profile Service/Repository/Studio, distribution, signing, policy authoring, MCP Registry/Gateway and central audit. Browser owns loading, validation, local runtime enforcement and execution. Platform's reviewed architecture is a proposal, not an available deployed service.
 
-이 설계는 두 인터페이스를 둔다.
+Platform [Profile Manager](../../ewap-platform/docs/aidlc/modules/profile-manager-registry.md) makes the DB authoritative and permits redacted Git exports. The former Git-authoritative Profile source repository and local stdio management MCP in this document are **Deprecated Design** for Platform alignment. They were external tooling proposals, not Browser implementation. Browser must not acquire authoring, signing, Git administration or Registry mutation responsibilities.
 
-| 인터페이스             | 대상              | 책임                                      |
-| ---------------------- | ----------------- | ----------------------------------------- |
-| HTTPS Profile Resolver | ContextPilot 확장 | 현재 페이지용 서명 Profile 조회           |
-| local stdio 관리 MCP   | 개발자·CI         | Git 원본의 작성, 검증, branch/commit 준비 |
+Do not collapse three different formats:
 
-`Business MCP`는 Profile Provider와 다르다. Business MCP는 Profile이 허용한 최신
-업무 데이터를 read-only로 반환하는 backend이며, Provider는 어느 Business MCP server와
-tool을 현재 페이지에서 쓸 수 있는지 결정한다.
+| Format | Current meaning |
+| --- | --- |
+| Workspace `ewap/v1` PageProfile | Shared resource with metadata, match, page, optional mcpServers/workflows/policy/security |
+| Platform `enterprise-web-ai/v1alpha1` proposal | Source resources and environment-specific SignedRelease, governed by Platform design |
+| Browser `schema_version: 1` Profile | Implemented proprietary runtime response with request/page binding, integer profile_version and compact JWS |
 
-## 2. 소유권과 저장소
+Their relationship is unresolved [C01–C05/C08](platform-alignment.md). No example in this document makes them wire-compatible. Source, immutable release and per-request execution proof need explicit mappings before implementation.
 
-Page Profile 원본은 확장 저장소와 분리된 전용 Git 저장소를 source of truth로 한다.
-현재 호환 단계에서 MCP server/tool 원본도 이 release source의 `mcp-servers/`에 둔다.
-다만 Enterprise Studio Registry를 도입한 뒤에는 Studio의 승인된 server, environment,
-catalog, trust release가 MCP server/tool의 source of truth가 된다. Git은 Studio가 내보낸
-불변 release binding의 검토·보관용 export이거나 Profile source만을 위한 저장소여야 한다.
-동일 server/catalog을 Git과 Studio에서 독립적으로 수정하는 이중 쓰기는 허용하지 않는다.
+## 2. Current implementation
+
+[ProfileResolver](../extension/src/profile/resolver.ts) POSTs to the configured HTTPS URL, not a hard-coded `/v1/resolve` path. It checks the configured origin, rejects redirects, uses a five-second timeout and expects exactly `Content-Type: application/jose`.
 
 ```text
-page-profile-registry/
-  profiles/<profile-id>.json       # page matcher, model context, 허용 도구
-  mcp-servers/<server-id>.json     # endpoint와 tool catalogue
-  schemas/                         # source JSON Schema와 fixture
+Current page DOM/ARIA snapshot
+ → digest + semantic-projection-fp-v1
+ → configured Resolver POST
+ → application/jose compact JWS
+ → ES256 signature verification
+ → closed Profile claims + page binding + expiry checks
+ → in-memory version/digest replay check
+ → Ask context / read-only business bindings / Act workflow and action hints
 ```
 
-`main`은 protected branch다. local stdio MCP는 작업 branch와 검증된 commit, PR 본문만
-준비한다. push, PR 생성·승인, `main` 병합은 기존 Git hosting 절차가 담당한다. 관리 MCP는
-private signing key, Resolver deployment credential 또는 Business MCP credential을 읽거나
-변경하지 않는다.
+The request contains schema_version, request_id, resolver_request_nonce, deployment_id and page origin/path/page_context_digest/fingerprint_alg/fingerprint. Current path is URL pathname with query/fragment excluded; it is not a Platform logical route template with embedded identifiers removed. No enterprise bearer authentication is added.
 
-`main` 병합 CI는 모든 source file을 검증하고 불변 release artifact를 만든다. Provider는
-완전히 검증된 artifact만 읽기 전용으로 로드하며, 새 artifact는 전체 검증 뒤 원자적으로
-교체한다. 부분 Git checkout, branch 작업물, 미승인 PR은 Resolver 결과에 영향을 주지 않는다.
+[verifyProfileJws](../extension/src/profile/jws.ts) accepts a compact ES256 JWS with `typ=company-page-profile+jws` and a kid from the local PEM key ring, limited to 64 KiB. [verifyProfileClaims](../extension/src/profile/profile.ts) validates schema_version 1, MATCHED/UNKNOWN, nonempty issuer, deployment audience, nonce, page digest, fingerprint and time. It checks expiry, a maximum 24-hour lifetime and up to five minutes of future issued_at; it does not bind issuer to a managed trust service.
 
-Studio Registry를 사용하는 release에서는 CI가 Git의 `mcp-servers/`를 직접 전개하지
-않는다. 대신 revision ID, 대상 environment와 Profile의 논리적 `serverRef`를 Studio
-read-only release binding API에 보내며, 승인·동결된 adapter view만 artifact에 넣는다.
-따라서 Profile Provider는 운영 중 `tools/list`나 Registry mutation API를 호출하지 않고,
-항상 release에 고정된 binding만 읽는다.
+MATCHED requires profile_id, a positive integer profile_version and matching origin/path_prefix. Optional tools/workflow/model_context/business_mcp use closed Browser validators. UNKNOWN cannot carry those action/context fields. Cryptographic validity does not establish Platform approval, current activation, revocation or enterprise user identity.
 
-## 3. Source Profile과 MCP Registry 계약
+[ProfileReplayStore](../extension/src/profile/profile-replay.ts) accepts a higher version, or the same version with the same definition digest, and rejects regressions/conflicts. It is wired into resolve but survives only the current Service Worker instance. It is not a persistent artifact cache or a cross-restart rollback defense.
 
-### 3.1 Page Profile source
+Ask catches resolve failures and continues without Profile context/business tools. Act catches PROFILE_UNAVAILABLE and may use current page-derived candidates and local workflows. Invalid Profile data is not activated, but Profile failure does not globally stop generic Browser execution.
 
-`PageProfileSourceV1`은 closed JSON object다. 알려지지 않은 field, 중복 ID, 빈 문자열과
-제한 초과 문자열·배열을 거부한다.
+## 3. Target Profile lifecycle and stage status
 
-```json
-{
-  "schema_version": 1,
-  "profile_id": "semiconductor-trend-analysis",
-  "profile_version": 3,
-  "matcher": {
-    "origin": "https://portal.company.example",
-    "path_prefix": "/trend-analysis"
-  },
-  "fingerprint": {
-    "alg": "semantic-projection-fp-v1",
-    "value": "base64url-sha256"
-  },
-  "model_context": {
-    "title": "수율 추세 분석",
-    "summary": "제품군과 공정 노드를 선택해 기간별 수율을 확인하는 화면입니다.",
-    "facts": [{ "label": "분석 단위", "value": "제품군·공정 노드·캠퍼스" }],
-    "glossary": [
-      { "term": "공정 노드", "definition": "제조 공정의 분류 단위" }
-    ],
-    "limitations": ["확정 수율은 승인된 월말 데이터가 기준입니다."]
-  },
-  "business_tools": [
-    { "server_id": "manufacturing-data", "tool_id": "get_yield_definition" }
-  ],
-  "tools": [],
-  "workflow": null
-}
+```mermaid
+flowchart TD
+  R[Platform Profile Repository: Planned service] --> D[Profile Distribution: Planned service]
+  D --> L[Browser Profile Loader: Partial]
+  L --> S[Schema Validation: Partial]
+  S --> V[Signature Verification: Partial for target]
+  V --> P[Policy and current trust validation: Planned]
+  P --> C[Validated Local Cache: Not Implemented]
+  C --> RT[Profile Runtime: Partial]
 ```
 
-`model_context`는 정보 전달용 데이터다. `title`은 최대 160자, `summary`는 최대
-2,000자이며 `facts`, `glossary`, `limitations`를 포함한 전체 직렬화 크기는 8 KiB 이하다.
-모델 실행 지시, raw URL, selector, `ref_id`, input value, credential, token, HTML,
-JavaScript와 action 권한은 이 문맥에 넣을 수 없다.
+| Lifecycle stage | Status | Current implementation versus target |
+| --- | --- | --- |
+| Platform Profile Repository | Planned | Platform DB authority is designed; no service implementation in reviewed checkout |
+| Profile Distribution | Planned | External proprietary Resolver is assumed by current client; Platform resolve/artifact distribution is not integrated |
+| Browser Profile Loader | Partial | Current POST/JWS path exists. Planned authenticated `/runtime/v1/profile-resolve` and artifact retrieval differ in request, response and identity |
+| Schema Validation | Partial | Closed proprietary claims and nested validators exist. Shared resource and release schemas are not consumed |
+| Signature Verification | Partial | Compact ES256 verifier is Implemented. Flattened SignedRelease verifier is **Planned / Required for Platform Alignment** |
+| Policy Validation | Partial | Local action guards and a partial Act PDP path exist. No release-level EnterprisePolicy/current-trust gate |
+| Local Cache | Not Implemented | No persistent signed artifact cache; replay high-water is memory only |
+| Profile Runtime | Partial | Context, action hints, local workflow and business HTTP consumption exist; shared resources and atomic dependency bundles are planned |
 
-`tools`와 `workflow`는 기존 signed Profile의 action definition 및 workflow 계약을 따른다.
-현재 semantic snapshot은 항상 Act discovery의 source of truth이며, Profile은 관찰되지
-않은 target을 만들거나 기존 policy·confirmation·verifier를 완화할 수 없다.
+Target schema validation before signature verification checks untrusted shape and bounds only. Trust and activation require successful cryptography, payload/claims validation, current policy and release membership. Current code verifies signature before Profile claims; that existing order is not changed here.
 
-### 3.2 MCP Registry source
+### Versioning, refresh and activation rules (Target)
 
-Registry는 server location과 tool contract를 소유한다. Page Profile에는 endpoint를 쓰지
-않고, 허용 관계만 `server_id`와 `tool_id`로 선언한다.
+- Keep API version, source version, environment releaseId, adapter version, activation generation and trust epoch distinct. Do not reinterpret integer profile_version as Platform SemVer.
+- Freeze exact Profile/Workflow/policy/MCP dependencies at Platform release time. Browser verifies the whole bundle before atomically changing the local active reference; partial download never becomes active.
+- Resolve on page-scope change and refresh according to distribution/trust policy. Current Browser resolves on demand without a background refresh scheduler or cache TTL.
+- Cache only verified immutable artifacts and bounded metadata, keyed by organization/application/environment/release/digest/consumer contract. Do not cache request nonces, credentials, page refs or action values. Recheck current trust and page binding on use; do not reuse a per-request JWS as an unrestricted cached release.
+- Platform proposes a 24-hour release TTL and a maximum 60-second read-only trust stale window. Writes require online trust and PDP. These are target requirements, not implemented Browser guarantees or additions to the unchanged workspace schema.
+- A refresh failure must not extend expiry or trust freshness. For required-profile routes, missing/invalid/expired/revoked/unsupported releases block activation/new actions. Optional community generic behavior remains separately governed.
+- Schema/signature failure discards the candidate and emits a bounded rejection event in the target. A prior artifact is usable only while independently eligible under current trust, expiry and policy; there is no unconditional last-known-good fallback.
+- Platform owns rollback eligibility. Browser accepts only a currently authorized complete release/activation transition and never lowers trust epoch or silently accepts a revoked release. Any mapping to the current monotonic integer version must be explicit.
+- Preserve the current proprietary mode during a reviewed versioned transition. Select the consumer contract before parsing; never strip fields, guess a format, relabel HTTPS as standard MCP, or silently fetch a latest catalog.
 
-```json
-{
-  "schema_version": 1,
-  "server_id": "manufacturing-data",
-  "endpoint": "https://business-mcp.company.example/page-tools",
-  "tools": [
-    {
-      "tool_id": "get_yield_definition",
-      "title": "수율 정의 조회",
-      "description": "현재 화면에서 사용하는 수율 지표의 정의를 반환합니다.",
-      "arguments": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": { "metric": { "type": "string", "maxLength": 80 } },
-        "required": ["metric"]
-      },
-      "result_key": "definition",
-      "value_kind": "text",
-      "max_result_chars": 4000
-    }
-  ]
-}
-```
-
-Registry endpoint는 HTTPS여야 하며 userinfo, query, fragment와 임의 header/auth 설정을
-가질 수 없다. v1 tool은 `agentic-read`만 허용한다. source validator는 Profile의 모든
-`server_id/tool_id` 참조가 Registry에 존재하고, tool ID가 전역적으로 모호하지 않으며,
-argument/result schema가 닫혀 있는지 확인한다.
-
-### 3.3 Enterprise Studio Registry와 Profile binding
-
-Studio가 연결된 경우 Profile source는 endpoint나 raw schema 대신 다음 논리 binding을
-선언한다. `serverRef`는 안정적인 Registry server ID이며 URL이 아니다. `toolOverrides`는
-Registry catalog에 이미 존재하는 tool의 선택·표시 우선순위만 조정할 수 있고 capability,
-risk, schema, endpoint 또는 credential을 완화할 수 없다.
-
-```yaml
-contexts:
-  - id: manufacturingContext
-    provider: { type: mcp, serverRef: manufacturing-data }
-    capabilityPolicy:
-      allow: [manufacturing.yield.read]
-      maxRisk: READ
-    toolOverrides:
-      get_yield_definition: { preferred: true }
-```
-
-Registry는 `serverRef`별 environment binding, transport family, trust policy,
-approved catalog checksum, capability/risk overlay와 health 상태를 소유한다. release
-validator는 Profile revision, server release, catalog release, environment binding을 함께
-동결한다. 이 중 하나라도 변경·폐기·health fail 또는 catalog compatibility 실패이면 기존
-artifact를 조용히 최신 catalog로 바꾸지 않고 새 Profile release를 다시 검증해야 한다.
-
-`PROFILE_BOUND_HTTP_V1`에서는 동결된 adapter가 기존 `business_mcp` 형식
-(`server_id`, approved endpoint, closed argument/result schema)을 만든다. 표준
-`MCP_STREAMABLE_HTTP`에서는 Discovery Worker가 `tools/list`를 읽어 catalog snapshot과
-checksum을 만든 뒤 Registry overlay를 적용한다. discovery caller는 Studio worker이며
-Profile Provider나 확장이 아니다. refresh TTL, stale-use 기간, probe identity와 revoke
-정책은 Registry release policy로 명시하고, TTL 초과 또는 revoked/failed 상태에서는
-새 resolve/실행을 `MCP_BINDING_STALE` 또는 `MCP_SERVER_REVOKED`로 fail closed한다.
-
-## 4. Resolver 발급 계약
-
-확장은 기존 Resolver 요청을 유지한다.
+## 4. Signing and trust
 
 ```text
-POST /v1/resolve
-Content-Type: application/json
-
-{ schema_version, request_id, resolver_request_nonce, deployment_id,
-  page: { origin, path, page_context_digest, fingerprint_alg, fingerprint } }
+Profile creation (Platform)
+ → candidate freeze / approval / Platform signing
+ → distribution
+ → Browser signature verification
+ → current key/release/server trust validation
+ → policy + dependency checks
+ → Profile activation
 ```
 
-Provider는 exact origin, 가장 긴 `path_prefix`, exact fingerprint 순서로 Profile을 찾는다.
-동일 우선순위의 Profile이 둘 이상이면 release artifact 검증에서 거부한다. 매칭하지 못하면
-유효한 `UNKNOWN` Profile JWS를 반환하고, artifact·서명·검증 오류는 HTTP 오류로 반환해
-확장이 `PROFILE_UNAVAILABLE`로 fail closed하게 한다.
+Platform [release/trust](../../ewap-platform/docs/aidlc/contracts/release-trust.md) proposes flattened JWS JSON (`protected`, `payload`, `signature`), `typ=enterprise-studio-release+jws`, ES256/P-256, canonical JCS payload, SHA-256 digests encoded as `sha256:` plus lowercase hex, environment and approval binding, current trust epoch, and 60-second clock skew. Browser's compact typ/payload, custom canonical helper and base64url digest are different. Existing ES256 verification is useful groundwork, not conformance with that release protocol.
 
-매칭되면 Provider는 source Profile과 Registry를 전개해 `company-page-profile+jws` ES256
-compact JWS를 발급한다. JWS에는 다음을 넣는다.
+Target verification binds issuer/kid, organization/environment, source/dependency/consumer digests, issuedAt/expiresAt, approval references and current active membership. Unknown/revoked keys and unavailable required trust fail closed. Browser never signs Profiles or holds Platform private keys. Public trust-root distribution/rotation and epoch persistence are planned. Repackaging a compact signature into a flattened envelope with a different typ/payload is not a valid migration.
 
-- 기존 binding claim: `aud`, `resolver_request_nonce`, `page_context_digest`, `matcher`,
-  fingerprint, `issued_at`, `expires_at`, `profile_id`, `profile_version`
-- 검증된 `model_context`, action `tools`, `workflow`
-- Registry에서 전개한 `business_mcp` binding: `server_id`, `endpoint`, `tool_id`,
-  `result_key`, `value_kind`, closed argument schema, `catalog_checksum`,
-  `server_release_id`, `environment` 및 model-visible tool metadata
+## 5. MCP architecture and tool allow-list
 
-JWS 수명은 24시간 이하이고 전체 크기는 64 KiB 이하다. private key는 Provider의 배포
-secret에만 두며 `kid`와 공개 PEM은 확장 Settings의 key ring으로 배포한다. Provider는
-release ID, source commit, Profile revision, server/catalog release와 environment만 audit
-metadata로 남기고 Profile 원문이나 요청 page payload를 장기 저장하지 않는다.
+### Current Development Mode / Legacy Compatibility
 
-## 5. Ask·Act와 Business MCP 흐름
+[BusinessMcpClient](../extension/src/profile/business-mcp-client.ts) sends `CALL_PAGE_BUSINESS_TOOL` directly to the signed binding endpoint. It uses HTTPS POST, JSON, a five-second timeout, redirect rejection and no supplied enterprise bearer token. Endpoint userinfo/query/fragment are rejected. This is proprietary read-only HTTP compatibility, not a standard MCP transport.
 
-```text
-Studio: configured MCP server
-  → Discovery/health + catalog checksum
-  → capability/risk overlay
-  → Profile serverRef/tool policy validation
-  → Profile revision + server/catalog/environment release freeze
-  → release-bound adapter view
-  → Provider signed Profile artifact
+The exact current binding fields are `server_id`, `endpoint`, `tool_id`, `title`, `description`, `arguments`, `result_key`, `value_kind`, `max_result_chars`. The validator rejects added `catalog_checksum`, `server_release_id` or `environment` fields. Those formerly documented fields are future contract work, not current support.
 
-Content script snapshot
-  → Service Worker: digest + fingerprint
-  → HTTPS Resolver: frozen signed Profile JWS
-  → Service Worker: JWS/binding 검증
-      ├─ Ask/Act model message: safe model_context
-      └─ Ask tool call: Profile-bound Business MCP read
-           → current profile/release/server/catalog/environment/run/page-digest 재확인
-           → Enterprise MCP Gateway (기본) 또는 승인된 direct-route 예외
-           → bounded result 검증 → 다음 모델 turn의 untrusted data
+The Profile allows at most 32 bindings with distinct tool_id values. Argument objects are closed, with up to 32 bounded string properties (maxLength at most 1,024). Text results are bounded to at most 4,000 characters. [Ask executor](../extension/src/service-worker/ask-tool-executor.ts) checks tool_id membership and that tool's exact argument schema; the model-facing enum alone is not enforcement. [Client result validation](../extension/src/profile/mcp.ts) checks kind/request ID/tool ID/result schema. Endpoint/JWS/nonces/digests are excluded from the model tool catalog; results remain untrusted data.
+
+[Ask runner](../extension/src/service-worker/ask-chat-runner.ts) captures initial page digest/Profile proof and reuses them in tool requests. It checks run termination, but does not re-read the page, recheck Profile expiry/revoke or query PDP immediately before each business call. The former “fresh binding before every call” statement was a target, not current behavior. Existing errors are BUSINESS_MCP_* codes, not the full Platform MCP_* envelope.
+
+### Target Governed Mode
+
+```mermaid
+flowchart TD
+  B[Browser MCP Client] --> G[EWAP MCP Gateway / governed endpoint]
+  G -. approved route / catalog / trust lookup .-> R[MCP Registry]
+  G --> S[Enterprise MCP Servers]
+  R -. approved definitions / release binding .-> G
 ```
 
-Ask와 Act는 검증된 `model_context`를
-`[UNTRUSTED_PAGE_PROFILE_CONTEXT]` delimiter 안에 넣는다. 이는 업무 정보를 보완하지만
-system instruction이 아니며 browser tool 권한을 부여하지 않는다. `model_context`는
-transcript, persistent chat storage, export와 diagnostics에 저장하지 않고, 노출되는
-metadata는 `profile_id`, version, source commit, digest뿐이다.
+Conceptually `Browser → governed endpoint → Registry-approved server → enterprise service`; Registry is control-plane metadata, not an extra per-call business proxy. Platform discovery workers own catalog discovery, health, checksums and capability/risk overlays. Browser consumes the approved release view and does not administer Registry records or call live tools/list for the current compatibility mode.
 
-Ask에서는 Profile이 허용한 Business MCP tool만 제공한다. tool description과 tool별 닫힌
-argument schema는 Registry에서 오며, endpoint, JWS, nonce, digest, credential은 모델에
-보이지 않는다. Service Worker는 호출 직전에 active tab, document epoch, origin, path,
-digest와 Profile binding을 다시 확인한다. 페이지가 변했으면 결과를 재사용하지 않고
-Profile을 다시 resolve한다.
+PROD requires Gateway. DEV/TEST/STAGE direct mode is only a **Supported Direct Mode target** when Security Admin grants an environment-specific exception with equivalent identity, policy, trust, audit and revoke enforcement. Current direct client code does not prove such an exception.
 
-Gateway는 issuer/audience, Profile/release, environment, server/tool, request/run nonce와
-page digest를 consumer contract가 제공하는 범위에서 모두 bind한 뒤 capability, risk,
-PDP/policy, closed input schema, size와 timeout을 검증한다. Gateway만 approved route와
-server-side credential을 해석한다. 운영 환경의 기본 경로는 Gateway이며 direct endpoint는
-Security Admin이 environment별로 승인하고 audit한 예외만 허용한다.
+### Shared conceptual fields and unresolved mapping
 
-Business MCP 응답은 Registry의 결과 schema와 `max_result_chars`를 통과해야 하며,
-`[UNTRUSTED_TOOL_RESULT]`로만 다음 모델 turn에 전달한다. Business MCP 오류에는 DOM
-추측이나 다른 endpoint fallback을 하지 않는다. 실행 오류는 endpoint, secret, raw
-request/response 또는 PDP 내부 정보를 노출하지 않는 안정 코드
-`MCP_SERVER_NOT_REGISTERED`, `MCP_SERVER_REVOKED`, `MCP_CATALOG_INCOMPATIBLE`,
-`MCP_CAPABILITY_DENIED`, `MCP_POLICY_DENIED`, `MCP_BINDING_STALE`, `MCP_TIMEOUT`,
-`MCP_PROTOCOL_ERROR`로 정규화한다.
+| Shared PageProfile.mcpServers field | Current Browser representation | Target requirement / gap |
+| --- | --- | --- |
+| id | server_id | Stable Registry identity, scoped to approved release |
+| name | No server display-name field; title describes a tool | Preserve server display name separately; do not rename title to server name |
+| url | endpoint | Governed route selected by Platform; shared schema requires a URL while Platform source uses serverRef-only (C03) |
+| transport | No field; proprietary HTTPS is implicit | Shared enum streamable-http/sse/stdio is not implemented. Define a versioned compatibility representation |
+| tools | Flattened tool_id + closed arguments/result metadata | Exact release allow-list intersected with organizational policy and consumer-supported tools |
 
-Act에서는 page-derived visible/enabled candidate가 우선이다. Profile의 action definition은
-기존처럼 후보가 부족할 때 위험도, 허용 role, option enum과 semantic verifier를 보완한다.
-모든 proposal은 현재의 permission, value binding, confirmation, preflight, executor와
-postcondition verifier를 계속 거친다.
+The separate shared McpServer also defines authentication references and inputSchema. Credentials belong in Platform secret/auth infrastructure, never Profile metadata, model context or audit. Browser is not required to spawn stdio processes simply because the shared registry enum can describe them; supported transport subsets must be negotiated and unsupported ones rejected.
 
-## 6. local stdio 관리 MCP
+Target allow-list enforcement uses the intersection of approved Registry catalog, Profile-selected tools/capabilities, EnterprisePolicy domains/actions/servers/tools, current PDP and Browser hard guards. Explicit deny wins. Ambiguous tool identity, unknown tool/argument, incompatible schema or stale/revoked binding blocks dispatch. Gateway independently repeats authentication, authorization, replay, schema and size checks. Untrusted output never changes that allow-list.
 
-관리 MCP는 Git checkout에서 실행하며 다음의 closed tool만 제공한다.
+## 6. Verification and migration recommendations
 
-| Tool                                                             | 동작                                             |
-| ---------------------------------------------------------------- | ------------------------------------------------ |
-| `profile_list`, `profile_get`                                    | release source와 matcher 조회                    |
-| `profile_create_draft`, `profile_update_draft`, `profile_retire` | working branch의 source 변경                     |
-| `profile_validate`                                               | schema, fingerprint, matcher, Registry 참조 검증 |
-| `mcp_server_list`, `mcp_server_get`, `mcp_server_validate`       | Registry 조회·검증                               |
-| `change_create_branch`, `change_commit`, `change_prepare_pr`     | PR용 branch, 검증된 commit, PR 설명 생성         |
+Existing unit tests inspect compact signature/tampering, resolver replay conflict, closed MCP bindings/results and HTTP rejection: [JWS](../extension/tests/unit/profile/jws.test.ts), [resolver](../extension/tests/unit/profile/resolver.test.ts), [bindings](../extension/tests/unit/profile/mcp-binding.test.ts), [client](../extension/tests/unit/profile/business-mcp-client.test.ts). They do not establish Platform service or real Chrome integration.
 
-모든 write tool은 현재 branch와 clean/dirty 상태를 먼저 보고하고, 대상 파일을 명시한다.
-`main` 직접 변경, force push, signing, Resolver deploy와 production secret 접근은 제공하지
-않는다. MCP 응답과 commit message에는 endpoint credential, Profile JWS, raw page data를
-넣지 않는다.
-
-## 7. 구현·검증 순서
-
-1. 전용 Git 저장소의 Profile source/호환 Registry JSON Schema, fixtures, validator와 merge
-   CI artifact를 만든다.
-2. Studio Registry에 server/environment/trust/catalog/overlay 관리, discovery·health,
-   Profile binding validation과 release freeze API를 구현한다.
-3. Registry release adapter가 `PROFILE_BOUND_HTTP_V1` binding을 기존 consumer payload로
-   전개하고, Gateway가 release/profile/server/tool/run/page-digest binding을 강제하게 한다.
-4. HTTPS Provider에 artifact loader, matcher, ES256 dev signer와 `/v1/resolve`를 구현한다.
-5. local stdio MCP에 읽기·검증·branch/commit/PR-preparation 도구를 구현한다.
-6. 확장 Profile claim validator에 `model_context`와 Registry tool metadata를 추가하고,
-   Ask/Act projection 및 tool별 argument/result 검증을 연결한다.
-7. Profile replay high-water를 실제 resolve path에 연결해 같은
-   `(deployment_id, profile_id, profile_version)`의 정의 digest 충돌을 거부한다.
-
-단위 테스트는 source/Registry schema, 참조 오류, matcher 모호성, version 역행, endpoint
-제한, JWS binding·만료·UNKNOWN을 다룬다. Studio 테스트는 transport별 discovery/checksum,
-TTL·stale/revoke, capability/risk filter, Profile/server/catalog/environment 동결, direct-route
-예외와 Gateway의 stable error/binding 검증을 다룬다. MCP 테스트는 임시 Git checkout에서
-branch/commit 생성과 signing key 비접근을 검증한다. 확장 테스트는 Ask/Act에 model context가
-포함되고 endpoint/JWS/nonce/credential은 제외됨, stale page Business MCP 호출 거부,
-page-derived Act 우선, Business MCP 결과 schema·크기 제한을 확인한다. 마지막으로 local
-HTTPS Provider, Studio adapter/Gateway와 Business MCP fixture를 사용해 Chrome E2E의
-resolve → Ask context → gateway business read → Act proposal 흐름을 검증한다.
-
-v1 검증은 서버 구현과 local Chrome 증적까지의 범위이며, 사용자별 업무 데이터, OIDC,
-KMS/HSM, key rotation, 운영 배포/rollback 승인과 production qualification은 후속 slice다.
+Future order: resolve shared contract gaps → define producer adapter/consumer versions → implement authenticated distribution/trust/policy → integrate Gateway and audit → validate supported workflows and cache migration → obtain real Chrome L5 evidence. Require old/new format negative cases, rollback/revoke/restart, policy denial and approval replay, stale page calls, unknown tools, auth failure and privacy checks. No server, adapter, signature, cache or client code is implemented by this document.
