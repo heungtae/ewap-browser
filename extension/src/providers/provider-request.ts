@@ -8,42 +8,23 @@ const reservedHeaders = new Set([
   "x-goog-api-key",
 ]);
 
-const isPrivateIpv4 = (host: string): boolean => {
-  const parts = host.split(".").map(Number);
-  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part)))
-    return false;
-  return (
-    parts[0] === 10 ||
-    (parts[0] === 172 && (parts[1] ?? 0) >= 16 && (parts[1] ?? 0) <= 31) ||
-    (parts[0] === 192 && parts[1] === 168)
-  );
-};
-
 export const validateProviderBaseUrl = (
   raw: string,
   privateNetworkOptIn = false,
 ): URL => {
+  void privateNetworkOptIn;
   let url: URL;
   try {
     url = new URL(raw);
   } catch {
     return fail("INVALID_ARGUMENT");
   }
-  const host = url.hostname.toLowerCase();
-  const loopback =
-    host === "localhost" || host === "127.0.0.1" || host === "[::1]";
-  const privateNetwork = isPrivateIpv4(host);
   if (
     url.username ||
     url.password ||
     url.search ||
     url.hash ||
-    (url.protocol !== "https:" &&
-      !(
-        url.protocol === "http:" &&
-        (loopback || (privateNetwork && privateNetworkOptIn))
-      )) ||
-    (privateNetwork && !privateNetworkOptIn)
+    (url.protocol !== "https:" && url.protocol !== "http:")
   )
     return fail("INVALID_ARGUMENT");
   return url;

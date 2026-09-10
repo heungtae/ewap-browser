@@ -65,13 +65,13 @@ describe("core provider transport", () => {
     ).rejects.toThrow("INVALID_ARGUMENT");
   });
 
-  it("given_private_http_endpoint_when_not_opted_in_then_rejected", () => {
-    expect(() => validateProviderBaseUrl("http://192.168.1.5:8080/v1")).toThrow(
+  it("given_http_endpoint_when_validating_then_accepts_it", () => {
+    expect(() =>
+      validateProviderBaseUrl("http://192.168.1.5:8080/v1"),
+    ).not.toThrow();
+    expect(() => validateProviderBaseUrl("ftp://provider.test/v1")).toThrow(
       "INVALID_ARGUMENT",
     );
-    expect(() =>
-      validateProviderBaseUrl("http://192.168.1.5:8080/v1", true),
-    ).not.toThrow();
   });
 
   it("given_http_error_when_sending_then_exposes_status_without_body", async () => {

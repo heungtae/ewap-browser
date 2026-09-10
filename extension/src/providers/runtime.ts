@@ -3,9 +3,9 @@ import { ProviderSettings } from "../settings/provider-settings.js";
 import { parseProviderBody } from "./provider-body.js";
 import { parseChatResponse } from "./provider-response.js";
 import { ProviderRegistry } from "./registry.js";
+import { testProvider } from "./provider-test.js";
 import { CoreProviderTransport } from "./transport.js";
 import type {
-  NormalizedProviderRequest,
   ProviderChatResponse,
   ProviderConfig,
   ProviderMessage,
@@ -122,23 +122,13 @@ export class ProviderRuntime {
   private async testProvider(
     payload: unknown,
   ): Promise<Record<string, unknown>> {
-    const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
-    const id = value.id;
-    const request = value.request;
-    if (typeof id !== "string") fail("INVALID_ARGUMENT");
-    if (!isPlainObject(request)) fail("INVALID_ARGUMENT");
-    const config = await this.settings.resolve(id as string);
-    const adapter = this.registry.resolve(
-      config.plugin_id,
-      config.plugin_version,
-    ).adapter;
-    const result = await this.transport.send(
-      config,
-      adapter,
-      request as unknown as NormalizedProviderRequest,
-    );
-    parseChatResponse(await parseProviderBody(result.body));
-    return { ok: true, status: result.status };
+    return testProvider(payload, {
+      resolveConfig: (id) => this.settings.resolve(id),
+      resolveAdapter: (config) =>
+        this.registry.resolve(config.plugin_id, config.plugin_version).adapter,
+      send: (config, adapter, request) =>
+        this.transport.send(config, adapter, request),
+    });
   }
 
   private async listModels(payload: unknown): Promise<Record<string, unknown>> {

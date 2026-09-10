@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ContextPilot (development)",
-  "version": "0.1.27",
+  "version": "0.1.29",
   "icons": {
     "16": "assets/icons/contextpilot-16.png",
     "32": "assets/icons/contextpilot-32.png",
@@ -31,7 +31,7 @@
     "default_path": "src/sidepanel/index.html"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http://localhost:* http://127.0.0.1:* https:"
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src http: https:"
   },
   "options_ui": {
     "page": "src/settings/index.html",

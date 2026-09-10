@@ -37,6 +37,12 @@ const headersContainer =
 const addHeader = document.querySelector<HTMLButtonElement>("#add-header");
 const providerTest =
   document.querySelector<HTMLButtonElement>("#provider-test");
+const providerTestMessages = document.querySelector<HTMLInputElement>(
+  "#provider-test-messages",
+);
+const providerTestDiagnostics = document.querySelector<HTMLPreElement>(
+  "#provider-test-diagnostics",
+);
 const providerModelsLoad = document.querySelector<HTMLButtonElement>(
   "#provider-models-load",
 );
@@ -77,6 +83,17 @@ const show = (message: string): void => {
   if (status) status.value = message;
 };
 
+const showTestDiagnostics = (value: unknown): void => {
+  if (!providerTestDiagnostics) return;
+  if (value === undefined) {
+    providerTestDiagnostics.hidden = true;
+    providerTestDiagnostics.textContent = "";
+    return;
+  }
+  providerTestDiagnostics.textContent = JSON.stringify(value, null, 2);
+  providerTestDiagnostics.hidden = false;
+};
+
 const appendHeaderRow = (name = "", value = ""): void => {
   if (!headersContainer) return;
   const row = document.createElement("div");
@@ -93,12 +110,27 @@ const appendHeaderRow = (name = "", value = ""): void => {
   valueInput.autocomplete = "off";
   valueInput.placeholder = "Header value";
   valueInput.value = value;
+  const toggle = document.createElement("button");
+  toggle.type = "button";
+  toggle.className = "header-value-toggle";
+  toggle.textContent = "표시";
+  toggle.setAttribute("aria-label", `${name || "header"} value 표시`);
+  toggle.addEventListener("click", () => {
+    const hidden = valueInput.type === "password";
+    valueInput.type = hidden ? "text" : "password";
+    toggle.textContent = hidden ? "숨김" : "표시";
+    toggle.setAttribute(
+      "aria-label",
+      `${nameInput.value || "header"} value ${hidden ? "숨김" : "표시"}`,
+    );
+  });
   const remove = document.createElement("button");
   remove.type = "button";
+  remove.className = "header-remove";
   remove.textContent = "삭제";
   remove.setAttribute("aria-label", `${name || "header"} 삭제`);
   remove.addEventListener("click", () => row.remove());
-  row.append(nameInput, valueInput, remove);
+  row.append(nameInput, valueInput, toggle, remove);
   headersContainer.append(row);
 };
 
@@ -201,17 +233,10 @@ const saveProvider = async (): Promise<{
   } catch {
     throw new Error("Endpoint URL 형식을 확인해 주세요.");
   }
-  const loopback = ["localhost", "127.0.0.1", "[::1]"].includes(
-    parsed.hostname,
-  );
-  const ollamaEndpoint = loopback && parsed.port === "11434";
+  const ollamaEndpoint = parsed.port === "11434";
   const openAiEndpoint = parsed.hostname.toLowerCase() === "api.openai.com";
-  if (
-    parsed.protocol !== "https:" &&
-    !(parsed.protocol === "http:" && loopback)
-  ) {
-    throw new Error("HTTPS 또는 loopback HTTP endpoint만 허용됩니다.");
-  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:")
+    throw new Error("HTTP 또는 HTTPS endpoint만 허용됩니다.");
   const apiKey = field("api_key").value;
   const apiKeyHeader = field("api_key_header").value;
   let headers: Array<{ name: string; value: string }>;
@@ -287,6 +312,8 @@ providerTest?.addEventListener("click", () => {
       return;
     }
     show("LLM 연결을 테스트하는 중입니다.");
+    const includeMessages = providerTestMessages?.checked === true;
+    showTestDiagnostics(undefined);
     const startedAt = performance.now();
     console.groupCollapsed("[ContextPilot] LLM 연결 테스트");
     try {
@@ -309,6 +336,7 @@ providerTest?.addEventListener("click", () => {
             messages: [{ role: "user", content: "connection test" }],
             stream: false,
           },
+          ...(includeMessages ? { include_messages: true } : {}),
         },
       });
       if (
@@ -316,6 +344,10 @@ providerTest?.addEventListener("click", () => {
         response !== null &&
         (response as { ok?: unknown }).ok
       ) {
+        if (includeMessages)
+          showTestDiagnostics(
+            (response as { diagnostics?: unknown }).diagnostics,
+          );
         console.info("연결 테스트 성공", {
           status: (response as { status?: number }).status,
           elapsed_ms: Math.round(performance.now() - startedAt),
@@ -337,6 +369,10 @@ providerTest?.addEventListener("click", () => {
         typeof (response as { detail?: unknown }).detail === "string"
           ? `: ${(response as { detail: string }).detail}`
           : "";
+      if (includeMessages)
+        showTestDiagnostics(
+          (response as { diagnostics?: unknown }).diagnostics,
+        );
       console.warn("연결 테스트 실패", {
         code,
         detail: detail.slice(2) || undefined,

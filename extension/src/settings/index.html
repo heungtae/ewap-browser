@@ -148,18 +148,36 @@
       }
       .header-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto auto;
         gap: 8px;
         align-items: center;
       }
-      .header-row button {
+      .header-row .header-remove {
         padding: 7px 10px;
         color: #fca5a5;
         background: transparent;
         box-shadow: none;
       }
-      .header-row button:hover {
+      .header-row .header-remove:hover {
         background: rgba(248, 113, 113, 0.12);
+      }
+      .header-row .header-value-toggle {
+        padding: 7px 10px;
+        color: var(--accent-2);
+        background: transparent;
+        box-shadow: none;
+      }
+      #provider-test-diagnostics {
+        max-height: 360px;
+        overflow: auto;
+        margin: 0;
+        padding: 12px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: rgba(11, 14, 23, 0.72);
       }
       .secret-field {
         display: grid;
@@ -344,6 +362,11 @@
             <button type="submit">저장</button>
             <button id="provider-test" type="button">연결 테스트</button>
           </div>
+          <label class="checkbox-row"
+            ><input id="provider-test-messages" type="checkbox" />요청 및 응답
+            메시지 표시</label
+          >
+          <pre id="provider-test-diagnostics" hidden></pre>
         </form>
         <output id="settings-status" aria-live="polite"></output>
       </section>
