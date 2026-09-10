@@ -17,10 +17,5 @@ export type ActStepDependencies = {
   bindRun(runId: string, tabId: number, scope: PageScope): void;
   publish(runId: string, event: ChatEventPayload): void;
   serialise(value: unknown): string;
-  write(
-    tabId: number,
-    label: string,
-    detail: Record<string, unknown>,
-  ): Promise<void>;
   endSession(session: ActSession): void;
 };

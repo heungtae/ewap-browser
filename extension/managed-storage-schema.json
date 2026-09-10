@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "enterprise_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "mode"],
+      "properties": {
+        "schema_version": { "type": "integer", "enum": [1] },
+        "mode": { "type": "string", "enum": ["community", "enterprise"] },
+        "pdp_url": {
+          "type": "string",
+          "pattern": "^https://[^/?#]+(?:/[^?#]*)?$"
+        }
+      }
+    },
+    "enterprise_identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organization_id", "user_id", "device_id"],
+      "properties": {
+        "organization_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9._-]{1,160}$"
+        },
+        "user_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,160}$" },
+        "device_id": { "type": "string", "pattern": "^[A-Za-z0-9._-]{1,160}$" }
+      }
+    },
+    "runtime_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema_version", "endpoint"],
+      "properties": {
+        "schema_version": { "type": "integer", "enum": [1] },
+        "endpoint": {
+          "type": "string",
+          "pattern": "^https://[^/?#]+(?:/[^?#]*)?$"
+        }
+      }
+    }
+  }
+}

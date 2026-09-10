@@ -38,17 +38,12 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     scope = dependencies.defaultScope(),
   ): Promise<ActivePage> => {
     const chrome = dependencies.chrome!;
-    console.debug("[ContextPilot][projection] querying active tab");
     const tabs = await chrome.tabs.query({
       active: true,
       lastFocusedWindow: true,
     });
     const tab = tabs[0];
     const tabId = tab?.id;
-    console.debug("[ContextPilot][projection] active tab", {
-      tab_id: tabId,
-      url: tab?.url,
-    });
     if (!tab || tabId === undefined)
       throw new ContractError("ORIGIN_NOT_ALLOWED");
     if (dependencies.isStale(tabId))
@@ -72,9 +67,6 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
         throw new ContractError("DOCUMENT_NOT_REGISTERED");
       }
     }
-    console.debug("[ContextPilot][projection] content response", {
-      response: structuredClone(result),
-    });
     if (
       typeof result !== "object" ||
       result === null ||
@@ -114,11 +106,6 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     } catch {
       workflow = undefined;
     }
-    console.debug("[ContextPilot][projection] validated", {
-      document_epoch: snapshot.document_epoch,
-      node_count: snapshot.nodes.length,
-      visible_text_length: snapshot.visible_text.length,
-    });
     if (!dependencies.isRegistered(tabId, snapshot.document_epoch))
       throw new ContractError("DOCUMENT_NOT_REGISTERED");
     let path = "/";
@@ -134,10 +121,6 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     active: ActivePage,
   ): Promise<ResolvedProfile> => {
     const chrome = dependencies.chrome!;
-    console.debug("[ContextPilot][profile] resolving", {
-      origin: active.origin,
-      path: active.path,
-    });
     const stored = await chrome.storage.local.get?.("profile_resolver");
     if (!stored?.profile_resolver)
       throw new ContractError("PROFILE_UNAVAILABLE");
@@ -157,12 +140,6 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
       path: active.path,
       pageContextDigest: digestCanonical(active.snapshot),
       fingerprint: semanticFingerprint(active.snapshot).fingerprint,
-    });
-    console.debug("[ContextPilot][profile] resolved", {
-      resolution: resolved.profile.resolution,
-      profile_id: resolved.profile.profile_id,
-      profile_version: resolved.profile.profile_version,
-      business_mcp_count: resolved.profile.business_mcp?.length ?? 0,
     });
     return resolved;
   };

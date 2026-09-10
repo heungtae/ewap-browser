@@ -314,18 +314,8 @@ providerTest?.addEventListener("click", () => {
     show("LLM 연결을 테스트하는 중입니다.");
     const includeMessages = providerTestMessages?.checked === true;
     showTestDiagnostics(undefined);
-    const startedAt = performance.now();
-    console.groupCollapsed("[ContextPilot] LLM 연결 테스트");
     try {
       const provider = await saveProvider();
-      console.info("요청 설정", {
-        endpoint: provider.base_url,
-        model: provider.model,
-        wire_api: provider.wire_api,
-        auth: provider.api_key_header,
-        key_configured: provider.api_key_configured,
-        stream: false,
-      });
       const response = await runtime.sendMessage({
         kind: "PROVIDER_TEST",
         payload: {
@@ -348,10 +338,6 @@ providerTest?.addEventListener("click", () => {
           showTestDiagnostics(
             (response as { diagnostics?: unknown }).diagnostics,
           );
-        console.info("연결 테스트 성공", {
-          status: (response as { status?: number }).status,
-          elapsed_ms: Math.round(performance.now() - startedAt),
-        });
         show(
           `LLM 연결 테스트 성공 (HTTP ${(response as { status?: number }).status ?? "응답"})`,
         );
@@ -373,24 +359,13 @@ providerTest?.addEventListener("click", () => {
         showTestDiagnostics(
           (response as { diagnostics?: unknown }).diagnostics,
         );
-      console.warn("연결 테스트 실패", {
-        code,
-        detail: detail.slice(2) || undefined,
-        elapsed_ms: Math.round(performance.now() - startedAt),
-      });
       show(`LLM 연결 테스트 실패 (${code}${detail})`);
     } catch (error: unknown) {
-      console.error("연결 테스트 예외", {
-        error: error instanceof Error ? error.message : String(error),
-        elapsed_ms: Math.round(performance.now() - startedAt),
-      });
       show(
         error instanceof Error
           ? `LLM 연결 테스트 실패 (${error.message})`
           : "LLM 연결 테스트에 실패했습니다.",
       );
-    } finally {
-      console.groupEnd();
     }
   })();
 });
@@ -408,7 +383,6 @@ providerModelsLoad?.addEventListener("click", () => {
         kind: "PROVIDER_MODELS",
         payload: { id: "local" },
       });
-      console.info("모델 조회 응답", response);
       if (
         typeof response === "object" &&
         response !== null &&

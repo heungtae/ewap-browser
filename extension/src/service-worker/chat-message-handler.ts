@@ -56,18 +56,10 @@ export const createChatMessageHandler = (
   handle(message, sender, respond) {
     const kind = (message as { kind?: unknown }).kind;
     if (kind === "CHAT_SEND") {
-      console.debug("[ContextPilot][CHAT_SEND received]", {
-        payload: structuredClone((message as { payload?: unknown }).payload),
-        sender_url: sender.url,
-      });
       if (
         !dependencies.isPanelSender(sender) ||
         !dependencies.providerAvailable()
       ) {
-        console.error("[ContextPilot][CHAT_SEND rejected]", {
-          is_panel_sender: dependencies.isPanelSender(sender),
-          provider_runtime_ready: dependencies.providerAvailable(),
-        });
         respond(dependencies.safeFailure("INVALID_ARGUMENT"));
         return { handled: true };
       }
@@ -81,12 +73,6 @@ export const createChatMessageHandler = (
         .then((result) => respond(result))
         .catch((error) => {
           const code = failureCode(error, "PROVIDER_PLUGIN_FAILED");
-          console.error("[ContextPilot][CHAT_SEND failed before/at LLM]", {
-            code,
-            ...(error instanceof ContractError && error.detail
-              ? { detail: error.detail }
-              : {}),
-          });
           respond(
             dependencies.safeFailure(
               code,

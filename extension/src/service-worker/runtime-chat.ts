@@ -63,27 +63,6 @@ export const publishActTerminal = (
     ...(code ? { code } : {}),
   });
 };
-const writeToPageDevTools = async (
-  tabId: number,
-  label: string,
-  detail: Record<string, unknown>,
-): Promise<void> => {
-  console.info(label, detail);
-  try {
-    await chromeApi!.tabs.sendMessage(tabId, {
-      kind: "CONTENT_DEVTOOLS_LOG",
-      level: "info",
-      label,
-      detail,
-    });
-  } catch (error) {
-    console.warn("[ContextPilot][page DevTools log unavailable]", {
-      tab_id: tabId,
-      label,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  }
-};
 export const runAskChat = createAskChatRunner({
   chrome: chromeApi!,
   coordinator,
@@ -95,7 +74,6 @@ export const runAskChat = createAskChatRunner({
   pageScope: chatPageScope,
   bindRun: (runId, tabId, scope) => chatEvents.bindRun(runId, tabId, scope),
   publish: chatRunLifecycle.publish,
-  write: writeToPageDevTools,
   safeFailure: (code) => ({ ok: false, code }),
   askTools: askReadTools,
   systemPrompt: askSystemPrompt,
@@ -116,7 +94,6 @@ const actStepRunner = createActStepRunner({
   bindRun: (runId, tabId, scope) => chatEvents.bindRun(runId, tabId, scope),
   publish: chatRunLifecycle.publish,
   serialise: serialiseToolResult,
-  write: writeToPageDevTools,
   endSession: (session) => {
     permissions.endRun(session.id);
     actSessions.delete(session.id);

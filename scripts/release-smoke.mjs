@@ -10,6 +10,7 @@ const required = [
   "js/panel.js",
   "js/settings.js",
   "js/offscreen.js",
+  "managed-storage-schema.json",
   "sidepanel/index.html",
   "settings/index.html",
   "offscreen/index.html",
@@ -27,7 +28,8 @@ if (
     ]) ||
   !manifest.host_permissions.includes("<all_urls>") ||
   !manifest.host_permissions.includes("http://localhost/*") ||
-  !manifest.host_permissions.includes("http://127.0.0.1/*")
+  !manifest.host_permissions.includes("http://127.0.0.1/*") ||
+  manifest.storage?.managed_schema !== "managed-storage-schema.json"
 )
   throw new Error("release manifest is missing all-web-page host coverage");
 for (const path of required)

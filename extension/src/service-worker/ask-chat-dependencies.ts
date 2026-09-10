@@ -23,11 +23,6 @@ export type AskChatDependencies = {
   pageScope(active: ActivePage): PageScope;
   bindRun(runId: string, tabId: number, scope: PageScope): void;
   publish(runId: string, event: ChatEventPayload): void;
-  write(
-    tabId: number,
-    label: string,
-    detail: Record<string, unknown>,
-  ): Promise<void>;
   safeFailure(code: string, detail?: string): Record<string, unknown>;
   askTools: readonly ProviderToolDefinition[];
   systemPrompt: string;

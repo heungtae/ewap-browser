@@ -174,10 +174,6 @@ type BoundedTargetRequest = {
 };
 const actionTokenPattern = /^[A-Za-z0-9_-]{22,128}$/;
 const boundedMarkers = new Map<string, HTMLElement>();
-const pageDevToolsLabels = new Set([
-  "[ContextPilot][LLM request final]",
-  "[ContextPilot][LLM response final]",
-]);
 const boundedTarget = (
   request: BoundedTargetRequest,
 ): HTMLElement | undefined => {
@@ -786,34 +782,6 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       element.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true }));
     }
     respond({ ok: true, postcondition: "dispatch" });
-    return true;
-  }
-  if (
-    typeof message === "object" &&
-    message !== null &&
-    (message as { kind?: unknown }).kind === "CONTENT_DEVTOOLS_LOG"
-  ) {
-    const request = message as {
-      kind?: unknown;
-      level?: unknown;
-      label?: unknown;
-      detail?: unknown;
-    };
-    if (
-      sender.id !== runtime.id ||
-      sender.url !== runtime.getURL("js/service-worker.js") ||
-      Object.keys(message).length !== 4 ||
-      request.level !== "info" ||
-      typeof request.label !== "string" ||
-      !pageDevToolsLabels.has(request.label) ||
-      typeof request.detail !== "object" ||
-      request.detail === null
-    ) {
-      respond({ ok: false, code: "INVALID_ARGUMENT" });
-      return true;
-    }
-    console.info(request.label, request.detail);
-    respond({ ok: true });
     return true;
   }
   if (

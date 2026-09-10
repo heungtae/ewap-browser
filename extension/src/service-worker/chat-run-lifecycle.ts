@@ -47,10 +47,6 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
       !dependencies.events.has(runId) ||
       dependencies.events.terminal(runId)
     ) {
-      console.debug("[ContextPilot][chat timeline] ignored late event", {
-        run_id: runId,
-        type: payload.type,
-      });
       return;
     }
     const event = dependencies.events.append(runId, payload);

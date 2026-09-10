@@ -53,6 +53,7 @@ describe("provider connection test", () => {
               message: {
                 content: "연결되었습니다.",
                 api_key: "provider-secret",
+                endpoint: "https://provider.company.test/v1",
               },
             },
           ],
@@ -71,7 +72,11 @@ describe("provider connection test", () => {
           response: {
             choices: [
               {
-                message: { content: "연결되었습니다.", api_key: "[REDACTED]" },
+                message: {
+                  content: "연결되었습니다.",
+                  api_key: "[REDACTED]",
+                  endpoint: "[REDACTED]",
+                },
               },
             ],
           },

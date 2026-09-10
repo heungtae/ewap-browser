@@ -96,15 +96,6 @@ export const createAskChatRunner =
       businessBindings: bindings,
     });
     for (let step = 1; step <= 3; step += 1) {
-      await dependencies.write(
-        active.tabId,
-        "[ContextPilot][LLM request final]",
-        {
-          step,
-          messages: structuredClone(messages),
-          tools: structuredClone(tools),
-        },
-      );
       let streamed = false;
       let pending = "";
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -143,11 +134,6 @@ export const createAskChatRunner =
       })();
       if (run.phase === "TERMINAL")
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
-      await dependencies.write(
-        active.tabId,
-        "[ContextPilot][LLM response final]",
-        { step, message: structuredClone(response) },
-      );
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");

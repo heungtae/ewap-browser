@@ -39,6 +39,13 @@ if (manifest.permissions.includes("webNavigation"))
   throw new Error("manifest contains an unsupported permission");
 if (!manifest.options_ui?.page)
   throw new Error("provider Settings page is missing");
+if (manifest.storage?.managed_schema !== "managed-storage-schema.json")
+  throw new Error("manifest managed storage schema is missing");
+JSON.parse(
+  await readFile(
+    new URL("../extension/managed-storage-schema.json", import.meta.url),
+  ),
+);
 if (JSON.stringify(hostPermissions) !== JSON.stringify(policyPermissions))
   throw new Error("manifest host_permissions and permission_origins differ");
 for (const list of [

@@ -46,14 +46,6 @@ export class ProviderRuntime {
       config.plugin_id,
       config.plugin_version,
     );
-    console.debug("[ContextPilot][LLM provider dispatch]", {
-      provider: config.label,
-      base_url: config.base_url,
-      wire_api: config.wire_api,
-      model: config.model,
-      message_count: input.messages.length,
-      tool_names: input.tools?.map((tool) => tool.function.name) ?? [],
-    });
     const result = await this.transport.send(config, resolved.adapter, {
       wire_api: config.wire_api,
       model: config.model,
@@ -62,10 +54,6 @@ export class ProviderRuntime {
       stream: options.onDelta !== undefined,
     });
     const response = await parseProviderBody(result.body, options.onDelta);
-    console.debug("[ContextPilot][LLM response raw]", {
-      status: result.status,
-      response: structuredClone(response),
-    });
     return parseChatResponse(response);
   }
 

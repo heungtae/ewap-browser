@@ -18,7 +18,7 @@ type Dependencies = {
 };
 
 const sensitiveDiagnosticKey =
-  /(?:api[_-]?key|authorization|cookie|password|secret|token)/i;
+  /(?:api[_-]?key|authorization|cookie|password|secret|token|url|endpoint|href)/i;
 
 const safeDiagnosticValue = (value: unknown, depth = 0): unknown => {
   if (depth > 8) return "[TRUNCATED]";
@@ -26,6 +26,7 @@ const safeDiagnosticValue = (value: unknown, depth = 0): unknown => {
     return value
       .replace(/(Bearer|Basic)\s+[A-Za-z0-9._~+/-]+=*/gi, "$1 [REDACTED]")
       .replace(/(?:sk|sess)-[A-Za-z0-9_-]+/g, "[REDACTED]")
+      .replace(/https?:\/\/[^\s"'<>]+/gi, "[REDACTED_URL]")
       .slice(0, 8_000);
   if (typeof value === "number" || typeof value === "boolean" || value === null)
     return value;

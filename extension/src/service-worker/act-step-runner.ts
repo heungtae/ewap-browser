@@ -107,21 +107,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       dependencies.endSession(session);
       return fail("PROFILE_UNAVAILABLE");
     }
-    await dependencies.write(
-      active.tabId,
-      "[ContextPilot][LLM request final]",
-      {
-        step: 1,
-        messages: structuredClone(messages),
-        tools: structuredClone(tools),
-      },
-    );
     const response = await dependencies.provider.chat({ messages, tools });
-    await dependencies.write(
-      active.tabId,
-      "[ContextPilot][LLM response final]",
-      { step: 1, message: structuredClone(response) },
-    );
     if (response.tool_calls.length === 0) {
       if (!response.content) return fail("PROVIDER_UNAVAILABLE");
       dependencies.coordinator.runs.terminal(run.id, "VERIFIED");

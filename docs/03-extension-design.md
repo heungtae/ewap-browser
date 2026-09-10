@@ -4,20 +4,20 @@
 
 Extension은 EWAP Browser execution plane이다. 아래 port 이름은 책임을 설명하는 개념이며 동일 이름의 class 존재나 배포 완료를 뜻하지 않는다.
 
-| Port | 현재 상태 | Target Browser 책임 |
-| --- | --- | --- |
-| Profile Loader / Resolver | Partial: HTTPS POST + compact ES256, memory replay | shared resource/Platform release mapping, distribution/cache/current trust |
-| Enterprise Policy Client | Partial: 일부 Act의 managed ALLOW/DENY | authenticated policy/approval, dispatch와 재개 시 enforcement |
-| Governed MCP Client | Partial: direct proprietary Business HTTP | Gateway auth와 release tool allow-list. Registry discovery와 serverRef 관리/승인은 Platform 소유 |
-| Audit / Telemetry Client | Partial: optional policy ALLOW POST | event coverage, authenticated receipt, delivery failure 처리 |
-| Managed Configuration Adapter | Partial: managed read 코드, manifest managed_schema 없음 | 필수 조직/environment/trust configuration과 identity 연결 |
-| Native Accessibility Adapter | Planned | 필요성이 확정되면 DOM/ARIA projection과 구분된 AX 관찰 adapter |
+| Port                          | 현재 상태                                          | Target Browser 책임                                                                              |
+| ----------------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Profile Loader / Resolver     | Partial: HTTPS POST + compact ES256, memory replay | shared resource/Platform release mapping, distribution/cache/current trust                       |
+| Enterprise Policy Client      | Partial: 일부 Act의 managed ALLOW/DENY             | authenticated policy/approval, dispatch와 재개 시 enforcement                                    |
+| Governed MCP Client           | Partial: direct proprietary Business HTTP          | Gateway auth와 release tool allow-list. Registry discovery와 serverRef 관리/승인은 Platform 소유 |
+| Audit / Telemetry Client      | Partial: optional policy ALLOW POST                | event coverage, authenticated receipt, delivery failure 처리                                     |
+| Managed Configuration Adapter | Partial: managed read 코드와 manifest schema       | 필수 조직/environment/trust configuration과 verified identity 연결                               |
+| Native Accessibility Adapter  | Planned                                            | 필요성이 확정되면 DOM/ARIA projection과 구분된 AX 관찰 adapter                                   |
 
 [platform-alignment](platform-alignment.md)와 [22번](22-page-profile-provider-design.md)은 현재/목표 diagram 및 cache/signature 차이를 제공한다. Browser에 Registry 관리자, signer, Change Detector/Impact Analyzer를 추가하지 않는다. Profile·Policy·MCP 장애 시 모든 write가 차단된다는 기존 주장은 목표다. 현재 generic fallback과 PDP 호출 범위는 [02번](02-security-policy.md)에 명시한다.
 
 ## 1. 모듈
 
-``` text
+```text
 extension/
   manifest.json
   src/service-worker/  # run coordinator, permission gate, provider host/transport
@@ -48,36 +48,36 @@ message로 전달하지 않고 `chrome.storage.local` 경계에서 읽는다.
 
 ## 2. Manifest
 
--   Chrome MV3 service worker와 Side Panel을 사용한다.
--   페이지 automation이 필요하므로 content script와 host permission은
-    사용자가 설치 시 승인한다.
--   `storage`, `sidePanel`, `activeTab`, `debugger`, `tabs`를 제품
-    기능에 필요한 기본 권한으로 선언한다. `tabs`는 [19번
-    문서](19-tab-scoped-chat-session-design.md)의 tab thread lifecycle과
-    URL stale 처리를 위한 것이며 manifest snapshot review를 거쳤다.
-    `scripting`은 현재 optional permission이다. `webNavigation`, `downloads`,
-    `alarms`는 현재 manifest에 없으며 요구가 생길 때 별도 review한다. PageScope 감지는
-    `DOCUMENT_REGISTER`, `PAGE_SCOPE_REGISTER`, URL 변화로 충족하므로
-    `webNavigation`은 보류한다.
--   일반 웹 UI를 지원하므로 host permission과 content script는
-    `<all_urls>`를 사용한다. 브라우저 제한 페이지(`chrome://`, Web Store
-    등)는 Chrome이 주입을 차단한다. service worker는 current active
-    tab의 `http(s)` origin과 capability × host gate를 다시 확인하고,
-    provider egress와 Profile Resolver 허용 origin은 별도 allowlist로
-    유지한다.
--   `offscreen`은 MV3 Service Worker의 localhost/PNA provider POST
-    프록시를 위해 선언한다. `privateNetworkAccess`는 Chrome 확장
-    manifest permission이 아니므로 선언하지 않는다. host permission에는
-    `<all_urls>`와 함께 `http://localhost/*`, `http://127.0.0.1/*`를
-    명시한다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest
-    권한이 아니다.
+- Chrome MV3 service worker와 Side Panel을 사용한다.
+- 페이지 automation이 필요하므로 content script와 host permission은
+  사용자가 설치 시 승인한다.
+- `storage`, `sidePanel`, `activeTab`, `debugger`, `tabs`를 제품
+  기능에 필요한 기본 권한으로 선언한다. `tabs`는 [19번
+  문서](19-tab-scoped-chat-session-design.md)의 tab thread lifecycle과
+  URL stale 처리를 위한 것이며 manifest snapshot review를 거쳤다.
+  `scripting`은 현재 optional permission이다. `webNavigation`, `downloads`,
+  `alarms`는 현재 manifest에 없으며 요구가 생길 때 별도 review한다. PageScope 감지는
+  `DOCUMENT_REGISTER`, `PAGE_SCOPE_REGISTER`, URL 변화로 충족하므로
+  `webNavigation`은 보류한다.
+- 일반 웹 UI를 지원하므로 host permission과 content script는
+  `<all_urls>`를 사용한다. 브라우저 제한 페이지(`chrome://`, Web Store
+  등)는 Chrome이 주입을 차단한다. service worker는 current active
+  tab의 `http(s)` origin과 capability × host gate를 다시 확인하고,
+  provider egress와 Profile Resolver 허용 origin은 별도 allowlist로
+  유지한다.
+- `offscreen`은 MV3 Service Worker의 localhost/PNA provider POST
+  프록시를 위해 선언한다. `privateNetworkAccess`는 Chrome 확장
+  manifest permission이 아니므로 선언하지 않는다. host permission에는
+  `<all_urls>`와 함께 `http://localhost/*`, `http://127.0.0.1/*`를
+  명시한다. 외부 Chrome E2E의 remote-debugging port는 제품 manifest
+  권한이 아니다.
 
 ## 3. 사용자 설정 저장소
 
 Settings와 service worker는 `chrome.storage.local`을 사용한다. content
 script는 storage를 직접 읽지 않는다.
 
-``` json
+```json
 {
   "providers": {
     "local": {
