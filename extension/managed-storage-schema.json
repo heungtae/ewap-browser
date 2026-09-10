@@ -1,11 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": false,
   "properties": {
     "enterprise_policy": {
       "type": "object",
-      "additionalProperties": false,
       "required": ["schema_version", "mode"],
       "properties": {
         "schema_version": { "type": "integer", "enum": [1] },
@@ -18,7 +15,6 @@
     },
     "enterprise_identity": {
       "type": "object",
-      "additionalProperties": false,
       "required": ["organization_id", "user_id", "device_id"],
       "properties": {
         "organization_id": {
@@ -31,7 +27,6 @@
     },
     "runtime_evidence": {
       "type": "object",
-      "additionalProperties": false,
       "required": ["schema_version", "endpoint"],
       "properties": {
         "schema_version": { "type": "integer", "enum": [1] },

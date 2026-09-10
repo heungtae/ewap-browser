@@ -41,11 +41,30 @@ if (!manifest.options_ui?.page)
   throw new Error("provider Settings page is missing");
 if (manifest.storage?.managed_schema !== "managed-storage-schema.json")
   throw new Error("manifest managed storage schema is missing");
-JSON.parse(
+const managedSchema = JSON.parse(
   await readFile(
     new URL("../extension/managed-storage-schema.json", import.meta.url),
   ),
 );
+// Chrome managed storage accepts a subset of JSON Schema, not draft-07.
+// In particular, additionalProperties must be a schema and is forbidden
+// entirely at the root. JSON.parse alone cannot detect these load errors.
+const validateManagedSchema = (schema, root = false) => {
+  if (!schema || typeof schema !== "object" || Array.isArray(schema))
+    throw new Error("managed storage schema must be an object");
+  if (root && (schema.type !== "object" || "additionalProperties" in schema))
+    throw new Error(
+      "managed storage root must be object without additionalProperties",
+    );
+  if (!(typeof schema.$ref === "string" || typeof schema.type === "string"))
+    throw new Error("managed storage schema requires a type or $ref");
+  for (const child of Object.values(schema.properties ?? {}))
+    validateManagedSchema(child);
+  if ("additionalProperties" in schema)
+    validateManagedSchema(schema.additionalProperties);
+  if ("items" in schema) validateManagedSchema(schema.items);
+};
+validateManagedSchema(managedSchema, true);
 if (JSON.stringify(hostPermissions) !== JSON.stringify(policyPermissions))
   throw new Error("manifest host_permissions and permission_origins differ");
 for (const list of [
