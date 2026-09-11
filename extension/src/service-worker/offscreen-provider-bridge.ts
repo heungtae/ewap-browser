@@ -9,6 +9,10 @@ type ProviderStream = {
 };
 
 const providerPortPrefix = "contextpilot-provider:";
+const providerReadyCheckKind = "OFFSCREEN_PROVIDER_READY_CHECK";
+const providerReadyKind = "OFFSCREEN_PROVIDER_READY";
+const offscreenReadyAttempts = 20;
+const offscreenReadyRetryMs = 50;
 
 export const createOffscreenProviderBridge = (
   chromeApi: BrowserChromeApi | undefined,
@@ -32,26 +36,51 @@ export const createOffscreenProviderBridge = (
     const offscreen = chromeApi?.offscreen;
     if (!offscreen || !chromeApi)
       throw new ContractError("PROVIDER_UNAVAILABLE");
-    if (offscreen.hasDocument && (await offscreen.hasDocument())) return;
+    let documentExists =
+      offscreen.hasDocument && (await offscreen.hasDocument());
     const offscreenUrl = chromeApi.runtime.getURL("offscreen/index.html");
-    if (chromeApi.runtime.getContexts) {
+    if (!documentExists && chromeApi.runtime.getContexts) {
       const contexts = await chromeApi.runtime.getContexts({
         contextTypes: ["OFFSCREEN_DOCUMENT"],
         documentUrls: [offscreenUrl],
       });
-      if (contexts.length > 0) return;
+      documentExists = contexts.length > 0;
     }
-    offscreenReady ??= offscreen
-      .createDocument({
-        url: "offscreen/index.html",
-        reasons: ["BLOBS"],
-        justification: "Proxy provider requests from a document context.",
-      })
-      .catch((error: unknown) => {
-        offscreenReady = undefined;
-        throw error;
+    if (!documentExists) {
+      offscreenReady ??= offscreen
+        .createDocument({
+          url: "offscreen/index.html",
+          reasons: ["BLOBS"],
+          justification: "Proxy provider requests from a document context.",
+        })
+        .catch((error: unknown) => {
+          offscreenReady = undefined;
+          throw error;
+        });
+      await offscreenReady;
+    }
+    for (let attempt = 0; attempt < offscreenReadyAttempts; attempt += 1) {
+      try {
+        const response = await chromeApi.runtime.sendMessage({
+          kind: providerReadyCheckKind,
+        });
+        if (
+          typeof response === "object" &&
+          response !== null &&
+          (response as { kind?: unknown }).kind === providerReadyKind
+        )
+          return;
+      } catch {
+        // The document can exist before its module has registered a listener.
+      }
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, offscreenReadyRetryMs);
       });
-    await offscreenReady;
+    }
+    throw new ContractError(
+      "PROVIDER_UNAVAILABLE",
+      "offscreen provider proxy did not become ready",
+    );
   };
 
   const handlePort = (port: BrowserPort): boolean => {

@@ -6,6 +6,7 @@ type FetchMessage = {
   headers: Record<string, string>;
   body?: string;
 };
+type ReadyCheckMessage = { kind: "OFFSCREEN_PROVIDER_READY_CHECK" };
 type Runtime = {
   id: string;
   connect(info: { name: string }): {
@@ -37,6 +38,15 @@ const safeFailure = (code: string, detail?: string) => ({
 });
 
 runtime?.onMessage.addListener((message, sender, respond) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as Partial<ReadyCheckMessage>).kind ===
+      "OFFSCREEN_PROVIDER_READY_CHECK"
+  ) {
+    if (sender.id === runtime.id) respond({ kind: "OFFSCREEN_PROVIDER_READY" });
+    return;
+  }
   if (
     typeof message !== "object" ||
     message === null ||

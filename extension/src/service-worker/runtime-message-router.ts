@@ -31,7 +31,11 @@ type RouterDependencies = {
 const isOffscreenMessage = (message: unknown): boolean =>
   typeof message === "object" &&
   message !== null &&
-  ["OFFSCREEN_FETCH", "OFFSCREEN_PROVIDER_REQUEST"].includes(
+  [
+    "OFFSCREEN_FETCH",
+    "OFFSCREEN_PROVIDER_REQUEST",
+    "OFFSCREEN_PROVIDER_READY_CHECK",
+  ].includes(
     (message as { kind?: unknown }).kind as string,
   );
 
