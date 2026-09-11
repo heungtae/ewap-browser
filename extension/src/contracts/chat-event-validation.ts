@@ -1,5 +1,9 @@
 import type { Outcome } from "./core-types.js";
-import type { ChatActionView, ChatMode } from "./chat-event-types.js";
+import type {
+  ActivityStage,
+  ChatActionView,
+  ChatMode,
+} from "./chat-event-types.js";
 import { fail, isPlainObject, opaque, string } from "../security/validation.js";
 
 export const outcomes = new Set<Outcome>([
@@ -9,6 +13,16 @@ export const outcomes = new Set<Outcome>([
   "CANCELLED",
 ]);
 export const modes = new Set<ChatMode>(["ask", "act"]);
+export const activityStages = new Set<ActivityStage>([
+  "PREPARING_PAGE",
+  "RESOLVING_PROFILE",
+  "DISCOVERING_WORKFLOWS",
+  "CONTACTING_PROVIDER",
+  "AWAITING_REVIEW",
+  "SELECTION_REQUIRED",
+  "COMPLETED",
+  "FAILED",
+]);
 const positiveInteger = (value: unknown): value is number =>
   typeof value === "number" && Number.isInteger(value) && value >= 1;
 export const allowedEventKeys = [
@@ -20,6 +34,7 @@ export const allowedEventKeys = [
   "sequence",
   "mode",
   "permission_mode",
+  "stage",
   "text",
   "tool_use_id",
   "tool",

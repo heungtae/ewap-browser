@@ -35,6 +35,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       mode: "act",
       permission_mode: dependencies.preferences().permission_mode,
     });
+    dependencies.publish(run.id, {
+      type: "activity_started",
+      stage: "PREPARING_PAGE",
+    });
     let targetRefId: string | undefined;
     if (session.workflow) {
       const candidate = workflowDefinitions(
@@ -107,6 +111,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       dependencies.endSession(session);
       return fail("PROFILE_UNAVAILABLE");
     }
+    dependencies.publish(run.id, {
+      type: "activity_progress",
+      stage: "CONTACTING_PROVIDER",
+    });
     const response = await dependencies.provider.chat({ messages, tools });
     if (response.tool_calls.length === 0) {
       if (!response.content) return fail("PROVIDER_UNAVAILABLE");
@@ -114,6 +122,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       dependencies.publish(run.id, {
         type: "assistant_delta",
         text: response.content,
+      });
+      dependencies.publish(run.id, {
+        type: "activity_finished",
+        stage: "COMPLETED",
       });
       dependencies.publish(run.id, {
         type: "run_terminal",
@@ -148,6 +160,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     dependencies.publish(run.id, {
       type: "action_review_required",
       action: actionView(session, proposal),
+    });
+    dependencies.publish(run.id, {
+      type: "activity_finished",
+      stage: "AWAITING_REVIEW",
     });
     return actionReview(session, proposal);
   };

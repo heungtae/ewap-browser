@@ -7,6 +7,7 @@ import { renderMarkdown } from "./markdown.js";
 import { failureHelp, timelineToolLabel, userMessage } from "./panel.js";
 import { redactForChat } from "../security/chat-redaction.js";
 import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
+import type { ActivityStage } from "../contracts/chat-event-types.js";
 
 type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
@@ -70,6 +71,7 @@ const streamingMessages = new Map<string, HTMLElement>();
 const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
+const activities = new Map<string, HTMLElement>();
 const reviewItems = new Map<string, HTMLElement>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
@@ -140,7 +142,8 @@ const card = (
     | "value"
     | "confirmation"
     | "error"
-    | "page-scope",
+    | "page-scope"
+    | "activity",
   title: string,
   detail: string,
 ): HTMLElement => {
@@ -224,6 +227,7 @@ const clearConversation = (focusInput = false): void => {
   pendingDeltas.clear();
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
+  activities.clear();
   reviewItems.clear();
   skipNextLiveUserMessage = false;
   setRunActive(false);
@@ -760,6 +764,23 @@ const flushDeltas = (): void => {
   }
   pendingDeltas.clear();
 };
+const activityLabel = (stage: ActivityStage): string =>
+  ({
+    PREPARING_PAGE: "요청을 접수하고 현재 페이지를 확인하는 중입니다.",
+    RESOLVING_PROFILE: "페이지 작업 정책을 확인하는 중입니다.",
+    DISCOVERING_WORKFLOWS: "실행 가능한 절차를 찾는 중입니다.",
+    CONTACTING_PROVIDER: "실행 계획 또는 응답을 생성하는 중입니다.",
+    AWAITING_REVIEW: "실행 전 확인을 기다리고 있습니다.",
+    SELECTION_REQUIRED: "실행할 절차를 선택해 주세요.",
+    COMPLETED: "준비를 완료했습니다.",
+    FAILED: "준비를 완료하지 못했습니다.",
+  })[stage];
+const activityState = (stage: ActivityStage, finished: boolean): string => {
+  if (!finished) return "진행 중";
+  if (stage === "AWAITING_REVIEW" || stage === "SELECTION_REQUIRED")
+    return "사용자 대기";
+  return stage === "FAILED" ? "실패" : "완료";
+};
 const applyChatEvent = (raw: unknown): void => {
   let event: ChatEvent;
   try {
@@ -824,6 +845,39 @@ const applyChatEvent = (raw: unknown): void => {
     }
     setRunActive(true);
     setStatus("응답을 생성하는 중입니다.");
+    return;
+  }
+  if (
+    event.type === "activity_started" ||
+    event.type === "activity_progress" ||
+    event.type === "activity_finished"
+  ) {
+    const existing = activities.get(event.run_id);
+    const detail = activityLabel(event.stage);
+    if (existing) {
+      const body = existing.querySelector<HTMLElement>(".event-detail");
+      if (body) body.textContent = detail;
+      const state = existing.querySelector<HTMLElement>(".tool-state");
+      if (state)
+        state.textContent = activityState(
+          event.stage,
+          event.type === "activity_finished",
+        );
+    } else {
+      const item = card("activity", "진행 상태", detail);
+      const state = item.querySelector<HTMLElement>(".tool-state");
+      if (state)
+        state.textContent = activityState(
+          event.stage,
+          event.type === "activity_finished",
+        );
+      activities.set(event.run_id, item);
+      append(item);
+    }
+    if (event.type === "activity_finished") {
+      setStatus(detail);
+      if (event.stage === "FAILED") setRunActive(false);
+    }
     return;
   }
   if (event.type === "assistant_delta") {

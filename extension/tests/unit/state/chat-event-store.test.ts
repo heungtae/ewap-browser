@@ -52,6 +52,32 @@ describe("tab chat session store", () => {
     ).toMatchObject({ tab_id: 7, run_id: "run-abcdefghijklmnop", sequence: 1 });
   });
 
+  it("persists safe activity progress so a reconnected panel can restore it", () => {
+    const store = new TabChatSessionStore();
+    store.bindRun("activity-abcdefghijkl", 7, scope);
+    store.append("activity-abcdefghijkl", {
+      type: "activity_started",
+      stage: "PREPARING_PAGE",
+    });
+    store.append("activity-abcdefghijkl", {
+      type: "activity_progress",
+      stage: "RESOLVING_PROFILE",
+    });
+    store.append("activity-abcdefghijkl", {
+      type: "activity_finished",
+      stage: "SELECTION_REQUIRED",
+    });
+
+    expect(store.recoverable(7)).toMatchObject([
+      { type: "activity_started", stage: "PREPARING_PAGE" },
+      { type: "activity_progress", stage: "RESOLVING_PROFILE" },
+      { type: "activity_finished", stage: "SELECTION_REQUIRED" },
+    ]);
+    const restored = new TabChatSessionStore();
+    restored.restore(store.snapshot());
+    expect(restored.recoverable(7)).toHaveLength(3);
+  });
+
   it("resyncs the tab-thread timeline when a second run starts after it", () => {
     const store = new TabChatSessionStore();
     store.bindRun("run-first-abcdefghijkl", 1, scope);

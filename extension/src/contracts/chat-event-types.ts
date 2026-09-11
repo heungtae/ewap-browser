@@ -1,6 +1,15 @@
 import type { Outcome } from "./core-types.js";
 
 export type ChatMode = "ask" | "act";
+export type ActivityStage =
+  | "PREPARING_PAGE"
+  | "RESOLVING_PROFILE"
+  | "DISCOVERING_WORKFLOWS"
+  | "CONTACTING_PROVIDER"
+  | "AWAITING_REVIEW"
+  | "SELECTION_REQUIRED"
+  | "COMPLETED"
+  | "FAILED";
 export type SafeToolResult = {
   outcome: Outcome;
   summary: string;
@@ -21,6 +30,9 @@ export type ChatEventPayload =
   | { type: "user_message"; text: string }
   | { type: "page_scope_changed" }
   | { type: "run_started"; mode: ChatMode; permission_mode: string }
+  | { type: "activity_started"; stage: ActivityStage }
+  | { type: "activity_progress"; stage: ActivityStage }
+  | { type: "activity_finished"; stage: ActivityStage }
   | { type: "assistant_delta"; text: string }
   | { type: "tool_started"; tool_use_id: string; tool: string; summary: string }
   | { type: "tool_progress"; tool_use_id: string; summary: string }

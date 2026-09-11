@@ -1,8 +1,9 @@
 import { fail, isPlainObject, opaque, string } from "../security/validation.js";
 import type { Outcome } from "./core-types.js";
-import type { ChatEvent, ChatMode } from "./chat-event-types.js";
+import type { ActivityStage, ChatEvent, ChatMode } from "./chat-event-types.js";
 import {
   allowedEventKeys,
+  activityStages,
   modes,
   outcomes,
   validateActionView,
@@ -60,6 +61,22 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       type: "run_started",
       mode: value.mode as ChatMode,
       permission_mode: string(value.permission_mode, 64),
+    };
+  }
+  if (
+    value.type === "activity_started" ||
+    value.type === "activity_progress" ||
+    value.type === "activity_finished"
+  ) {
+    if (
+      typeof value.stage !== "string" ||
+      !activityStages.has(value.stage as ActivityStage)
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: value.type,
+      stage: value.stage as ActivityStage,
     };
   }
   if (value.type === "assistant_delta") {

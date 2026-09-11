@@ -37,11 +37,19 @@ export const createAskChatRunner =
       mode: "ask",
       permission_mode: dependencies.preferences().permission_mode,
     });
+    dependencies.publish(run.id, {
+      type: "activity_started",
+      stage: "PREPARING_PAGE",
+    });
     const modelSnapshot = dependencies.coordinator.modelSnapshot(
       run.id,
       active.snapshot,
     ).snapshot;
     const pageDigest = digestCanonical(active.snapshot);
+    dependencies.publish(run.id, {
+      type: "activity_progress",
+      stage: "RESOLVING_PROFILE",
+    });
     const profile = await dependencies
       .resolveProfile(active)
       .catch(() => undefined);
@@ -112,6 +120,10 @@ export const createAskChatRunner =
       };
       const response = await (async () => {
         try {
+          dependencies.publish(run.id, {
+            type: "activity_progress",
+            stage: "CONTACTING_PROVIDER",
+          });
           return await dependencies.provider.chat(
             { messages, tools },
             {
@@ -143,6 +155,10 @@ export const createAskChatRunner =
             type: "assistant_delta",
             text: response.content,
           });
+        dependencies.publish(run.id, {
+          type: "activity_finished",
+          stage: "COMPLETED",
+        });
         dependencies.publish(run.id, {
           type: "run_terminal",
           outcome: "VERIFIED",

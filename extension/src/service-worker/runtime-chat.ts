@@ -1,4 +1,5 @@
 import { actionView } from "./act-review-presentation.js";
+import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { createActChatStart } from "./act-chat-start.js";
 import { createActProposalExecutor } from "./act-proposal-executor.js";
 import type { ActSession } from "./act-session-types.js";
@@ -39,6 +40,23 @@ import {
 } from "./workflow-selection-codec.js";
 
 export const actSessions = new Map<string, ActSession>();
+const startActivity = (
+  active: Awaited<ReturnType<typeof readActiveSnapshot>>,
+): string => {
+  const id = opaqueId();
+  chatEvents.bindRun(id, active.tabId, chatPageScope(active));
+  chatRunLifecycle.publish(id, {
+    type: "activity_started",
+    stage: "PREPARING_PAGE",
+  });
+  return id;
+};
+const progressActivity = (id: string, stage: ActivityStage): void =>
+  chatRunLifecycle.publish(id, { type: "activity_progress", stage });
+const finishActivity = (
+  id: string,
+  stage: "SELECTION_REQUIRED" | "COMPLETED" | "FAILED",
+): void => chatRunLifecycle.publish(id, { type: "activity_finished", stage });
 export const activeWorkflowRecordings = new Map<
   string,
   { tabId: number; documentEpoch: string; origin: string; path: string }
@@ -107,6 +125,9 @@ export const runActChat = createActChatStart({
   selections: workflowSelections.values,
   persistSelections: workflowSelections.persist,
   sessions: actSessions,
+  startActivity,
+  progressActivity,
+  finishActivity,
   runStep: actStepRunner.runStep,
 });
 const proposalExecutor = createActProposalExecutor({
