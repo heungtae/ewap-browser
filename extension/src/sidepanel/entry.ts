@@ -71,7 +71,7 @@ const streamingMessages = new Map<string, HTMLElement>();
 const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
-const activities = new Map<string, HTMLElement>();
+let activityCard: HTMLElement | undefined;
 const reviewItems = new Map<string, HTMLElement>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
@@ -227,7 +227,7 @@ const clearConversation = (focusInput = false): void => {
   pendingDeltas.clear();
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
-  activities.clear();
+  activityCard = undefined;
   reviewItems.clear();
   skipNextLiveUserMessage = false;
   setRunActive(false);
@@ -852,7 +852,7 @@ const applyChatEvent = (raw: unknown): void => {
     event.type === "activity_progress" ||
     event.type === "activity_finished"
   ) {
-    const existing = activities.get(event.run_id);
+    const existing = activityCard;
     const detail = activityLabel(event.stage);
     if (existing) {
       const body = existing.querySelector<HTMLElement>(".event-detail");
@@ -871,7 +871,7 @@ const applyChatEvent = (raw: unknown): void => {
           event.stage,
           event.type === "activity_finished",
         );
-      activities.set(event.run_id, item);
+      activityCard = item;
       append(item);
     }
     if (event.type === "activity_finished") {

@@ -68,5 +68,5 @@ export const createPanelPortLifecycle = (dependencies: Dependencies) => {
     if (unboundPanelPorts.size === 1)
       [...unboundPanelPorts][0]?.postMessage?.({ kind: "CHAT_THREAD_CHANGED" });
   };
-  return { notifyTabActivation, panelPorts, register };
+  return { notifyTabActivation, panelPorts, register, unboundPanelPorts };
 };

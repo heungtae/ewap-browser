@@ -7,7 +7,7 @@ import type { Run } from "../state/run-coordinator.js";
 import type { TabChatSessionStore } from "../state/tab-chat-session-store.js";
 import type { VisionCapture } from "./vision-capture.js";
 import { ChatPersistence } from "./chat-persistence.js";
-import type { BrowserChromeApi } from "./browser-api.js";
+import type { BrowserChromeApi, BrowserPort } from "./browser-api.js";
 import type { ServiceCoordinator } from "./coordinator.js";
 import type { PanelPort } from "./panel-port-lifecycle.js";
 
@@ -15,6 +15,7 @@ type Dependencies = {
   chrome: BrowserChromeApi | undefined;
   events: TabChatSessionStore;
   panels: Map<string, PanelPort>;
+  unboundPanels: Set<BrowserPort>;
   captures: Map<string, VisionCapture>;
   coordinator: ServiceCoordinator;
   bindings: Map<string, SessionBinding>;
@@ -60,6 +61,11 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
         })
         .catch(() => dependencies.panels.delete(documentId));
     }
+    if (dependencies.unboundPanels.size === 1)
+      [...dependencies.unboundPanels][0]?.postMessage?.({
+        kind: "CHAT_EVENT",
+        event,
+      });
   };
   const publishCancelled = (run: Run | undefined): void => {
     if (run) releaseVision(run.id);

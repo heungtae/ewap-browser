@@ -9,6 +9,20 @@ import { createAskToolExecutor } from "./ask-tool-executor.js";
 import { businessMcpTool } from "./business-mcp-tools.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
 
+const readSummary = (tool: string): string =>
+  ({
+    read_semantic_projection:
+      "현재 페이지의 구조와 상호작용 요소를 읽는 중입니다.",
+    read_page: "페이지의 구조와 표시 요소를 읽는 중입니다.",
+    get_page_text: "현재 화면에 표시된 텍스트를 읽는 중입니다.",
+    find: "페이지에서 관련 요소를 찾는 중입니다.",
+    screenshot: "현재 화면의 시각 정보를 확인하는 중입니다.",
+    zoom: "화면 일부의 시각 정보를 확인하는 중입니다.",
+    tabs_context: "현재 탭 정보를 확인하는 중입니다.",
+    read_batch: "페이지의 여러 정보 항목을 읽는 중입니다.",
+    call_page_business_tool: "페이지 업무 정보를 확인하는 중입니다.",
+  })[tool] ?? "페이지 정보를 확인하는 중입니다.";
+
 export const createAskChatRunner =
   (dependencies: AskChatDependencies) =>
   async (payload: unknown): Promise<Record<string, unknown>> => {
@@ -177,7 +191,7 @@ export const createAskChatRunner =
           type: "tool_started",
           tool_use_id: call.id,
           tool: call.name,
-          summary: "페이지 정보를 확인하는 중입니다.",
+          summary: readSummary(call.name),
         });
         const result = await executor.execute(call);
         dependencies.publish(run.id, {

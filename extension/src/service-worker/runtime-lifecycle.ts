@@ -23,7 +23,7 @@ export const panelPortLifecycle = createPanelPortLifecycle({
   chrome: chromeApi,
   handleProvider: (port) => providerBridge.handlePort(port),
 });
-export const { panelPorts } = panelPortLifecycle;
+export const { panelPorts, unboundPanelPorts } = panelPortLifecycle;
 panelPortLifecycle.register();
 export const providerRuntime =
   chromeApi?.storage.local.get && chromeApi.storage.local.set
@@ -43,6 +43,7 @@ export const chatRunLifecycle = createChatRunLifecycle({
   chrome: chromeApi,
   events: chatEvents,
   panels: panelPorts,
+  unboundPanels: unboundPanelPorts,
   captures: visionCaptures,
   coordinator,
   bindings: localBindings,
