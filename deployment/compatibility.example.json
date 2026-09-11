@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "extension_version": "0.1.31",
+  "extension_version": "0.1.32",
   "host_version": "0.1.0",
   "fingerprint_alg": "semantic-projection-fp-v1",
   "profile_key_ids": [],

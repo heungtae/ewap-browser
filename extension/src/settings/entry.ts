@@ -239,6 +239,10 @@ const saveProvider = async (): Promise<{
     throw new Error("HTTP 또는 HTTPS endpoint만 허용됩니다.");
   const apiKey = field("api_key").value;
   const apiKeyHeader = field("api_key_header").value;
+  const model = field("model").value.trim();
+  if (!model) throw new Error("모델명을 입력해 주세요.");
+  if (apiKeyHeader !== "none" && !apiKey)
+    throw new Error("선택한 인증 방식에는 API key가 필요합니다.");
   let headers: Array<{ name: string; value: string }>;
   try {
     headers = readHeaders();
@@ -253,7 +257,7 @@ const saveProvider = async (): Promise<{
     wire_api: (ollamaEndpoint ? "chat_completions" : "responses") as
       | "chat_completions"
       | "responses",
-    model: field("model").value.trim(),
+    model,
     api_key: apiKey,
     api_key_header: apiKeyHeader,
     headers,

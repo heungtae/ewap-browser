@@ -1,6 +1,10 @@
 import { ContractError, fail, isPlainObject } from "../security/validation.js";
 import { parseProviderBody } from "./provider-body.js";
 import { parseChatResponse } from "./provider-response.js";
+import {
+  providerHeaders,
+  validateProviderBaseUrl,
+} from "./provider-request.js";
 import type {
   NormalizedProviderRequest,
   ProviderAdapter,
@@ -47,6 +51,29 @@ const safeDiagnosticValue = (value: unknown, depth = 0): unknown => {
   );
 };
 
+const dispatchDiagnostics = (
+  config: ProviderConfig,
+  adapter: ProviderAdapter,
+  request: NormalizedProviderRequest,
+): Record<string, unknown> => {
+  const base = validateProviderBaseUrl(
+    config.base_url,
+    config.private_network_opt_in,
+  );
+  const plan = adapter.plan(request);
+  const endpoint = new URL(
+    `${base.pathname.replace(/\/$/, "")}${plan.path}`,
+    base,
+  );
+  const headers = providerHeaders(config);
+  return {
+    method: "POST",
+    endpoint_path: endpoint.pathname,
+    headers: [...headers.keys()].sort(),
+    body: safeDiagnosticValue(plan.body),
+  };
+};
+
 export const testProvider = async (
   payload: unknown,
   dependencies: Dependencies,
@@ -71,13 +98,25 @@ export const testProvider = async (
   const diagnostics = includeMessages
     ? { request: safeDiagnosticValue(request) }
     : undefined;
+  let phase = "configuration";
   try {
     const config = await dependencies.resolveConfig(id as string);
+    phase = "request planning";
+    const adapter = dependencies.resolveAdapter(config);
+    const dispatch = includeMessages
+      ? dispatchDiagnostics(
+          config,
+          adapter,
+          request as NormalizedProviderRequest,
+        )
+      : undefined;
+    phase = "network dispatch";
     const result = await dependencies.send(
       config,
-      dependencies.resolveAdapter(config),
+      adapter,
       request as unknown as NormalizedProviderRequest,
     );
+    phase = "response parsing";
     const response = await parseProviderBody(result.body);
     parseChatResponse(response);
     return {
@@ -87,6 +126,7 @@ export const testProvider = async (
         ? {
             diagnostics: {
               ...diagnostics,
+              ...(dispatch ? { dispatch } : {}),
               response: safeDiagnosticValue(response),
             },
           }
@@ -104,6 +144,7 @@ export const testProvider = async (
               ...diagnostics,
               error: {
                 code: error.code,
+                phase,
                 ...(error.detail ? { detail: error.detail } : {}),
               },
             },

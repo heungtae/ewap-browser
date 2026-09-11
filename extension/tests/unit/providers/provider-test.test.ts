@@ -69,6 +69,16 @@ describe("provider connection test", () => {
         status: 200,
         diagnostics: {
           request: testRequest.request,
+          dispatch: {
+            method: "POST",
+            endpoint_path: "/v1/chat/completions",
+            headers: ["authorization", "content-type"],
+            body: {
+              model: "fixture",
+              messages: [{ role: "user", content: "connection test" }],
+              stream: false,
+            },
+          },
           response: {
             choices: [
               {

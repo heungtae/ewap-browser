@@ -45,19 +45,31 @@ export const providerHeaders = (config: ProviderConfig): Headers => {
   const seen = new Set<string>();
   for (const header of config.headers) {
     const name = header.name.trim().toLowerCase();
-    if (
-      !/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name) ||
-      reservedHeaders.has(name) ||
-      seen.has(name)
-    )
-      fail("INVALID_ARGUMENT");
+    if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name))
+      fail("INVALID_ARGUMENT", "custom header name is invalid");
+    if (reservedHeaders.has(name))
+      fail(
+        "INVALID_ARGUMENT",
+        `custom header ${header.name} is managed by the authentication setting`,
+      );
+    if (seen.has(name))
+      fail("INVALID_ARGUMENT", `custom header ${header.name} is duplicated`);
     seen.add(name);
     headers.set(header.name, headerValue(header.value));
   }
   if (config.api_key_header === "none") {
-    if (config.api_key) fail("INVALID_ARGUMENT");
+    if (config.api_key)
+      fail(
+        "INVALID_ARGUMENT",
+        "API key must be empty when authentication is none",
+      );
   } else {
-    const key = headerValue(config.api_key);
+    const key = config.api_key
+      ? headerValue(config.api_key)
+      : fail(
+          "INVALID_ARGUMENT",
+          "API key is required by the authentication setting",
+        );
     if (config.api_key_header === "authorization_bearer")
       headers.set("Authorization", `Bearer ${key}`);
     else headers.set(config.api_key_header, key);
