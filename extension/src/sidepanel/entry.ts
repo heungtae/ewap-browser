@@ -46,6 +46,7 @@ const chatScroll = byId<HTMLElement>("chat-scroll");
 const emptyState = byId<HTMLElement>("empty-state");
 const suggestedPrompt = byId<HTMLButtonElement>("suggested-prompt");
 const status = byId<HTMLElement>("status");
+const activityStatus = byId<HTMLOutputElement>("activity-status");
 const send = byId<HTMLButtonElement>("chat-send");
 const modeAsk = byId<HTMLButtonElement>("mode-ask");
 const modeAct = byId<HTMLButtonElement>("mode-act");
@@ -71,7 +72,6 @@ const streamingMessages = new Map<string, HTMLElement>();
 const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
-let activityCard: HTMLElement | undefined;
 const reviewItems = new Map<string, HTMLElement>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
@@ -100,6 +100,11 @@ const appendAssistantText = (current: string, next: string): string =>
 
 const setStatus = (text: string): void => {
   if (status) status.textContent = text;
+};
+const setActivityStatus = (text?: string): void => {
+  if (!activityStatus) return;
+  activityStatus.hidden = !text;
+  activityStatus.textContent = text ?? "";
 };
 const openSettings = (): void => {
   if (!runtime) {
@@ -142,8 +147,7 @@ const card = (
     | "value"
     | "confirmation"
     | "error"
-    | "page-scope"
-    | "activity",
+    | "page-scope",
   title: string,
   detail: string,
 ): HTMLElement => {
@@ -227,7 +231,7 @@ const clearConversation = (focusInput = false): void => {
   pendingDeltas.clear();
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
-  activityCard = undefined;
+  setActivityStatus();
   reviewItems.clear();
   skipNextLiveUserMessage = false;
   setRunActive(false);
@@ -775,12 +779,6 @@ const activityLabel = (stage: ActivityStage): string =>
     COMPLETED: "준비를 완료했습니다.",
     FAILED: "준비를 완료하지 못했습니다.",
   })[stage];
-const activityState = (stage: ActivityStage, finished: boolean): string => {
-  if (!finished) return "진행 중";
-  if (stage === "AWAITING_REVIEW" || stage === "SELECTION_REQUIRED")
-    return "사용자 대기";
-  return stage === "FAILED" ? "실패" : "완료";
-};
 const applyChatEvent = (raw: unknown): void => {
   let event: ChatEvent;
   try {
@@ -852,30 +850,16 @@ const applyChatEvent = (raw: unknown): void => {
     event.type === "activity_progress" ||
     event.type === "activity_finished"
   ) {
-    const existing = activityCard;
     const detail = activityLabel(event.stage);
-    if (existing) {
-      const body = existing.querySelector<HTMLElement>(".event-detail");
-      if (body) body.textContent = detail;
-      const state = existing.querySelector<HTMLElement>(".tool-state");
-      if (state)
-        state.textContent = activityState(
-          event.stage,
-          event.type === "activity_finished",
-        );
-    } else {
-      const item = card("activity", "진행 상태", detail);
-      const state = item.querySelector<HTMLElement>(".tool-state");
-      if (state)
-        state.textContent = activityState(
-          event.stage,
-          event.type === "activity_finished",
-        );
-      activityCard = item;
-      append(item);
-    }
+    if (event.type !== "activity_finished") setActivityStatus(detail);
     if (event.type === "activity_finished") {
       setStatus(detail);
+      if (
+        event.stage === "AWAITING_REVIEW" ||
+        event.stage === "SELECTION_REQUIRED"
+      )
+        setActivityStatus(detail);
+      else setActivityStatus();
       if (event.stage === "FAILED") setRunActive(false);
     }
     return;
@@ -962,6 +946,7 @@ const applyChatEvent = (raw: unknown): void => {
         : "처리됨",
   );
   streamingMessages.delete(event.run_id);
+  setActivityStatus();
   if (runBanner) runBanner.hidden = true;
   setRunActive(false);
   if (event.outcome === "VERIFIED") setStatus("작업을 완료했습니다.");

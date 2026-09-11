@@ -314,6 +314,18 @@
         border-top: 1px solid var(--border);
         background: rgba(10, 15, 29, 0.93);
       }
+      .activity-status {
+        overflow: hidden;
+        padding: 7px 9px;
+        border: 1px solid #725d2f;
+        border-radius: 8px;
+        color: #ffe0a2;
+        background: #2d281d;
+        font-size: 11px;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       .mode-row,
       .composer-actions {
         display: flex;
@@ -773,6 +785,12 @@
         ></div>
       </section>
       <form class="composer" id="chat-form">
+        <output
+          class="activity-status"
+          id="activity-status"
+          aria-live="polite"
+          hidden
+        ></output>
         <div class="mode-row">
           <div class="mode-group" role="group" aria-label="작업 모드">
             <button
