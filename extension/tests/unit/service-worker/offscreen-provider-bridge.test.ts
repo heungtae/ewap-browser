@@ -38,7 +38,7 @@ describe("offscreen provider bridge", () => {
     const bridge = createOffscreenProviderBridge(chrome, () => "a".repeat(22));
 
     await expect(
-      bridge.fetch("http://localhost:11434/v1/models", { method: "GET" }),
+      bridge.fetch("https://provider.example/v1/models", { method: "GET" }),
     ).resolves.toMatchObject({ status: 200 });
 
     expect(created).toBe(true);
@@ -77,7 +77,7 @@ describe("offscreen provider bridge", () => {
     } as unknown as BrowserChromeApi;
     const bridge = createOffscreenProviderBridge(chrome, () => "a".repeat(22));
 
-    await bridge.fetch("http://localhost:11434/v1/models", { method: "GET" });
+    await bridge.fetch("https://provider.example/v1/models", { method: "GET" });
 
     expect(readinessChecks).toBe(2);
     expect(messages[2]).toMatchObject({ kind: "OFFSCREEN_FETCH" });

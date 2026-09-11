@@ -235,8 +235,8 @@ const saveProvider = async (): Promise<{
   }
   const ollamaEndpoint = parsed.port === "11434";
   const openAiEndpoint = parsed.hostname.toLowerCase() === "api.openai.com";
-  if (parsed.protocol !== "https:" && parsed.protocol !== "http:")
-    throw new Error("HTTP 또는 HTTPS endpoint만 허용됩니다.");
+  if (parsed.protocol !== "https:")
+    throw new Error("HTTPS endpoint만 허용됩니다.");
   const apiKey = field("api_key").value;
   const apiKeyHeader = field("api_key_header").value;
   const model = field("model").value.trim();

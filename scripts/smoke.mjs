@@ -9,8 +9,7 @@ if (
   !manifest.options_ui?.page ||
   !manifest.permissions?.includes("debugger") ||
   !manifest.permissions?.includes("offscreen") ||
-  !manifest.host_permissions?.includes("http://localhost/*") ||
-  !manifest.host_permissions?.includes("http://127.0.0.1/*")
+  JSON.stringify(manifest.host_permissions) !== JSON.stringify(["https://*/*"])
 )
   throw new Error("invalid MV3 smoke manifest");
 console.log("MV3 manifest and entry points are loadable");

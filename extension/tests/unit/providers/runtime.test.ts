@@ -10,7 +10,7 @@ const config: ProviderConfig = {
   plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   label: "fixture",
-  base_url: "http://127.0.0.1:8080/v1",
+  base_url: "https://provider.example/v1",
   wire_api: "chat_completions",
   model: "fixture",
   api_key: "secret",

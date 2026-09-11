@@ -24,7 +24,7 @@ export const validateProviderBaseUrl = (
     url.password ||
     url.search ||
     url.hash ||
-    (url.protocol !== "https:" && url.protocol !== "http:")
+    url.protocol !== "https:"
   )
     return fail("INVALID_ARGUMENT");
   return url;

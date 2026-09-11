@@ -10,7 +10,7 @@ const config = (scheme: ProviderConfig["api_key_header"]): ProviderConfig => ({
   plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   label: "fixture",
-  base_url: "http://127.0.0.1:8080/v1",
+  base_url: "https://provider.example/v1",
   wire_api: "chat_completions",
   model: "fixture-model",
   api_key: scheme === "none" ? "" : "test-secret",
@@ -65,10 +65,10 @@ describe("core provider transport", () => {
     ).rejects.toThrow("INVALID_ARGUMENT");
   });
 
-  it("given_http_endpoint_when_validating_then_accepts_it", () => {
+  it("given_non_https_endpoint_when_validating_then_rejects_it", () => {
     expect(() =>
       validateProviderBaseUrl("http://192.168.1.5:8080/v1"),
-    ).not.toThrow();
+    ).toThrow("INVALID_ARGUMENT");
     expect(() => validateProviderBaseUrl("ftp://provider.test/v1")).toThrow(
       "INVALID_ARGUMENT",
     );

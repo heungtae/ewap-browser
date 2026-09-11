@@ -6,7 +6,7 @@ const provider: ProviderConfig = {
   plugin_id: "contextpilot.openai-compatible",
   plugin_version: "1.0.0",
   label: "local",
-  base_url: "http://127.0.0.1:8080/v1",
+  base_url: "https://provider.example/v1",
   wire_api: "responses",
   model: "qwen",
   api_key: "secret-key",
