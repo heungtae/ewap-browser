@@ -36,6 +36,11 @@ const safeFailure = (code: string, detail?: string) => ({
   code,
   ...(detail ? { detail } : {}),
 });
+const fetchFailureDetail = (error: unknown): string => {
+  if (error instanceof Error && error.name === "AbortError")
+    return "provider request was aborted";
+  return "browser network request failed (check TLS, proxy, VPN, DNS, redirect, or network policy)";
+};
 
 runtime?.onMessage.addListener((message, sender, respond) => {
   if (
@@ -121,10 +126,10 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       port.postMessage({ type: "end" });
       port.disconnect();
     })
-    .catch(() => {
+    .catch((error: unknown) => {
       port.disconnect();
       respondOnce(
-        safeFailure("PROVIDER_UNAVAILABLE", "network/CORS/PNA request failed"),
+        safeFailure("PROVIDER_UNAVAILABLE", fetchFailureDetail(error)),
       );
     });
   return true;

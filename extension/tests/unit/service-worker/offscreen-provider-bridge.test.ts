@@ -82,4 +82,36 @@ describe("offscreen provider bridge", () => {
     expect(readinessChecks).toBe(2);
     expect(messages[2]).toMatchObject({ kind: "OFFSCREEN_FETCH" });
   });
+
+  it("preserves the offscreen network diagnostic instead of replacing it", async () => {
+    const chrome = {
+      offscreen: {
+        hasDocument: async () => true,
+        createDocument: async () => undefined,
+      },
+      runtime: {
+        id: "extension-id",
+        getURL: (path: string) => `chrome-extension://extension-id/${path}`,
+        sendMessage: async (message: unknown) =>
+          (message as { kind?: unknown }).kind ===
+          "OFFSCREEN_PROVIDER_READY_CHECK"
+            ? { kind: "OFFSCREEN_PROVIDER_READY" }
+            : {
+                ok: false,
+                detail: "browser network request failed (check TLS, proxy, VPN, DNS, redirect, or network policy)",
+              },
+        onMessage: { addListener: () => undefined },
+        onConnect: { addListener: () => undefined },
+      },
+    } as unknown as BrowserChromeApi;
+    const bridge = createOffscreenProviderBridge(chrome, () => "a".repeat(22));
+
+    await expect(
+      bridge.fetch("https://provider.example/v1/models", { method: "GET" }),
+    ).rejects.toMatchObject({
+      code: "PROVIDER_UNAVAILABLE",
+      detail:
+        "browser network request failed (check TLS, proxy, VPN, DNS, redirect, or network policy)",
+    });
+  });
 });

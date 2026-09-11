@@ -140,6 +140,19 @@ export const createOffscreenProviderBridge = (
       headers,
     });
     if (
+      typeof response === "object" &&
+      response !== null &&
+      (response as { ok?: unknown }).ok === false
+    ) {
+      const detail = (response as { detail?: unknown }).detail;
+      throw new ContractError(
+        "PROVIDER_UNAVAILABLE",
+        typeof detail === "string"
+          ? detail.slice(0, 320)
+          : "offscreen provider request failed",
+      );
+    }
+    if (
       typeof response !== "object" ||
       response === null ||
       !(response as { ok?: unknown }).ok ||
