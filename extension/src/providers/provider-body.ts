@@ -9,9 +9,14 @@ import { parseSseProviderBody } from "./sse-response.js";
 export const parseProviderBody = async (
   body: ReadableStream<Uint8Array> | null,
   onDelta?: (text: string) => void,
+  signal?: AbortSignal,
 ): Promise<unknown> => {
   if (!body) return fail("PROVIDER_UNAVAILABLE");
   const reader = body.getReader();
+  const cancel = (): void => {
+    void reader.cancel().catch(() => undefined);
+  };
+  signal?.addEventListener("abort", cancel, { once: true });
   const decoder = new TextDecoder();
   let text = "";
   let pending = "";
@@ -59,6 +64,7 @@ export const parseProviderBody = async (
     await reader.cancel().catch(() => undefined);
     throw error;
   } finally {
+    signal?.removeEventListener("abort", cancel);
     reader.releaseLock();
   }
 };

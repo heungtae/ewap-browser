@@ -40,6 +40,31 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
       ...(tab.url ? { url: tab.url } : {}),
     };
   };
+  const activeTabForBoundPanel = async (
+    sender: BrowserSender,
+  ): Promise<{ id: number }> => {
+    const documentId = sender.documentId;
+    if (!isPanelSender(sender) || !documentId || !chrome?.runtime.getContexts)
+      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+    const matches = (
+      await chrome.runtime.getContexts({
+        contextTypes: ["SIDE_PANEL"],
+        documentIds: [documentId],
+      })
+    ).filter(
+      (context) =>
+        context.contextType === "SIDE_PANEL" &&
+        context.documentId === documentId &&
+        Number.isInteger(context.windowId),
+    );
+    const windowId = matches.length === 1 ? matches[0]?.windowId : undefined;
+    if (windowId === undefined)
+      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+    const tab = (await chrome.tabs.query({ active: true, windowId }))[0];
+    if (tab?.id === undefined)
+      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+    return { id: tab.id };
+  };
   const isSettingsSender = (sender: BrowserSender): boolean =>
     sender.id === chrome?.runtime.id &&
     sender.url === chrome?.runtime.getURL("settings/index.html");
@@ -55,6 +80,7 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
   };
   return {
     activeTabForPanel,
+    activeTabForBoundPanel,
     isPanelSender,
     isSettingsSender,
     isPanelOrSettingsSender: (sender: BrowserSender) =>

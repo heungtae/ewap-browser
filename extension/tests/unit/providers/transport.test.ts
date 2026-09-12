@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { openAiCompatibleAdapter } from "../../../src/providers/openai-compatible.js";
 import {
   CoreProviderTransport,
@@ -66,9 +66,9 @@ describe("core provider transport", () => {
   });
 
   it("given_non_https_endpoint_when_validating_then_rejects_it", () => {
-    expect(() =>
-      validateProviderBaseUrl("http://192.168.1.5:8080/v1"),
-    ).toThrow("INVALID_ARGUMENT");
+    expect(() => validateProviderBaseUrl("http://192.168.1.5:8080/v1")).toThrow(
+      "INVALID_ARGUMENT",
+    );
     expect(() => validateProviderBaseUrl("ftp://provider.test/v1")).toThrow(
       "INVALID_ARGUMENT",
     );
@@ -122,5 +122,29 @@ describe("core provider transport", () => {
       code: "PROVIDER_UNAVAILABLE",
       detail: "network/CORS/PNA request failed",
     });
+  });
+
+  it("given_headers_when_body_is_still_owned_then_deadline_remains_active", async () => {
+    vi.useFakeTimers();
+    try {
+      const transport = new CoreProviderTransport(
+        async () =>
+          new Response(new ReadableStream(), {
+            headers: { "content-type": "application/json" },
+          }),
+      );
+
+      const result = await transport.send(
+        config("none"),
+        openAiCompatibleAdapter,
+        request,
+      );
+      expect(result.signal.aborted).toBe(false);
+      await vi.advanceTimersByTimeAsync(1_000);
+      expect(result.signal.aborted).toBe(true);
+      result.release();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

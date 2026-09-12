@@ -1,6 +1,7 @@
 import { ContractError } from "../security/validation.js";
+import type { BrowserSender } from "./browser-api.js";
 
-export type RuntimeSender = { url?: string };
+export type RuntimeSender = BrowserSender;
 export type Respond = (response: unknown) => void;
 export type RoutedMessage = { handled: boolean; keepAlive?: boolean };
 

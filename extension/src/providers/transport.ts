@@ -16,6 +16,8 @@ export { validateProviderBaseUrl } from "./provider-request.js";
 export type TransportResult = {
   status: number;
   body: ReadableStream<Uint8Array> | null;
+  signal: AbortSignal;
+  release(): void;
 };
 
 type Timers = {
@@ -79,6 +81,14 @@ export class CoreProviderTransport {
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
     const timeout = this.timers.set(abort, config.timeout_ms);
+    let released = false;
+    let transferred = false;
+    const release = (): void => {
+      if (released) return;
+      released = true;
+      this.timers.clear(timeout);
+      signal?.removeEventListener("abort", abort);
+    };
     try {
       const response = await this.fetcher(url, {
         method: "POST",
@@ -89,14 +99,20 @@ export class CoreProviderTransport {
         redirect: "error",
       });
       await assertResponse(response, /(application\/json|text\/event-stream)/i);
-      return { status: response.status, body: response.body };
+      const result = {
+        status: response.status,
+        body: response.body,
+        signal: controller.signal,
+        release,
+      };
+      transferred = true;
+      return result;
     } catch (error) {
       if (error instanceof Error && error.message.startsWith("PROVIDER_"))
         throw error;
       return providerFailure(error);
     } finally {
-      this.timers.clear(timeout);
-      signal?.removeEventListener("abort", abort);
+      if (!transferred) release();
     }
   }
 

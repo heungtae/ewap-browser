@@ -70,7 +70,10 @@ export type ErrorCode =
   | "PROVIDER_PLUGIN_FAILED"
   | "PROVIDER_NOT_CONFIGURED"
   | "PROVIDER_AUTH_FAILED"
-  | "PROVIDER_UNAVAILABLE";
+  | "PROVIDER_UNAVAILABLE"
+  | "PANEL_CONTEXT_UNAVAILABLE"
+  | "REQUEST_ID_CONFLICT"
+  | "REQUEST_NOT_FOUND";
 export type Role =
   | "button"
   | "checkbox"

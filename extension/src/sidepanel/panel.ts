@@ -53,6 +53,9 @@ export const userMessage: Record<ErrorCode, string> = {
   PROVIDER_NOT_CONFIGURED: "사용할 provider를 먼저 설정해야 합니다.",
   PROVIDER_AUTH_FAILED: "provider API key 또는 header를 확인해 주세요.",
   PROVIDER_UNAVAILABLE: "provider에 연결할 수 없습니다.",
+  PANEL_CONTEXT_UNAVAILABLE: "현재 창의 패널 연결을 확인하지 못했습니다.",
+  REQUEST_ID_CONFLICT: "같은 요청 ID가 다른 요청에 이미 사용되었습니다.",
+  REQUEST_NOT_FOUND: "요청 상태를 찾을 수 없습니다.",
 };
 export const timelineToolLabel = (tool: string): string =>
   (

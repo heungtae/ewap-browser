@@ -10,12 +10,15 @@ import {
   type RoutedMessage,
   type RuntimeSender,
 } from "./runtime-message-router.js";
+import { createChatRequestMessageHandler } from "./chat-request-message-handler.js";
+import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
 
 type Sender = RuntimeSender;
 type ChatResult = { ok?: boolean };
 type ActiveTab = { id: number; title?: string; url?: string };
 
 export type ChatMessageHandlerDependencies = {
+  activeTabForBoundPanel(sender: Sender): Promise<{ id: number }>;
   activeTabForPanel(sender: Sender): Promise<ActiveTab>;
   cancelActiveTab(tabId: number): void;
   chatEvents: {
@@ -28,6 +31,7 @@ export type ChatMessageHandlerDependencies = {
   clearScheduledChatPersistence(): void;
   isPanelSender(sender: Sender): boolean;
   providerAvailable(): boolean;
+  requests: ChatRequestLifecycle;
   runActChat(payload: unknown): Promise<ChatResult>;
   runAskChat(payload: unknown): Promise<ChatResult>;
   safeFailure(code: string, detail?: string): unknown;
@@ -52,119 +56,133 @@ export const createChatMessageHandler = (
   dependencies: ChatMessageHandlerDependencies,
 ): {
   handle(message: object, sender: Sender, respond: Respond): RoutedMessage;
-} => ({
-  handle(message, sender, respond) {
-    const kind = (message as { kind?: unknown }).kind;
-    if (kind === "CHAT_SEND") {
-      if (
-        !dependencies.isPanelSender(sender) ||
-        !dependencies.providerAvailable()
-      ) {
-        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
-        return { handled: true };
+} => {
+  const requestHandler = createChatRequestMessageHandler({
+    activeTab: dependencies.activeTabForBoundPanel,
+    cancel: dependencies.cancelActiveTab,
+    isPanelSender: dependencies.isPanelSender,
+    providerAvailable: dependencies.providerAvailable,
+    requests: dependencies.requests,
+    runAct: dependencies.runActChat,
+    runAsk: dependencies.runAskChat,
+    safeFailure: dependencies.safeFailure,
+  });
+  return {
+    handle(message, sender, respond) {
+      const kind = (message as { kind?: unknown }).kind;
+      const requestRoute = requestHandler.handle(message, sender, respond);
+      if (requestRoute.handled) return requestRoute;
+      if (kind === "CHAT_SEND") {
+        if (
+          !dependencies.isPanelSender(sender) ||
+          !dependencies.providerAvailable()
+        ) {
+          respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+          return { handled: true };
+        }
+        const payload = (message as { payload?: unknown }).payload;
+        const mode = isPlainObject(payload) ? payload.mode : undefined;
+        void (
+          mode === "act"
+            ? dependencies.runActChat(payload)
+            : dependencies.runAskChat(payload)
+        )
+          .then((result) => respond(result))
+          .catch((error) => {
+            const code = failureCode(error, "PROVIDER_PLUGIN_FAILED");
+            respond(
+              dependencies.safeFailure(
+                code,
+                error instanceof ContractError ? error.detail : undefined,
+              ),
+            );
+          });
+        return { handled: true, keepAlive: true };
       }
-      const payload = (message as { payload?: unknown }).payload;
-      const mode = isPlainObject(payload) ? payload.mode : undefined;
-      void (
-        mode === "act"
-          ? dependencies.runActChat(payload)
-          : dependencies.runAskChat(payload)
-      )
-        .then((result) => respond(result))
-        .catch((error) => {
-          const code = failureCode(error, "PROVIDER_PLUGIN_FAILED");
-          respond(
-            dependencies.safeFailure(
-              code,
-              error instanceof ContractError ? error.detail : undefined,
-            ),
-          );
-        });
-      return { handled: true, keepAlive: true };
-    }
-    if (kind === "CHAT_RESYNC") {
-      const runId = (message as { run_id?: unknown }).run_id;
-      const sequence = (message as { sequence?: unknown }).sequence;
-      if (
-        !dependencies.isPanelSender(sender) ||
-        !exactKeys(message, ["kind", "run_id", "sequence"]) ||
-        typeof runId !== "string" ||
-        !Number.isInteger(sequence) ||
-        (sequence as number) < 0
-      ) {
-        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
-        return { handled: true };
-      }
-      try {
-        respond({
-          ok: true,
-          events: dependencies.chatEvents.sinceThreadForRun(
-            runId,
-            sequence as number,
-          ),
-        });
-      } catch (error) {
-        respond(
-          dependencies.safeFailure(failureCode(error, "INVALID_ARGUMENT")),
-        );
-      }
-      return { handled: true };
-    }
-    if (kind === "CHAT_RECOVER") {
-      if (
-        !dependencies.isPanelSender(sender) ||
-        !exactKeys(message, ["kind"])
-      ) {
-        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
-        return { handled: true };
-      }
-      void dependencies
-        .activeTabForPanel(sender)
-        .then((active) => {
-          const page = pageLabel(active);
+      if (kind === "CHAT_RESYNC") {
+        const runId = (message as { run_id?: unknown }).run_id;
+        const sequence = (message as { sequence?: unknown }).sequence;
+        if (
+          !dependencies.isPanelSender(sender) ||
+          !exactKeys(message, ["kind", "run_id", "sequence"]) ||
+          typeof runId !== "string" ||
+          !Number.isInteger(sequence) ||
+          (sequence as number) < 0
+        ) {
+          respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+          return { handled: true };
+        }
+        try {
           respond({
             ok: true,
-            tab_id: active.id,
-            events: dependencies.chatEvents.recoverable(active.id),
-            scope: dependencies.chatEvents.scope(active.id),
-            ...(page ? { page } : {}),
-          });
-        })
-        .catch((error) =>
-          respond(
-            dependencies.safeFailure(
-              failureCode(error, "STORAGE_BOUNDARY_UNAVAILABLE"),
+            events: dependencies.chatEvents.sinceThreadForRun(
+              runId,
+              sequence as number,
             ),
-          ),
-        );
-      return { handled: true, keepAlive: true };
-    }
-    if (kind === "CHAT_CLEAR") {
-      if (
-        !dependencies.isPanelSender(sender) ||
-        !exactKeys(message, ["kind"])
-      ) {
-        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+          });
+        } catch (error) {
+          respond(
+            dependencies.safeFailure(failureCode(error, "INVALID_ARGUMENT")),
+          );
+        }
         return { handled: true };
       }
-      void dependencies
-        .activeTabForPanel(sender)
-        .then(async (active) => {
-          dependencies.cancelActiveTab(active.id);
-          dependencies.clearScheduledChatPersistence();
-          dependencies.chatEvents.clear();
-          await dependencies.chatPersistence.clear();
-          respond({ ok: true });
-        })
-        .catch((error) =>
-          respond(
-            dependencies.safeFailure(
-              failureCode(error, "STORAGE_BOUNDARY_UNAVAILABLE"),
+      if (kind === "CHAT_RECOVER") {
+        if (
+          !dependencies.isPanelSender(sender) ||
+          !exactKeys(message, ["kind"])
+        ) {
+          respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+          return { handled: true };
+        }
+        void dependencies
+          .activeTabForPanel(sender)
+          .then((active) => {
+            const page = pageLabel(active);
+            respond({
+              ok: true,
+              tab_id: active.id,
+              events: dependencies.chatEvents.recoverable(active.id),
+              scope: dependencies.chatEvents.scope(active.id),
+              ...(page ? { page } : {}),
+            });
+          })
+          .catch((error) =>
+            respond(
+              dependencies.safeFailure(
+                failureCode(error, "STORAGE_BOUNDARY_UNAVAILABLE"),
+              ),
             ),
-          ),
-        );
-      return { handled: true, keepAlive: true };
-    }
-    return { handled: false };
-  },
-});
+          );
+        return { handled: true, keepAlive: true };
+      }
+      if (kind === "CHAT_CLEAR") {
+        if (
+          !dependencies.isPanelSender(sender) ||
+          !exactKeys(message, ["kind"])
+        ) {
+          respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+          return { handled: true };
+        }
+        void dependencies
+          .activeTabForPanel(sender)
+          .then(async (active) => {
+            dependencies.cancelActiveTab(active.id);
+            dependencies.clearScheduledChatPersistence();
+            dependencies.chatEvents.clear();
+            await dependencies.chatPersistence.clear();
+            respond({ ok: true });
+          })
+          .catch((error) =>
+            respond(
+              dependencies.safeFailure(
+                failureCode(error, "STORAGE_BOUNDARY_UNAVAILABLE"),
+              ),
+            ),
+          );
+        return { handled: true, keepAlive: true };
+      }
+      return { handled: false };
+    },
+  };
+};

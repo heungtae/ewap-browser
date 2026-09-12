@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createChatMessageHandler } from "../../../src/service-worker/chat-message-handler.js";
+import { ChatRequestLifecycle } from "../../../src/service-worker/chat-request-lifecycle.js";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
@@ -9,6 +10,7 @@ const flush = async (): Promise<void> => {
 const createHandler = () => {
   const calls: string[] = [];
   const handler = createChatMessageHandler({
+    activeTabForBoundPanel: async () => ({ id: 7 }),
     activeTabForPanel: async () => ({
       id: 7,
       title: "Google 검색 결과",
@@ -29,6 +31,7 @@ const createHandler = () => {
     clearScheduledChatPersistence: () => calls.push("schedule:clear"),
     isPanelSender: (sender) => sender.url === "panel",
     providerAvailable: () => true,
+    requests: new ChatRequestLifecycle(),
     runActChat: async () => {
       calls.push("act");
       return { ok: true };
@@ -88,6 +91,50 @@ describe("chat runtime message handler", () => {
     await flush();
     expect(calls).toEqual(["act"]);
     expect(respond).toHaveBeenCalledWith({ ok: true });
+  });
+
+  it("accepts a request immediately and exposes its terminal status", async () => {
+    const { calls, handler } = createHandler();
+    const start = vi.fn();
+    const status = vi.fn();
+    const id = "c2f597ec-1096-4e99-8e2e-2c43b05c0dfb";
+
+    expect(
+      handler.handle(
+        {
+          schema_version: 1,
+          kind: "CHAT_REQUEST_START",
+          request_id: id,
+          payload: { mode: "ask", prompt: "run" },
+        },
+        { url: "panel" },
+        start,
+      ),
+    ).toEqual({ handled: true, keepAlive: true });
+    await flush();
+    expect(start).toHaveBeenCalledWith({
+      ok: true,
+      accepted: true,
+      request_id: id,
+      revision: 1,
+    });
+    expect(calls).toEqual(["ask"]);
+
+    handler.handle(
+      { schema_version: 1, kind: "CHAT_REQUEST_STATUS", request_id: id },
+      { url: "panel" },
+      status,
+    );
+    await flush();
+    expect(status).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ok: true,
+        request: expect.objectContaining({
+          state: "TERMINAL",
+          outcome: "VERIFIED",
+        }),
+      }),
+    );
   });
 
   it("recovers the active tab thread and clears it in the existing order", async () => {

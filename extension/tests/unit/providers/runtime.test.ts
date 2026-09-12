@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   maxProviderAssistantChars,
   ProviderRuntime,
@@ -280,6 +280,46 @@ describe("provider runtime", () => {
       ),
     ).rejects.toThrow("PROVIDER_UNAVAILABLE");
     expect(cancelled).toBe(true);
+  });
+
+  it("given_headers_without_body_progress_when_timing_out_then_cancels_the_reader", async () => {
+    vi.useFakeTimers();
+    try {
+      let stored: Record<string, unknown> = {};
+      let cancelled = false;
+      const runtime = new ProviderRuntime(
+        {
+          async get() {
+            return stored;
+          },
+          async set(value) {
+            stored = value;
+          },
+        },
+        new CoreProviderTransport(
+          async () =>
+            new Response(
+              new ReadableStream<Uint8Array>({
+                cancel() {
+                  cancelled = true;
+                },
+              }),
+              { headers: { "content-type": "application/json" } },
+            ),
+        ),
+      );
+      await runtime.handle("PROVIDER_SAVE", { id: "local", config });
+
+      const pending = runtime.chat({
+        messages: [{ role: "user", content: "현재 페이지" }],
+      });
+      const rejected = expect(pending).rejects.toThrow("PROVIDER_UNAVAILABLE");
+      await vi.advanceTimersByTimeAsync(config.timeout_ms);
+      await rejected;
+      expect(cancelled).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("given_responses_sse_lifecycle_event_when_chatting_then_waits_for_text_delta", async () => {

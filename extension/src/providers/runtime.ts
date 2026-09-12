@@ -53,8 +53,16 @@ export class ProviderRuntime {
       ...(input.tools ? { tools: input.tools } : {}),
       stream: options.onDelta !== undefined,
     });
-    const response = await parseProviderBody(result.body, options.onDelta);
-    return parseChatResponse(response);
+    try {
+      const response = await parseProviderBody(
+        result.body,
+        options.onDelta,
+        result.signal,
+      );
+      return parseChatResponse(response);
+    } finally {
+      result.release();
+    }
   }
 
   public async handle(
