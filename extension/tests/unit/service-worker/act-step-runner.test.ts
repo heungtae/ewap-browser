@@ -20,7 +20,7 @@ const definition: ProfileActionTool = {
 };
 
 describe("Act step runner", () => {
-  it("requires_a_review_for_every_followup_proposal", async () => {
+  it("reviews_the_initial_proposal_then_continues_the_approved_session", async () => {
     const coordinator = new ServiceCoordinator({
       permission_origins: ["<all_urls>"],
       page_read_origins: ["<all_urls>"],
@@ -28,6 +28,7 @@ describe("Act step runner", () => {
       llm_egress_origins: [],
     });
     const publish = vi.fn();
+    const executeApprovedProposal = vi.fn(async () => ({ ok: true }));
     const runner = createActStepRunner({
       coordinator,
       provider: {
@@ -44,7 +45,11 @@ describe("Act step runner", () => {
               {
                 id: "tool-call-abcdefghijkl",
                 name: "propose_click",
-                arguments: JSON.stringify({ target: modelRef }),
+                arguments: JSON.stringify({
+                  target: modelRef,
+                  approval_scope: "session",
+                  approval_reason: "메뉴를 순서대로 펼치는 제한된 작업입니다.",
+                }),
               },
             ],
           };
@@ -83,9 +88,10 @@ describe("Act step runner", () => {
       bindRun: () => undefined,
       publish,
       serialise: JSON.stringify,
+      executeApprovedProposal,
       endSession: () => undefined,
     });
-    const session = {
+    const session: ActSession = {
       id: "session-abcdefghijkl",
       tabId: 1,
       origin: "https://portal.company.test",
@@ -98,15 +104,16 @@ describe("Act step runner", () => {
       discovery: "page-derived",
       definitions: [definition],
       profileDefinitions: [],
-    } satisfies ActSession;
+    };
 
     await expect(runner.runStep(session)).resolves.toMatchObject({
       ok: true,
       state: "ACTION_REVIEW",
     });
+    session.continueAfterApproval = true;
+    session.autoExecutionCount = 1;
     await expect(runner.runStep(session)).resolves.toMatchObject({
       ok: true,
-      state: "ACTION_REVIEW",
     });
     expect(
       publish.mock.calls.filter(([, event]) => event.type === "user_message"),
@@ -117,9 +124,20 @@ describe("Act step runner", () => {
       ),
     ).toBe(true);
     expect(
+      publish.mock.calls.find(
+        ([, event]) => event.type === "action_review_required",
+      )?.[1],
+    ).toMatchObject({
+      action: {
+        approval_scope: "session",
+        approval_reason: "메뉴를 순서대로 펼치는 제한된 작업입니다.",
+      },
+    });
+    expect(executeApprovedProposal).toHaveBeenCalledWith(session);
+    expect(
       publish.mock.calls.filter(
         ([, event]) => event.type === "action_review_required",
       ),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
   });
 });

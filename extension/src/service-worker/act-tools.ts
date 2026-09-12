@@ -11,6 +11,19 @@ const targetParameter = (targets: readonly string[]) => ({
   description:
     "One supplied opaque model_ref. Never use a visible name, selector, or URL.",
 });
+const approvalScopeParameter = {
+  type: "string",
+  enum: ["single_step", "session"],
+  description:
+    "single_step requires another approval for a later action. session is only for a low-risk bounded sequence of distinct clicks or navigations after one approval.",
+};
+const approvalReasonParameter = {
+  type: "string",
+  minLength: 1,
+  maxLength: 240,
+  description:
+    "A short Korean reason for the approval_scope. Explain why single_step needs another approval; use a short bounded-scope reason for session.",
+};
 
 const eligibleTargets = (
   definition: ProfileActionTool,
@@ -44,12 +57,16 @@ const genericActClickTool = (
   function: {
     name: "propose_click",
     description:
-      "Propose one visible enabled button, tab, or menu-item click allowed by the current action policy. This is not execution and requires user approval.",
+      "Propose one visible enabled button, tab, or menu-item click allowed by the current action policy. Choose approval_scope=session only for a menu expansion needed solely for simple navigation; choose single_step for Run, Save, Submit, Apply, Delete, purchase, or another page-state-changing click. This is not execution and requires user approval.",
     parameters: {
       type: "object",
       additionalProperties: false,
-      properties: { target: targetParameter(targets) },
-      required: ["target"],
+      properties: {
+        target: targetParameter(targets),
+        approval_scope: approvalScopeParameter,
+        approval_reason: approvalReasonParameter,
+      },
+      required: ["target", "approval_scope", "approval_reason"],
     },
   },
 });
@@ -61,12 +78,16 @@ const genericActNavigateTool = (
   function: {
     name: "propose_navigate",
     description:
-      "Propose navigation through one visible enabled observed HTTP(S) link allowed by the current action policy. This is not execution and requires user approval.",
+      "Propose navigation through one visible enabled observed HTTP(S) link allowed by the current action policy. For simple navigation choose approval_scope=session so the user can approve the bounded path once. This is not execution and requires user approval.",
     parameters: {
       type: "object",
       additionalProperties: false,
-      properties: { target: targetParameter(targets) },
-      required: ["target"],
+      properties: {
+        target: targetParameter(targets),
+        approval_scope: approvalScopeParameter,
+        approval_reason: approvalReasonParameter,
+      },
+      required: ["target", "approval_scope", "approval_reason"],
     },
   },
 });
@@ -104,8 +125,12 @@ export const genericActTools = (
             parameters: {
               type: "object",
               additionalProperties: false,
-              properties: { target: targetParameter(targets) },
-              required: ["target"],
+              properties: {
+                target: targetParameter(targets),
+                approval_scope: approvalScopeParameter,
+                approval_reason: approvalReasonParameter,
+              },
+              required: ["target", "approval_scope", "approval_reason"],
             },
           },
         },
@@ -124,8 +149,15 @@ export const genericActTools = (
               properties: {
                 target: targetParameter(targets),
                 value: { type: "string", enum: definition.option_values },
+                approval_scope: approvalScopeParameter,
+                approval_reason: approvalReasonParameter,
               },
-              required: ["target", "value"],
+              required: [
+                "target",
+                "value",
+                "approval_scope",
+                "approval_reason",
+              ],
             },
           },
         },
@@ -144,8 +176,15 @@ export const genericActTools = (
               properties: {
                 target: targetParameter(targets),
                 checked: { type: "boolean" },
+                approval_scope: approvalScopeParameter,
+                approval_reason: approvalReasonParameter,
               },
-              required: ["target", "checked"],
+              required: [
+                "target",
+                "checked",
+                "approval_scope",
+                "approval_reason",
+              ],
             },
           },
         },
@@ -164,8 +203,10 @@ export const genericActTools = (
               properties: {
                 target: targetParameter(targets),
                 key: { type: "string", enum: ["Enter", "Space", "Escape"] },
+                approval_scope: approvalScopeParameter,
+                approval_reason: approvalReasonParameter,
               },
-              required: ["target", "key"],
+              required: ["target", "key", "approval_scope", "approval_reason"],
             },
           },
         },

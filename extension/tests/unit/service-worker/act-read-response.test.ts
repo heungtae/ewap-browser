@@ -46,6 +46,7 @@ describe("Act read response", () => {
       bindRun: () => undefined,
       publish,
       serialise: JSON.stringify,
+      executeApprovedProposal: async () => ({ ok: true }),
       endSession,
     });
     const session = {

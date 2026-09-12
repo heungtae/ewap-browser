@@ -148,6 +148,20 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       tool_calls: response.tool_calls,
     });
     session.proposal = proposal;
+    if (session.continueAfterApproval) {
+      if ((session.autoExecutionCount ?? 0) >= 12) {
+        dependencies.coordinator.runs.terminal(run.id, "FAILED");
+        dependencies.publish(run.id, {
+          type: "run_terminal",
+          outcome: "FAILED",
+          code: "WORKFLOW_STEP_LIMIT",
+        });
+        dependencies.endSession(session);
+        return fail("WORKFLOW_STEP_LIMIT");
+      }
+      session.autoExecutionCount = (session.autoExecutionCount ?? 0) + 1;
+      return dependencies.executeApprovedProposal(session);
+    }
     if (response.content)
       dependencies.publish(run.id, {
         type: "assistant_delta",

@@ -324,7 +324,11 @@ const actionSummary = (action: ChatActionView): string =>
     : action.target_name +
       "에 '" +
       action.suggested_value +
-      "' 선택을 제안했습니다.");
+      "' 선택을 제안했습니다.") +
+  (action.approval_scope === "session"
+    ? " 한 번 승인하면 안전한 후속 단계도 계속 진행합니다."
+    : " 이번 단계만 실행합니다." +
+      (action.approval_reason ? " LLM 판단: " + action.approval_reason : ""));
 const rejectAction = async (action: ChatActionView): Promise<void> => {
   try {
     await sendRuntime({
@@ -399,7 +403,13 @@ const renderReview = (action: ChatActionView, runId: string): void => {
       }),
     );
   row.append(
-    actionButton("제안 실행", "primary", () => selectDecision("approve")),
+    actionButton(
+      action.approval_scope === "session"
+        ? "한 번 승인하고 계속 실행"
+        : "이번 단계 실행",
+      "primary",
+      () => selectDecision("approve"),
+    ),
     actionButton("중단", "danger", () => selectDecision("reject")),
   );
   append(item);

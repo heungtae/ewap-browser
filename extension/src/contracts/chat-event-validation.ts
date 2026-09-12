@@ -61,6 +61,8 @@ export const validateActionView = (value: unknown): ChatActionView => {
           "proposal_id",
           "tool",
           "target_name",
+          "approval_scope",
+          "approval_reason",
           "origin",
           "suggested_value",
           "workflow_title",
@@ -72,6 +74,11 @@ export const validateActionView = (value: unknown): ChatActionView => {
     typeof value.proposal_id !== "string" ||
     typeof value.tool !== "string" ||
     typeof value.target_name !== "string" ||
+    (value.approval_scope !== undefined &&
+      value.approval_scope !== "single_step" &&
+      value.approval_scope !== "session") ||
+    (value.approval_reason !== undefined &&
+      typeof value.approval_reason !== "string") ||
     (value.origin !== undefined && typeof value.origin !== "string") ||
     (value.suggested_value !== undefined &&
       typeof value.suggested_value !== "string") ||
@@ -91,6 +98,13 @@ export const validateActionView = (value: unknown): ChatActionView => {
     proposal_id: opaque(value.proposal_id),
     tool: string(value.tool, 128),
     target_name: string(value.target_name, 512),
+    ...(value.approval_scope === "single_step" ||
+    value.approval_scope === "session"
+      ? { approval_scope: value.approval_scope }
+      : {}),
+    ...(typeof value.approval_reason === "string"
+      ? { approval_reason: string(value.approval_reason, 240) }
+      : {}),
     ...(typeof value.origin === "string"
       ? { origin: string(value.origin, 512) }
       : {}),

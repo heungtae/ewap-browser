@@ -49,5 +49,11 @@ describe("Act proposal completion", () => {
     expect(endSession).not.toHaveBeenCalled();
     expect(continueWorkflow).toHaveBeenCalledWith(session, proposal);
     expect(session.proposal).toBeUndefined();
+    expect(session.messages).toContainEqual({
+      role: "tool",
+      tool_call_id: "tool-call-abcdefghijkl",
+      content:
+        '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED","tool":"click_by_ref","target_name":"Open SSH guide"}\n[/UNTRUSTED_TOOL_RESULT]',
+    });
   });
 });

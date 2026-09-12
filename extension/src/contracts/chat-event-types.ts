@@ -20,6 +20,8 @@ export type ChatActionView = {
   proposal_id: string;
   tool: string;
   target_name: string;
+  approval_scope?: "single_step" | "session";
+  approval_reason?: string;
   origin?: string;
   suggested_value?: string;
   workflow_title?: string;

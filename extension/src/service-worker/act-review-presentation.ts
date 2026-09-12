@@ -2,6 +2,8 @@ type Proposal = {
   id: string;
   tool: string;
   targetName: string;
+  approvalScope: "single_step" | "session";
+  approvalReason: string;
   value?: string;
 };
 type Session = {
@@ -20,6 +22,8 @@ export const actionReview = (session: Session, proposal: Proposal) => ({
   proposal_id: proposal.id,
   tool: proposal.tool,
   target_name: proposal.targetName,
+  approval_scope: proposal.approvalScope,
+  approval_reason: proposal.approvalReason,
   origin: session.origin,
 });
 
@@ -28,6 +32,8 @@ export const actionView = (session: Session, proposal: Proposal) => ({
   proposal_id: proposal.id,
   tool: proposal.tool,
   target_name: proposal.targetName,
+  approval_scope: proposal.approvalScope,
+  approval_reason: proposal.approvalReason,
   origin: session.origin,
   ...(proposal.value === undefined ? {} : { suggested_value: proposal.value }),
   ...(session.workflow

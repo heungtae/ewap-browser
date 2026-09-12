@@ -64,8 +64,15 @@ describe("generic Act tools", () => {
         target: {
           enum: ["model-ref-0-abcdefghijkl", "model-ref-1-abcdefghijkl"],
         },
+        approval_scope: { enum: ["single_step", "session"] },
+        approval_reason: { type: "string" },
       },
     });
+    expect(tools[0]?.function.parameters.required).toEqual([
+      "target",
+      "approval_scope",
+      "approval_reason",
+    ]);
   });
 
   it("limits a workflow step to its current target", () => {

@@ -5,6 +5,7 @@ import type {
   SemanticSnapshot,
 } from "../contracts/types.js";
 import { opaqueId } from "../security/canonical.js";
+import { redactForChat } from "../security/chat-redaction.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import type { ProfileActionTool } from "../profile/profile.js";
 import {
@@ -17,6 +18,8 @@ export type ParsedActProposal = {
   tool: MutationTool;
   refId: string;
   targetName: string;
+  approvalScope: "single_step" | "session";
+  approvalReason: string;
   value?: string;
   argument?: { checked?: boolean; key?: "Enter" | "Space" | "Escape" };
   toolCallId: string;
@@ -52,19 +55,23 @@ export const parseActProposal = (
     definition.tool === "click_by_ref" ||
     definition.tool === "navigate" ||
     definition.tool === "set_text_by_ref"
-      ? ["target"]
+      ? ["target", "approval_scope", "approval_reason"]
       : definition.tool === "select_option_by_ref"
-        ? ["target", "value"]
+        ? ["target", "value", "approval_scope", "approval_reason"]
         : definition.tool === "set_checked_by_ref"
-          ? ["target", "checked"]
-          : ["target", "key"];
+          ? ["target", "checked", "approval_scope", "approval_reason"]
+          : ["target", "key", "approval_scope", "approval_reason"];
   const required = fixedTargetRefId
     ? keys.filter((key) => key !== "target")
     : keys;
   if (
     Object.keys(value).some((key) => !keys.includes(key)) ||
     required.some((key) => !(key in value)) ||
-    (!fixedTargetRefId && typeof value.target !== "string")
+    (!fixedTargetRefId && typeof value.target !== "string") ||
+    !["single_step", "session"].includes(value.approval_scope as string) ||
+    typeof value.approval_reason !== "string" ||
+    value.approval_reason.trim().length === 0 ||
+    value.approval_reason.length > 240
   )
     return fail("INVALID_ARGUMENT");
   const argument =
@@ -116,11 +123,20 @@ export const parseActProposal = (
     target.cross_origin_link !== true
   )
     return fail("TARGET_NOT_ACTIONABLE");
+  const approvalScope =
+    value.approval_scope === "session" &&
+    definition.risk === "R1" &&
+    definition.effect === "local-ui-only" &&
+    (definition.tool === "click_by_ref" || definition.tool === "navigate")
+      ? "session"
+      : "single_step";
   return {
     id: opaqueId(),
     tool: definition.tool,
     refId,
     targetName: target.name,
+    approvalScope,
+    approvalReason: redactForChat(value.approval_reason.trim(), 240),
     ...(optionValue ? { value: optionValue } : {}),
     ...(argument ? { argument } : {}),
     toolCallId: call.id,

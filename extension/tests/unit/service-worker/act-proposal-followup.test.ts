@@ -73,6 +73,8 @@ describe("Act proposal follow-up", () => {
       tool: "set_text_by_ref",
       refId: "target-abcdefghijklmnop",
       targetName: "Name",
+      approvalScope: "single_step",
+      approvalReason: "텍스트 입력은 매 단계 확인이 필요합니다.",
       toolCallId: "tool-call-abcdefghijkl",
       definition: textDefinition,
     };
@@ -144,6 +146,8 @@ describe("Act proposal follow-up", () => {
       tool: "set_checked_by_ref",
       refId: "target-abcdefghijklmnop",
       targetName: "Enabled",
+      approvalScope: "single_step",
+      approvalReason: "선택 상태 변경은 매 단계 확인이 필요합니다.",
       argument: { checked: true },
       toolCallId: "tool-call-abcdefghijkl",
       definition: checkDefinition,

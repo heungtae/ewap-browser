@@ -145,6 +145,15 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       (node) => node.ref_id === proposal.refId,
     );
     if (!target || !target.enabled) return fail("TARGET_STALE");
+    // The model may recommend a bounded continuation, but the user accepts it
+    // only by approving the initial card that explicitly shows this scope.
+    if (
+      proposal.approvalScope === "session" &&
+      !session.continueAfterApproval
+    ) {
+      session.continueAfterApproval = true;
+      session.autoExecutionCount = 1;
+    }
     const prepared = prepareActProposal(
       dependencies,
       session,

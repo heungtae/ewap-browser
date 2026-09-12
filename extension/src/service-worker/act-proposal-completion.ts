@@ -1,4 +1,5 @@
 import type { ChatEventPayload } from "../contracts/chat-events.js";
+import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { Run } from "../state/run-coordinator.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
 
@@ -50,8 +51,11 @@ export const completeActProposal = async (
   session.messages.push({
     role: "tool",
     tool_call_id: proposal.toolCallId,
-    content:
-      '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED"}\n[/UNTRUSTED_TOOL_RESULT]',
+    content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({
+      outcome: "VERIFIED",
+      tool: proposal.tool,
+      target_name: safeChatText(proposal.targetName),
+    })}\n[/UNTRUSTED_TOOL_RESULT]`,
   });
   delete session.proposal;
   if (proposal.tool === "navigate") {
