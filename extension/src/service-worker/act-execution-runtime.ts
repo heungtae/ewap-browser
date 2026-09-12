@@ -81,19 +81,27 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       }
       const execution = await dependencies.boundedCdp.execute(action, input);
       if (execution.outcome !== "DISPATCHED") {
-        dependencies.terminal(run, "FAILED");
-        return dependencies.safeFailure("TARGET_NOT_ACTIONABLE");
+        const outcome = execution.outcome === "UNKNOWN" ? "UNKNOWN" : "FAILED";
+        dependencies.terminal(run, outcome);
+        return {
+          ...dependencies.safeFailure(
+            outcome === "UNKNOWN"
+              ? "POSTCONDITION_UNVERIFIED"
+              : "TARGET_NOT_ACTIONABLE",
+          ),
+          outcome,
+        };
       }
       if (!dependencies.isRunActive(run.id))
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
       const verified =
         (await dependencies.verifier.semantic(run, ready.intent)) ||
         (await dependencies.verifier.bounded(run, ready.intent));
-      const outcome = verified ? "VERIFIED" : "FAILED";
+      const outcome = verified ? "VERIFIED" : "UNKNOWN";
       dependencies.terminal(run, outcome);
       return verified
         ? { ok: true, outcome }
-        : { ...dependencies.safeFailure("TARGET_NOT_ACTIONABLE"), outcome };
+        : { ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"), outcome };
     } catch (error) {
       dependencies.terminal(run, "FAILED");
       return dependencies.safeFailure(

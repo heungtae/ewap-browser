@@ -40,4 +40,8 @@ export type ActSession = {
     confirmationId: string;
     confirmationNonce: string;
   };
+  // Set only by the Service Worker after the user has approved an initial Act.
+  // It is never supplied by the Side Panel or model.
+  continueAfterApproval?: true;
+  autoExecutionCount?: number;
 };

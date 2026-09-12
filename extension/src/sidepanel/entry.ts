@@ -653,9 +653,22 @@ const renderPermission = (
     "권한 확인",
     host + "에서 " + operation + " 작업을 허용할까요?",
   );
+  const row = actionRow(item);
+  let selected = false;
   const decide = async (
     decision: "once" | "always" | "deny",
   ): Promise<void> => {
+    if (selected) return;
+    selected = true;
+    for (const control of row.querySelectorAll<HTMLButtonElement>("button"))
+      control.disabled = true;
+    item.dataset.decision = decision;
+    row.setAttribute("aria-busy", "true");
+    setStatus(
+      decision === "deny"
+        ? "작업을 중단하는 중입니다."
+        : "권한을 적용하는 중입니다.",
+    );
     try {
       await sendRuntime({
         kind: "PERMISSION_DECISION",
@@ -668,7 +681,6 @@ const renderPermission = (
       showFailure(error instanceof Error ? error.message : undefined);
     }
   };
-  const row = actionRow(item);
   row.append(
     actionButton("이번만 허용", "primary", () => decide("once")),
     actionButton("항상 허용", "", () => decide("always")),

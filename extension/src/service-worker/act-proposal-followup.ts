@@ -1,4 +1,9 @@
 import { fail } from "../security/validation.js";
+import type { Capability } from "../policy/permission-manager.js";
+import type {
+  EnterprisePolicyDecision,
+  EnterprisePolicyRequest,
+} from "../policy/enterprise-policy.js";
 import type { ReadyExecution } from "../state/mutation-coordinator.js";
 import type { Run } from "../state/run-coordinator.js";
 import type { ServiceCoordinator } from "./coordinator.js";
@@ -13,6 +18,9 @@ type Complete = (
 ) => Promise<Record<string, unknown>>;
 type Dependencies = {
   coordinator: ServiceCoordinator;
+  authorizeEnterprise(
+    request: EnterprisePolicyRequest,
+  ): Promise<EnterprisePolicyDecision>;
   getRun(runId: string): Run | undefined;
   execute(
     run: Run,
@@ -22,7 +30,32 @@ type Dependencies = {
   complete: Complete;
 };
 
+const capabilityFor = (proposal: ActProposal): Capability =>
+  proposal.tool === "navigate"
+    ? "navigate"
+    : proposal.tool === "set_checked_by_ref" ||
+        proposal.tool === "click_by_ref" ||
+        proposal.tool === "press_key_by_ref"
+      ? "click"
+      : "type";
+
 export const createActProposalFollowup = (dependencies: Dependencies) => {
+  const authorizeResume = async (
+    session: ActSession,
+    run: Run,
+    proposal: ActProposal,
+  ): Promise<void> => {
+    const decision = await dependencies.authorizeEnterprise({
+      run_id: run.id,
+      tab_id: run.tabId,
+      document_epoch: run.documentEpoch,
+      origin: session.origin,
+      capability: capabilityFor(proposal),
+      risk: proposal.definition.risk,
+      profile: session.profile,
+    });
+    if (decision.decision !== "ALLOW") fail("ENTERPRISE_POLICY_DENIED");
+  };
   const submitValue = async (
     session: ActSession,
     value: string,
@@ -40,6 +73,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
       value.length > 16_384
     )
       return fail("VALUE_BINDING_INVALID");
+    await authorizeResume(session, run, proposal);
     const next = dependencies.coordinator.mutations.submitValue(
       run,
       awaiting.valueSlotId,
@@ -79,6 +113,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
       awaiting.confirmationNonce !== confirmationNonce
     )
       return fail("CONFIRMATION_INVALID");
+    await authorizeResume(session, run, proposal);
     delete session.awaitingConfirmation;
     return dependencies.complete(
       session,

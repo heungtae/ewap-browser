@@ -13,6 +13,8 @@ export const userMessage: Record<ErrorCode, string> = {
     "등록된 업무 프로필이 없어 읽기 전용으로만 사용할 수 있습니다.",
   TARGET_STALE: "페이지가 변경되어 대상을 다시 확인해야 합니다.",
   TARGET_NOT_ACTIONABLE: "현재 대상에 작업을 수행할 수 없습니다.",
+  POSTCONDITION_UNVERIFIED:
+    "작업 요청은 전달됐지만 페이지 결과를 확인하지 못했습니다.",
   NAVIGATION_UNVERIFIED: "페이지 이동 결과를 확인하지 못했습니다.",
   WORKFLOW_STATE_MISMATCH:
     "페이지 상태가 선언된 작업 순서와 일치하지 않습니다.",
@@ -110,6 +112,11 @@ export const failureHelp = (code?: string): FailureHelp => {
       return {
         guidance:
           "페이지 이동 결과를 확인하지 못했습니다. 현재 페이지를 새로고침한 뒤 다시 시도해 주세요.",
+      };
+    case "POSTCONDITION_UNVERIFIED":
+      return {
+        guidance:
+          "현재 페이지 상태를 다시 확인한 뒤, 필요한 경우 새 요청으로 작업을 진행해 주세요.",
       };
     case "WORKFLOW_STATE_MISMATCH":
       return {
