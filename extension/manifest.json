@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ContextPilot (development)",
-  "version": "0.1.43",
+  "version": "0.1.45",
   "icons": {
     "16": "assets/icons/contextpilot-16.png",
     "32": "assets/icons/contextpilot-32.png",

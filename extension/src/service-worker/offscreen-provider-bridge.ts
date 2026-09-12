@@ -1,18 +1,16 @@
 import { ContractError } from "../security/validation.js";
 import type { BrowserChromeApi, BrowserPort } from "./browser-api.js";
+import { createOffscreenReadiness } from "./offscreen-readiness.js";
 
 type ProviderStream = {
   chunks: string[];
   controller?: ReadableStreamDefaultController<Uint8Array> | undefined;
   port?: BrowserPort | undefined;
   ended: boolean;
+  cleanup?: () => void;
 };
 
 const providerPortPrefix = "contextpilot-provider:";
-const providerReadyCheckKind = "OFFSCREEN_PROVIDER_READY_CHECK";
-const providerReadyKind = "OFFSCREEN_PROVIDER_READY";
-const offscreenReadyAttempts = 20;
-const offscreenReadyRetryMs = 50;
 
 export const createOffscreenProviderBridge = (
   chromeApi: BrowserChromeApi | undefined,
@@ -22,7 +20,7 @@ export const createOffscreenProviderBridge = (
   handlePort(port: BrowserPort): boolean;
 } => {
   const streams = new Map<string, ProviderStream>();
-  let offscreenReady: Promise<void> | undefined;
+  const ensureOffscreen = createOffscreenReadiness(chromeApi);
 
   const flush = (stream: ProviderStream): void => {
     if (!stream.controller) return;
@@ -30,57 +28,6 @@ export const createOffscreenProviderBridge = (
       stream.controller.enqueue(new TextEncoder().encode(chunk));
     stream.chunks = [];
     if (stream.ended) stream.controller.close();
-  };
-
-  const ensureOffscreen = async (): Promise<void> => {
-    const offscreen = chromeApi?.offscreen;
-    if (!offscreen || !chromeApi)
-      throw new ContractError("PROVIDER_UNAVAILABLE");
-    let documentExists =
-      offscreen.hasDocument && (await offscreen.hasDocument());
-    const offscreenUrl = chromeApi.runtime.getURL("offscreen/index.html");
-    if (!documentExists && chromeApi.runtime.getContexts) {
-      const contexts = await chromeApi.runtime.getContexts({
-        contextTypes: ["OFFSCREEN_DOCUMENT"],
-        documentUrls: [offscreenUrl],
-      });
-      documentExists = contexts.length > 0;
-    }
-    if (!documentExists) {
-      offscreenReady ??= offscreen
-        .createDocument({
-          url: "offscreen/index.html",
-          reasons: ["BLOBS"],
-          justification: "Proxy provider requests from a document context.",
-        })
-        .catch((error: unknown) => {
-          offscreenReady = undefined;
-          throw error;
-        });
-      await offscreenReady;
-    }
-    for (let attempt = 0; attempt < offscreenReadyAttempts; attempt += 1) {
-      try {
-        const response = await chromeApi.runtime.sendMessage({
-          kind: providerReadyCheckKind,
-        });
-        if (
-          typeof response === "object" &&
-          response !== null &&
-          (response as { kind?: unknown }).kind === providerReadyKind
-        )
-          return;
-      } catch {
-        // The document can exist before its module has registered a listener.
-      }
-      await new Promise<void>((resolve) => {
-        setTimeout(resolve, offscreenReadyRetryMs);
-      });
-    }
-    throw new ContractError(
-      "PROVIDER_UNAVAILABLE",
-      "offscreen provider proxy did not become ready",
-    );
   };
 
   const handlePort = (port: BrowserPort): boolean => {
@@ -96,9 +43,13 @@ export const createOffscreenProviderBridge = (
     )
       return true;
     const stream = streams.get(streamId);
-    if (!stream) return true;
+    if (!stream) {
+      port.disconnect?.();
+      return true;
+    }
     stream.port = port;
     port.onMessage.addListener((message) => {
+      if (stream.ended) return;
       if (typeof message !== "object" || message === null) return;
       const value = message as { type?: unknown; text?: unknown };
       if (value.type === "chunk" && typeof value.text === "string") {
@@ -107,6 +58,7 @@ export const createOffscreenProviderBridge = (
       } else if (value.type === "end") {
         stream.ended = true;
         flush(stream);
+        stream.cleanup?.();
       }
     });
     port.onDisconnect.addListener(() => {
@@ -116,83 +68,130 @@ export const createOffscreenProviderBridge = (
         flush(stream);
       }
       streams.delete(streamId);
+      stream.cleanup?.();
     });
     return true;
   };
 
   const fetch: typeof globalThis.fetch = async (input, init) => {
-    const url = String(input);
-    const headers = Object.fromEntries(new Headers(init?.headers).entries());
-    const method = init?.method === "GET" ? "GET" : "POST";
-    const body = typeof init?.body === "string" ? init.body : undefined;
-    if (method === "POST" && !body) throw new ContractError("INVALID_ARGUMENT");
-    await ensureOffscreen();
-    if (!chromeApi) throw new ContractError("PROVIDER_UNAVAILABLE");
-    const streamId = newStreamId();
-    const stream: ProviderStream = { chunks: [], ended: false };
-    streams.set(streamId, stream);
-    const response = await chromeApi.runtime.sendMessage({
-      kind: "OFFSCREEN_FETCH",
-      stream_id: streamId,
-      url,
-      method,
-      ...(body === undefined ? {} : { body }),
-      headers,
+    const signal = init?.signal;
+    signal?.throwIfAborted();
+    let stream: ProviderStream | undefined;
+    let streamId: string | undefined;
+    let rejectAbort: (reason: unknown) => void = () => undefined;
+    const aborted = new Promise<never>((_resolve, reject) => {
+      rejectAbort = reject;
     });
-    if (
-      typeof response === "object" &&
-      response !== null &&
-      (response as { ok?: unknown }).ok === false
-    ) {
-      const detail = (response as { detail?: unknown }).detail;
-      throw new ContractError(
-        "PROVIDER_UNAVAILABLE",
-        typeof detail === "string"
-          ? detail.slice(0, 320)
-          : "offscreen provider request failed",
-      );
-    }
-    if (
-      typeof response !== "object" ||
-      response === null ||
-      !(response as { ok?: unknown }).ok ||
-      typeof (response as { status?: unknown }).status !== "number" ||
-      ((response as { stream?: unknown }).stream !== true &&
-        typeof (response as { body?: unknown }).body !== "string")
-    )
-      throw new ContractError(
-        "PROVIDER_UNAVAILABLE",
-        "offscreen provider proxy unavailable",
-      );
-    const result = response as {
-      status: number;
-      content_type?: string;
-      body: string;
-      stream?: boolean;
+    const cleanup = (): void => signal?.removeEventListener("abort", abort);
+    const abort = (): void => {
+      const error = new DOMException("Provider request aborted", "AbortError");
+      if (stream) {
+        if (!stream.ended) stream.controller?.error(error);
+        stream.ended = true;
+        stream.chunks = [];
+        stream.port?.disconnect?.();
+      }
+      if (streamId) streams.delete(streamId);
+      cleanup();
+      rejectAbort(error);
     };
-    const responseInit: ResponseInit = { status: result.status };
-    if (result.content_type)
-      responseInit.headers = { "content-type": result.content_type };
-    if (!result.stream) {
-      streams.delete(streamId);
-      return new Response(result.body, responseInit);
+    signal?.addEventListener("abort", abort, { once: true });
+    const request = async (): Promise<Response> => {
+      const url = String(input);
+      const headers = Object.fromEntries(new Headers(init?.headers).entries());
+      const method = init?.method === "GET" ? "GET" : "POST";
+      const body = typeof init?.body === "string" ? init.body : undefined;
+      if (method === "POST" && !body)
+        throw new ContractError("INVALID_ARGUMENT");
+      await ensureOffscreen();
+      signal?.throwIfAborted();
+      if (!chromeApi) throw new ContractError("PROVIDER_UNAVAILABLE");
+      streamId = newStreamId();
+      const currentStream: ProviderStream = {
+        chunks: [],
+        ended: false,
+        cleanup,
+      };
+      stream = currentStream;
+      streams.set(streamId, stream);
+      const response = await chromeApi.runtime.sendMessage({
+        kind: "OFFSCREEN_FETCH",
+        stream_id: streamId,
+        url,
+        method,
+        ...(body === undefined ? {} : { body }),
+        headers,
+      });
+      signal?.throwIfAborted();
+      if (
+        typeof response === "object" &&
+        response !== null &&
+        (response as { ok?: unknown }).ok === false
+      ) {
+        const detail = (response as { detail?: unknown }).detail;
+        throw new ContractError(
+          "PROVIDER_UNAVAILABLE",
+          typeof detail === "string"
+            ? detail.slice(0, 320)
+            : "offscreen provider request failed",
+        );
+      }
+      if (
+        typeof response !== "object" ||
+        response === null ||
+        !(response as { ok?: unknown }).ok ||
+        typeof (response as { status?: unknown }).status !== "number" ||
+        ((response as { stream?: unknown }).stream !== true &&
+          typeof (response as { body?: unknown }).body !== "string")
+      )
+        throw new ContractError(
+          "PROVIDER_UNAVAILABLE",
+          "offscreen provider proxy unavailable",
+        );
+      const result = response as {
+        status: number;
+        content_type?: string;
+        body: string;
+        stream?: boolean;
+      };
+      const responseInit: ResponseInit = { status: result.status };
+      if (result.content_type)
+        responseInit.headers = { "content-type": result.content_type };
+      if (!result.stream) {
+        streams.delete(streamId);
+        cleanup();
+        return new Response(result.body, responseInit);
+      }
+      return new Response(
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            currentStream.controller = controller;
+            flush(currentStream);
+          },
+          cancel() {
+            if (streamId) streams.delete(streamId);
+            currentStream.chunks = [];
+            currentStream.controller = undefined;
+            currentStream.ended = true;
+            currentStream.port?.disconnect?.();
+            cleanup();
+          },
+        }),
+        responseInit,
+      );
+    };
+    try {
+      return await Promise.race([request(), aborted]);
+    } catch (error) {
+      if (streamId) streams.delete(streamId);
+      if (stream) {
+        stream.ended = true;
+        stream.chunks = [];
+        stream.port?.disconnect?.();
+      }
+      cleanup();
+      throw error;
     }
-    return new Response(
-      new ReadableStream<Uint8Array>({
-        start(controller) {
-          stream.controller = controller;
-          flush(stream);
-        },
-        cancel() {
-          streams.delete(streamId);
-          stream.chunks = [];
-          stream.controller = undefined;
-          stream.ended = true;
-          stream.port?.disconnect?.();
-        },
-      }),
-      responseInit,
-    );
   };
 
   return { fetch, handlePort };

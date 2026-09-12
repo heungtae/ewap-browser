@@ -51,7 +51,8 @@ export const createPanelPortLifecycle = (dependencies: Dependencies) => {
           }
           panelPorts.set(documentId, { port, windowId });
           port.onDisconnect.addListener(() => {
-            panelPorts.delete(documentId);
+            if (panelPorts.get(documentId)?.port === port)
+              panelPorts.delete(documentId);
             unboundPanelPorts.delete(port);
           });
         })

@@ -161,9 +161,9 @@ export class TabChatSessionStore {
     const thread = binding ? this.threads.get(binding.tab_id) : undefined;
     if (!thread || !Number.isInteger(sequence) || sequence < 0)
       return fail("INVALID_ARGUMENT");
-    return thread.events
-      .filter((event) => event.sequence > sequence)
-      .map(clone);
+    return this.recoverable(thread.tab_id).filter(
+      (event) => event.sequence > sequence,
+    );
   }
 
   public recoverable(tabId: number): ChatEvent[] {

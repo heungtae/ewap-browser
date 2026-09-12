@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServer } from "node:net";
+import { checkChatRecovery } from "./chrome-chat-recovery-check.mjs";
 
 const executable = process.env.CHROME_FOR_TESTING_BIN;
 if (!executable) {
@@ -121,6 +122,7 @@ try {
       "ContextPilot Side Panel did not render the chat workspace controls",
     );
   }
+  await checkChatRecovery(panel.webSocketDebuggerUrl);
   await cdp(panel.webSocketDebuggerUrl, "Runtime.evaluate", {
     expression: "document.querySelector('#settings-open').click()",
   });

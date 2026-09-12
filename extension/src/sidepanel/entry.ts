@@ -8,11 +8,15 @@ import { failureHelp, timelineToolLabel, userMessage } from "./panel.js";
 import { redactForChat } from "../security/chat-redaction.js";
 import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
+import { connectPanel } from "./panel-connection.js";
+import { eventSequenceDecision } from "./event-sequence.js";
 
 type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
   connect(info: { name: string }): {
     onMessage: { addListener(listener: (message: unknown) => void): void };
+    onDisconnect: { addListener(listener: () => void): void };
+    disconnect(): void;
   };
   openOptionsPage(): Promise<void>;
   onMessage: { addListener(listener: (message: unknown) => void): void };
@@ -33,7 +37,6 @@ const chromeApi = (
   }
 ).chrome;
 const runtime = chromeApi?.runtime;
-const panelPort = runtime?.connect({ name: "contextpilot-panel" });
 const byId = <T extends HTMLElement>(id: string): T | null =>
   document.querySelector<T>("#" + id);
 const chatForm = byId<HTMLFormElement>("chat-form");
@@ -275,6 +278,7 @@ const applyPermissionMode = (mode: string): void => {
         : "표준 권한";
 };
 const showFailure = (code?: string): void => {
+  setActivityStatus();
   const detail =
     code && code in userMessage
       ? userMessage[code as keyof typeof userMessage]
@@ -818,7 +822,7 @@ const runStartActivityLabel = (mode: "ask" | "act"): string =>
   mode === "act"
     ? "페이지 작업을 안전하게 준비하는 중입니다."
     : "현재 페이지 정보를 안전하게 읽는 중입니다.";
-const applyChatEvent = (raw: unknown): void => {
+const applyChatEvent = (raw: unknown, recovered = false): void => {
   let event: ChatEvent;
   try {
     event = validateChatEvent(raw);
@@ -826,8 +830,9 @@ const applyChatEvent = (raw: unknown): void => {
     return;
   }
   const previous = threadSequences.get(event.thread_id) ?? 0;
-  if (event.sequence <= previous) return;
-  if (event.sequence > previous + 1) {
+  const decision = eventSequenceDecision(previous, event.sequence, recovered);
+  if (decision === "ignore") return;
+  if (decision === "resync") {
     if (!resyncingThreads.has(event.thread_id)) {
       resyncingThreads.add(event.thread_id);
       void runtime
@@ -844,8 +849,9 @@ const applyChatEvent = (raw: unknown): void => {
             Array.isArray((response as { events?: unknown }).events)
           )
             for (const missing of (response as { events: unknown[] }).events)
-              applyChatEvent(missing);
+              applyChatEvent(missing, true);
         })
+        .catch(() => void recoverChatEvents())
         .finally(() => resyncingThreads.delete(event.thread_id));
     }
     return;
@@ -1037,7 +1043,7 @@ const recoverChatEvents = async (attempt = 0): Promise<void> => {
         threadScope.textContent = `${(scope as { origin: string }).origin}${(scope as { path: string }).path} · 이 탭의 문맥`;
       updatePageLabel((response as { page?: unknown }).page);
       for (const event of (response as { events: unknown[] }).events)
-        applyChatEvent(event);
+        applyChatEvent(event, true);
       return;
     }
   } catch {
@@ -1098,7 +1104,14 @@ const receiveChatEvent = (message: unknown): void => {
   )
     applyChatEvent((message as { event?: unknown }).event);
 };
-panelPort?.onMessage.addListener(receiveChatEvent);
+if (runtime) {
+  const stopConnection = connectPanel({
+    connect: () => runtime.connect({ name: "contextpilot-panel" }),
+    receive: receiveChatEvent,
+    recover: () => void recoverChatEvents(),
+  });
+  window.addEventListener("pagehide", stopConnection, { once: true });
+}
 runtime?.onMessage.addListener(receiveChatEvent);
 chromeApi?.tabs?.onActivated?.addListener(() => void recoverChatEvents());
 attachmentTrigger?.addEventListener("click", () => attachmentInput?.click());
@@ -1167,6 +1180,7 @@ chatForm?.addEventListener("submit", (event) => {
   if (chatInput) chatInput.value = "";
   setRunActive(true);
   setStatus("응답을 기다리는 중입니다.");
+  setActivityStatus("요청을 준비하고 있습니다.");
   void sendRuntime({ kind: "CHAT_SEND", payload: { prompt, mode: chatMode } })
     .then((response) => {
       clearAttachment();
