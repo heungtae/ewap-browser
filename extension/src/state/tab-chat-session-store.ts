@@ -109,7 +109,14 @@ export class TabChatSessionStore {
       payload.type === "user_message" || payload.type === "assistant_delta"
         ? { ...payload, text: redactForChat(payload.text) }
         : payload.type === "tool_started" || payload.type === "tool_progress"
-          ? { ...payload, summary: redactForChat(payload.summary, 512) }
+          ? {
+              ...payload,
+              summary: redactForChat(payload.summary, 512),
+              ...(payload.type === "tool_started" &&
+              typeof payload.target_name === "string"
+                ? { target_name: redactForChat(payload.target_name, 512) }
+                : {}),
+            }
           : payload.type === "tool_finished"
             ? {
                 ...payload,

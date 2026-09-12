@@ -184,6 +184,20 @@ describe("tab chat session store", () => {
     });
   });
 
+  it("retains the redacted target name for an Act timeline entry", () => {
+    const store = new TabChatSessionStore();
+    store.bindRun("run-abcdefghijklmnop", 1, scope);
+    expect(
+      store.append("run-abcdefghijklmnop", {
+        type: "tool_started",
+        tool_use_id: "tool-abcdefghijklmnop",
+        tool: "click_by_ref",
+        target_name: "Remote",
+        summary: "Remote 작업을 준비하는 중입니다.",
+      }),
+    ).toMatchObject({ type: "tool_started", target_name: "Remote" });
+  });
+
   it("adds a visible page boundary and does not reuse the prior scope", () => {
     const store = new TabChatSessionStore();
     store.bindRun("run-abcdefghijklmnop", 1, scope);

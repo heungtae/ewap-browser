@@ -20,7 +20,7 @@ const definition: ProfileActionTool = {
 };
 
 describe("Act step runner", () => {
-  it("executes_the_next_proposal_without_another_review_after_initial_approval", async () => {
+  it("requires_a_review_for_every_followup_proposal", async () => {
     const coordinator = new ServiceCoordinator({
       permission_origins: ["<all_urls>"],
       page_read_origins: ["<all_urls>"],
@@ -28,7 +28,6 @@ describe("Act step runner", () => {
       llm_egress_origins: [],
     });
     const publish = vi.fn();
-    const executeApprovedProposal = vi.fn(async () => ({ ok: true }));
     const runner = createActStepRunner({
       coordinator,
       provider: {
@@ -84,7 +83,6 @@ describe("Act step runner", () => {
       bindRun: () => undefined,
       publish,
       serialise: JSON.stringify,
-      executeApprovedProposal,
       endSession: () => undefined,
     });
     const session = {
@@ -100,17 +98,28 @@ describe("Act step runner", () => {
       discovery: "page-derived",
       definitions: [definition],
       profileDefinitions: [],
-      continueAfterApproval: true,
-      autoExecutionCount: 1,
     } satisfies ActSession;
 
-    await expect(runner.runStep(session)).resolves.toEqual({ ok: true });
-    expect(executeApprovedProposal).toHaveBeenCalledWith(session);
-    expect(session.autoExecutionCount).toBe(2);
+    await expect(runner.runStep(session)).resolves.toMatchObject({
+      ok: true,
+      state: "ACTION_REVIEW",
+    });
+    await expect(runner.runStep(session)).resolves.toMatchObject({
+      ok: true,
+      state: "ACTION_REVIEW",
+    });
+    expect(
+      publish.mock.calls.filter(([, event]) => event.type === "user_message"),
+    ).toHaveLength(1);
     expect(
       publish.mock.calls.some(
         ([, event]) => event.type === "action_review_required",
       ),
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      publish.mock.calls.filter(
+        ([, event]) => event.type === "action_review_required",
+      ),
+    ).toHaveLength(2);
   });
 });

@@ -34,4 +34,11 @@ describe("timeline tool labels", () => {
     expect(timelineToolLabel("click_by_ref")).toBe("클릭");
     expect(timelineToolLabel("unknown_internal_tool")).toBe("페이지 작업");
   });
+
+  it("identifies the target for click and navigation events", () => {
+    expect(timelineToolLabel("click_by_ref", "Remote")).toBe("Remote 클릭");
+    expect(timelineToolLabel("navigate", "SSH Tutorial")).toBe(
+      "SSH Tutorial 페이지 이동",
+    );
+  });
 });

@@ -99,6 +99,7 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       tool_use_id: proposal.toolCallId,
       tool: proposal.tool,
       summary: `${proposal.targetName} 작업을 준비하는 중입니다.`,
+      target_name: proposal.targetName,
     });
     const permission = enterprise.managed_auto
       ? "ALLOW"
@@ -144,13 +145,6 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       (node) => node.ref_id === proposal.refId,
     );
     if (!target || !target.enabled) return fail("TARGET_STALE");
-    // The initial review and any required capability prompt are user-mediated.
-    // Once this execution is authorized, the Service Worker may continue the
-    // same bounded Act session without routing later proposals through the UI.
-    if (!session.continueAfterApproval) {
-      session.continueAfterApproval = true;
-      session.autoExecutionCount = 1;
-    }
     const prepared = prepareActProposal(
       dependencies,
       session,

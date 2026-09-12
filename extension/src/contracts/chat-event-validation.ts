@@ -39,6 +39,7 @@ export const allowedEventKeys = [
   "tool_use_id",
   "tool",
   "summary",
+  "target_name",
   "result",
   "action",
   "request_id",

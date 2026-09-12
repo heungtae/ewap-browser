@@ -102,9 +102,6 @@ export const runAskChat = createAskChatRunner({
   rememberVision: chatRunLifecycle.rememberVision,
   releaseVision: chatRunLifecycle.releaseVision,
 });
-const proposalExecutorRef: {
-  current?: ReturnType<typeof createActProposalExecutor>;
-} = {};
 const actStepRunner = createActStepRunner({
   coordinator,
   provider: providerRuntime!,
@@ -115,11 +112,6 @@ const actStepRunner = createActStepRunner({
   bindRun: (runId, tabId, scope) => chatEvents.bindRun(runId, tabId, scope),
   publish: chatRunLifecycle.publish,
   serialise: serialiseToolResult,
-  executeApprovedProposal: async (session) => {
-    const executor = proposalExecutorRef.current;
-    if (!executor) throw new Error("INTERNAL_FAILURE");
-    return executor.executeProposal(session);
-  },
   endSession: (session) => {
     permissions.endRun(session.id);
     actSessions.delete(session.id);
@@ -167,7 +159,6 @@ const proposalExecutor = createActProposalExecutor({
     actSessions.delete(session.id);
   },
 });
-proposalExecutorRef.current = proposalExecutor;
 export const {
   executeProposal: executeActProposal,
   submitValue: submitActValue,

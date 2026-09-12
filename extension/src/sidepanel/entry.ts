@@ -57,7 +57,6 @@ const newChatConfirm = byId<HTMLButtonElement>("new-chat-confirm");
 const newChatCancel = byId<HTMLButtonElement>("new-chat-cancel");
 const workflowRecordButton = byId<HTMLButtonElement>("workflow-record");
 const permissionModeBadge = byId<HTMLElement>("permission-mode-badge");
-const runBanner = byId<HTMLElement>("run-banner");
 const threadScope = byId<HTMLElement>("thread-scope");
 
 let chatMode: "ask" | "act" = "ask";
@@ -81,6 +80,9 @@ const assistantTruncationMarker = "\n\n[응답이 길어 앞부분만 표시합�
 const textAttachmentExtensions = new Set(["txt", "md", "csv", "json"]);
 let attachment: { name: string; text: string; truncated: boolean } | undefined;
 let runActive = false;
+// Keep following new transcript content until the reader deliberately scrolls
+// away from the end. Reaching the end again resumes automatic following.
+let followsTranscript = true;
 let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
@@ -118,15 +120,19 @@ const openSettings = (): void => {
 const isNearBottom = (): boolean =>
   !!chatScroll &&
   chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight < 40;
+const scrollToLatest = (): void => {
+  if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
+};
+chatScroll?.addEventListener("scroll", () => {
+  followsTranscript = isNearBottom();
+});
 const append = (element: HTMLElement): void => {
   if (!chatMessages) return;
-  const wasNearBottom = isNearBottom();
   emptyState?.setAttribute("hidden", "");
   chatMessages.append(element);
   while (chatMessages.children.length > transcriptLimit)
     chatMessages.firstElementChild?.remove();
-  if (wasNearBottom && chatScroll)
-    chatScroll.scrollTop = chatScroll.scrollHeight;
+  if (followsTranscript) scrollToLatest();
 };
 const message = (role: "user" | "assistant", text: string): HTMLElement => {
   const item = document.createElement("article");
@@ -236,8 +242,9 @@ const clearConversation = (focusInput = false): void => {
   skipNextLiveUserMessage = false;
   setRunActive(false);
   chatMessages?.replaceChildren();
+  followsTranscript = true;
+  if (chatScroll) chatScroll.scrollTop = 0;
   emptyState?.removeAttribute("hidden");
-  runBanner?.setAttribute("hidden", "");
   clearAttachment();
   if (chatInput) {
     chatInput.value = "";
@@ -363,7 +370,7 @@ const renderReview = (action: ChatActionView, runId: string): void => {
     if (primary && decision === "approve") primary.textContent = "실행 중";
     item.dataset.decision = decision;
     row.setAttribute("aria-busy", "true");
-    if (chatScroll) chatScroll.scrollTop = chatScroll.scrollHeight;
+    if (followsTranscript) scrollToLatest();
     setStatus(
       decision === "approve"
         ? "제안을 실행하는 중입니다."
@@ -764,6 +771,9 @@ const renderConfirmation = (
 };
 const flushDeltas = (): void => {
   deltaFrame = undefined;
+  // Assistant deltas update an existing message instead of appending a new
+  // element. Keep following that growing message only while the reader was
+  // already at the end of the transcript.
   for (const [runId, text] of pendingDeltas) {
     const previous = streamingMessages.get(runId);
     if (previous) {
@@ -779,6 +789,7 @@ const flushDeltas = (): void => {
     }
   }
   pendingDeltas.clear();
+  if (followsTranscript) scrollToLatest();
 };
 const activityLabel = (stage: ActivityStage): string =>
   ({
@@ -791,6 +802,10 @@ const activityLabel = (stage: ActivityStage): string =>
     COMPLETED: "준비를 완료했습니다.",
     FAILED: "준비를 완료하지 못했습니다.",
   })[stage];
+const runStartActivityLabel = (mode: "ask" | "act"): string =>
+  mode === "act"
+    ? "페이지 작업을 안전하게 준비하는 중입니다."
+    : "현재 페이지 정보를 안전하게 읽는 중입니다.";
 const applyChatEvent = (raw: unknown): void => {
   let event: ChatEvent;
   try {
@@ -844,15 +859,7 @@ const applyChatEvent = (raw: unknown): void => {
   }
   if (event.type === "run_started") {
     applyPermissionMode(event.permission_mode);
-    if (runBanner) {
-      runBanner.textContent =
-        event.permission_mode === "skip_all_permission_checks"
-          ? "권한 질문은 생략되지만 credential, 위험 확인과 정책 차단은 계속 적용됩니다."
-          : event.mode === "act"
-            ? "페이지 작업을 안전하게 준비하는 중입니다."
-            : "현재 페이지 정보를 안전하게 읽는 중입니다.";
-      runBanner.hidden = false;
-    }
+    setActivityStatus(runStartActivityLabel(event.mode));
     setRunActive(true);
     setStatus("응답을 생성하는 중입니다.");
     return;
@@ -863,7 +870,6 @@ const applyChatEvent = (raw: unknown): void => {
     event.type === "activity_finished"
   ) {
     const detail = activityLabel(event.stage);
-    if (event.type !== "activity_finished") setActivityStatus(detail);
     if (event.type === "activity_finished") {
       setStatus(detail);
       if (
@@ -871,7 +877,7 @@ const applyChatEvent = (raw: unknown): void => {
         event.stage === "SELECTION_REQUIRED"
       )
         setActivityStatus(detail);
-      else setActivityStatus();
+      else if (event.stage === "FAILED") setActivityStatus(detail);
       if (event.stage === "FAILED") setRunActive(false);
     }
     return;
@@ -894,7 +900,11 @@ const applyChatEvent = (raw: unknown): void => {
       if (detail) detail.textContent = event.summary;
       return;
     }
-    const item = card("tool", timelineToolLabel(event.tool), event.summary);
+    const item = card(
+      "tool",
+      timelineToolLabel(event.tool, event.target_name),
+      event.summary,
+    );
     tools.set(event.tool_use_id, item);
     append(item);
     return;
@@ -959,7 +969,6 @@ const applyChatEvent = (raw: unknown): void => {
   );
   streamingMessages.delete(event.run_id);
   setActivityStatus();
-  if (runBanner) runBanner.hidden = true;
   setRunActive(false);
   if (event.outcome === "VERIFIED") setStatus("작업을 완료했습니다.");
   else if (event.outcome === "CANCELLED") setStatus("작업을 중단했습니다.");

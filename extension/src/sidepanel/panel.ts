@@ -59,17 +59,23 @@ export const userMessage: Record<ErrorCode, string> = {
   REQUEST_ID_CONFLICT: "같은 요청 ID가 다른 요청에 이미 사용되었습니다.",
   REQUEST_NOT_FOUND: "요청 상태를 찾을 수 없습니다.",
 };
-export const timelineToolLabel = (tool: string): string =>
-  (
-    ({
-      click_by_ref: "클릭",
-      set_text_by_ref: "텍스트 입력",
-      select_option_by_ref: "옵션 선택",
-      set_checked_by_ref: "선택 상태 변경",
-      press_key_by_ref: "키 입력",
-      navigate: "페이지 이동",
-    }) as Record<string, string>
-  )[tool] ?? "페이지 작업";
+export const timelineToolLabel = (
+  tool: string,
+  targetName?: string,
+): string => {
+  const action =
+    (
+      {
+        click_by_ref: "클릭",
+        set_text_by_ref: "텍스트 입력",
+        select_option_by_ref: "옵션 선택",
+        set_checked_by_ref: "선택 상태 변경",
+        press_key_by_ref: "키 입력",
+        navigate: "페이지 이동",
+      } as Record<string, string>
+    )[tool] ?? "페이지 작업";
+  return targetName ? `${targetName} ${action}` : action;
+};
 export type FailureHelp = {
   guidance: string;
   openSettings?: boolean;

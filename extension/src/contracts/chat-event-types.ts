@@ -34,7 +34,13 @@ export type ChatEventPayload =
   | { type: "activity_progress"; stage: ActivityStage }
   | { type: "activity_finished"; stage: ActivityStage }
   | { type: "assistant_delta"; text: string }
-  | { type: "tool_started"; tool_use_id: string; tool: string; summary: string }
+  | {
+      type: "tool_started";
+      tool_use_id: string;
+      tool: string;
+      summary: string;
+      target_name?: string;
+    }
   | { type: "tool_progress"; tool_use_id: string; summary: string }
   | { type: "tool_finished"; tool_use_id: string; result: SafeToolResult }
   | { type: "action_review_required"; action: ChatActionView }

@@ -91,7 +91,8 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
     if (
       typeof value.tool_use_id !== "string" ||
       typeof value.tool !== "string" ||
-      typeof value.summary !== "string"
+      typeof value.summary !== "string" ||
+      (value.target_name !== undefined && typeof value.target_name !== "string")
     )
       return fail("INVALID_ARGUMENT");
     return {
@@ -100,6 +101,9 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       tool_use_id: opaque(value.tool_use_id),
       tool: string(value.tool, 128),
       summary: string(value.summary, 512),
+      ...(typeof value.target_name === "string"
+        ? { target_name: string(value.target_name, 512) }
+        : {}),
     };
   }
   if (value.type === "tool_progress") {

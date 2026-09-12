@@ -17,8 +17,5 @@ export type ActStepDependencies = {
   bindRun(runId: string, tabId: number, scope: PageScope): void;
   publish(runId: string, event: ChatEventPayload): void;
   serialise(value: unknown): string;
-  executeApprovedProposal(
-    session: ActSession,
-  ): Promise<Record<string, unknown>>;
   endSession(session: ActSession): void;
 };

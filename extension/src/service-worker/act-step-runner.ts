@@ -26,10 +26,13 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     );
     session.runId = run.id;
     dependencies.bindRun(run.id, active.tabId, dependencies.pageScope(active));
-    dependencies.publish(run.id, {
-      type: "user_message",
-      text: safeChatText(session.prompt),
-    });
+    if (!session.userMessagePublished) {
+      dependencies.publish(run.id, {
+        type: "user_message",
+        text: safeChatText(session.prompt),
+      });
+      session.userMessagePublished = true;
+    }
     dependencies.publish(run.id, {
       type: "run_started",
       mode: "act",
@@ -101,21 +104,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       active.snapshot,
       targetRefId ? new Set([targetRefId]) : undefined,
     );
-    if (tools.length === 0) {
-      dependencies.coordinator.runs.terminal(run.id, "FAILED");
-      dependencies.publish(run.id, {
-        type: "run_terminal",
-        outcome: "FAILED",
-        code: "PROFILE_UNAVAILABLE",
-      });
-      dependencies.endSession(session);
-      return fail("PROFILE_UNAVAILABLE");
-    }
     dependencies.publish(run.id, {
       type: "activity_progress",
       stage: "CONTACTING_PROVIDER",
     });
-    const response = await dependencies.provider.chat({ messages, tools });
+    const response = await dependencies.provider.chat({
+      messages,
+      ...(tools.length > 0 ? { tools } : {}),
+    });
     if (response.tool_calls.length === 0) {
       if (!response.content) return fail("PROVIDER_UNAVAILABLE");
       dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
@@ -152,20 +148,6 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       tool_calls: response.tool_calls,
     });
     session.proposal = proposal;
-    if (session.continueAfterApproval) {
-      if ((session.autoExecutionCount ?? 0) >= 12) {
-        dependencies.coordinator.runs.terminal(run.id, "FAILED");
-        dependencies.publish(run.id, {
-          type: "run_terminal",
-          outcome: "FAILED",
-          code: "WORKFLOW_STEP_LIMIT",
-        });
-        dependencies.endSession(session);
-        return fail("WORKFLOW_STEP_LIMIT");
-      }
-      session.autoExecutionCount = (session.autoExecutionCount ?? 0) + 1;
-      return dependencies.executeApprovedProposal(session);
-    }
     if (response.content)
       dependencies.publish(run.id, {
         type: "assistant_delta",
