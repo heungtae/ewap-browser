@@ -56,4 +56,27 @@ describe("Act proposal completion", () => {
         '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED","tool":"click_by_ref","target_name":"Open SSH guide"}\n[/UNTRUSTED_TOOL_RESULT]',
     });
   });
+
+  it("ends_the_session_after_a_terminal_execution_failure", async () => {
+    const publish = vi.fn();
+    const publishTerminal = vi.fn();
+    const continueWorkflow = vi.fn();
+    const endSession = vi.fn();
+    const session = { messages: [], proposal } as unknown as ActSession;
+
+    await expect(
+      completeActProposal(
+        { publish, publishTerminal, continueWorkflow, endSession },
+        session,
+        run,
+        proposal,
+        { ok: false, code: "TARGET_STALE" },
+        { success: "작업 결과를 확인했습니다.", failure: "작업 실패" },
+      ),
+    ).resolves.toMatchObject({ ok: false, code: "TARGET_STALE" });
+
+    expect(publishTerminal).toHaveBeenCalledWith(run, "FAILED", "TARGET_STALE");
+    expect(endSession).toHaveBeenCalledWith(session);
+    expect(continueWorkflow).not.toHaveBeenCalled();
+  });
 });

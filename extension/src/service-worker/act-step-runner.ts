@@ -8,9 +8,10 @@ import {
 } from "./act-proposal-parser.js";
 import { selectActActionTools } from "./page-derived-actions.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
-import type { ProviderMessage } from "../providers/types.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
 import type { ActStepDependencies } from "./act-step-dependencies.js";
+import { failActRun } from "./act-run-failure.js";
+import { actStepMessages } from "./act-step-messages.js";
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
   const runStep = async (
     session: ActSession,
@@ -25,157 +26,134 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       "act",
     );
     session.runId = run.id;
-    dependencies.bindRun(run.id, active.tabId, dependencies.pageScope(active));
-    if (!session.userMessagePublished) {
-      dependencies.publish(run.id, {
-        type: "user_message",
-        text: safeChatText(session.prompt),
-      });
-      session.userMessagePublished = true;
-    }
-    dependencies.publish(run.id, {
-      type: "run_started",
-      mode: "act",
-      permission_mode: dependencies.preferences().permission_mode,
-    });
-    dependencies.publish(run.id, {
-      type: "activity_started",
-      stage: "PREPARING_PAGE",
-    });
-    let targetRefId: string | undefined;
-    if (session.workflow) {
-      const candidate = workflowDefinitions(
-        active.snapshot,
-        session.workflow.step,
+    try {
+      dependencies.bindRun(
+        run.id,
+        active.tabId,
+        dependencies.pageScope(active),
       );
-      if (!candidate) {
-        dependencies.coordinator.runs.terminal(run.id, "FAILED");
+      if (!session.userMessagePublished) {
+        dependencies.publish(run.id, {
+          type: "user_message",
+          text: safeChatText(session.prompt),
+        });
+        session.userMessagePublished = true;
+      }
+      dependencies.publish(run.id, {
+        type: "run_started",
+        mode: "act",
+        permission_mode: dependencies.preferences().permission_mode,
+      });
+      dependencies.publish(run.id, {
+        type: "activity_started",
+        stage: "PREPARING_PAGE",
+      });
+      let targetRefId: string | undefined;
+      if (session.workflow) {
+        const candidate = workflowDefinitions(
+          active.snapshot,
+          session.workflow.step,
+        );
+        if (!candidate) return fail("WORKFLOW_STATE_MISMATCH");
+        session.definitions = candidate.definitions;
+        session.discovery = "page-derived";
+        targetRefId = candidate.targetRefId;
+      } else {
+        const selected = selectActActionTools(
+          active.snapshot,
+          session.profileDefinitions,
+        );
+        session.definitions = selected.definitions;
+        session.discovery = selected.discovery;
+      }
+      const model = dependencies.coordinator.modelSnapshot(
+        run.id,
+        active.snapshot,
+      );
+      const projection = `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]`;
+      const profileContext = session.modelContext
+        ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(session.modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]`
+        : undefined;
+      const messages = actStepMessages({
+        session,
+        profileContext,
+        projection,
+        threadContext: dependencies.threadContext(active.tabId),
+      });
+      const tools = genericActTools(
+        session.definitions,
+        model.snapshot,
+        active.snapshot,
+        targetRefId ? new Set([targetRefId]) : undefined,
+      );
+      dependencies.publish(run.id, {
+        type: "activity_progress",
+        stage: "CONTACTING_PROVIDER",
+      });
+      const response = await dependencies.provider.chat({
+        messages,
+        ...(tools.length > 0 ? { tools } : {}),
+      });
+      if (response.tool_calls.length === 0) {
+        if (!response.content) return fail("PROVIDER_UNAVAILABLE");
+        dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
+        dependencies.publish(run.id, {
+          type: "assistant_delta",
+          text: response.content,
+        });
+        dependencies.publish(run.id, {
+          type: "activity_finished",
+          stage: "COMPLETED",
+        });
         dependencies.publish(run.id, {
           type: "run_terminal",
-          outcome: "FAILED",
-          code: "WORKFLOW_STATE_MISMATCH",
+          outcome: "VERIFIED",
         });
         dependencies.endSession(session);
-        return fail("WORKFLOW_STATE_MISMATCH");
+        return { ok: true, state: "ANSWER", message: response.content };
       }
-      session.definitions = candidate.definitions;
-      session.discovery = "page-derived";
-      targetRefId = candidate.targetRefId;
-    } else {
-      const selected = selectActActionTools(
+      if (response.tool_calls.length !== 1) return fail("INVALID_ARGUMENT");
+      const call = response.tool_calls[0];
+      if (!call) return fail("INVALID_ARGUMENT");
+      const proposal = parseActProposal(
+        call,
+        model.resolve,
         active.snapshot,
-        session.profileDefinitions,
+        session.definitions,
+        session.discovery,
+        targetRefId,
       );
-      session.definitions = selected.definitions;
-      session.discovery = selected.discovery;
-    }
-    const model = dependencies.coordinator.modelSnapshot(
-      run.id,
-      active.snapshot,
-    );
-    const projection = `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]`;
-    const profileContext = session.modelContext
-      ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(session.modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]`
-      : undefined;
-    const messages: ProviderMessage[] = session.workflow
-      ? [
-          session.messages.at(0)!,
-          ...(profileContext
-            ? [{ role: "user" as const, content: profileContext }]
-            : []),
-          {
-            role: "user",
-            content: `Workflow step ${session.workflow.count + 1}/${session.workflow.declaration.steps.length}. Propose exactly one call to the supplied tool for this fixed current step. For option selection, choose exactly one supplied enum value. Do not repeat a previous tool call or target. User execution request: ${safeChatText(session.prompt)}`,
-          },
-          { role: "user", content: projection },
-        ]
-      : [
-          session.messages.at(0)!,
-          ...(profileContext
-            ? [{ role: "user" as const, content: profileContext }]
-            : []),
-          ...dependencies.threadContext(active.tabId),
-          ...session.messages.slice(1),
-          { role: "user", content: projection },
-        ];
-    const tools = genericActTools(
-      session.definitions,
-      model.snapshot,
-      active.snapshot,
-      targetRefId ? new Set([targetRefId]) : undefined,
-    );
-    dependencies.publish(run.id, {
-      type: "activity_progress",
-      stage: "CONTACTING_PROVIDER",
-    });
-    const response = await dependencies.provider.chat({
-      messages,
-      ...(tools.length > 0 ? { tools } : {}),
-    });
-    if (response.tool_calls.length === 0) {
-      if (!response.content) return fail("PROVIDER_UNAVAILABLE");
-      dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
+      dependencies.coordinator.runs.transition(run.id, "PROPOSING");
+      session.messages.push({
+        role: "assistant",
+        content: response.content,
+        tool_calls: response.tool_calls,
+      });
+      session.proposal = proposal;
+      if (session.continueAfterApproval) {
+        if ((session.autoExecutionCount ?? 0) >= 12)
+          return fail("WORKFLOW_STEP_LIMIT");
+        session.autoExecutionCount = (session.autoExecutionCount ?? 0) + 1;
+        return dependencies.executeApprovedProposal(session);
+      }
+      if (response.content)
+        dependencies.publish(run.id, {
+          type: "assistant_delta",
+          text: response.content,
+        });
       dependencies.publish(run.id, {
-        type: "assistant_delta",
-        text: response.content,
+        type: "action_review_required",
+        action: actionView(session, proposal),
       });
       dependencies.publish(run.id, {
         type: "activity_finished",
-        stage: "COMPLETED",
+        stage: "AWAITING_REVIEW",
       });
-      dependencies.publish(run.id, {
-        type: "run_terminal",
-        outcome: "VERIFIED",
-      });
-      dependencies.endSession(session);
-      return { ok: true, state: "ANSWER", message: response.content };
+      return actionReview(session, proposal);
+    } catch (error) {
+      failActRun({ ...dependencies, session, run, error });
+      throw error;
     }
-    if (response.tool_calls.length !== 1) return fail("INVALID_ARGUMENT");
-    const call = response.tool_calls[0];
-    if (!call) return fail("INVALID_ARGUMENT");
-    const proposal = parseActProposal(
-      call,
-      model.resolve,
-      active.snapshot,
-      session.definitions,
-      session.discovery,
-      targetRefId,
-    );
-    dependencies.coordinator.runs.transition(run.id, "PROPOSING");
-    session.messages.push({
-      role: "assistant",
-      content: response.content,
-      tool_calls: response.tool_calls,
-    });
-    session.proposal = proposal;
-    if (session.continueAfterApproval) {
-      if ((session.autoExecutionCount ?? 0) >= 12) {
-        dependencies.coordinator.runs.terminal(run.id, "FAILED");
-        dependencies.publish(run.id, {
-          type: "run_terminal",
-          outcome: "FAILED",
-          code: "WORKFLOW_STEP_LIMIT",
-        });
-        dependencies.endSession(session);
-        return fail("WORKFLOW_STEP_LIMIT");
-      }
-      session.autoExecutionCount = (session.autoExecutionCount ?? 0) + 1;
-      return dependencies.executeApprovedProposal(session);
-    }
-    if (response.content)
-      dependencies.publish(run.id, {
-        type: "assistant_delta",
-        text: response.content,
-      });
-    dependencies.publish(run.id, {
-      type: "action_review_required",
-      action: actionView(session, proposal),
-    });
-    dependencies.publish(run.id, {
-      type: "activity_finished",
-      stage: "AWAITING_REVIEW",
-    });
-    return actionReview(session, proposal);
   };
 
   const continueWorkflow = async (

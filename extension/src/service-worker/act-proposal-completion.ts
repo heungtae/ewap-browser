@@ -40,6 +40,7 @@ export const completeActProposal = async (
       },
     });
     dependencies.publishTerminal(run, outcome, code);
+    dependencies.endSession(session);
     return executed;
   }
   dependencies.publish(run.id, {

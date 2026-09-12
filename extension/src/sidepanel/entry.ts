@@ -338,6 +338,7 @@ const rejectAction = async (action: ChatActionView): Promise<void> => {
     });
     setStatus("작업을 중단했습니다.");
   } catch (error) {
+    setRunActive(false);
     showFailure(error instanceof Error ? error.message : undefined);
   } finally {
     // A Side Panel port notification can be missed while this decision is in
@@ -354,6 +355,7 @@ const approveAction = async (action: ChatActionView): Promise<void> => {
       proposal_id: action.proposal_id,
     });
   } catch (error) {
+    setRunActive(false);
     showFailure(error instanceof Error ? error.message : undefined);
   } finally {
     // See rejectAction: the result must be rendered without requiring the

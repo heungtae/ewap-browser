@@ -56,6 +56,10 @@ export const createPageLifecycleMessageHandler = (
         document_epoch: epoch,
         page_scope_epoch: epoch,
       });
+      // A full navigation may register its document before the separate
+      // PAGE_SCOPE_REGISTER message arrives. The document identity is enough
+      // to reject the previous page, so do not leave the next request stale.
+      dependencies.stalePageTabs.delete(sender.tab.id);
       respond({ ok: true });
       return { handled: true };
     }

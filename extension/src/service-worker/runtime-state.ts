@@ -66,7 +66,6 @@ export const setAgentPreferences = (value: AgentPreferences): void => {
 export const pageContextRuntime = createPageContextRuntime({
   chrome: chromeApi,
   defaultScope: () => agentPreferences.default_read_scope,
-  isStale: (tabId) => stalePageTabs.has(tabId),
   isRegistered: (tabId, epoch) =>
     registered.get(registrationKey(tabId, 0))?.epoch === epoch,
   pageOrigin: pageSenderContext.pageOrigin,

@@ -25,7 +25,6 @@ export type ActivePage = {
 type Dependencies = {
   chrome: BrowserChromeApi | undefined;
   defaultScope(): PageReadScope;
-  isStale(tabId: number): boolean;
   isRegistered(tabId: number, epoch: string): boolean;
   pageOrigin(url: string | undefined): string;
   recovery: ContentScriptRecovery;
@@ -46,8 +45,6 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     const tabId = tab?.id;
     if (!tab || tabId === undefined)
       throw new ContractError("ORIGIN_NOT_ALLOWED");
-    if (dependencies.isStale(tabId))
-      throw new ContractError("PAGE_SCOPE_STALE");
     let origin = dependencies.pageOrigin(tab.url);
     let result: unknown;
     try {

@@ -1110,7 +1110,7 @@ const registerDocument = async (attempt = 0): Promise<boolean> => {
   return false;
 };
 const registerPageScope = async (): Promise<void> => {
-  await registerDocument();
+  if (!(await registerDocument())) return;
   try {
     await runtime?.sendMessage({
       schema_version: 1,
