@@ -12,6 +12,7 @@ import {
 } from "./runtime-message-router.js";
 import { createChatRequestMessageHandler } from "./chat-request-message-handler.js";
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
+import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 
 type Sender = RuntimeSender;
 type ChatResult = { ok?: boolean };
@@ -29,6 +30,7 @@ export type ChatMessageHandlerDependencies = {
   };
   chatPersistence: { clear(): Promise<void> };
   clearScheduledChatPersistence(): void;
+  diagnostics?: ExecutionDiagnostics;
   isPanelSender(sender: Sender): boolean;
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
@@ -63,6 +65,9 @@ export const createChatMessageHandler = (
     isPanelSender: dependencies.isPanelSender,
     providerAvailable: dependencies.providerAvailable,
     requests: dependencies.requests,
+    ...(dependencies.diagnostics
+      ? { diagnostics: dependencies.diagnostics }
+      : {}),
     runAct: dependencies.runActChat,
     runAsk: dependencies.runAskChat,
     safeFailure: dependencies.safeFailure,

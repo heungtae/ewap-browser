@@ -4,7 +4,11 @@ import { createCoreMessageHandlers } from "./core-message-handlers.js";
 import { createPageLifecycleMessageHandler } from "./page-lifecycle-message-handler.js";
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
 import { runActChat, runAskChat } from "./runtime-chat.js";
-import { chatRunLifecycle, providerRuntime } from "./runtime-lifecycle.js";
+import {
+  chatRunLifecycle,
+  executionDiagnostics,
+  providerRuntime,
+} from "./runtime-lifecycle.js";
 import { chromeApi, pageSenderContext } from "./runtime-platform.js";
 import {
   agentPreferences,
@@ -30,7 +34,20 @@ const resolveActiveProfile = async () => {
   const resolved = await resolveProfileFor(active);
   return { tabId: active.tabId, profile: resolved.profile };
 };
-export const chatRequests = new ChatRequestLifecycle();
+export const chatRequests = new ChatRequestLifecycle(executionDiagnostics);
+chatRunLifecycle.setActivityObserver((tabId, stage) => {
+  if (
+    stage === "PREPARING_PAGE" ||
+    stage === "RESOLVING_PROFILE" ||
+    stage === "DISCOVERING_WORKFLOWS" ||
+    stage === "CONTACTING_PROVIDER" ||
+    stage === "AWAITING_REVIEW" ||
+    stage === "SELECTION_REQUIRED" ||
+    stage === "COMPLETED" ||
+    stage === "FAILED"
+  )
+    chatRequests.progress(tabId, stage);
+});
 export const chatMessageHandler = createChatMessageHandler({
   activeTabForBoundPanel: pageSenderContext.activeTabForBoundPanel,
   activeTabForPanel: pageSenderContext.activeTabForPanel,
@@ -40,6 +57,7 @@ export const chatMessageHandler = createChatMessageHandler({
   chatEvents,
   chatPersistence: chatRunLifecycle.persistence,
   clearScheduledChatPersistence: chatRunLifecycle.clearScheduled,
+  diagnostics: executionDiagnostics,
   isPanelSender: pageSenderContext.isPanelSender,
   providerAvailable: () => !!providerRuntime,
   requests: chatRequests,

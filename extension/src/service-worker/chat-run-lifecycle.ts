@@ -10,6 +10,7 @@ import { ChatPersistence } from "./chat-persistence.js";
 import type { BrowserChromeApi, BrowserPort } from "./browser-api.js";
 import type { ServiceCoordinator } from "./coordinator.js";
 import type { PanelPort } from "./panel-port-lifecycle.js";
+import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 
 type Dependencies = {
   chrome: BrowserChromeApi | undefined;
@@ -20,9 +21,12 @@ type Dependencies = {
   coordinator: ServiceCoordinator;
   bindings: Map<string, SessionBinding>;
   localSessions: LocalFixtureSessionBinding;
+  diagnostics?: ExecutionDiagnostics;
+  onActivity?(tabId: number, stage: string): void;
 };
 
 export const createChatRunLifecycle = (dependencies: Dependencies) => {
+  let activityObserver = dependencies.onActivity;
   const persistence = new ChatPersistence(
     dependencies.chrome?.storage.session?.set
       ? {
@@ -51,6 +55,22 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
       return;
     }
     const event = dependencies.events.append(runId, payload);
+    if (
+      payload.type === "activity_started" ||
+      payload.type === "activity_progress" ||
+      payload.type === "activity_finished"
+    )
+      dependencies.diagnostics?.activity(
+        event.tab_id,
+        payload.stage,
+        payload.type === "activity_finished",
+      );
+    if (
+      payload.type === "activity_started" ||
+      payload.type === "activity_progress" ||
+      payload.type === "activity_finished"
+    )
+      activityObserver?.(event.tab_id, payload.stage);
     schedule(payload.type === "run_terminal");
     for (const [documentId, panel] of dependencies.panels) {
       void dependencies.chrome?.tabs
@@ -93,5 +113,10 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
     releaseVision,
     rememberVision,
     schedule,
+    setActivityObserver(
+      observer: (tabId: number, stage: string) => void,
+    ): void {
+      activityObserver = observer;
+    },
   };
 };

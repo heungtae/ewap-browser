@@ -312,6 +312,38 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+      .execution-details {
+        display: grid;
+        gap: 6px;
+        padding: 8px 9px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        background: var(--surface);
+        font-size: 11px;
+      }
+      .execution-details summary {
+        color: var(--text);
+        cursor: pointer;
+      }
+      .execution-details pre {
+        max-height: 130px;
+        margin: 0;
+        overflow: auto;
+        color: var(--muted);
+        font:
+          10px/1.45 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+        white-space: pre-wrap;
+      }
+      .execution-details button {
+        justify-self: start;
+        min-height: 28px;
+        padding: 4px 7px;
+        font-size: 11px;
+      }
       .mode-row,
       .composer-actions {
         display: flex;
@@ -768,6 +800,11 @@
           aria-live="polite"
           hidden
         ></output>
+        <details class="execution-details" id="execution-details">
+          <summary>실행 상세</summary>
+          <pre id="execution-trace"></pre>
+          <button id="diagnostics-debug" type="button">개발 추적 켜기</button>
+        </details>
         <div class="mode-row">
           <div class="mode-group" role="group" aria-label="작업 모드">
             <button

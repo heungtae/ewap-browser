@@ -1,6 +1,10 @@
 import type { ErrorCode, Mode } from "../contracts/core-types.js";
 import { isPlainObject } from "../security/validation.js";
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
+import type {
+  DiagnosticsLevel,
+  ExecutionDiagnostics,
+} from "./execution-diagnostics.js";
 import {
   exactKeys,
   failureCode,
@@ -17,6 +21,7 @@ type Dependencies = {
   isPanelSender(sender: RuntimeSender): boolean;
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
+  diagnostics?: ExecutionDiagnostics;
   runAct(payload: unknown): Promise<Result>;
   runAsk(payload: unknown): Promise<Result>;
   safeFailure(code: string): unknown;
@@ -53,6 +58,10 @@ export const createChatRequestMessageHandler = (
       return this.start(message, sender, respond);
     if (kind === "CHAT_REQUEST_STATUS" || kind === "CHAT_REQUEST_CANCEL")
       return this.statusOrCancel(message, sender, respond, kind);
+    if (kind === "DIAGNOSTICS_LIST" || kind === "DIAGNOSTICS_CLEAR")
+      return this.diagnostics(message, sender, respond, kind);
+    if (kind === "DIAGNOSTICS_SETTINGS_SET")
+      return this.settings(message, sender, respond);
     return { handled: false };
   },
   start(
@@ -168,5 +177,90 @@ export const createChatRequestMessageHandler = (
         ),
       );
     return { handled: true, keepAlive: true };
+  },
+  diagnostics(
+    message: object,
+    sender: RuntimeSender,
+    respond: Respond,
+    kind: "DIAGNOSTICS_LIST" | "DIAGNOSTICS_CLEAR",
+  ): RoutedMessage {
+    const id = (message as { request_id?: unknown }).request_id;
+    const list = kind === "DIAGNOSTICS_LIST";
+    const after = (message as { after_sequence?: unknown }).after_sequence;
+    const limit = (message as { limit?: unknown }).limit;
+    const keys = list
+      ? ["schema_version", "kind", "request_id", "after_sequence", "limit"]
+      : ["schema_version", "kind", "request_id"];
+    if (
+      !dependencies.isPanelSender(sender) ||
+      !exactKeys(message, keys) ||
+      (message as { schema_version?: unknown }).schema_version !== 1 ||
+      !requestId(id) ||
+      (list &&
+        (!Number.isInteger(after) ||
+          (after as number) < 0 ||
+          !Number.isInteger(limit) ||
+          (limit as number) < 1 ||
+          (limit as number) > 100))
+    ) {
+      respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+      return { handled: true };
+    }
+    void dependencies
+      .activeTab(sender)
+      .then((active) => {
+        if (list) {
+          const result = dependencies.diagnostics?.list(
+            id,
+            active.id,
+            after as number,
+            limit as number,
+          );
+          respond(
+            result
+              ? { ok: true, ...result }
+              : dependencies.safeFailure("REQUEST_NOT_FOUND"),
+          );
+        } else {
+          respond(
+            dependencies.diagnostics?.clear(id, active.id)
+              ? { ok: true }
+              : dependencies.safeFailure("REQUEST_NOT_FOUND"),
+          );
+        }
+      })
+      .catch((error) =>
+        respond(
+          dependencies.safeFailure(
+            failureCode(error, "PANEL_CONTEXT_UNAVAILABLE"),
+          ),
+        ),
+      );
+    return { handled: true, keepAlive: true };
+  },
+  settings(
+    message: object,
+    sender: RuntimeSender,
+    respond: Respond,
+  ): RoutedMessage {
+    const level = (message as { level?: unknown }).level;
+    if (
+      !dependencies.isPanelSender(sender) ||
+      !exactKeys(message, ["schema_version", "kind", "level"]) ||
+      (message as { schema_version?: unknown }).schema_version !== 1 ||
+      (level !== "off" && level !== "basic" && level !== "debug")
+    ) {
+      respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+      return { handled: true };
+    }
+    if (!dependencies.diagnostics) {
+      respond(dependencies.safeFailure("STORAGE_BOUNDARY_UNAVAILABLE"));
+      return { handled: true };
+    }
+    respond({
+      ok: true,
+      level: dependencies.diagnostics.setLevel(level as DiagnosticsLevel),
+    });
+    return { handled: true };
   },
 });

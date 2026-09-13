@@ -1,6 +1,8 @@
 import type { ErrorCode, Mode, Outcome } from "../contracts/core-types.js";
+import type { ActivityStage } from "../contracts/chat-event-types.js";
+import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 
-export type RequestStage = "ACCEPTED" | "PROVIDER_CONNECT" | "TERMINAL";
+export type RequestStage = "ACCEPTED" | ActivityStage | "TERMINAL";
 export type RequestState = "ACCEPTED" | "RUNNING" | "TERMINAL";
 
 export type RequestSnapshot = {
@@ -46,6 +48,8 @@ const copy = (request: Request): RequestSnapshot =>
 export class ChatRequestLifecycle {
   private readonly requests = new Map<string, Request>();
 
+  public constructor(private readonly diagnostics?: ExecutionDiagnostics) {}
+
   public start(
     input: Start,
   ):
@@ -76,13 +80,15 @@ export class ChatRequestLifecycle {
       last_progress_at_ms: now,
     };
     this.requests.set(input.request_id, request);
+    this.diagnostics?.accept(input.request_id, input.tab_id, now);
     return { kind: "accepted", snapshot: copy(request) };
   }
 
   public startRun(requestId: string): number | undefined {
     const request = this.requests.get(requestId);
     if (!request || request.state !== "ACCEPTED") return;
-    this.transition(request, "RUNNING", "PROVIDER_CONNECT");
+    this.transition(request, "RUNNING", "ACCEPTED");
+    this.diagnostics?.stage(requestId, "router", "PREPARING_PAGE");
     return request.generation;
   }
 
@@ -102,12 +108,22 @@ export class ChatRequestLifecycle {
     this.transition(request, "TERMINAL", "TERMINAL");
     request.outcome = outcome;
     if (code) request.code = code;
+    this.diagnostics?.terminal(requestId, outcome, code);
     return copy(request);
   }
 
   public status(requestId: string, tabId: number): RequestSnapshot | undefined {
     const request = this.requests.get(requestId);
     return request?.tab_id === tabId ? copy(request) : undefined;
+  }
+
+  public progress(tabId: number, stage: ActivityStage): void {
+    const request = [...this.requests.values()].find(
+      (candidate) =>
+        candidate.tab_id === tabId && candidate.state === "RUNNING",
+    );
+    if (!request) return;
+    this.transition(request, "RUNNING", stage);
   }
 
   public cancel(requestId: string, tabId: number): RequestSnapshot | undefined {
@@ -117,6 +133,7 @@ export class ChatRequestLifecycle {
     request.generation += 1;
     this.transition(request, "TERMINAL", "TERMINAL");
     request.outcome = "CANCELLED";
+    this.diagnostics?.terminal(requestId, "CANCELLED");
     return copy(request);
   }
 

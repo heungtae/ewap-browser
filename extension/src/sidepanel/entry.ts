@@ -50,6 +50,9 @@ const emptyState = byId<HTMLElement>("empty-state");
 const suggestedPrompt = byId<HTMLButtonElement>("suggested-prompt");
 const status = byId<HTMLElement>("status");
 const activityStatus = byId<HTMLOutputElement>("activity-status");
+const executionDetails = byId<HTMLDetailsElement>("execution-details");
+const executionTrace = byId<HTMLPreElement>("execution-trace");
+const diagnosticsDebug = byId<HTMLButtonElement>("diagnostics-debug");
 const send = byId<HTMLButtonElement>("chat-send");
 const modeAsk = byId<HTMLButtonElement>("mode-ask");
 const modeAct = byId<HTMLButtonElement>("mode-act");
@@ -90,6 +93,8 @@ let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
 let workflowRecordingId: string | undefined;
+let currentRequestId: string | undefined;
+let requestPoll: ReturnType<typeof setInterval> | undefined;
 
 const boundedAssistantText = (text: string): string => {
   if (text.length <= maxAssistantMessageChars) return text;
@@ -110,6 +115,84 @@ const setActivityStatus = (text?: string): void => {
   if (!activityStatus) return;
   activityStatus.hidden = !text;
   activityStatus.textContent = text ?? "";
+};
+const stopRequestPolling = (): void => {
+  if (requestPoll !== undefined) clearInterval(requestPoll);
+  requestPoll = undefined;
+};
+const renderExecutionTrace = (
+  request: Record<string, unknown>,
+  records: unknown[],
+): void => {
+  if (!executionDetails || !executionTrace) return;
+  executionDetails.hidden = false;
+  const state = typeof request.state === "string" ? request.state : "UNKNOWN";
+  const stage = typeof request.stage === "string" ? request.stage : "UNKNOWN";
+  const lines = records.flatMap((value) => {
+    if (typeof value !== "object" || value === null) return [];
+    const record = value as Record<string, unknown>;
+    return [
+      [
+        record.sequence,
+        record.component,
+        record.event,
+        record.stage,
+        record.outcome,
+        record.code,
+      ]
+        .filter((part) => typeof part === "string" || typeof part === "number")
+        .join(" · "),
+    ];
+  });
+  executionTrace.textContent = [
+    `상태: ${state} · 단계: ${stage}`,
+    ...lines,
+  ].join("\n");
+};
+const pollRequestStatus = async (): Promise<void> => {
+  const requestId = currentRequestId;
+  if (!requestId) return;
+  try {
+    const statusResponse = await sendRuntime({
+      schema_version: 1,
+      kind: "CHAT_REQUEST_STATUS",
+      request_id: requestId,
+    });
+    const request = statusResponse.request;
+    if (typeof request !== "object" || request === null) return;
+    const diagnostics = await sendRuntime({
+      schema_version: 1,
+      kind: "DIAGNOSTICS_LIST",
+      request_id: requestId,
+      after_sequence: 0,
+      limit: 100,
+    });
+    const records = Array.isArray(diagnostics.records)
+      ? diagnostics.records
+      : [];
+    renderExecutionTrace(request as Record<string, unknown>, records);
+    if ((request as { state?: unknown }).state === "TERMINAL")
+      stopRequestPolling();
+  } catch {
+    // A port reconnection may briefly make status unavailable. Recovery keeps
+    // the transcript authoritative and the next poll retries safely.
+  }
+};
+const startTrackedRequest = async (
+  prompt: string,
+): Promise<Record<string, unknown>> => {
+  const requestId = crypto.randomUUID();
+  currentRequestId = requestId;
+  await sendRuntime({
+    schema_version: 1,
+    kind: "CHAT_REQUEST_START",
+    request_id: requestId,
+    payload: { prompt, mode: "ask" },
+  });
+  await pollRequestStatus();
+  stopRequestPolling();
+  requestPoll = setInterval(() => void pollRequestStatus(), 3_000);
+  return {};
 };
 const openSettings = (): void => {
   if (!runtime) {
@@ -240,6 +323,10 @@ const clearConversation = (focusInput = false): void => {
   pendingDeltas.clear();
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
+  currentRequestId = undefined;
+  stopRequestPolling();
+  if (executionTrace)
+    executionTrace.textContent = "아직 기록된 실행이 없습니다.";
   setActivityStatus();
   reviewItems.clear();
   skipNextLiveUserMessage = false;
@@ -888,14 +975,15 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     event.type === "activity_finished"
   ) {
     const detail = activityLabel(event.stage);
+    setStatus(detail);
+    setActivityStatus(detail);
     if (event.type === "activity_finished") {
-      setStatus(detail);
       if (
         event.stage === "AWAITING_REVIEW" ||
         event.stage === "SELECTION_REQUIRED"
       )
         setActivityStatus(detail);
-      else if (event.stage === "FAILED") setActivityStatus(detail);
+      else setActivityStatus();
       if (event.stage === "FAILED") setRunActive(false);
     }
     return;
@@ -1181,7 +1269,11 @@ chatForm?.addEventListener("submit", (event) => {
   setRunActive(true);
   setStatus("응답을 기다리는 중입니다.");
   setActivityStatus("요청을 준비하고 있습니다.");
-  void sendRuntime({ kind: "CHAT_SEND", payload: { prompt, mode: chatMode } })
+  void (
+    chatMode === "ask"
+      ? startTrackedRequest(prompt)
+      : sendRuntime({ kind: "CHAT_SEND", payload: { prompt, mode: chatMode } })
+  )
     .then((response) => {
       clearAttachment();
       if (response.state === "WORKFLOW_CANDIDATES") {
@@ -1246,7 +1338,15 @@ workflowRecordButton?.addEventListener("click", () => {
 const cancelRun = (): void => {
   if (!runActive) return;
   setRunActive(false);
-  void sendRuntime({ kind: "CANCEL" })
+  void (
+    currentRequestId
+      ? sendRuntime({
+          schema_version: 1,
+          kind: "CHAT_REQUEST_CANCEL",
+          request_id: currentRequestId,
+        })
+      : sendRuntime({ kind: "CANCEL" })
+  )
     .then(() => setStatus("작업을 중단했습니다."))
     .catch((error: unknown) =>
       showFailure(error instanceof Error ? error.message : undefined),
@@ -1256,6 +1356,23 @@ send?.addEventListener("click", (event) => {
   if (!runActive) return;
   event.preventDefault();
   cancelRun();
+});
+diagnosticsDebug?.addEventListener("click", () => {
+  void sendRuntime({
+    schema_version: 1,
+    kind: "DIAGNOSTICS_SETTINGS_SET",
+    level: "debug",
+  })
+    .then(() => {
+      diagnosticsDebug.textContent = "개발 추적 사용 중";
+      diagnosticsDebug.disabled = true;
+      setStatus(
+        "개발 추적을 켰습니다. 이후 요청의 안전한 trace가 Console에도 표시됩니다.",
+      );
+    })
+    .catch((error: unknown) =>
+      showFailure(error instanceof Error ? error.message : undefined),
+    );
 });
 chatInput?.addEventListener("keydown", (event) => {
   if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;

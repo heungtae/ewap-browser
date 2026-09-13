@@ -1,6 +1,7 @@
 import { ProviderRuntime } from "../providers/runtime.js";
 import { createBoundedCdpRuntime } from "./bounded-cdp-runtime.js";
 import { createChatRunLifecycle } from "./chat-run-lifecycle.js";
+import { ExecutionDiagnostics } from "./execution-diagnostics.js";
 import { createPanelPortLifecycle } from "./panel-port-lifecycle.js";
 import { registerTabLifecycle } from "./tab-lifecycle.js";
 import {
@@ -39,6 +40,9 @@ export const { boundedCdp } = createBoundedCdpRuntime({
   chrome: chromeApi,
   authorized: (runId) => cdpAuthorizedRuns.has(runId),
 });
+export const executionDiagnostics = new ExecutionDiagnostics(
+  chromeApi?.storage,
+);
 export const chatRunLifecycle = createChatRunLifecycle({
   chrome: chromeApi,
   events: chatEvents,
@@ -48,6 +52,7 @@ export const chatRunLifecycle = createChatRunLifecycle({
   coordinator,
   bindings: localBindings,
   localSessions: localSessionBinding,
+  diagnostics: executionDiagnostics,
 });
 registerTabLifecycle({
   chrome: chromeApi,
