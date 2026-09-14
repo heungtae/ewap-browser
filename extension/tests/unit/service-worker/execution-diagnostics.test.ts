@@ -13,6 +13,7 @@ describe("execution diagnostics", () => {
       "provider",
       "CONTACTING_PROVIDER",
     );
+    diagnostics.actForTab(7, "SNAPSHOT_VALIDATED");
     diagnostics.terminal("request-abcdefghijklmnop", "VERIFIED");
 
     const result = diagnostics.list("request-abcdefghijklmnop", 7, 0, 100);
@@ -27,6 +28,11 @@ describe("execution diagnostics", () => {
           event: "stage.started",
           stage: "CONTACTING_PROVIDER",
           component: "provider",
+        }),
+        expect.objectContaining({
+          event: "stage.started",
+          stage: "SNAPSHOT_VALIDATED",
+          component: "act",
         }),
       ]),
     );

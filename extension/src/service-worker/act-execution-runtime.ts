@@ -11,6 +11,7 @@ import type { Run } from "../state/run-coordinator.js";
 
 type RegisteredDocument = { epoch: string; documentId: string };
 type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
+type PageScope = { document_epoch: string; page_scope_epoch: string };
 
 type Dependencies = {
   beforeDispatch?(tabId: number): Promise<void>;
@@ -21,13 +22,28 @@ type Dependencies = {
   revokeCdp(runId: string): void;
   createId(): string;
   send(tabId: number, message: unknown): Promise<unknown>;
+  tab(tabId: number): Promise<{ url?: string }>;
+  scope?(tabId: number): PageScope | undefined;
   terminal(run: Run, outcome: Outcome): void;
   transition(runId: string, phase: "VERIFYING_NAVIGATION"): void;
+  milestone?(tabId: number, stage: string): void;
   safeFailure(code: string, detail?: string): Record<string, unknown>;
   verifier: {
     bounded(run: Run, intent: ActionIntent): Promise<boolean>;
     navigationTarget(targetUrl: unknown): string | undefined;
     semantic(run: Run, intent: ActionIntent): Promise<boolean>;
+    waitForPageTransition?(
+      run: Run,
+      beforeUrl: string,
+      origin: string,
+      expectedUrl?: string,
+      beforeScope?: PageScope,
+    ): Promise<boolean>;
+    waitForSameOriginNavigation(
+      tabId: number,
+      beforeUrl: string,
+      origin: string,
+    ): Promise<boolean>;
     waitForNavigation(tabId: number, expected: string): Promise<boolean>;
   };
 };
@@ -68,6 +84,24 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       origin,
       capability,
     };
+    const beforeUrl =
+      tool === "click_by_ref"
+        ? await dependencies
+            .tab(run.tabId)
+            .then((tab) => tab.url)
+            .catch(() => undefined)
+        : undefined;
+    const beforeScope =
+      tool === "click_by_ref" ? dependencies.scope?.(run.tabId) : undefined;
+    // A click without a declared state transition is undetermined. It may
+    // navigate after a transient ARIA change (for example, a custom option
+    // closing its listbox), so protect the run before dispatch.
+    const undeterminedClick =
+      tool === "click_by_ref" &&
+      ready.intent.verifier.kind === "semantic-state-transition" &&
+      ready.intent.verifier.required_changes.length === 0;
+    if (undeterminedClick)
+      dependencies.transition(run.id, "VERIFYING_NAVIGATION");
     dependencies.permitCdp(run.id);
     let dispatched = false;
     try {
@@ -83,6 +117,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         input = { text: ready.value };
       }
       await dependencies.beforeDispatch?.(run.tabId);
+      dependencies.milestone?.(run.tabId, "DISPATCH_STARTED");
       if (!dependencies.isRunActive(run.id))
         return dependencies.safeFailure("POLICY_DENIED");
       dispatched = true;
@@ -101,13 +136,42 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       }
       if (!dependencies.isRunActive(run.id))
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
-      const verified =
-        (await dependencies.verifier.semantic(run, ready.intent)) ||
-        (await dependencies.verifier.bounded(run, ready.intent));
+      if (undeterminedClick && beforeUrl !== undefined) {
+        const navigation = dependencies.verifier.waitForPageTransition
+          ? await dependencies.verifier.waitForPageTransition(
+              run,
+              beforeUrl,
+              origin,
+              undefined,
+              beforeScope,
+            )
+          : await dependencies.verifier.waitForSameOriginNavigation(
+              run.tabId,
+              beforeUrl,
+              origin,
+            );
+        const outcome = navigation ? "VERIFIED" : "UNKNOWN";
+        dependencies.terminal(run, outcome);
+        if (navigation)
+          dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
+        return navigation
+          ? { ok: true, outcome, navigation: true }
+          : {
+              ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"),
+              outcome,
+            };
+      }
+      const semantic = await dependencies.verifier.semantic(run, ready.intent);
+      const bounded = semantic
+        ? false
+        : await dependencies.verifier.bounded(run, ready.intent);
+      const navigation = false;
+      const verified = semantic || bounded || navigation;
       const outcome = verified ? "VERIFIED" : "UNKNOWN";
       dependencies.terminal(run, outcome);
+      if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
-        ? { ok: true, outcome }
+        ? { ok: true, outcome, ...(navigation ? { navigation: true } : {}) }
         : { ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"), outcome };
     } catch (error) {
       dependencies.terminal(run, dispatched ? "UNKNOWN" : "FAILED");
@@ -129,9 +193,21 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
   ): Promise<Record<string, unknown>> => {
     if (cdpTools.has(ready.intent.tool))
       return executeBounded(run, ready, origin);
+    const beforeUrl =
+      ready.intent.tool === "navigate"
+        ? await dependencies
+            .tab(run.tabId)
+            .then((tab) => tab.url)
+            .catch(() => undefined)
+        : undefined;
+    const beforeScope =
+      ready.intent.tool === "navigate"
+        ? dependencies.scope?.(run.tabId)
+        : undefined;
     if (ready.intent.tool === "navigate")
       dependencies.transition(run.id, "VERIFYING_NAVIGATION");
     await dependencies.beforeDispatch?.(run.tabId);
+    dependencies.milestone?.(run.tabId, "DISPATCH_STARTED");
     if (!dependencies.isRunActive(run.id))
       return dependencies.safeFailure("POLICY_DENIED");
     let result: unknown;
@@ -187,18 +263,35 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         dependencies.terminal(run, "FAILED");
         return dependencies.safeFailure("TARGET_NOT_ACTIONABLE");
       }
-      const verified = await dependencies.verifier.waitForNavigation(
+      const atExpectedUrl = await dependencies.verifier.waitForNavigation(
         run.tabId,
         expectedUrl,
       );
+      const verified =
+        atExpectedUrl &&
+        (!beforeUrl || !dependencies.verifier.waitForPageTransition
+          ? true
+          : await dependencies.verifier.waitForPageTransition(
+              run,
+              beforeUrl,
+              new URL(expectedUrl).origin,
+              expectedUrl,
+              beforeScope,
+            ));
       const outcome = verified ? "VERIFIED" : "UNKNOWN";
       dependencies.terminal(run, outcome);
+      if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
         ? { ok: true, outcome }
         : { ...dependencies.safeFailure("NAVIGATION_UNVERIFIED"), outcome };
     }
-    if (postcondition === "semantic") {
+    if (
+      postcondition === "semantic" ||
+      (postcondition === "exact_option_value" &&
+        ready.intent.tool === "select_option_by_ref")
+    ) {
       dependencies.terminal(run, "VERIFIED");
+      dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return { ok: true, outcome: "VERIFIED" };
     }
     const verified = await dependencies.verifier.semantic(run, ready.intent);

@@ -12,6 +12,7 @@ import { connectPanel } from "./panel-connection.js";
 import { eventSequenceDecision } from "./event-sequence.js";
 import { RequestClient } from "./request-client.js";
 import { createDiagnosticsView } from "./diagnostics-view.js";
+import { InputHistory } from "./input-history.js";
 
 type BrowserRuntime = {
   getManifest?(): { version: string };
@@ -96,6 +97,7 @@ let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
 let workflowRecordingId: string | undefined;
 let lastRequest: Record<string, unknown> | undefined;
+const inputHistory = new InputHistory();
 
 const boundedAssistantText = (text: string): string => {
   if (text.length <= maxAssistantMessageChars) return text;
@@ -300,6 +302,7 @@ const clearConversation = (focusInput = false): void => {
   assistantMessageText = new WeakMap<HTMLElement, string>();
   tools.clear();
   requestClient.reset();
+  inputHistory.reset();
   lastRequest = undefined;
   diagnosticsView.reset();
   setActivityStatus();
@@ -1253,6 +1256,7 @@ chatForm?.addEventListener("submit", (event) => {
     return;
   }
   skipNextLiveUserMessage = true;
+  inputHistory.add(question);
   append(
     message(
       "user",
@@ -1338,6 +1342,24 @@ send?.addEventListener("click", (event) => {
 });
 window.addEventListener("focus", () => void requestClient.poll());
 chatInput?.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowUp") {
+    const previous = inputHistory.previous(chatInput.value);
+    if (previous !== undefined) {
+      event.preventDefault();
+      chatInput.value = previous;
+      chatInput.setSelectionRange(previous.length, previous.length);
+    }
+    return;
+  }
+  if (event.key === "ArrowDown") {
+    const next = inputHistory.next();
+    if (next !== undefined) {
+      event.preventDefault();
+      chatInput.value = next;
+      chatInput.setSelectionRange(next.length, next.length);
+    }
+    return;
+  }
   if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
   event.preventDefault();
   if (!runActive) chatForm?.requestSubmit();

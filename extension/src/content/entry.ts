@@ -394,6 +394,7 @@ const interactiveRoles = new Set([
   "textbox",
   "tab",
   "menuitem",
+  "option",
 ]);
 const hiddenReasonFor = (element: Element): string | undefined => {
   // Native <option> elements are rendered by the browser's select popup, so
@@ -537,14 +538,19 @@ const projectionNodes = (
               : navigationKind === "cross-origin"
                 ? { cross_origin_link: true }
                 : {}),
-            ...(element instanceof HTMLOptionElement
+            ...(role === "option"
               ? (() => {
-                  const parent = element.closest("select");
-                  return parent
+                  const parent =
+                    element instanceof HTMLOptionElement
+                      ? element.closest("select")
+                      : element.closest('[role="listbox"]');
+                  const parentRole = parent ? roleFor(parent) : undefined;
+                  return parent &&
+                    (parentRole === "combobox" || parentRole === "listbox")
                     ? {
                         parent_ref_id: refFor(
                           parent,
-                          "combobox",
+                          parentRole,
                           nameFor(parent),
                         ),
                       }
@@ -927,7 +933,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
         return true;
       }
       consumedDeliveries.add(delivery.value_slot_id);
-      respond({ ok: true, postcondition: "semantic" });
+      // This is an exact comparison with the approved option value, not the
+      // lossy selectedIndex-exists state exposed in the semantic snapshot.
+      respond({ ok: true, postcondition: "exact_option_value" });
       return true;
     }
     if (

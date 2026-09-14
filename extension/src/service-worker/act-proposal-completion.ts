@@ -59,7 +59,7 @@ export const completeActProposal = async (
     })}\n[/UNTRUSTED_TOOL_RESULT]`,
   });
   delete session.proposal;
-  if (proposal.tool === "navigate") {
+  if (proposal.tool === "navigate" || executed.navigation === true) {
     dependencies.endSession(session);
     return { ok: true, outcome: "VERIFIED" };
   }

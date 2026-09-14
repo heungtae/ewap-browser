@@ -28,6 +28,8 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [선언형 다단계 Act Workflow 설계](21-declarative-act-workflow-design.md)
 - [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md)
 - [Service Worker composition 리팩터링 계획](23-service-worker-composition-refactoring-plan.md)
+- [Act 실행 정지 방지와 개발용 실행 추적 설계](24-act-liveness-and-diagnostics-design.md)
+- [Act 완료 조건과 비동기 화면 갱신 검증](25-act-completion-conditions.md)
 
 ## 비규범 참고자료
 

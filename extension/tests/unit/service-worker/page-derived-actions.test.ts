@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isCustomListboxOption,
   pageDerivedActionTools,
   pageDerivedOptionValues,
   selectActActionTools,
@@ -169,6 +170,32 @@ describe("page-derived Act discovery", () => {
     ).toEqual([
       { tool: "click_by_ref", roles: ["tab", "menuitem"] },
       { tool: "set_checked_by_ref", roles: ["radio"] },
+    ]);
+  });
+
+  it("offers a visible custom listbox option as a bounded click target", () => {
+    const listbox = {
+      ref_id: "listbox-abcdefghijklmnop",
+      role: "listbox" as const,
+      name: "Variant choices",
+      state: {},
+      visible: true,
+      enabled: true,
+    };
+    const low = {
+      ref_id: "option-low-custom-abcdefgh",
+      role: "option" as const,
+      name: "low",
+      state: { selected: false },
+      visible: true,
+      enabled: true,
+      parent_ref_id: listbox.ref_id,
+    };
+    const customSnapshot = { ...snapshot, nodes: [listbox, low] };
+
+    expect(isCustomListboxOption(customSnapshot, low)).toBe(true);
+    expect(pageDerivedActionTools(customSnapshot)).toMatchObject([
+      { tool: "click_by_ref", eligible_roles: ["option"] },
     ]);
   });
 

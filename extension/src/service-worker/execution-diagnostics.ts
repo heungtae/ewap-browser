@@ -74,6 +74,13 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
     this.stage(requestId, component, stage, finished);
   }
 
+  public actForTab(tabId: number, stage: string, finished = false): void {
+    const requestId = [...this.requests.entries()].find(
+      ([, request]) => request.tabId === tabId && !request.terminal,
+    )?.[0];
+    if (requestId) this.stage(requestId, "act", stage, finished);
+  }
+
   public terminal(requestId: string, outcome: Outcome, code?: ErrorCode): void {
     const request = this.requests.get(requestId);
     if (request) request.terminal = true;

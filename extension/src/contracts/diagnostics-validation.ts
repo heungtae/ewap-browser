@@ -15,6 +15,10 @@ export const diagnosticStages = [
   "PROVIDER_BODY",
   "DISPATCH",
   "VERIFY",
+  "DISPATCH_STARTED",
+  "URL_OR_SCOPE_CHANGED",
+  "SNAPSHOT_VALIDATED",
+  "COMPLETION_VERIFIED",
 ];
 export const validDiagnostic = (value: unknown): value is DiagnosticRecord => {
   if (

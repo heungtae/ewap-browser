@@ -142,6 +142,78 @@ describe("Act step runner", () => {
     ).toHaveLength(1);
   });
 
+  it("does_not_complete_from_text_after_opening_an_aria_menu", async () => {
+    const coordinator = new ServiceCoordinator(policy);
+    const publish = vi.fn();
+    const endSession = vi.fn();
+    const runner = createActStepRunner({
+      coordinator,
+      provider: {
+        chat: async () => ({
+          content: "목록을 열었습니다.",
+          tool_calls: [],
+        }),
+      } as unknown as ProviderRuntime,
+      preferences,
+      readActive: async () => ({
+        tabId: 1,
+        origin: "https://portal.company.test",
+        path: "/guide",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "",
+          nodes: [
+            {
+              ref_id: "target-abcdefghijklmnop",
+              role: "button",
+              name: "Variant",
+              state: { expanded: true },
+              visible: true,
+              enabled: true,
+            },
+          ],
+        },
+      }),
+      threadContext: () => [],
+      pageScope: () => "scope" as never,
+      bindRun: () => undefined,
+      publish,
+      serialise: JSON.stringify,
+      executeApprovedProposal: async () => ({ ok: true }),
+      endSession,
+    });
+    const session: ActSession = {
+      id: "session-abcdefghijkl",
+      tabId: 1,
+      origin: "https://portal.company.test",
+      prompt: "low를 선택해 주세요.",
+      messages: [{ role: "system", content: "system" }],
+      profile: { id: "profile", version: 1 },
+      discovery: "page-derived",
+      definitions: [definition],
+      profileDefinitions: [],
+      awaitingExpandedMenuSelection: true,
+    };
+
+    await expect(runner.runStep(session)).rejects.toMatchObject({
+      code: "TARGET_NOT_ACTIONABLE",
+    });
+    expect(coordinator.runs.get(1)).toMatchObject({
+      phase: "TERMINAL",
+      outcome: "FAILED",
+      code: "TARGET_NOT_ACTIONABLE",
+    });
+    expect(endSession).toHaveBeenCalledWith(session);
+    expect(
+      publish.mock.calls.some(
+        ([, event]) =>
+          event.type === "run_terminal" && event.outcome === "VERIFIED",
+      ),
+    ).toBe(false);
+  });
+
   it("ends_the_run_and_session_when_the_provider_fails_after_run_start", async () => {
     const coordinator = new ServiceCoordinator(policy);
     const publish = vi.fn();

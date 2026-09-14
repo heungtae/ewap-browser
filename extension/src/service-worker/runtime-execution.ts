@@ -1,10 +1,15 @@
 import { createActExecutionRuntime } from "./act-execution-runtime.js";
 import { createActPostconditionVerifier } from "./act-postcondition-verifier.js";
-import { boundedCdp, chatRequests } from "./runtime-lifecycle.js";
+import {
+  boundedCdp,
+  chatRequests,
+  executionDiagnostics,
+} from "./runtime-lifecycle.js";
 import { chromeApi, opaqueId } from "./runtime-platform.js";
 import {
   cdpAuthorizedRuns,
   coordinator,
+  pageScopes,
   readActiveSnapshot,
   registered,
   registrationKey,
@@ -15,6 +20,8 @@ const verifier = createActPostconditionVerifier({
   readAll: () => readActiveSnapshot("all_dom"),
   send: (tabId, message) => chromeApi!.tabs.sendMessage(tabId, message),
   tab: (tabId) => chromeApi!.tabs.get(tabId),
+  scope: (tabId) => pageScopes.get(tabId),
+  milestone: (tabId, stage) => executionDiagnostics.actForTab(tabId, stage),
 });
 export const {
   executeBounded: executeBoundedCdp,
@@ -32,8 +39,11 @@ export const {
   revokeCdp: (runId) => cdpAuthorizedRuns.delete(runId),
   createId: opaqueId,
   send: (tabId, message) => chromeApi!.tabs.sendMessage(tabId, message),
+  tab: (tabId) => chromeApi!.tabs.get(tabId),
+  scope: (tabId) => pageScopes.get(tabId),
   terminal: (run, outcome) => coordinator.mutations.terminal(run, outcome),
   transition: (runId, phase) => coordinator.runs.transition(runId, phase),
+  milestone: (tabId, stage) => executionDiagnostics.actForTab(tabId, stage),
   safeFailure,
   verifier,
 });

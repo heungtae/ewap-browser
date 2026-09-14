@@ -108,4 +108,55 @@ describe("generic Act tools", () => {
       properties: { target: { enum: ["model-ref-1-abcdefghijkl"] } },
     });
   });
+
+  it("offers only custom listbox options to the click tool", () => {
+    const listbox = {
+      ref_id: "listbox-abcdefghijklmnop",
+      role: "listbox" as const,
+      name: "Variant choices",
+      state: {},
+      visible: true,
+      enabled: true,
+    };
+    const option = {
+      ref_id: "option-low-abcdefghijkl",
+      role: "option" as const,
+      name: "low",
+      state: { selected: false },
+      visible: true,
+      enabled: true,
+      parent_ref_id: listbox.ref_id,
+    };
+    const customSnapshot = { ...snapshot, nodes: [listbox, option] };
+    const tools = genericActTools(
+      [
+        {
+          tool: "click_by_ref",
+          effect: "local-ui-only",
+          risk: "R1",
+          eligible_roles: ["option"],
+          verifier: {
+            kind: "semantic-state-transition",
+            declaration_id: "custom-option",
+            pre_state_digest: "",
+            required_changes: [],
+          },
+        },
+      ],
+      {
+        document_epoch: customSnapshot.document_epoch,
+        frame_id: customSnapshot.frame_id,
+        nodes: customSnapshot.nodes.map((node, index) => ({
+          ...node,
+          model_ref: `model-ref-${index}-abcdefghijkl`,
+        })),
+        visible_text: "",
+      },
+      customSnapshot,
+    );
+
+    expect(tools[0]?.function.parameters).toMatchObject({
+      properties: { target: { enum: ["model-ref-1-abcdefghijkl"] } },
+    });
+  });
 });

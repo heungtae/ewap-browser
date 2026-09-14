@@ -4,6 +4,7 @@ import type {
 } from "../contracts/types.js";
 import type { ProfileActionTool } from "../profile/profile.js";
 import type { ProviderToolDefinition } from "../providers/types.js";
+import { isCustomListboxOption } from "./page-derived-actions.js";
 
 const targetParameter = (targets: readonly string[]) => ({
   type: "string",
@@ -39,6 +40,12 @@ const eligibleTargets = (
       !node.visible ||
       !node.enabled ||
       !definition.eligible_roles.includes(node.role)
+    )
+      return [];
+    if (
+      definition.tool === "click_by_ref" &&
+      node.role === "option" &&
+      !isCustomListboxOption(snapshot, source)
     )
       return [];
     if (

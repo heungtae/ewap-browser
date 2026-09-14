@@ -1,4 +1,4 @@
-import type { SemanticSnapshot } from "../contracts/types.js";
+import type { Role, SemanticSnapshot } from "../contracts/types.js";
 import type { ProfileActionTool } from "../profile/profile.js";
 
 const verifier = (declarationId: string): ProfileActionTool["verifier"] => ({
@@ -14,6 +14,23 @@ const visibleEnabled = (snapshot: SemanticSnapshot, role: string): boolean =>
   snapshot.nodes.some(
     (node) => node.role === role && node.visible && node.enabled,
   );
+
+export const isCustomListboxOption = (
+  snapshot: SemanticSnapshot,
+  node: SemanticSnapshot["nodes"][number],
+): boolean => {
+  if (
+    node.role !== "option" ||
+    !node.visible ||
+    !node.enabled ||
+    !node.parent_ref_id
+  )
+    return false;
+  const parent = snapshot.nodes.find(
+    (candidate) => candidate.ref_id === node.parent_ref_id,
+  );
+  return parent?.role === "listbox" && parent.visible && parent.enabled;
+};
 
 export const pageDerivedOptionValues = (
   snapshot: SemanticSnapshot,
@@ -54,7 +71,14 @@ export const pageDerivedActionTools = (
   snapshot: SemanticSnapshot,
 ): ProfileActionTool[] => {
   const definitions: ProfileActionTool[] = [];
-  const clickRoles = ["button", "tab", "menuitem"] as const;
+  const clickRoles: Role[] = [
+    "button",
+    "tab",
+    "menuitem",
+    ...(snapshot.nodes.some((node) => isCustomListboxOption(snapshot, node))
+      ? (["option"] as const)
+      : []),
+  ];
   const observedClickRoles = clickRoles.filter((role) =>
     visibleEnabled(snapshot, role),
   );

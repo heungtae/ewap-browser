@@ -79,4 +79,26 @@ describe("Act proposal completion", () => {
     expect(endSession).toHaveBeenCalledWith(session);
     expect(continueWorkflow).not.toHaveBeenCalled();
   });
+
+  it("ends_the_session_after_a_verified_click_changes_the_page", async () => {
+    const publish = vi.fn();
+    const publishTerminal = vi.fn();
+    const continueWorkflow = vi.fn();
+    const endSession = vi.fn();
+    const session = { messages: [], proposal } as unknown as ActSession;
+
+    await expect(
+      completeActProposal(
+        { publish, publishTerminal, continueWorkflow, endSession },
+        session,
+        run,
+        proposal,
+        { ok: true, navigation: true },
+        { success: "작업 결과를 확인했습니다.", failure: "작업 실패" },
+      ),
+    ).resolves.toEqual({ ok: true, outcome: "VERIFIED" });
+
+    expect(endSession).toHaveBeenCalledWith(session);
+    expect(continueWorkflow).not.toHaveBeenCalled();
+  });
 });

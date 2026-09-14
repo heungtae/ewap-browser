@@ -9,6 +9,7 @@ import { redactForChat } from "../security/chat-redaction.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import type { ProfileActionTool } from "../profile/profile.js";
 import {
+  isCustomListboxOption,
   pageDerivedActionTools,
   pageDerivedOptionValues,
 } from "./page-derived-actions.js";
@@ -107,6 +108,12 @@ export const parseActProposal = (
     !target ||
     !target.enabled ||
     !definition.eligible_roles.includes(target.role)
+  )
+    return fail("TARGET_NOT_ACTIONABLE");
+  if (
+    definition.tool === "click_by_ref" &&
+    target.role === "option" &&
+    !isCustomListboxOption(snapshot, target)
   )
     return fail("TARGET_NOT_ACTIONABLE");
   if (

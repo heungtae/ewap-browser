@@ -46,6 +46,7 @@ describe("Act execution runtime", () => {
       revokeCdp: () => undefined,
       createId: () => "action-token-abcdefghijklmnop",
       send: async () => ({}),
+      tab: async () => ({ url: "https://portal.company.test/before" }),
       terminal: (_run, outcome) => terminal.push(outcome),
       transition: () => undefined,
       safeFailure: (code) => ({ ok: false, code }),
@@ -53,6 +54,7 @@ describe("Act execution runtime", () => {
         bounded: async () => false,
         navigationTarget: () => undefined,
         semantic: async () => false,
+        waitForSameOriginNavigation: async () => false,
         waitForNavigation: async () => false,
       },
     });
@@ -65,5 +67,73 @@ describe("Act execution runtime", () => {
       outcome: "UNKNOWN",
     });
     expect(terminal).toEqual(["UNKNOWN"]);
+  });
+
+  it("verifies_a_same_origin_page_transition_after_a_bounded_click", async () => {
+    const terminal: string[] = [];
+    const runtime = createActExecutionRuntime({
+      boundedCdp: {
+        execute: async () => ({ dispatched: true, outcome: "DISPATCHED" }),
+      } as never,
+      documentFor: () => ({ epoch: run.documentEpoch, documentId: "document" }),
+      isRunActive: () => true,
+      permitCdp: () => undefined,
+      revokeCdp: () => undefined,
+      createId: () => "action-token-abcdefghijklmnop",
+      send: async () => ({}),
+      tab: async () => ({ url: "https://portal.company.test/before" }),
+      terminal: (_run, outcome) => terminal.push(outcome),
+      transition: () => undefined,
+      safeFailure: (code) => ({ ok: false, code }),
+      verifier: {
+        bounded: async () => false,
+        navigationTarget: () => undefined,
+        semantic: async () => false,
+        waitForSameOriginNavigation: async () => true,
+        waitForNavigation: async () => false,
+      },
+    });
+
+    await expect(
+      runtime.executeBounded(run, ready, "https://portal.company.test"),
+    ).resolves.toEqual({ ok: true, outcome: "VERIFIED", navigation: true });
+    expect(terminal).toEqual(["VERIFIED"]);
+  });
+
+  it("enters_navigation_verification_before_an_undetermined_click_dispatches", async () => {
+    const order: string[] = [];
+    const runtime = createActExecutionRuntime({
+      boundedCdp: {
+        execute: async () => {
+          order.push("dispatch");
+          return { dispatched: true, outcome: "DISPATCHED" };
+        },
+      } as never,
+      documentFor: () => ({ epoch: run.documentEpoch, documentId: "document" }),
+      isRunActive: () => true,
+      permitCdp: () => undefined,
+      revokeCdp: () => undefined,
+      createId: () => "action-token-abcdefghijklmnop",
+      send: async () => ({}),
+      tab: async () => ({ url: "https://portal.company.test/before" }),
+      terminal: () => undefined,
+      transition: () => order.push("verifying-navigation"),
+      safeFailure: (code) => ({ ok: false, code }),
+      verifier: {
+        bounded: async () => false,
+        navigationTarget: () => undefined,
+        semantic: async () => {
+          throw new Error("undetermined click must not use a digest fallback");
+        },
+        waitForPageTransition: async () => true,
+        waitForSameOriginNavigation: async () => false,
+        waitForNavigation: async () => false,
+      },
+    });
+
+    await expect(
+      runtime.executeBounded(run, ready, "https://portal.company.test"),
+    ).resolves.toEqual({ ok: true, outcome: "VERIFIED", navigation: true });
+    expect(order).toEqual(["verifying-navigation", "dispatch"]);
   });
 });

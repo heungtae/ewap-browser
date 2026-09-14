@@ -118,6 +118,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       if (run.phase === "TERMINAL") return fail("POLICY_DENIED");
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
+        if (session.awaitingExpandedMenuSelection)
+          return fail("TARGET_NOT_ACTIONABLE");
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
         dependencies.publish(run.id, {
           type: "assistant_delta",
@@ -145,6 +147,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         session.discovery,
         targetRefId,
       );
+      if (session.awaitingExpandedMenuSelection) {
+        const target = active.snapshot.nodes.find(
+          (node) => node.ref_id === proposal.refId,
+        );
+        if (!target || !["menuitem", "option"].includes(target.role))
+          return fail("TARGET_NOT_ACTIONABLE");
+        delete session.awaitingExpandedMenuSelection;
+      }
       dependencies.coordinator.runs.transition(run.id, "PROPOSING");
       session.messages.push({
         role: "assistant",

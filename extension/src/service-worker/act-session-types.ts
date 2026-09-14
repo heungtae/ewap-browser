@@ -28,6 +28,10 @@ export type ActSession = {
   // proposal. It is never supplied by the Side Panel or model.
   continueAfterApproval?: true;
   autoExecutionCount?: number;
+  // A collapsed ARIA menu trigger was approved for a bounded continuation.
+  // The next model turn must choose a visible menu item rather than declare
+  // success from text alone.
+  awaitingExpandedMenuSelection?: true;
   profile: { id: string; version: number };
   modelContext?: ProfileModelContext;
   discovery: "profile" | "page-derived";

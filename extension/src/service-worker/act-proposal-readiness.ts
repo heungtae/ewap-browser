@@ -52,6 +52,24 @@ export const prepareActProposal = (
       ),
     },
   };
+  if (
+    proposal.tool === "click_by_ref" &&
+    typeof target.state === "object" &&
+    target.state !== null &&
+    (target.state as { expanded?: unknown }).expanded === false &&
+    definition.verifier.kind === "semantic-state-transition" &&
+    definition.verifier.required_changes.length === 0
+  )
+    definition.verifier.required_changes = [
+      { ref_id: proposal.refId, field: "expanded", expected: true },
+    ];
+  if (
+    proposal.tool === "click_by_ref" &&
+    typeof target.state === "object" &&
+    target.state !== null &&
+    (target.state as { expanded?: unknown }).expanded === false
+  )
+    session.awaitingExpandedMenuSelection = true;
   const next = dependencies.coordinator.mutations.propose(
     run,
     {
