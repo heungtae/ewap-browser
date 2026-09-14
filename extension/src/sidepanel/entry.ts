@@ -17,6 +17,7 @@ type BrowserRuntime = {
   getManifest?(): { version: string };
   sendMessage(message: unknown): Promise<unknown>;
   connect(info: { name: string }): {
+    postMessage(message: unknown): void;
     onMessage: { addListener(listener: (message: unknown) => void): void };
     onDisconnect: { addListener(listener: () => void): void };
     disconnect(): void;
@@ -36,6 +37,7 @@ const chromeApi = (
     chrome?: {
       runtime: BrowserRuntime;
       tabs?: BrowserTabs;
+      windows?: { getCurrent(): Promise<{ id?: number }> };
     };
   }
 ).chrome;
@@ -338,6 +340,9 @@ const applyPermissionMode = (mode: string): void => {
         : "표준 권한";
 };
 const showFailure = (code?: string): void => {
+  diagnosticsView.failure(
+    code && code in userMessage ? code : "INTERNAL_FAILURE",
+  );
   setActivityStatus();
   const detail =
     code && code in userMessage
@@ -359,7 +364,12 @@ const showFailure = (code?: string): void => {
 const sendRuntime = async (
   payload: unknown,
 ): Promise<Record<string, unknown>> => {
-  const response = await runtime?.sendMessage(payload);
+  const windowId = (await chromeApi?.windows?.getCurrent())?.id;
+  const response = await runtime?.sendMessage(
+    Number.isInteger(windowId) && windowId! >= 0
+      ? { kind: "PANEL_REQUEST", window_id: windowId, payload }
+      : payload,
+  );
   if (
     typeof response === "object" &&
     response !== null &&
@@ -1171,7 +1181,17 @@ const receiveChatEvent = (message: unknown): void => {
 };
 if (runtime) {
   const stopConnection = connectPanel({
-    connect: () => runtime.connect({ name: "contextpilot-panel" }),
+    connect: () => {
+      const port = runtime.connect({ name: "contextpilot-panel" });
+      void chromeApi?.windows
+        ?.getCurrent()
+        .then(({ id }) => {
+          if (Number.isInteger(id) && id! >= 0)
+            port.postMessage({ kind: "PANEL_BIND", window_id: id });
+        })
+        .catch(() => undefined);
+      return port;
+    },
     receive: receiveChatEvent,
     recover: () => void recoverChatEvents(),
   });

@@ -11,7 +11,14 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
   ): Promise<{ id: number; title?: string; url?: string }> => {
     const documentId = sender.documentId;
     let windowId: number | undefined;
-    if (isPanelSender(sender) && documentId && chrome?.runtime.getContexts) {
+    if (sender.panelWindowId !== undefined)
+      windowId = await windowForPanel(sender);
+    if (
+      windowId === undefined &&
+      isPanelSender(sender) &&
+      documentId &&
+      chrome?.runtime.getContexts
+    ) {
       const matches = (
         await chrome.runtime.getContexts({
           contextTypes: ["SIDE_PANEL"],
@@ -40,27 +47,41 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
       ...(tab.url ? { url: tab.url } : {}),
     };
   };
+  const windowForPanel = async (sender: BrowserSender): Promise<number> => {
+    if (!isPanelSender(sender) || !chrome?.runtime.getContexts)
+      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+    const documentId = sender.documentId;
+    const contexts = await chrome.runtime.getContexts({
+      contextTypes: ["SIDE_PANEL"],
+      ...(documentId
+        ? { documentIds: [documentId] }
+        : { documentUrls: [panelUrl()!] }),
+    });
+    const matches = contexts.filter(
+      (context) =>
+        context.contextType === "SIDE_PANEL" &&
+        (!documentId || context.documentId === documentId),
+    );
+    if (matches.length !== 1)
+      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+    const contextWindowId = matches[0]?.windowId;
+    const claimed = sender.panelWindowId;
+    if (Number.isInteger(contextWindowId) && contextWindowId! >= 0) {
+      if (claimed !== undefined && claimed !== contextWindowId)
+        throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+      return contextWindowId!;
+    }
+    // Chromium reports -1 for a real side panel. Only our authenticated
+    // extension page may provide its chrome.windows.getCurrent() result.
+    if (!Number.isInteger(claimed) || claimed! < 0)
+      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
+    return claimed!;
+  };
   const activeTabForBoundPanel = async (
     sender: BrowserSender,
   ): Promise<{ id: number }> => {
-    const documentId = sender.documentId;
-    if (!isPanelSender(sender) || !documentId || !chrome?.runtime.getContexts)
-      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
-    const matches = (
-      await chrome.runtime.getContexts({
-        contextTypes: ["SIDE_PANEL"],
-        documentIds: [documentId],
-      })
-    ).filter(
-      (context) =>
-        context.contextType === "SIDE_PANEL" &&
-        context.documentId === documentId &&
-        Number.isInteger(context.windowId),
-    );
-    const windowId = matches.length === 1 ? matches[0]?.windowId : undefined;
-    if (windowId === undefined)
-      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
-    const tab = (await chrome.tabs.query({ active: true, windowId }))[0];
+    const windowId = await windowForPanel(sender);
+    const tab = (await chrome!.tabs.query({ active: true, windowId }))[0];
     if (tab?.id === undefined)
       throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
     return { id: tab.id };
@@ -79,6 +100,7 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
     }
   };
   return {
+    windowForPanel,
     activeTabForPanel,
     activeTabForBoundPanel,
     isPanelSender,

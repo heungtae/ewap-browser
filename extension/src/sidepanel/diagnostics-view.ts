@@ -11,6 +11,7 @@ export const createDiagnosticsView = (options: {
   version(): string;
   failure(code?: string): void;
 }) => {
+  let localFailure: string | undefined;
   const executionDetails =
     document.querySelector<HTMLDetailsElement>("#execution-details");
   const executionTrace =
@@ -111,12 +112,26 @@ export const createDiagnosticsView = (options: {
     .querySelector<HTMLButtonElement>("#diagnostics-export")
     ?.addEventListener("click", () => {
       const request = options.current();
-      if (!request || typeof request.request_id !== "string") {
+      if (
+        (!request || typeof request.request_id !== "string") &&
+        !localFailure
+      ) {
         setStatus("내보낼 요청 기록이 없습니다.");
         return;
       }
-      const id = request.request_id;
-      void readTrace(id)
+      const id =
+        typeof request?.request_id === "string" ? request.request_id : "panel";
+      const fallback = {
+        records: [],
+        dropped_count: 0,
+        level: "off" as const,
+        storage_failed: true,
+      };
+      void (
+        id === "panel"
+          ? Promise.resolve(fallback)
+          : readTrace(id).catch(() => fallback)
+      )
         .then((records) => {
           const blob = new Blob(
             [
@@ -125,6 +140,8 @@ export const createDiagnosticsView = (options: {
                   schema_version: 1,
                   extension_version: options.version(),
                   request_id: id,
+                  panel_failure_code: localFailure,
+                  storage_failed: records.storage_failed,
                   records: records.records,
                   dropped_count: records.dropped_count,
                 },
@@ -170,7 +187,14 @@ export const createDiagnosticsView = (options: {
 
   return {
     refresh: refreshTrace,
+    failure: (code: string) => {
+      localFailure = code;
+      if (executionDetails) executionDetails.hidden = false;
+      if (executionTrace)
+        executionTrace.textContent = `패널 요청 실패: ${code} · 버전: ${options.version()}`;
+    },
     reset: () => {
+      localFailure = undefined;
       if (executionTrace)
         executionTrace.textContent = "아직 기록된 실행이 없습니다.";
     },

@@ -1,4 +1,5 @@
 import type { BrowserChromeApi, BrowserPort } from "./browser-api.js";
+import { createPageSenderContext } from "./page-sender-context.js";
 
 export type PanelPort = { port: BrowserPort; windowId: number };
 
@@ -28,35 +29,42 @@ export const createPanelPortLifecycle = (dependencies: Dependencies) => {
         port.sender?.url !== chrome.runtime.getURL("sidepanel/index.html")
       )
         return;
-      if (!documentId || !chrome.runtime.getContexts) {
-        rememberUnbound(port);
-        return;
-      }
-      void chrome.runtime
-        .getContexts({
-          contextTypes: ["SIDE_PANEL"],
-          documentIds: [documentId],
-        })
-        .then((contexts) => {
-          const matches = contexts.filter(
-            (context) =>
-              context.contextType === "SIDE_PANEL" &&
-              context.documentId === documentId &&
-              Number.isInteger(context.windowId),
+      let disconnected = false;
+      let generation = 0;
+      const key = documentId ?? crypto.randomUUID();
+      port.onDisconnect.addListener(() => {
+        disconnected = true;
+        if (panelPorts.get(key)?.port === port) panelPorts.delete(key);
+        unboundPanelPorts.delete(port);
+      });
+      const bind = async (panelWindowId?: number): Promise<void> => {
+        const attempt = ++generation;
+        try {
+          const windowId = await createPageSenderContext(chrome).windowForPanel(
+            {
+              ...port.sender,
+              ...(panelWindowId === undefined ? {} : { panelWindowId }),
+            },
           );
-          const windowId = matches[0]?.windowId;
-          if (matches.length !== 1 || windowId === undefined) {
-            rememberUnbound(port);
-            return;
-          }
-          panelPorts.set(documentId, { port, windowId });
-          port.onDisconnect.addListener(() => {
-            if (panelPorts.get(documentId)?.port === port)
-              panelPorts.delete(documentId);
-            unboundPanelPorts.delete(port);
-          });
-        })
-        .catch(() => rememberUnbound(port));
+          if (disconnected || attempt !== generation) return;
+          panelPorts.set(key, { port, windowId });
+          unboundPanelPorts.delete(port);
+        } catch {
+          if (!disconnected && attempt === generation) rememberUnbound(port);
+        }
+      };
+      port.onMessage.addListener((message) => {
+        if (typeof message !== "object" || message === null) return;
+        const value = message as { kind?: unknown; window_id?: unknown };
+        if (
+          value.kind === "PANEL_BIND" &&
+          Object.keys(value).length === 2 &&
+          Number.isInteger(value.window_id) &&
+          (value.window_id as number) >= 0
+        )
+          void bind(value.window_id as number);
+      });
+      void bind();
     });
   };
   const notifyTabActivation = (tabId: number, windowId: number): void => {

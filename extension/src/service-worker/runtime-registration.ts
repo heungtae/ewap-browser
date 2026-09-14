@@ -10,7 +10,7 @@ import {
   pageLifecycleMessageHandler,
 } from "./runtime-core-handlers.js";
 import { panelPortLifecycle } from "./runtime-lifecycle.js";
-import { chromeApi } from "./runtime-platform.js";
+import { chromeApi, pageSenderContext } from "./runtime-platform.js";
 import { safeFailure } from "./runtime-state.js";
 import { startStorage, storageReady } from "./runtime-storage.js";
 import {
@@ -56,6 +56,7 @@ export const registerServiceWorker = (): void => {
   });
   chromeApi?.runtime.onMessage.addListener(
     createRuntimeMessageRouter({
+      isPanelSender: pageSenderContext.isPanelSender,
       storageReady: () => storageReady,
       safeFailure,
       chatRoute: chatMessageHandler,

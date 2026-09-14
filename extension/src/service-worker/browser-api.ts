@@ -7,6 +7,8 @@ export type BrowserSender = {
   frameId?: number;
   documentId?: string;
   documentLifecycle?: string;
+  /** Set only by the authenticated panel transport. */
+  panelWindowId?: number;
 };
 
 export type BrowserRuntime = {

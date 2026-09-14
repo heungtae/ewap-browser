@@ -13,6 +13,7 @@ export const failureCode = (error: unknown, fallback: string): string =>
   error instanceof ContractError ? error.code : fallback;
 
 type RouterDependencies = {
+  isPanelSender?(sender: RuntimeSender): boolean;
   storageReady(): boolean;
   safeFailure(code: string, detail?: string): unknown;
   chatRoute: {
@@ -36,9 +37,7 @@ const isOffscreenMessage = (message: unknown): boolean =>
     "OFFSCREEN_FETCH",
     "OFFSCREEN_PROVIDER_REQUEST",
     "OFFSCREEN_PROVIDER_READY_CHECK",
-  ].includes(
-    (message as { kind?: unknown }).kind as string,
-  );
+  ].includes((message as { kind?: unknown }).kind as string);
 
 /**
  * Owns only the common runtime-message envelope flow. Domain handlers stay
@@ -63,8 +62,32 @@ export const createRuntimeMessageRouter =
       respond(dependencies.safeFailure("INVALID_ARGUMENT"));
       return;
     }
-    const chatRoute = dependencies.chatRoute.handle(message, sender, respond);
+    if ((message as { kind?: unknown }).kind === "PANEL_REQUEST") {
+      const envelope = message as { window_id?: unknown; payload?: unknown };
+      if (
+        !dependencies.isPanelSender?.(sender) ||
+        !exactKeys(message, ["kind", "window_id", "payload"]) ||
+        !Number.isInteger(envelope.window_id) ||
+        (envelope.window_id as number) < 0 ||
+        typeof envelope.payload !== "object" ||
+        envelope.payload === null
+      ) {
+        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+        return;
+      }
+      sender = { ...sender, panelWindowId: envelope.window_id as number };
+      message = envelope.payload;
+    }
+    const chatRoute = dependencies.chatRoute.handle(
+      message as object,
+      sender,
+      respond,
+    );
     if (chatRoute.handled) return chatRoute.keepAlive ? true : undefined;
-    const domainRoute = dependencies.routeDomain(message, sender, respond);
+    const domainRoute = dependencies.routeDomain(
+      message as object,
+      sender,
+      respond,
+    );
     return domainRoute === true ? true : undefined;
   };

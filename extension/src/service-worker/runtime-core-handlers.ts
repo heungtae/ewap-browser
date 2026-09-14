@@ -15,7 +15,6 @@ import {
   chatRequests,
   executionDiagnostics,
   providerRuntime,
-  panelPorts,
 } from "./runtime-lifecycle.js";
 import { chromeApi, pageSenderContext } from "./runtime-platform.js";
 import {
@@ -82,8 +81,6 @@ chatRunLifecycle.setActivityObserver((tabId, stage) => {
 export const chatMessageHandler = createChatMessageHandler({
   activeTabForBoundPanel: async (sender) => {
     const active = await pageSenderContext.activeTabForBoundPanel(sender);
-    if (!sender.documentId || !panelPorts.has(sender.documentId))
-      throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
     if (!registered.has(registrationKey(active.id, 0)))
       await withDeadline(
         chromeApi!.tabs.sendMessage(active.id, {
@@ -91,7 +88,9 @@ export const chatMessageHandler = createChatMessageHandler({
         }),
         5_000,
         "DOCUMENT_NOT_REGISTERED",
-      );
+      ).catch(() => {
+        throw new ContractError("DOCUMENT_NOT_REGISTERED");
+      });
     const epoch = registered.get(registrationKey(active.id, 0))?.epoch;
     if (!epoch) throw new ContractError("DOCUMENT_NOT_REGISTERED");
     return { ...active, epoch };
