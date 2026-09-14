@@ -5,6 +5,7 @@ import type {
 } from "../cdp/bounded-adapter.js";
 import type { Capability } from "../policy/permission-manager.js";
 import { ContractError } from "../security/validation.js";
+import { withDeadline } from "../security/deadline.js";
 import type { ReadyExecution } from "../state/mutation-coordinator.js";
 import type { Run } from "../state/run-coordinator.js";
 
@@ -12,6 +13,7 @@ type RegisteredDocument = { epoch: string; documentId: string };
 type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
 
 type Dependencies = {
+  beforeDispatch?(tabId: number): Promise<void>;
   boundedCdp: BoundedCdpAdapter | undefined;
   documentFor(tabId: number, frameId: number): RegisteredDocument | undefined;
   isRunActive(runId: string): boolean;
@@ -67,6 +69,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       capability,
     };
     dependencies.permitCdp(run.id);
+    let dispatched = false;
     try {
       let input: { key?: string; text?: string } | undefined;
       if (tool === "press_key_by_ref") {
@@ -79,6 +82,10 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
           throw new ContractError("VALUE_BINDING_INVALID");
         input = { text: ready.value };
       }
+      await dependencies.beforeDispatch?.(run.tabId);
+      if (!dependencies.isRunActive(run.id))
+        return dependencies.safeFailure("POLICY_DENIED");
+      dispatched = true;
       const execution = await dependencies.boundedCdp.execute(action, input);
       if (execution.outcome !== "DISPATCHED") {
         const outcome = execution.outcome === "UNKNOWN" ? "UNKNOWN" : "FAILED";
@@ -103,10 +110,13 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         ? { ok: true, outcome }
         : { ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"), outcome };
     } catch (error) {
-      dependencies.terminal(run, "FAILED");
-      return dependencies.safeFailure(
-        error instanceof ContractError ? error.code : "CDP_UNAVAILABLE",
-      );
+      dependencies.terminal(run, dispatched ? "UNKNOWN" : "FAILED");
+      return {
+        ...dependencies.safeFailure(
+          error instanceof ContractError ? error.code : "CDP_UNAVAILABLE",
+        ),
+        outcome: dispatched ? "UNKNOWN" : "FAILED",
+      };
     } finally {
       dependencies.revokeCdp(run.id);
     }
@@ -121,19 +131,40 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       return executeBounded(run, ready, origin);
     if (ready.intent.tool === "navigate")
       dependencies.transition(run.id, "VERIFYING_NAVIGATION");
-    const result = await dependencies.send(run.tabId, {
-      kind: "CONTENT_EXECUTE_R1",
-      intent: ready.intent,
-      ...(ready.value !== undefined && ready.intent.value_binding
-        ? {
-            value_delivery: {
-              value_slot_id: ready.intent.value_binding.value_slot_id,
-              value_kind: ready.intent.value_binding.value_kind,
-              value: ready.value,
-            },
-          }
-        : {}),
-    });
+    await dependencies.beforeDispatch?.(run.tabId);
+    if (!dependencies.isRunActive(run.id))
+      return dependencies.safeFailure("POLICY_DENIED");
+    let result: unknown;
+    try {
+      result = await withDeadline(
+        dependencies.send(run.tabId, {
+          kind: "CONTENT_EXECUTE_R1",
+          intent: ready.intent,
+          ...(ready.value !== undefined && ready.intent.value_binding
+            ? {
+                value_delivery: {
+                  value_slot_id: ready.intent.value_binding.value_slot_id,
+                  value_kind: ready.intent.value_binding.value_kind,
+                  value: ready.value,
+                },
+              }
+            : {}),
+        }),
+        15_000,
+        "POSTCONDITION_UNVERIFIED",
+      );
+    } catch {
+      dependencies.terminal(run, "UNKNOWN");
+      return {
+        ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"),
+        outcome: "UNKNOWN",
+      };
+    }
+    if (!dependencies.isRunActive(run.id))
+      return {
+        ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"),
+        outcome: "UNKNOWN",
+      };
     if (
       typeof result !== "object" ||
       result === null ||

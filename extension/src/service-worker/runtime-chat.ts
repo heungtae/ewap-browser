@@ -12,7 +12,11 @@ import {
   serialiseToolResult,
 } from "./ask-tools.js";
 import { executeActContent } from "./runtime-execution.js";
-import { chatRunLifecycle, providerRuntime } from "./runtime-lifecycle.js";
+import {
+  chatRunLifecycle,
+  chatRequests,
+  providerRuntime,
+} from "./runtime-lifecycle.js";
 import {
   chromeApi,
   opaqueId,
@@ -106,6 +110,7 @@ const proposalExecutorRef: {
   current?: ReturnType<typeof createActProposalExecutor>;
 } = {};
 const actStepRunner = createActStepRunner({
+  requestContext: (tabId) => chatRequests.activeContext(tabId),
   coordinator,
   provider: providerRuntime!,
   preferences: () => agentPreferences,
@@ -121,6 +126,10 @@ const actStepRunner = createActStepRunner({
     return executor.executeProposal(session);
   },
   endSession: (session) => {
+    const run = session.runId
+      ? coordinator.runs.byId(session.runId)
+      : undefined;
+    chatRequests.endTab(session.tabId, run?.outcome ?? "UNKNOWN", run?.code);
     permissions.endRun(session.id);
     actSessions.delete(session.id);
   },
@@ -163,6 +172,10 @@ const proposalExecutor = createActProposalExecutor({
   actionView,
   continueWorkflow: actStepRunner.continueWorkflow,
   endSession: (session) => {
+    const run = session.runId
+      ? coordinator.runs.byId(session.runId)
+      : undefined;
+    chatRequests.endTab(session.tabId, run?.outcome ?? "UNKNOWN", run?.code);
     permissions.endRun(session.id);
     actSessions.delete(session.id);
   },

@@ -2,6 +2,8 @@ import { ProviderRuntime } from "../providers/runtime.js";
 import { createBoundedCdpRuntime } from "./bounded-cdp-runtime.js";
 import { createChatRunLifecycle } from "./chat-run-lifecycle.js";
 import { ExecutionDiagnostics } from "./execution-diagnostics.js";
+import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
+import { RequestPersistence } from "./request-persistence.js";
 import { createPanelPortLifecycle } from "./panel-port-lifecycle.js";
 import { registerTabLifecycle } from "./tab-lifecycle.js";
 import {
@@ -42,6 +44,17 @@ export const { boundedCdp } = createBoundedCdpRuntime({
 });
 export const executionDiagnostics = new ExecutionDiagnostics(
   chromeApi?.storage,
+);
+export const chatRequests = new ChatRequestLifecycle(
+  executionDiagnostics,
+  new RequestPersistence(
+    chromeApi?.storage.session.get && chromeApi.storage.session.set
+      ? {
+          get: chromeApi.storage.session.get.bind(chromeApi.storage.session),
+          set: chromeApi.storage.session.set.bind(chromeApi.storage.session),
+        }
+      : undefined,
+  ),
 );
 export const chatRunLifecycle = createChatRunLifecycle({
   chrome: chromeApi,

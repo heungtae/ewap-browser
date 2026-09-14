@@ -26,6 +26,13 @@ type Dependencies = {
 };
 
 export const createChatRunLifecycle = (dependencies: Dependencies) => {
+  let terminalObserver:
+    | ((
+        tabId: number,
+        outcome: "FAILED" | "UNKNOWN" | "CANCELLED",
+        code?: string,
+      ) => void)
+    | undefined;
   let activityObserver = dependencies.onActivity;
   const persistence = new ChatPersistence(
     dependencies.chrome?.storage.session?.set
@@ -55,6 +62,8 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
       return;
     }
     const event = dependencies.events.append(runId, payload);
+    if (payload.type === "run_terminal" && payload.outcome !== "VERIFIED")
+      terminalObserver?.(event.tab_id, payload.outcome, payload.code);
     if (
       payload.type === "activity_started" ||
       payload.type === "activity_progress" ||
@@ -104,6 +113,9 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
     publishCancelled(run);
   };
   return {
+    setTerminalObserver(observer: typeof terminalObserver): void {
+      terminalObserver = observer;
+    },
     cancelForPageChange,
     clearScheduled,
     flush,

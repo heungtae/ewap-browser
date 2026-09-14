@@ -1,94 +1,22 @@
-import type { ErrorCode, Mode, Outcome } from "../contracts/core-types.js";
-import type { ActivityStage } from "../contracts/chat-event-types.js";
-import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
+import type { ErrorCode, Outcome } from "../contracts/core-types.js";
+import { isErrorCode } from "../contracts/error-codes.js";
+import { copy, type Request } from "./request-store.js";
+import { RequestExecution } from "./request-execution.js";
 
-export type RequestStage = "ACCEPTED" | ActivityStage | "TERMINAL";
-export type RequestState = "ACCEPTED" | "RUNNING" | "TERMINAL";
+import type {
+  RequestSnapshot,
+  RequestState,
+  RequestStage,
+} from "../contracts/request-types.js";
+export type { RequestSnapshot } from "../contracts/request-types.js";
 
-export type RequestSnapshot = {
-  request_id: string;
-  revision: number;
-  state: RequestState;
-  stage: RequestStage;
-  tab_id: number;
-  started_at_ms: number;
-  stage_started_at_ms: number;
-  last_progress_at_ms: number;
-  outcome?: Outcome;
-  code?: ErrorCode;
-};
-
-type Request = RequestSnapshot & {
-  mode: Mode;
-  prompt: string;
-  generation: number;
-};
-
-type Start = {
-  request_id: string;
-  tab_id: number;
-  mode: Mode;
-  prompt: string;
-};
-
-const copy = (request: Request): RequestSnapshot =>
-  structuredClone({
-    request_id: request.request_id,
-    revision: request.revision,
-    state: request.state,
-    stage: request.stage,
-    tab_id: request.tab_id,
-    started_at_ms: request.started_at_ms,
-    stage_started_at_ms: request.stage_started_at_ms,
-    last_progress_at_ms: request.last_progress_at_ms,
-    ...(request.outcome ? { outcome: request.outcome } : {}),
-    ...(request.code ? { code: request.code } : {}),
-  });
-
-export class ChatRequestLifecycle {
-  private readonly requests = new Map<string, Request>();
-
-  public constructor(private readonly diagnostics?: ExecutionDiagnostics) {}
-
-  public start(
-    input: Start,
-  ):
-    | { kind: "accepted" | "existing"; snapshot: RequestSnapshot }
-    | { kind: "conflict" } {
-    const existing = this.requests.get(input.request_id);
-    if (existing) {
-      if (
-        existing.tab_id !== input.tab_id ||
-        existing.mode !== input.mode ||
-        existing.prompt !== input.prompt
-      )
-        return { kind: "conflict" };
-      return { kind: "existing", snapshot: copy(existing) };
-    }
-    const now = Date.now();
-    const request: Request = {
-      request_id: input.request_id,
-      tab_id: input.tab_id,
-      mode: input.mode,
-      prompt: input.prompt,
-      generation: 0,
-      revision: 1,
-      state: "ACCEPTED",
-      stage: "ACCEPTED",
-      started_at_ms: now,
-      stage_started_at_ms: now,
-      last_progress_at_ms: now,
-    };
-    this.requests.set(input.request_id, request);
-    this.diagnostics?.accept(input.request_id, input.tab_id, now);
-    return { kind: "accepted", snapshot: copy(request) };
-  }
-
+export class ChatRequestLifecycle extends RequestExecution {
   public startRun(requestId: string): number | undefined {
     const request = this.requests.get(requestId);
     if (!request || request.state !== "ACCEPTED") return;
     this.transition(request, "RUNNING", "ACCEPTED");
     this.diagnostics?.stage(requestId, "router", "PREPARING_PAGE");
+    this.budget.start(requestId, () => this.expire(requestId));
     return request.generation;
   }
 
@@ -106,34 +34,121 @@ export class ChatRequestLifecycle {
     )
       return;
     this.transition(request, "TERMINAL", "TERMINAL");
+    if (
+      request.dispatch_started &&
+      (outcome === "FAILED" || outcome === "CANCELLED")
+    )
+      outcome = "UNKNOWN";
     request.outcome = outcome;
     if (code) request.code = code;
     this.diagnostics?.terminal(requestId, outcome, code);
+    this.controllers.get(requestId)?.abort();
+    this.controllers.delete(requestId);
+    this.budget.stop(requestId);
+    this.onTerminal?.(request.tab_id, outcome, code);
+    void this.flush().catch(() => undefined);
     return copy(request);
   }
 
-  public status(requestId: string, tabId: number): RequestSnapshot | undefined {
+  public status(
+    requestId: string,
+    tabId: number,
+    owner = "",
+  ): RequestSnapshot | undefined {
     const request = this.requests.get(requestId);
-    return request?.tab_id === tabId ? copy(request) : undefined;
+    return request?.tab_id === tabId && request.owner === owner
+      ? copy(request)
+      : undefined;
   }
 
-  public progress(tabId: number, stage: ActivityStage): void {
+  public result(requestId: string): Record<string, unknown> | undefined {
+    return this.requests.get(requestId)?.result;
+  }
+  public settled(
+    requestId: string,
+    generation: number,
+    result: Record<string, unknown>,
+  ): void {
+    const request = this.requests.get(requestId);
+    if (
+      !request ||
+      request.generation !== generation ||
+      request.state === "TERMINAL"
+    )
+      return;
+    if (
+      result.ok &&
+      (result.state === "WORKFLOW_CANDIDATES" ||
+        request.state === "WAITING_USER")
+    ) {
+      request.result = result;
+      this.transition(
+        request,
+        "WAITING_USER",
+        result.state === "WORKFLOW_CANDIDATES"
+          ? "SELECTION_REQUIRED"
+          : "AWAITING_REVIEW",
+      );
+      return;
+    }
+    this.finish(
+      requestId,
+      generation,
+      result.ok
+        ? "VERIFIED"
+        : result.outcome === "UNKNOWN"
+          ? "UNKNOWN"
+          : "FAILED",
+      isErrorCode(result.code) ? result.code : undefined,
+    );
+  }
+  public endTab(tabId: number, outcome: Outcome, code?: ErrorCode): void {
+    const request = [...this.requests.values()].find(
+      (item) => item.tab_id === tabId && item.state !== "TERMINAL",
+    );
+    if (request)
+      this.finish(request.request_id, request.generation, outcome, code);
+  }
+
+  public progress(tabId: number, stage: RequestStage): void {
     const request = [...this.requests.values()].find(
       (candidate) =>
-        candidate.tab_id === tabId && candidate.state === "RUNNING",
+        candidate.tab_id === tabId && candidate.state !== "TERMINAL",
     );
     if (!request) return;
-    this.transition(request, "RUNNING", stage);
+    if (request.stage !== stage)
+      this.diagnostics?.stage(
+        request.request_id,
+        stage === "PROVIDER_BODY" ? "provider" : "router",
+        stage,
+      );
+    this.transition(
+      request,
+      stage === "AWAITING_REVIEW" || stage === "SELECTION_REQUIRED"
+        ? "WAITING_USER"
+        : "RUNNING",
+      stage,
+    );
   }
 
-  public cancel(requestId: string, tabId: number): RequestSnapshot | undefined {
+  public cancel(
+    requestId: string,
+    tabId: number,
+    owner = "",
+  ): RequestSnapshot | undefined {
     const request = this.requests.get(requestId);
+    if (request?.owner !== owner) return;
     if (!request || request.tab_id !== tabId || request.state === "TERMINAL")
       return request?.tab_id === tabId ? copy(request) : undefined;
     request.generation += 1;
     this.transition(request, "TERMINAL", "TERMINAL");
-    request.outcome = "CANCELLED";
-    this.diagnostics?.terminal(requestId, "CANCELLED");
+    request.outcome = request.dispatch_started ? "UNKNOWN" : "CANCELLED";
+    this.controllers.get(requestId)?.abort();
+    this.controllers.delete(requestId);
+    this.budget.stop(requestId);
+    this.onTerminal?.(request.tab_id, request.outcome);
+    this.diagnostics?.terminal(requestId, request.outcome);
+    void this.flush().catch(() => undefined);
     return copy(request);
   }
 
@@ -145,8 +160,12 @@ export class ChatRequestLifecycle {
     const now = Date.now();
     request.revision += 1;
     request.state = state;
+    if (request.stage !== stage) request.stage_started_at_ms = now;
     request.stage = stage;
-    request.stage_started_at_ms = now;
     request.last_progress_at_ms = now;
+    this.budget.stage(request.request_id, state === "WAITING_USER", () =>
+      this.expire(request.request_id),
+    );
+    void this.flush().catch(() => undefined);
   }
 }

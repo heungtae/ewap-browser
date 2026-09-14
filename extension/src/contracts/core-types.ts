@@ -27,6 +27,11 @@ export type Risk = "R0" | "R1" | "R2" | "R3";
 export type Outcome = "VERIFIED" | "FAILED" | "UNKNOWN" | "CANCELLED";
 export type Decision = "ALLOW" | "REQUIRE_CONFIRMATION" | "DENY";
 export type ErrorCode =
+  | "WORKER_RESTARTED"
+  | "PAGE_SNAPSHOT_TIMEOUT"
+  | "WORKFLOW_DISCOVERY_TIMEOUT"
+  | "PROVIDER_BODY_IDLE_TIMEOUT"
+  | "REQUEST_TIMEOUT"
   | "INVALID_ARGUMENT"
   | "DOCUMENT_NOT_REGISTERED"
   | "POLICY_DENIED"

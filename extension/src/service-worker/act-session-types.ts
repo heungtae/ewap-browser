@@ -13,6 +13,7 @@ export const genericActSystemPrompt =
 export type ActProposal = ParsedActProposal;
 
 export type ActSession = {
+  requestContext?: import("./request-context.js").RequestContext;
   id: string;
   tabId: number;
   origin: string;

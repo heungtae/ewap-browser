@@ -10,18 +10,30 @@ export const parseProviderBody = async (
   body: ReadableStream<Uint8Array> | null,
   onDelta?: (text: string) => void,
   signal?: AbortSignal,
+  onProgress?: () => void,
 ): Promise<unknown> => {
   if (!body) return fail("PROVIDER_UNAVAILABLE");
   const reader = body.getReader();
+  let idle = false;
+  let idleTimer: ReturnType<typeof setTimeout> | undefined;
+  const armIdle = (): void => {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      idle = true;
+      cancel();
+    }, 30_000);
+  };
   const cancel = (): void => {
     void reader.cancel().catch(() => undefined);
   };
   signal?.addEventListener("abort", cancel, { once: true });
+  if (signal?.aborted) cancel();
   const decoder = new TextDecoder();
   let text = "";
   let pending = "";
   let isSse = false;
   let streamedAssistantChars = 0;
+  let lastProgress = -Infinity;
   const emitDelta = (delta: string): void => {
     streamedAssistantChars += delta.length;
     if (streamedAssistantChars > maxProviderAssistantChars)
@@ -30,8 +42,15 @@ export const parseProviderBody = async (
   };
   try {
     for (;;) {
+      armIdle();
       const next = await reader.read();
+      if (idle) return fail("PROVIDER_BODY_IDLE_TIMEOUT");
+      if (signal?.aborted) return fail("PROVIDER_UNAVAILABLE");
       if (next.done) break;
+      if (Date.now() - lastProgress >= 1_000) {
+        lastProgress = Date.now();
+        onProgress?.();
+      }
       const chunk = decoder.decode(next.value, { stream: true });
       if (text.length + chunk.length > maxProviderBodyChars)
         providerResponseTooLarge();
@@ -64,6 +83,7 @@ export const parseProviderBody = async (
     await reader.cancel().catch(() => undefined);
     throw error;
   } finally {
+    if (idleTimer) clearTimeout(idleTimer);
     signal?.removeEventListener("abort", cancel);
     reader.releaseLock();
   }

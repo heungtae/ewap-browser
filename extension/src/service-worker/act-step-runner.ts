@@ -12,11 +12,22 @@ import type { ActProposal, ActSession } from "./act-session-types.js";
 import type { ActStepDependencies } from "./act-step-dependencies.js";
 import { failActRun } from "./act-run-failure.js";
 import { actStepMessages } from "./act-step-messages.js";
+import { assertRequestActive } from "./request-context.js";
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
   const runStep = async (
     session: ActSession,
   ): Promise<Record<string, unknown>> => {
-    const active = await dependencies.readActive();
+    const context =
+      session.requestContext ?? dependencies.requestContext?.(session.tabId);
+    if (context) session.requestContext = context;
+    assertRequestActive(session.requestContext);
+    const active = await dependencies.readActive(undefined, session.tabId);
+    assertRequestActive(session.requestContext);
+    if (
+      session.requestContext?.documentEpoch &&
+      active.snapshot.document_epoch !== session.requestContext.documentEpoch
+    )
+      return fail("PAGE_SCOPE_STALE");
     if (active.tabId !== session.tabId || active.origin !== session.origin)
       return fail("PROFILE_UNAVAILABLE");
     const run = dependencies.coordinator.runs.start(
@@ -90,10 +101,21 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         type: "activity_progress",
         stage: "CONTACTING_PROVIDER",
       });
-      const response = await dependencies.provider.chat({
-        messages,
-        ...(tools.length > 0 ? { tools } : {}),
-      });
+      const response = await dependencies.provider.chat(
+        {
+          messages,
+          ...(tools.length > 0 ? { tools } : {}),
+        },
+        session.requestContext
+          ? {
+              signal: session.requestContext.signal,
+              onProgress: () =>
+                session.requestContext?.progress?.("PROVIDER_BODY"),
+            }
+          : {},
+      );
+      assertRequestActive(session.requestContext);
+      if (run.phase === "TERMINAL") return fail("POLICY_DENIED");
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
@@ -163,7 +185,9 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     const workflow = session.workflow;
     if (!workflow) return runStep(session);
     if (workflow.count >= 11) return fail("WORKFLOW_STEP_LIMIT");
-    const active = await dependencies.readActive();
+    assertRequestActive(session.requestContext);
+    const active = await dependencies.readActive(undefined, session.tabId);
+    assertRequestActive(session.requestContext);
     if (active.tabId !== session.tabId || active.origin !== session.origin)
       return fail("WORKFLOW_STATE_MISMATCH");
     const next = nextWorkflowStep(

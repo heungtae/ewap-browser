@@ -1,4 +1,3 @@
-import { ContractError, isPlainObject } from "../security/validation.js";
 import {
   canonicalPageScope,
   redactForChat,
@@ -13,13 +12,16 @@ import {
 import { createChatRequestMessageHandler } from "./chat-request-message-handler.js";
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
 import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
+import type { RequestContext } from "./request-context.js";
 
 type Sender = RuntimeSender;
 type ChatResult = { ok?: boolean };
 type ActiveTab = { id: number; title?: string; url?: string };
 
 export type ChatMessageHandlerDependencies = {
-  activeTabForBoundPanel(sender: Sender): Promise<{ id: number }>;
+  activeTabForBoundPanel(
+    sender: Sender,
+  ): Promise<{ id: number; epoch?: string }>;
   activeTabForPanel(sender: Sender): Promise<ActiveTab>;
   cancelActiveTab(tabId: number): void;
   chatEvents: {
@@ -34,8 +36,8 @@ export type ChatMessageHandlerDependencies = {
   isPanelSender(sender: Sender): boolean;
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
-  runActChat(payload: unknown): Promise<ChatResult>;
-  runAskChat(payload: unknown): Promise<ChatResult>;
+  runActChat(payload: unknown, context?: RequestContext): Promise<ChatResult>;
+  runAskChat(payload: unknown, context?: RequestContext): Promise<ChatResult>;
   safeFailure(code: string, detail?: string): unknown;
 };
 
@@ -77,33 +79,6 @@ export const createChatMessageHandler = (
       const kind = (message as { kind?: unknown }).kind;
       const requestRoute = requestHandler.handle(message, sender, respond);
       if (requestRoute.handled) return requestRoute;
-      if (kind === "CHAT_SEND") {
-        if (
-          !dependencies.isPanelSender(sender) ||
-          !dependencies.providerAvailable()
-        ) {
-          respond(dependencies.safeFailure("INVALID_ARGUMENT"));
-          return { handled: true };
-        }
-        const payload = (message as { payload?: unknown }).payload;
-        const mode = isPlainObject(payload) ? payload.mode : undefined;
-        void (
-          mode === "act"
-            ? dependencies.runActChat(payload)
-            : dependencies.runAskChat(payload)
-        )
-          .then((result) => respond(result))
-          .catch((error) => {
-            const code = failureCode(error, "PROVIDER_PLUGIN_FAILED");
-            respond(
-              dependencies.safeFailure(
-                code,
-                error instanceof ContractError ? error.detail : undefined,
-              ),
-            );
-          });
-        return { handled: true, keepAlive: true };
-      }
       if (kind === "CHAT_RESYNC") {
         const runId = (message as { run_id?: unknown }).run_id;
         const sequence = (message as { sequence?: unknown }).sequence;

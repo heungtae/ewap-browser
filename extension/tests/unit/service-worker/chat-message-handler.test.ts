@@ -89,6 +89,7 @@ describe("chat runtime message handler", () => {
       ),
     ).toEqual({ handled: true, keepAlive: true });
     await flush();
+    await vi.waitFor(() => expect(respond).toHaveBeenCalled());
     expect(calls).toEqual(["act"]);
     expect(respond).toHaveBeenCalledWith({ ok: true });
   });
@@ -112,6 +113,7 @@ describe("chat runtime message handler", () => {
       ),
     ).toEqual({ handled: true, keepAlive: true });
     await flush();
+    await vi.waitFor(() => expect(start).toHaveBeenCalled());
     expect(start).toHaveBeenCalledWith({
       ok: true,
       accepted: true,

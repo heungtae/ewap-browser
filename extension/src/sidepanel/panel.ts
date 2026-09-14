@@ -1,5 +1,11 @@
 import type { ErrorCode, Outcome } from "../contracts/types.js";
 export const userMessage: Record<ErrorCode, string> = {
+  WORKER_RESTARTED:
+    "확장 실행기가 재시작되어 작업을 중단했습니다. 결과를 확인해 주세요.",
+  PAGE_SNAPSHOT_TIMEOUT: "페이지 읽기 제한 시간이 초과되었습니다.",
+  WORKFLOW_DISCOVERY_TIMEOUT: "워크플로우 확인 제한 시간이 초과되었습니다.",
+  PROVIDER_BODY_IDLE_TIMEOUT: "AI 응답 수신이 지연되어 중단했습니다.",
+  REQUEST_TIMEOUT: "작업 제한 시간이 초과되었습니다.",
   INVALID_ARGUMENT: "작업 요청 형식이 올바르지 않습니다.",
   DOCUMENT_NOT_REGISTERED:
     "페이지가 다시 준비되는 중입니다. 잠시 후 다시 확인해 주세요.",

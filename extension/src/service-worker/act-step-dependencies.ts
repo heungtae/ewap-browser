@@ -8,10 +8,13 @@ import type { ActivePage } from "./page-context-runtime.js";
 import type { ActSession } from "./act-session-types.js";
 
 export type ActStepDependencies = {
+  requestContext?(
+    tabId: number,
+  ): import("./request-context.js").RequestContext | undefined;
   coordinator: ServiceCoordinator;
   provider: ProviderRuntime;
   preferences(): AgentPreferences;
-  readActive(): Promise<ActivePage>;
+  readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
   threadContext(tabId: number): ProviderMessage[];
   pageScope(active: ActivePage): PageScope;
   bindRun(runId: string, tabId: number, scope: PageScope): void;

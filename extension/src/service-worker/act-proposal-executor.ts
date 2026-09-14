@@ -1,4 +1,5 @@
 import { fail } from "../security/validation.js";
+import { assertRequestActive } from "./request-context.js";
 import {
   gatePermission,
   type AgentPreferences,
@@ -38,7 +39,7 @@ type Dependencies = {
   ): Promise<EnterprisePolicyDecision>;
   evidence(event: AuditEvent): Promise<void>;
   planScopes: PlanScopeStore;
-  readActive(): Promise<ActivePage>;
+  readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
   getRun(runId: string): Run | undefined;
   requestPermission(
     capability: Capability,
@@ -69,6 +70,7 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
   const executeProposal = async (
     session: ActSession,
   ): Promise<Record<string, unknown>> => {
+    assertRequestActive(session.requestContext);
     const proposal = session.proposal;
     const run = session.runId ? dependencies.getRun(session.runId) : undefined;
     if (!proposal || !run || run.phase === "TERMINAL")
@@ -134,7 +136,8 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
         host: new URL(session.origin).hostname,
       };
     }
-    const active = await dependencies.readActive();
+    const active = await dependencies.readActive(undefined, session.tabId);
+    assertRequestActive(session.requestContext);
     if (
       active.tabId !== session.tabId ||
       active.origin !== session.origin ||

@@ -39,25 +39,35 @@ export class ProviderRuntime {
 
   public async chat(
     input: { messages: ProviderMessage[]; tools?: ProviderToolDefinition[] },
-    options: { onDelta?: (text: string) => void } = {},
+    options: {
+      onDelta?: (text: string) => void;
+      signal?: AbortSignal;
+      onProgress?: () => void;
+    } = {},
   ): Promise<ProviderChatResponse> {
     const config = await this.settings.active();
     const resolved = this.registry.resolve(
       config.plugin_id,
       config.plugin_version,
     );
-    const result = await this.transport.send(config, resolved.adapter, {
-      wire_api: config.wire_api,
-      model: config.model,
-      messages: input.messages,
-      ...(input.tools ? { tools: input.tools } : {}),
-      stream: options.onDelta !== undefined,
-    });
+    const result = await this.transport.send(
+      config,
+      resolved.adapter,
+      {
+        wire_api: config.wire_api,
+        model: config.model,
+        messages: input.messages,
+        ...(input.tools ? { tools: input.tools } : {}),
+        stream: options.onDelta !== undefined,
+      },
+      options.signal,
+    );
     try {
       const response = await parseProviderBody(
         result.body,
         options.onDelta,
         result.signal,
+        options.onProgress,
       );
       return parseChatResponse(response);
     } finally {

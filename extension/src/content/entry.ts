@@ -1058,6 +1058,14 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   if (
     typeof message === "object" &&
     message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_DOCUMENT_CONTEXT"
+  ) {
+    void registerDocument().then((registered) => respond({ ok: registered }));
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
     (message as { kind?: unknown }).kind === "CONTENT_SNAPSHOT"
   ) {
     const scope = (message as { scope?: unknown }).scope;

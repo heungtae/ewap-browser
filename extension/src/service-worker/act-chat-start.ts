@@ -10,6 +10,8 @@ import {
   genericActSystemPrompt,
   type ActSession,
 } from "./act-session-types.js";
+import { assertRequestActive, type RequestContext } from "./request-context.js";
+import { withDeadline } from "../security/deadline.js";
 
 type WorkflowCandidate = { candidate: { id: string } };
 type PendingSelection = {
@@ -26,7 +28,7 @@ type PendingSelection = {
 };
 
 type Dependencies = {
-  readActive(): Promise<ActivePage>;
+  readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
   resolveProfile(active: ActivePage): Promise<ResolvedProfile>;
   candidates(
     active: ActivePage,
@@ -47,7 +49,10 @@ type Dependencies = {
 
 export const createActChatStart =
   (dependencies: Dependencies) =>
-  async (payload: unknown): Promise<Record<string, unknown>> => {
+  async (
+    payload: unknown,
+    context?: RequestContext,
+  ): Promise<Record<string, unknown>> => {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     if (
       typeof value.prompt !== "string" ||
@@ -56,7 +61,14 @@ export const createActChatStart =
       value.mode !== "act"
     )
       return fail("INVALID_ARGUMENT");
-    const active = await dependencies.readActive();
+    assertRequestActive(context);
+    const active = await dependencies.readActive(undefined, context?.tabId);
+    assertRequestActive(context);
+    if (
+      context?.documentEpoch &&
+      active.snapshot.document_epoch !== context.documentEpoch
+    )
+      return fail("PAGE_SCOPE_STALE");
     const activityId = dependencies.startActivity(active);
     try {
       dependencies.progressActivity(activityId, "RESOLVING_PROFILE");
@@ -101,7 +113,12 @@ export const createActChatStart =
           ? profileModelContext(resolved.profile.model_context)
           : undefined;
       dependencies.progressActivity(activityId, "DISCOVERING_WORKFLOWS");
-      const candidates = await dependencies.candidates(active, matchedProfile);
+      const candidates = await withDeadline(
+        dependencies.candidates(active, matchedProfile),
+        10_000,
+        "WORKFLOW_DISCOVERY_TIMEOUT",
+      );
+      assertRequestActive(context);
       if (candidates.length > 0) {
         const id = dependencies.createId();
         dependencies.selections.set(id, {
@@ -129,6 +146,7 @@ export const createActChatStart =
       }
       if (selected.definitions.length === 0) return fail("PROFILE_UNAVAILABLE");
       const session: ActSession = {
+        ...(context ? { requestContext: context } : {}),
         id: dependencies.createId(),
         tabId: active.tabId,
         origin: active.origin,

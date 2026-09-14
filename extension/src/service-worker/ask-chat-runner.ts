@@ -8,6 +8,7 @@ import type { ProviderMessage } from "../providers/types.js";
 import { createAskToolExecutor } from "./ask-tool-executor.js";
 import { businessMcpTool } from "./business-mcp-tools.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
+import { assertRequestActive, type RequestContext } from "./request-context.js";
 
 const readSummary = (tool: string): string =>
   ({
@@ -25,7 +26,10 @@ const readSummary = (tool: string): string =>
 
 export const createAskChatRunner =
   (dependencies: AskChatDependencies) =>
-  async (payload: unknown): Promise<Record<string, unknown>> => {
+  async (
+    payload: unknown,
+    context?: RequestContext,
+  ): Promise<Record<string, unknown>> => {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     if (
       typeof value.prompt !== "string" ||
@@ -34,7 +38,14 @@ export const createAskChatRunner =
       value.mode !== "ask"
     )
       return fail("INVALID_ARGUMENT");
-    const active = await dependencies.readActive();
+    assertRequestActive(context);
+    const active = await dependencies.readActive(undefined, context?.tabId);
+    assertRequestActive(context);
+    if (
+      context?.documentEpoch &&
+      active.snapshot.document_epoch !== context.documentEpoch
+    )
+      return fail("PAGE_SCOPE_STALE");
     const run = dependencies.coordinator.runs.start(
       active.tabId,
       active.snapshot.frame_id,
@@ -70,7 +81,7 @@ export const createAskChatRunner =
     const bindings = profile?.profile.business_mcp
       ? businessMcpBindings(profile.profile.business_mcp)
       : [];
-    const context = profile?.profile.model_context
+    const modelContext = profile?.profile.model_context
       ? profileModelContext(profile.profile.model_context)
       : undefined;
     const tool = businessMcpTool(bindings);
@@ -80,7 +91,7 @@ export const createAskChatRunner =
       ...dependencies.threadContext(active.tabId),
       {
         role: "user",
-        content: `${context ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(context)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]\n\n` : ""}[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\nUser question: ${safeChatText(value.prompt)}`,
+        content: `${modelContext ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]\n\n` : ""}[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\nUser question: ${safeChatText(value.prompt)}`,
       },
     ];
     const mcp = new BusinessMcpClient(dependencies.providerFetch);
@@ -141,6 +152,12 @@ export const createAskChatRunner =
           return await dependencies.provider.chat(
             { messages, tools },
             {
+              ...(context
+                ? {
+                    signal: context.signal,
+                    onProgress: () => context.progress?.("PROVIDER_BODY"),
+                  }
+                : {}),
               onDelta: (text) => {
                 if (
                   dependencies.coordinator.runs.byId(run.id)?.phase ===
@@ -158,6 +175,7 @@ export const createAskChatRunner =
           flush();
         }
       })();
+      assertRequestActive(context);
       if (run.phase === "TERMINAL")
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
       if (response.tool_calls.length === 0) {

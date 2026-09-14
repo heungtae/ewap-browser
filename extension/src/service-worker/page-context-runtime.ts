@@ -13,6 +13,7 @@ import { validateProfileResolverSettings } from "../settings/profile-settings.js
 import type { PageScope } from "../state/tab-chat-session-store.js";
 import type { BrowserChromeApi } from "./browser-api.js";
 import type { ContentScriptRecovery } from "./content-script-recovery.js";
+import { withDeadline } from "../security/deadline.js";
 
 export type ActivePage = {
   tabId: number;
@@ -35,12 +36,16 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
   const replay = new ProfileReplayStore();
   const read = async (
     scope = dependencies.defaultScope(),
+    fixedTabId?: number,
   ): Promise<ActivePage> => {
     const chrome = dependencies.chrome!;
-    const tabs = await chrome.tabs.query({
-      active: true,
-      lastFocusedWindow: true,
-    });
+    const tabs =
+      fixedTabId === undefined
+        ? await chrome.tabs.query({
+            active: true,
+            lastFocusedWindow: true,
+          })
+        : [{ ...(await chrome.tabs.get(fixedTabId)), id: fixedTabId }];
     const tab = tabs[0];
     const tabId = tab?.id;
     if (!tab || tabId === undefined)
@@ -48,19 +53,37 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     let origin = dependencies.pageOrigin(tab.url);
     let result: unknown;
     try {
-      result = await chrome.tabs.sendMessage(tabId, {
-        kind: "CONTENT_SNAPSHOT",
-        scope,
-      });
-    } catch {
+      result = await withDeadline(
+        chrome.tabs.sendMessage(tabId, {
+          kind: "CONTENT_SNAPSHOT",
+          scope,
+        }),
+        10_000,
+        "PAGE_SNAPSHOT_TIMEOUT",
+      );
+    } catch (error) {
+      if (
+        error instanceof ContractError &&
+        error.code === "PAGE_SNAPSHOT_TIMEOUT"
+      )
+        throw error;
       if (!(await dependencies.recovery.recover(tabId)))
         throw new ContractError("DOCUMENT_NOT_REGISTERED");
       try {
-        result = await chrome.tabs.sendMessage(tabId, {
-          kind: "CONTENT_SNAPSHOT",
-          scope,
-        });
-      } catch {
+        result = await withDeadline(
+          chrome.tabs.sendMessage(tabId, {
+            kind: "CONTENT_SNAPSHOT",
+            scope,
+          }),
+          10_000,
+          "PAGE_SNAPSHOT_TIMEOUT",
+        );
+      } catch (error) {
+        if (
+          error instanceof ContractError &&
+          error.code === "PAGE_SNAPSHOT_TIMEOUT"
+        )
+          throw error;
         throw new ContractError("DOCUMENT_NOT_REGISTERED");
       }
     }

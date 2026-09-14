@@ -5,6 +5,7 @@ import {
 import { bootstrapStorage } from "./storage-bootstrap.js";
 import { workflowSelections } from "./runtime-chat.js";
 import { chromeApi } from "./runtime-platform.js";
+import { chatRequests, executionDiagnostics } from "./runtime-lifecycle.js";
 import {
   chatEvents,
   coordinator,
@@ -27,7 +28,9 @@ export const initialiseStorage = (): Promise<void> =>
   });
 export const startStorage = (): void => {
   void initialiseStorage()
-    .then(() => {
+    .then(async () => {
+      await executionDiagnostics.restore();
+      await chatRequests.restore();
       storageReady = true;
       coordinator.completeStorageBootstrap(true);
     })

@@ -1,6 +1,6 @@
 import { createActExecutionRuntime } from "./act-execution-runtime.js";
 import { createActPostconditionVerifier } from "./act-postcondition-verifier.js";
-import { boundedCdp } from "./runtime-lifecycle.js";
+import { boundedCdp, chatRequests } from "./runtime-lifecycle.js";
 import { chromeApi, opaqueId } from "./runtime-platform.js";
 import {
   cdpAuthorizedRuns,
@@ -20,6 +20,7 @@ export const {
   executeBounded: executeBoundedCdp,
   executeContent: executeActContent,
 } = createActExecutionRuntime({
+  beforeDispatch: (tabId) => chatRequests.beforeDispatch(tabId),
   boundedCdp,
   documentFor: (tabId, frameId) =>
     registered.get(registrationKey(tabId, frameId)),

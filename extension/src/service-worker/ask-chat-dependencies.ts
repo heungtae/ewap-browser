@@ -17,7 +17,7 @@ export type AskChatDependencies = {
   coordinator: ServiceCoordinator;
   provider: ProviderRuntime;
   preferences(): AgentPreferences;
-  readActive(): Promise<ActivePage>;
+  readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
   resolveProfile(active: ActivePage): Promise<ResolvedProfile>;
   threadContext(tabId: number): ProviderMessage[];
   pageScope(active: ActivePage): PageScope;

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { createServer } from "node:net";
 import { checkChatRecovery } from "./chrome-chat-recovery-check.mjs";
+import { checkDiagnostics } from "./chrome-diagnostics-check.mjs";
 
 const executable = process.env.CHROME_FOR_TESTING_BIN;
 if (!executable) {
@@ -123,6 +124,7 @@ try {
     );
   }
   await checkChatRecovery(panel.webSocketDebuggerUrl);
+  await checkDiagnostics(panel.webSocketDebuggerUrl);
   await cdp(panel.webSocketDebuggerUrl, "Runtime.evaluate", {
     expression: "document.querySelector('#settings-open').click()",
   });

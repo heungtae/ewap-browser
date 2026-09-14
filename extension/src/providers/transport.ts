@@ -80,6 +80,7 @@ export class CoreProviderTransport {
     const controller = new AbortController();
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) abort();
     const timeout = this.timers.set(abort, config.timeout_ms);
     let released = false;
     let transferred = false;

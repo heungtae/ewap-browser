@@ -1,63 +1,41 @@
 import type { ErrorCode, Outcome } from "../contracts/core-types.js";
-import type { BrowserStorage } from "./browser-api.js";
+import { DiagnosticsStorage } from "./diagnostics-storage.js";
+import {
+  validDiagnostic,
+  diagnosticStages,
+} from "../contracts/diagnostics-validation.js";
 
-export type DiagnosticsLevel = "off" | "basic" | "debug";
-export type DiagnosticComponent =
-  | "panel"
-  | "router"
-  | "page"
-  | "profile"
-  | "workflow"
-  | "provider"
-  | "act"
-  | "transport"
-  | "storage";
-export type DiagnosticEvent =
-  | "request.accepted"
-  | "stage.started"
-  | "stage.finished"
-  | "request.terminal";
-export type DiagnosticRecord = {
-  schema_version: 1;
-  sequence: number;
-  timestamp_ms: number;
-  worker_instance_id: string;
-  request_id: string;
-  component: DiagnosticComponent;
-  event: DiagnosticEvent;
-  level: "info" | "warn" | "error" | "debug";
-  stage?: string;
-  outcome?: Outcome;
-  code?: ErrorCode;
-  elapsed_ms?: number;
-};
+import type {
+  DiagnosticsLevel,
+  DiagnosticComponent,
+  DiagnosticEvent,
+  DiagnosticRecord,
+} from "../contracts/diagnostic-types.js";
+export type {
+  DiagnosticsLevel,
+  DiagnosticRecord,
+} from "../contracts/diagnostic-types.js";
 
 type RequestInfo = { tabId: number; startedAt: number; terminal: boolean };
-type Persisted = {
-  level: DiagnosticsLevel;
-  records: DiagnosticRecord[];
-  dropped_count: number;
-};
-
-const storageKey = "execution_diagnostics_v1";
 const maxRecords = 2_000;
 const maxRequestRecords = 300;
 const ttlMs = 30 * 60_000;
-
 /**
  * A deliberately closed, local-only trace. Its API only accepts allowlisted
  * fields so prompts, URL data, provider payloads, and exception messages have
  * no path into storage or the developer console.
  */
-export class ExecutionDiagnostics {
-  private level: DiagnosticsLevel = "basic";
-  private sequence = 0;
-  private droppedCount = 0;
-  private readonly records: DiagnosticRecord[] = [];
+export class ExecutionDiagnostics extends DiagnosticsStorage {
   private readonly requests = new Map<string, RequestInfo>();
   private readonly workerInstanceId = crypto.randomUUID();
-
-  public constructor(private readonly storage?: BrowserStorage) {}
+  public bind(
+    requestId: string,
+    tabId: number,
+    startedAt: number,
+    terminal = false,
+  ): void {
+    this.requests.set(requestId, { tabId, startedAt, terminal });
+  }
 
   public accept(requestId: string, tabId: number, startedAt: number): void {
     this.requests.set(requestId, { tabId, startedAt, terminal: false });
@@ -70,6 +48,7 @@ export class ExecutionDiagnostics {
     stage: string,
     finished = false,
   ): void {
+    if (!diagnosticStages.includes(stage)) return;
     this.add(
       requestId,
       component,
@@ -110,6 +89,7 @@ export class ExecutionDiagnostics {
   }
 
   public list(requestId: string, tabId: number, after: number, limit: number) {
+    this.prune(Date.now());
     const request = this.requests.get(requestId);
     if (!request || request.tabId !== tabId) return;
     const records = this.records
@@ -122,12 +102,14 @@ export class ExecutionDiagnostics {
       next_sequence: records.at(-1)?.sequence ?? after,
       dropped_count: this.droppedCount,
       level: this.level,
+      storage_failed: this.storageFailed,
     };
   }
 
   public setLevel(level: DiagnosticsLevel): DiagnosticsLevel {
     this.level = level;
-    this.persist();
+    this.debugUntil = level === "debug" ? Date.now() + ttlMs : 0;
+    this.persist(true);
     return this.level;
   }
 
@@ -150,6 +132,7 @@ export class ExecutionDiagnostics {
     outcome?: Outcome,
     code?: ErrorCode,
   ): void {
+    this.prune(Date.now());
     if (this.level === "off") return;
     const request = this.requests.get(requestId);
     if (!request) return;
@@ -159,7 +142,11 @@ export class ExecutionDiagnostics {
     ).length;
     if (this.records.length >= maxRecords || perRequest >= maxRequestRecords) {
       this.droppedCount += 1;
-      return;
+      const index =
+        perRequest >= maxRequestRecords
+          ? this.records.findIndex((r) => r.request_id === requestId)
+          : 0;
+      this.records.splice(index, 1);
     }
     const record: DiagnosticRecord = {
       schema_version: 1,
@@ -175,24 +162,15 @@ export class ExecutionDiagnostics {
       ...(code ? { code } : {}),
       elapsed_ms: Math.max(0, Date.now() - request.startedAt),
     };
+    if (!validDiagnostic(record)) return;
     this.records.push(record);
-    if (this.level === "debug") console.info("[ContextPilot][trace]", record);
-    this.persist();
-  }
-
-  private prune(now: number): void {
-    while (this.records[0] && now - this.records[0].timestamp_ms > ttlMs)
+    while (
+      new TextEncoder().encode(JSON.stringify(this.records)).length > 900_000
+    ) {
       this.records.shift();
-  }
-
-  private persist(): void {
-    const value: Persisted = {
-      level: this.level,
-      records: this.records,
-      dropped_count: this.droppedCount,
-    };
-    void this.storage?.session
-      .set?.({ [storageKey]: value })
-      .catch(() => undefined);
+      this.droppedCount += 1;
+    }
+    if (this.level === "debug") console.info("[ContextPilot][trace]", record);
+    this.persist(event === "request.terminal");
   }
 }

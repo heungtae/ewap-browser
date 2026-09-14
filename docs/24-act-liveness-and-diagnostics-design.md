@@ -195,6 +195,18 @@ Workspace 계약 검증·Platform 테스트·cross-repository integration은 Bro
 
 ## 11. 구현 에이전트 인계 지시문
 
+### 2026-09-14 수정 및 검증 기록
+
+- 빌드: `0.1.46`, Chrome 로드 대상 `dist-extension`.
+- Ask/Act 공통 요청 접수와 요청별 취소, ACK timeout 후 상태 조회, 초기 실패 시 대기 표시 해제, 오래된 응답 무시를 반영했다. 기존 CHAT_SEND 호출도 요청 수명주기를 사용한다.
+- session storage 요청 복구, panel document/tab epoch 소유권 검사, dispatch 전 저장 완료 강제, 재시작·취소 후 불확실한 실행의 UNKNOWN 처리를 추가했다. 복구 시 자동 재실행하지 않는다.
+- Provider body idle timeout/abort, snapshot/discovery deadline, 승인 대기를 제외한 요청 실행 예산을 적용했다.
+- 패널 경과 시간, 요청별 trace 페이지 조회, JSON 다운로드, debug 30분 자동 해제 및 누락/저장 실패 표시를 추가했다. debug를 켠 뒤 발생한 trace는 Service Worker Console에서 `[ContextPilot][trace]`로 확인한다.
+- 검증: unit/fixture/E2E 64개 파일의 198개 테스트, TypeScript, ESLint, module-boundary, build, package policy 통과.
+- 실제 Chrome for Testing의 제어된 응답 fixture에서 초기 실패 후 대기 해제, Ask→Act 요청 취소, 101건 trace 표시와 JSON export, 기존 대화 복구/승인 카드 및 설정 페이지 로드를 확인했다. 실제 회사 Provider 호출 성공을 의미하지 않는다.
+- source-size 검사는 실패했다. 신규 모듈은 199줄 이하이나 기존 대형 파일과 수정한 기존 runner/entry 일부가 제한을 초과한다.
+- 전체 S1~S5 완료는 아니다. 패널 재열기 시 요청 인계, 숨김 상태 polling 중단, 신규 request 통지/handshake, run/span 연계와 Provider 세부 milestone은 추가 작업이다. A01~A20 전체 실제 Chrome 재현 및 회사 Provider/다중 창 실환경 검증도 남아 있다. 이번 변경은 Browser 내부이며 Workspace/Platform 통합 검증은 수행하지 않았다.
+
 > 이 문서를 기준으로 EWAP Browser의 실행 정지 방지와 로컬 진단 기능을 S1~S5 순서로 구현하라. 먼저 Git 상태와 실제 호출 경로를 재확인하고 사용자 변경을 보존하라. AS-IS 결함을 실제 장애 원인으로 확정하지 말고 제어 가능한 재현 테스트와 trace로 검증하라. 모든 새 메시지와 로그는 closed schema로 검증하라. Provider 본문 수신 완료까지 timeout/abort를 유지하고 dispatch 이후 UNKNOWN 재실행 금지를 지켜라. 일반 사용자에게 단계·경과 시간·복구 안내를, 개발자에게 요청별 안전한 trace와 JSON 내보내기를 제공하라. 기존 Ask/Act 권한·document binding·기업 감사 경계를 유지하라. 실제 Chrome 검증과 로드된 빌드 확인까지 수행하고 미검증 항목을 정확히 보고하라. 저장소별로 변경을 구분하고 요청받지 않은 push는 하지 마라.
 
 완료 보고에는 구현 단위, 실제 검증 결과, 실제 Chrome에서 사용한 버전, 재현 결과, 남은 제한을 포함한다. 모델명이 기능 품질이나 런타임 결과를 보장한다고 가정하지 않는다.
