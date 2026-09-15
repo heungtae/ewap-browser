@@ -4,6 +4,7 @@
 - 상태: Partially implemented — 전환 관측·새 scope snapshot 검증·옵션 값 일치·안전한 milestone trace는 구현됐다. Profile 목적지 marker와 비동기 결과 세대 계약은 후속 구현 항목이다.
 - 범위: Browser Act의 클릭·선택·입력 뒤 완료 판정과 개발용 진단
 - 비범위: WebSocket payload 해석, 네트워크 감청, 임의 JavaScript 실행, raw DOM/URL/selector의 진단 저장
+- 후속 설계: [26. 화면 변경 후 Act 결과 미확인 개선 설계](26-act-result-observation-design.md) — 일반 클릭의 전환 검증 편중, 단발 상태 관측, ref 재식별 및 오류 구분을 다룬다. Proposed이며 구현 완료를 의미하지 않는다.
 
 ## 1. 목표
 

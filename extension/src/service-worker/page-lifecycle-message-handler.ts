@@ -45,7 +45,11 @@ export const createPageLifecycleMessageHandler = (
       const previous = dependencies.registered.get(key);
       if (previous && previous.epoch !== epoch) {
         const active = dependencies.activeRun(sender.tab.id);
-        if (active && active.phase !== "VERIFYING_NAVIGATION")
+        if (
+          active &&
+          active.phase !== "VERIFYING_NAVIGATION" &&
+          active.phase !== "VERIFYING_RESULT"
+        )
           dependencies.cancelRunForPageChange(active);
       }
       dependencies.registered.set(key, {
@@ -99,6 +103,7 @@ export const createPageLifecycleMessageHandler = (
     if (
       active &&
       active.phase !== "VERIFYING_NAVIGATION" &&
+      active.phase !== "VERIFYING_RESULT" &&
       (active.documentEpoch !== documentEpoch ||
         previousScope?.page_scope_epoch !== pageScopeEpoch)
     )

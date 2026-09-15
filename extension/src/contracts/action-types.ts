@@ -1,4 +1,4 @@
-import type { MutationTool } from "./core-types.js";
+import type { MutationTool, Role } from "./core-types.js";
 
 export type ValueKind = "text" | "option";
 export type ValueBinding = {
@@ -11,6 +11,45 @@ export type SemanticStatePredicate = {
   field: "checked" | "selected" | "disabled" | "expanded";
   expected: boolean;
 };
+type CompletionMarker = {
+  role: Role;
+  name: string;
+  state?: { field: SemanticStatePredicate["field"]; expected: boolean };
+};
+export type CompletionContract =
+  | {
+      version: 2;
+      kind: "control_state";
+      source: "browser_derived" | "trusted_profile";
+      scope_policy: "same_scope";
+      report_scope: "control" | "ui";
+      expected_changes: SemanticStatePredicate[];
+    }
+  | {
+      version: 2;
+      kind: "ui_relation";
+      source: "trusted_profile";
+      scope_policy: "same_scope";
+      report_scope: "ui";
+      marker: CompletionMarker;
+    }
+  | {
+      version: 2;
+      kind: "navigation";
+      source: "browser_derived" | "trusted_profile";
+      scope_policy: "navigation" | "declared_alternatives";
+      report_scope: "navigation";
+      destination_marker?: CompletionMarker;
+    }
+  | {
+      version: 2;
+      kind: "render_result";
+      source: "trusted_profile";
+      scope_policy: "same_scope" | "declared_alternatives";
+      report_scope: "result";
+      marker: CompletionMarker;
+      requires_result_generation: true;
+    };
 export type VerifierPredicate =
   | {
       kind: "semantic-state-transition";
@@ -41,9 +80,16 @@ export type ActionIntent = {
   document_epoch: string;
   profile: { id: string; version: number };
   ref_id: string;
+  /**
+   * Retained only for the lifetime of an approved execution.  It lets the
+   * verifier find a replacement node after a framework replaces the DOM;
+   * it is never included in diagnostics or model output.
+   */
+  verification_target?: { role: Role; name: string };
   risk: "R1" | "R2";
   effect: "local-ui-only" | "server-side";
   verifier: VerifierPredicate;
+  completion?: CompletionContract;
   argument?: { checked?: boolean; key?: "Enter" | "Space" | "Escape" };
   value_binding?: ValueBinding;
 };

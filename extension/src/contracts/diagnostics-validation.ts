@@ -19,6 +19,9 @@ export const diagnosticStages = [
   "URL_OR_SCOPE_CHANGED",
   "SNAPSHOT_VALIDATED",
   "COMPLETION_VERIFIED",
+  "VERIFYING_RESULT",
+  "VERIFY_PENDING",
+  "VERIFY_DEADLINE_EXCEEDED",
 ];
 export const validDiagnostic = (value: unknown): value is DiagnosticRecord => {
   if (

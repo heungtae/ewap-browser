@@ -2,6 +2,7 @@ import type { MutationTool, Role } from "../contracts/types.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import {
   isSemanticVerifier,
+  isCompletionContract,
   mutationTools,
   roles,
 } from "./profile-action-validation.js";
@@ -21,6 +22,7 @@ export const profileActionTools = (profile: Profile): ProfileActionTool[] => {
             "risk",
             "eligible_roles",
             "verifier",
+            "completion",
             "option_values",
           ].includes(key),
       ) ||
@@ -35,6 +37,8 @@ export const profileActionTools = (profile: Profile): ProfileActionTool[] => {
       ) ||
       new Set(value.eligible_roles).size !== value.eligible_roles.length ||
       !isSemanticVerifier(value.verifier) ||
+      (value.completion !== undefined &&
+        !isCompletionContract(value.completion)) ||
       (value.option_values !== undefined &&
         (!Array.isArray(value.option_values) ||
           value.option_values.length === 0 ||
@@ -80,6 +84,7 @@ export const profileActionTools = (profile: Profile): ProfileActionTool[] => {
       risk: value.risk,
       eligible_roles: value.eligible_roles as Role[],
       verifier: value.verifier,
+      ...(value.completion ? { completion: value.completion } : {}),
       ...(value.option_values
         ? { option_values: value.option_values as string[] }
         : {}),

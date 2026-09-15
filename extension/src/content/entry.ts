@@ -659,7 +659,11 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     (message as { kind?: unknown }).kind ===
       "CONTENT_VERIFY_BOUNDED_POSTCONDITION"
   ) {
-    const intent = (message as { intent?: ExecuteIntent }).intent;
+    const request = message as {
+      intent?: ExecuteIntent;
+      value_delivery?: { value_kind?: unknown; value?: unknown };
+    };
+    const intent = request.intent;
     if (
       sender.id !== runtime.id ||
       sender.url !== runtime.getURL("js/service-worker.js") ||
@@ -679,6 +683,24 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       nameFor(element) !== record.name
     ) {
       respond({ ok: false, code: "TARGET_STALE" });
+      return true;
+    }
+    if (intent.tool === "set_text_by_ref") {
+      if (
+        request.value_delivery?.value_kind !== "text" ||
+        typeof request.value_delivery.value !== "string" ||
+        !(
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLTextAreaElement
+        )
+      ) {
+        respond({ ok: false, code: "INVALID_ARGUMENT" });
+        return true;
+      }
+      respond({
+        ok: true,
+        matches: element.value === request.value_delivery.value,
+      });
       return true;
     }
     const state = {

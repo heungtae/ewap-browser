@@ -11,6 +11,7 @@ export type RunPhase =
   | "AWAITING_CONFIRMATION"
   | "EXECUTING"
   | "VERIFYING"
+  | "VERIFYING_RESULT"
   | "VERIFYING_NAVIGATION"
   | "TERMINAL";
 export type Run = {

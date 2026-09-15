@@ -1,5 +1,6 @@
 import type {
   MutationTool,
+  CompletionContract,
   Risk,
   Role,
   VerifierPredicate,
@@ -47,5 +48,6 @@ export type ProfileActionTool = {
   risk: Extract<Risk, "R1" | "R2">;
   eligible_roles: readonly Role[];
   verifier: Extract<VerifierPredicate, { kind: "semantic-state-transition" }>;
+  completion?: CompletionContract;
   option_values?: readonly string[];
 };

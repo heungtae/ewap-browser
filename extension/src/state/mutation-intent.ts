@@ -32,8 +32,12 @@ export const actionIntent = (
     document_epoch: run.documentEpoch,
     profile,
     ref_id: target.refId,
+    ...(target.name
+      ? { verification_target: { role: target.role, name: target.name } }
+      : {}),
     effect: definition.effect,
     verifier: definition.verifier,
+    ...(definition.completion ? { completion: definition.completion } : {}),
     risk: definition.risk,
   };
   return proposal.tool === "set_checked_by_ref" ||

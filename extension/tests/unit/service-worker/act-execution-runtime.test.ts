@@ -34,6 +34,40 @@ const ready: ReadyExecution = {
 };
 
 describe("Act execution runtime", () => {
+  it("does_not_dispatch_when_the_completion_contract_is_unsupported", async () => {
+    let dispatched = 0;
+    const runtime = createActExecutionRuntime({
+      boundedCdp: {
+        execute: async () => {
+          dispatched += 1;
+          return { dispatched: true, outcome: "DISPATCHED" };
+        },
+      } as never,
+      documentFor: () => ({ epoch: run.documentEpoch, documentId: "document" }),
+      isRunActive: () => true,
+      permitCdp: () => undefined,
+      revokeCdp: () => undefined,
+      createId: () => "action-token-abcdefghijklmnop",
+      send: async () => ({}),
+      tab: async () => ({ url: "https://portal.company.test/before" }),
+      terminal: () => undefined,
+      transition: () => undefined,
+      safeFailure: (code) => ({ ok: false, code }),
+      verifier: {
+        bounded: async () => false,
+        canVerify: () => false,
+        navigationTarget: () => undefined,
+        semantic: async () => false,
+        waitForSameOriginNavigation: async () => false,
+        waitForNavigation: async () => false,
+      },
+    });
+    await expect(
+      runtime.executeBounded(run, ready, "https://portal.company.test"),
+    ).resolves.toEqual({ ok: false, code: "UNSUPPORTED_COMPLETION" });
+    expect(dispatched).toBe(0);
+  });
+
   it("preserves_unknown_when_cdp_dispatched_but_the_postcondition_cannot_be_verified", async () => {
     const terminal: string[] = [];
     const runtime = createActExecutionRuntime({
@@ -69,7 +103,7 @@ describe("Act execution runtime", () => {
     expect(terminal).toEqual(["UNKNOWN"]);
   });
 
-  it("verifies_a_same_origin_page_transition_after_a_bounded_click", async () => {
+  it("does_not_treat_an_undeclared_page_transition_as_click_completion", async () => {
     const terminal: string[] = [];
     const runtime = createActExecutionRuntime({
       boundedCdp: {
@@ -96,11 +130,15 @@ describe("Act execution runtime", () => {
 
     await expect(
       runtime.executeBounded(run, ready, "https://portal.company.test"),
-    ).resolves.toEqual({ ok: true, outcome: "VERIFIED", navigation: true });
-    expect(terminal).toEqual(["VERIFIED"]);
+    ).resolves.toEqual({
+      ok: false,
+      code: "POSTCONDITION_UNVERIFIED",
+      outcome: "UNKNOWN",
+    });
+    expect(terminal).toEqual(["UNKNOWN"]);
   });
 
-  it("enters_navigation_verification_before_an_undetermined_click_dispatches", async () => {
+  it("enters_result_verification_before_a_bounded_click_dispatches", async () => {
     const order: string[] = [];
     const runtime = createActExecutionRuntime({
       boundedCdp: {
@@ -117,14 +155,12 @@ describe("Act execution runtime", () => {
       send: async () => ({}),
       tab: async () => ({ url: "https://portal.company.test/before" }),
       terminal: () => undefined,
-      transition: () => order.push("verifying-navigation"),
+      transition: () => order.push("verifying-result"),
       safeFailure: (code) => ({ ok: false, code }),
       verifier: {
         bounded: async () => false,
         navigationTarget: () => undefined,
-        semantic: async () => {
-          throw new Error("undetermined click must not use a digest fallback");
-        },
+        semantic: async () => false,
         waitForPageTransition: async () => true,
         waitForSameOriginNavigation: async () => false,
         waitForNavigation: async () => false,
@@ -133,7 +169,11 @@ describe("Act execution runtime", () => {
 
     await expect(
       runtime.executeBounded(run, ready, "https://portal.company.test"),
-    ).resolves.toEqual({ ok: true, outcome: "VERIFIED", navigation: true });
-    expect(order).toEqual(["verifying-navigation", "dispatch"]);
+    ).resolves.toEqual({
+      ok: false,
+      code: "POSTCONDITION_UNVERIFIED",
+      outcome: "UNKNOWN",
+    });
+    expect(order).toEqual(["verifying-result", "dispatch"]);
   });
 });

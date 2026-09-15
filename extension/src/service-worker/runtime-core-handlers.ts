@@ -71,6 +71,7 @@ chatRunLifecycle.setActivityObserver((tabId, stage) => {
     stage === "RESOLVING_PROFILE" ||
     stage === "DISCOVERING_WORKFLOWS" ||
     stage === "CONTACTING_PROVIDER" ||
+    stage === "VERIFYING_RESULT" ||
     stage === "AWAITING_REVIEW" ||
     stage === "SELECTION_REQUIRED" ||
     stage === "COMPLETED" ||

@@ -1,4 +1,5 @@
 import type {
+  CompletionContract,
   MutationTool,
   Role,
   VerifierPredicate,
@@ -57,3 +58,107 @@ export const isSemanticVerifier = (
   typeof value.pre_state_digest === "string" &&
   Array.isArray(value.required_changes) &&
   value.required_changes.every(isStatePredicate);
+const isMarker = (value: unknown): boolean =>
+  isPlainObject(value) &&
+  Object.keys(value).every((key) => ["role", "name", "state"].includes(key)) &&
+  typeof value.role === "string" &&
+  roles.has(value.role as Role) &&
+  typeof value.name === "string" &&
+  value.name.length > 0 &&
+  value.name.length <= 160 &&
+  (value.state === undefined ||
+    (isPlainObject(value.state) &&
+      Object.keys(value.state).every((key) =>
+        ["field", "expected"].includes(key),
+      ) &&
+      ["checked", "selected", "disabled", "expanded"].includes(
+        value.state.field as string,
+      ) &&
+      typeof value.state.expected === "boolean"));
+export const isCompletionContract = (
+  value: unknown,
+): value is CompletionContract => {
+  if (!isPlainObject(value) || value.version !== 2) return false;
+  const base =
+    typeof value.source === "string" &&
+    typeof value.scope_policy === "string" &&
+    typeof value.report_scope === "string";
+  if (!base) return false;
+  if (value.kind === "control_state")
+    return (
+      Object.keys(value).every((key) =>
+        [
+          "version",
+          "kind",
+          "source",
+          "scope_policy",
+          "report_scope",
+          "expected_changes",
+        ].includes(key),
+      ) &&
+      ["browser_derived", "trusted_profile"].includes(value.source as string) &&
+      value.scope_policy === "same_scope" &&
+      ["control", "ui"].includes(value.report_scope as string) &&
+      Array.isArray(value.expected_changes) &&
+      value.expected_changes.length > 0 &&
+      value.expected_changes.every(isStatePredicate)
+    );
+  if (value.kind === "ui_relation")
+    return (
+      Object.keys(value).every((key) =>
+        [
+          "version",
+          "kind",
+          "source",
+          "scope_policy",
+          "report_scope",
+          "marker",
+        ].includes(key),
+      ) &&
+      value.source === "trusted_profile" &&
+      value.scope_policy === "same_scope" &&
+      value.report_scope === "ui" &&
+      isMarker(value.marker)
+    );
+  if (value.kind === "navigation")
+    return (
+      Object.keys(value).every((key) =>
+        [
+          "version",
+          "kind",
+          "source",
+          "scope_policy",
+          "report_scope",
+          "destination_marker",
+        ].includes(key),
+      ) &&
+      ["browser_derived", "trusted_profile"].includes(value.source as string) &&
+      ["navigation", "declared_alternatives"].includes(
+        value.scope_policy as string,
+      ) &&
+      value.report_scope === "navigation" &&
+      (value.destination_marker === undefined ||
+        isMarker(value.destination_marker))
+    );
+  return (
+    value.kind === "render_result" &&
+    Object.keys(value).every((key) =>
+      [
+        "version",
+        "kind",
+        "source",
+        "scope_policy",
+        "report_scope",
+        "marker",
+        "requires_result_generation",
+      ].includes(key),
+    ) &&
+    value.source === "trusted_profile" &&
+    ["same_scope", "declared_alternatives"].includes(
+      value.scope_policy as string,
+    ) &&
+    value.report_scope === "result" &&
+    value.requires_result_generation === true &&
+    isMarker(value.marker)
+  );
+};

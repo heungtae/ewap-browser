@@ -81,6 +81,7 @@ const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
 const reviewItems = new Map<string, HTMLElement>();
+const displayedTerminalRuns = new Set<string>();
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
 const maxAttachmentChars = 6_000;
@@ -89,6 +90,7 @@ const assistantTruncationMarker = "\n\n[응답이 길어 앞부분만 표시합�
 const textAttachmentExtensions = new Set(["txt", "md", "csv", "json"]);
 let attachment: { name: string; text: string; truncated: boolean } | undefined;
 let runActive = false;
+let lastTerminalFailureCode: string | undefined;
 // Keep following new transcript content until the reader deliberately scrolls
 // away from the end. Reaching the end again resumes automatic following.
 let followsTranscript = true;
@@ -257,6 +259,7 @@ const actionButton = (
 };
 const setRunActive = (active: boolean): void => {
   runActive = active;
+  if (active) lastTerminalFailureCode = undefined;
   if (!send) return;
   send.dataset.state = active ? "stop" : "send";
   send.type = active ? "button" : "submit";
@@ -343,6 +346,8 @@ const applyPermissionMode = (mode: string): void => {
         : "표준 권한";
 };
 const showFailure = (code?: string): void => {
+  if (!runActive && code && lastTerminalFailureCode === code) return;
+  if (!runActive && code) lastTerminalFailureCode = code;
   diagnosticsView.failure(
     code && code in userMessage ? code : "INTERNAL_FAILURE",
   );
@@ -352,7 +357,13 @@ const showFailure = (code?: string): void => {
       ? userMessage[code as keyof typeof userMessage]
       : "작업을 안전하게 완료하지 못했습니다.";
   const help = failureHelp(code);
-  const item = card("error", "작업 결과를 확인할 수 없습니다", detail);
+  const title =
+    code === "UNSUPPORTED_COMPLETION"
+      ? "작업을 실행하지 않았습니다"
+      : code === "POSTCONDITION_UNVERIFIED"
+        ? "작업은 실행됐지만 결과를 확인하지 못했습니다"
+        : "작업 결과를 확인할 수 없습니다";
+  const item = card("error", title, detail);
   const guidance = document.createElement("p");
   guidance.className = "failure-guidance";
   guidance.textContent = help.guidance;
@@ -886,6 +897,7 @@ const activityLabel = (stage: ActivityStage): string =>
     RESOLVING_PROFILE: "페이지 작업 정책을 확인하는 중입니다.",
     DISCOVERING_WORKFLOWS: "실행 가능한 절차를 찾는 중입니다.",
     CONTACTING_PROVIDER: "실행 계획 또는 응답을 생성하는 중입니다.",
+    VERIFYING_RESULT: "화면에 결과가 반영되는지 확인하고 있습니다.",
     AWAITING_REVIEW: "실행 전 확인을 기다리고 있습니다.",
     SELECTION_REQUIRED: "실행할 절차를 선택해 주세요.",
     COMPLETED: "준비를 완료했습니다.",
@@ -1050,6 +1062,8 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
       event.confirmation_nonce,
     );
   }
+  if (displayedTerminalRuns.has(event.run_id)) return;
+  displayedTerminalRuns.add(event.run_id);
   flushDeltas();
   lockReview(
     event.run_id,

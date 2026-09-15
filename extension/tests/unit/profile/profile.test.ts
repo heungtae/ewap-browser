@@ -104,6 +104,37 @@ describe("profile claims", () => {
       }),
     ).toMatchObject([{ eligible_roles: ["menuitem"] }]);
   });
+  it("accepts_a_closed_v2_control_completion_contract", () => {
+    expect(
+      profileActionTools({
+        ...profile,
+        tools: [
+          {
+            tool: "click_by_ref",
+            effect: "local-ui-only",
+            risk: "R1",
+            eligible_roles: ["button"],
+            verifier: {
+              kind: "semantic-state-transition",
+              declaration_id: "open-v2",
+              pre_state_digest: "state",
+              required_changes: [],
+            },
+            completion: {
+              version: 2,
+              kind: "control_state",
+              source: "trusted_profile",
+              scope_policy: "same_scope",
+              report_scope: "ui",
+              expected_changes: [
+                { ref_id: "$target", field: "expanded", expected: true },
+              ],
+            },
+          },
+        ],
+      }),
+    ).toMatchObject([{ completion: { version: 2, kind: "control_state" } }]);
+  });
   it("given_unbounded_profile_action_definition_when_verifying_then_fails_closed", () => {
     expect(() =>
       verifyProfileClaims(

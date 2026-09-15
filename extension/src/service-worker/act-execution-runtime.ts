@@ -12,9 +12,14 @@ import type { Run } from "../state/run-coordinator.js";
 type RegisteredDocument = { epoch: string; documentId: string };
 type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
 type PageScope = { document_epoch: string; page_scope_epoch: string };
+type VerificationResult = {
+  status: "satisfied" | "pending" | "inconclusive" | "invalid";
+  reason: string;
+};
 
 type Dependencies = {
   beforeDispatch?(tabId: number): Promise<void>;
+  verificationStarted?(run: Run): void;
   boundedCdp: BoundedCdpAdapter | undefined;
   documentFor(tabId: number, frameId: number): RegisteredDocument | undefined;
   isRunActive(runId: string): boolean;
@@ -24,14 +29,25 @@ type Dependencies = {
   send(tabId: number, message: unknown): Promise<unknown>;
   tab(tabId: number): Promise<{ url?: string }>;
   scope?(tabId: number): PageScope | undefined;
-  terminal(run: Run, outcome: Outcome): void;
-  transition(runId: string, phase: "VERIFYING_NAVIGATION"): void;
+  terminal(run: Run, outcome: Outcome, code?: string): void;
+  transition(
+    runId: string,
+    phase: "VERIFYING_NAVIGATION" | "VERIFYING_RESULT",
+  ): void;
   milestone?(tabId: number, stage: string): void;
   safeFailure(code: string, detail?: string): Record<string, unknown>;
   verifier: {
     bounded(run: Run, intent: ActionIntent): Promise<boolean>;
     navigationTarget(targetUrl: unknown): string | undefined;
     semantic(run: Run, intent: ActionIntent): Promise<boolean>;
+    canVerify?(intent: ActionIntent, value?: string): boolean;
+    prepare?(run: Run, intent: ActionIntent): Promise<boolean>;
+    release?(run: Run): void;
+    verify?(
+      run: Run,
+      intent: ActionIntent,
+      value?: string,
+    ): Promise<VerificationResult>;
     waitForPageTransition?(
       run: Run,
       beforeUrl: string,
@@ -55,6 +71,29 @@ const cdpTools = new Set([
 ]);
 
 export const createActExecutionRuntime = (dependencies: Dependencies) => {
+  const verify = async (
+    run: Run,
+    intent: ActionIntent,
+    value?: string,
+  ): Promise<{ verified: boolean; code?: string }> => {
+    if (dependencies.verifier.verify) {
+      const result = await dependencies.verifier.verify(run, intent, value);
+      return result.status === "satisfied"
+        ? { verified: true }
+        : {
+            verified: false,
+            code:
+              result.status === "invalid"
+                ? "POSTCONDITION_UNVERIFIED"
+                : "POSTCONDITION_UNVERIFIED",
+          };
+    }
+    const semantic = await dependencies.verifier.semantic(run, intent);
+    const bounded = semantic
+      ? false
+      : await dependencies.verifier.bounded(run, intent);
+    return { verified: semantic || bounded };
+  };
   const executeBounded = async (
     run: Run,
     ready: ReadyExecution,
@@ -84,24 +123,18 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       origin,
       capability,
     };
-    const beforeUrl =
-      tool === "click_by_ref"
-        ? await dependencies
-            .tab(run.tabId)
-            .then((tab) => tab.url)
-            .catch(() => undefined)
-        : undefined;
-    const beforeScope =
-      tool === "click_by_ref" ? dependencies.scope?.(run.tabId) : undefined;
-    // A click without a declared state transition is undetermined. It may
-    // navigate after a transient ARIA change (for example, a custom option
-    // closing its listbox), so protect the run before dispatch.
-    const undeterminedClick =
-      tool === "click_by_ref" &&
-      ready.intent.verifier.kind === "semantic-state-transition" &&
-      ready.intent.verifier.required_changes.length === 0;
-    if (undeterminedClick)
-      dependencies.transition(run.id, "VERIFYING_NAVIGATION");
+    if (
+      dependencies.verifier.canVerify &&
+      !dependencies.verifier.canVerify(ready.intent, ready.value)
+    )
+      return dependencies.safeFailure("UNSUPPORTED_COMPLETION");
+    if (
+      dependencies.verifier.prepare &&
+      !(await dependencies.verifier.prepare(run, ready.intent))
+    )
+      return dependencies.safeFailure("UNSUPPORTED_COMPLETION");
+    dependencies.transition(run.id, "VERIFYING_RESULT");
+    dependencies.verificationStarted?.(run);
     dependencies.permitCdp(run.id);
     let dispatched = false;
     try {
@@ -136,43 +169,19 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       }
       if (!dependencies.isRunActive(run.id))
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
-      if (undeterminedClick && beforeUrl !== undefined) {
-        const navigation = dependencies.verifier.waitForPageTransition
-          ? await dependencies.verifier.waitForPageTransition(
-              run,
-              beforeUrl,
-              origin,
-              undefined,
-              beforeScope,
-            )
-          : await dependencies.verifier.waitForSameOriginNavigation(
-              run.tabId,
-              beforeUrl,
-              origin,
-            );
-        const outcome = navigation ? "VERIFIED" : "UNKNOWN";
-        dependencies.terminal(run, outcome);
-        if (navigation)
-          dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
-        return navigation
-          ? { ok: true, outcome, navigation: true }
-          : {
-              ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"),
-              outcome,
-            };
-      }
-      const semantic = await dependencies.verifier.semantic(run, ready.intent);
-      const bounded = semantic
-        ? false
-        : await dependencies.verifier.bounded(run, ready.intent);
-      const navigation = false;
-      const verified = semantic || bounded || navigation;
+      const verification = await verify(run, ready.intent, ready.value);
+      const verified = verification.verified;
       const outcome = verified ? "VERIFIED" : "UNKNOWN";
-      dependencies.terminal(run, outcome);
+      dependencies.terminal(run, outcome, verification.code);
       if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
-        ? { ok: true, outcome, ...(navigation ? { navigation: true } : {}) }
-        : { ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"), outcome };
+        ? { ok: true, outcome }
+        : {
+            ...dependencies.safeFailure(
+              verification.code ?? "POSTCONDITION_UNVERIFIED",
+            ),
+            outcome,
+          };
     } catch (error) {
       dependencies.terminal(run, dispatched ? "UNKNOWN" : "FAILED");
       return {
@@ -182,6 +191,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         outcome: dispatched ? "UNKNOWN" : "FAILED",
       };
     } finally {
+      dependencies.verifier.release?.(run);
       dependencies.revokeCdp(run.id);
     }
   };

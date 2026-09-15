@@ -18,7 +18,11 @@ export const registerTabLifecycle = (dependencies: Dependencies): void => {
     if (!changeInfo.url) return;
     dependencies.stalePageTabs.add(tabId);
     const run = dependencies.activeRun(tabId);
-    if (run?.phase === "VERIFYING_NAVIGATION") return;
+    if (
+      run?.phase === "VERIFYING_NAVIGATION" ||
+      run?.phase === "VERIFYING_RESULT"
+    )
+      return;
     if (run) dependencies.cancelForPageChange(run);
   });
   dependencies.chrome?.tabs.onRemoved?.addListener((tabId) => {

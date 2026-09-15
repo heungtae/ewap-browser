@@ -15,6 +15,7 @@ import type { ActProposal, ActSession } from "./act-session-types.js";
 
 type Target = {
   enabled: boolean;
+  name: string;
   ref_id: string;
   role: Role;
   state: unknown;
@@ -51,7 +52,33 @@ export const prepareActProposal = (
         }),
       ),
     },
+    ...(proposal.definition.completion
+      ? {
+          completion: {
+            ...proposal.definition.completion,
+            ...(proposal.definition.completion.kind === "control_state"
+              ? {
+                  expected_changes:
+                    proposal.definition.completion.expected_changes.map(
+                      (change) => ({
+                        ...change,
+                        ...(change.ref_id === "$target"
+                          ? { ref_id: proposal.refId }
+                          : {}),
+                      }),
+                    ),
+                }
+              : {}),
+          },
+        }
+      : {}),
   };
+  if (
+    definition.completion?.kind === "control_state" &&
+    definition.verifier.kind === "semantic-state-transition"
+  )
+    definition.verifier.required_changes =
+      definition.completion.expected_changes;
   if (
     proposal.tool === "click_by_ref" &&
     typeof target.state === "object" &&
@@ -80,6 +107,7 @@ export const prepareActProposal = (
     {
       refId: proposal.refId,
       role: target.role,
+      name: target.name,
       visible: target.visible,
       enabled: target.enabled,
       sensitive: false,

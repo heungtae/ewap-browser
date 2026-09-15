@@ -19,6 +19,8 @@ export const userMessage: Record<ErrorCode, string> = {
     "등록된 업무 프로필이 없어 읽기 전용으로만 사용할 수 있습니다.",
   TARGET_STALE: "페이지가 변경되어 대상을 다시 확인해야 합니다.",
   TARGET_NOT_ACTIONABLE: "현재 대상에 작업을 수행할 수 없습니다.",
+  UNSUPPORTED_COMPLETION:
+    "이 작업의 완료 조건을 확인할 수 없어 실행하지 않았습니다.",
   POSTCONDITION_UNVERIFIED:
     "작업 요청은 전달됐지만 페이지 결과를 확인하지 못했습니다.",
   NAVIGATION_UNVERIFIED: "페이지 이동 결과를 확인하지 못했습니다.",
@@ -119,6 +121,11 @@ export const failureHelp = (code?: string): FailureHelp => {
     case "TARGET_STALE":
       return {
         guidance: "현재 페이지를 새로고침한 뒤 같은 요청을 다시 시도해 주세요.",
+      };
+    case "UNSUPPORTED_COMPLETION":
+      return {
+        guidance:
+          "현재 페이지에서 확인 가능한 작업을 선택하거나, 결과 조건이 등록된 업무 화면에서 다시 시도해 주세요.",
       };
     case "NAVIGATION_UNVERIFIED":
       return {

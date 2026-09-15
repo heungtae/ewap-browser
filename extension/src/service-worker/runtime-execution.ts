@@ -3,6 +3,7 @@ import { createActPostconditionVerifier } from "./act-postcondition-verifier.js"
 import {
   boundedCdp,
   chatRequests,
+  chatRunLifecycle,
   executionDiagnostics,
 } from "./runtime-lifecycle.js";
 import { chromeApi, opaqueId } from "./runtime-platform.js";
@@ -17,7 +18,7 @@ import {
 } from "./runtime-state.js";
 
 const verifier = createActPostconditionVerifier({
-  readAll: () => readActiveSnapshot("all_dom"),
+  readAll: (tabId) => readActiveSnapshot("all_dom", tabId),
   send: (tabId, message) => chromeApi!.tabs.sendMessage(tabId, message),
   tab: (tabId) => chromeApi!.tabs.get(tabId),
   scope: (tabId) => pageScopes.get(tabId),
@@ -28,6 +29,11 @@ export const {
   executeContent: executeActContent,
 } = createActExecutionRuntime({
   beforeDispatch: (tabId) => chatRequests.beforeDispatch(tabId),
+  verificationStarted: (run) =>
+    chatRunLifecycle.publish(run.id, {
+      type: "activity_progress",
+      stage: "VERIFYING_RESULT",
+    }),
   boundedCdp,
   documentFor: (tabId, frameId) =>
     registered.get(registrationKey(tabId, frameId)),

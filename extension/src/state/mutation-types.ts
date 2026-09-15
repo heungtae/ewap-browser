@@ -1,5 +1,6 @@
 import type {
   ActionIntent,
+  CompletionContract,
   ModelActionProposal,
   MutationTool,
   Role,
@@ -13,10 +14,12 @@ export type ActionDefinition = {
   risk: "R1" | "R2";
   eligibleRoles: readonly Role[];
   verifier: VerifierPredicate;
+  completion?: CompletionContract;
 };
 export type MutationTarget = {
   refId: string;
   role: Role;
+  name?: string;
   visible: boolean;
   enabled: boolean;
   sensitive: boolean;
