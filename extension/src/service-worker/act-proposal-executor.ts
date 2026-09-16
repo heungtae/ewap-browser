@@ -18,6 +18,7 @@ import type {
 } from "../contracts/chat-events.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
+import type { ParsedPageApiProposal } from "./act-proposal-parser.js";
 import { completeActProposal } from "./act-proposal-completion.js";
 import { createActProposalFollowup } from "./act-proposal-followup.js";
 import { prepareActProposal } from "./act-proposal-readiness.js";
@@ -26,6 +27,7 @@ import type {
   EnterprisePolicyRequest,
 } from "../policy/enterprise-policy.js";
 import type { AuditEvent } from "../security/audit.js";
+import { isErrorCode } from "../contracts/error-codes.js";
 
 type Execution = Record<string, unknown>;
 type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
@@ -47,6 +49,11 @@ type Dependencies = {
     sessionId: string,
   ): string;
   execute(run: Run, ready: ReadyExecution, origin: string): Promise<Execution>;
+  executePageApi(
+    run: Run,
+    session: ActSession,
+    proposal: ParsedPageApiProposal,
+  ): Promise<Execution>;
   publish(runId: string, event: ChatEventPayload): void;
   publishTerminal(run: Run, outcome: Outcome, code?: string): void;
   actionView(session: ActSession, proposal: ActProposal): ChatActionView;
@@ -58,13 +65,15 @@ type Dependencies = {
 };
 
 const capabilityFor = (proposal: ActProposal): Capability =>
-  proposal.tool === "navigate"
-    ? "navigate"
-    : proposal.tool === "set_checked_by_ref" ||
-        proposal.tool === "click_by_ref" ||
-        proposal.tool === "press_key_by_ref"
-      ? "click"
-      : "type";
+  proposal.tool === "call_page_api"
+    ? "page_api"
+    : proposal.tool === "navigate"
+      ? "navigate"
+      : proposal.tool === "set_checked_by_ref" ||
+          proposal.tool === "click_by_ref" ||
+          proposal.tool === "press_key_by_ref"
+        ? "click"
+        : "type";
 
 export const createActProposalExecutor = (dependencies: Dependencies) => {
   const executeProposal = async (
@@ -76,13 +85,15 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
     if (!proposal || !run || run.phase === "TERMINAL")
       return fail("INVALID_ARGUMENT");
     const capability = capabilityFor(proposal);
+    const pageApi = proposal.tool === "call_page_api";
+    const risk = pageApi ? "R1" : proposal.definition.risk;
     const enterprise = await dependencies.authorizeEnterprise({
       run_id: run.id,
       tab_id: run.tabId,
       document_epoch: run.documentEpoch,
       origin: session.origin,
       capability,
-      risk: proposal.definition.risk,
+      risk,
       profile: session.profile,
     });
     void dependencies.evidence({
@@ -92,7 +103,7 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       profile_id: session.profile.id,
       profile_version: session.profile.version,
       capability,
-      risk: proposal.definition.risk,
+      risk,
       decision: enterprise.decision,
       stage: "authorized",
     });
@@ -135,6 +146,40 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
         capability,
         host: new URL(session.origin).hostname,
       };
+    }
+    if (pageApi) {
+      const executed = await dependencies.executePageApi(
+        run,
+        session,
+        proposal,
+      );
+      const outcome =
+        executed.outcome === "VERIFIED" ||
+        executed.outcome === "ALREADY_SATISFIED"
+          ? "VERIFIED"
+          : executed.outcome === "UNKNOWN"
+            ? "UNKNOWN"
+            : "FAILED";
+      dependencies.coordinator.runs.terminal(
+        run.id,
+        outcome,
+        isErrorCode(executed.code) ? executed.code : undefined,
+      );
+      return completeActProposal(
+        dependencies,
+        session,
+        run,
+        proposal,
+        { ...executed, ok: outcome === "VERIFIED", outcome },
+        {
+          success:
+            executed.outcome === "ALREADY_SATISFIED"
+              ? "요청한 선택이 이미 화면에 적용돼 있습니다."
+              : "작업 결과를 확인했습니다.",
+          failure: "작업을 완료하지 못했습니다.",
+          unknown: "페이지 API 호출 뒤 결과를 확정하지 못했습니다.",
+        },
+      );
     }
     const active = await dependencies.readActive(undefined, session.tabId);
     assertRequestActive(session.requestContext);

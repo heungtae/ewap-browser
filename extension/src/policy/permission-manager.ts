@@ -2,6 +2,7 @@ import { fail } from "../security/validation.js";
 
 export const CAPABILITIES = [
   "navigate",
+  "page_api",
   "click",
   "type",
   "network_write",

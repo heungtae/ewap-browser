@@ -101,9 +101,14 @@ export type BrowserPermissions = {
 };
 export type BrowserScripting = {
   executeScript(injection: {
-    target: { tabId: number };
-    files: string[];
-  }): Promise<unknown>;
+    target: { tabId: number; documentIds?: string[] };
+    world?: "ISOLATED" | "MAIN";
+    files?: string[];
+    func?: (...args: never[]) => unknown;
+    args?: unknown[];
+  }): Promise<
+    Array<{ frameId?: number; documentId?: string; result?: unknown }>
+  >;
 };
 
 export type BrowserChromeApi = {

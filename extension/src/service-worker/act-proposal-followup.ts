@@ -7,12 +7,13 @@ import type {
 import type { ReadyExecution } from "../state/mutation-coordinator.js";
 import type { Run } from "../state/run-coordinator.js";
 import type { ServiceCoordinator } from "./coordinator.js";
-import type { ActProposal, ActSession } from "./act-session-types.js";
+import type { ActSession } from "./act-session-types.js";
+import type { ParsedActProposal } from "./act-proposal-parser.js";
 
 type Complete = (
   session: ActSession,
   run: Run,
-  proposal: ActProposal,
+  proposal: ParsedActProposal,
   executed: Record<string, unknown>,
   summaries: { success: string; failure: string },
 ) => Promise<Record<string, unknown>>;
@@ -30,7 +31,7 @@ type Dependencies = {
   complete: Complete;
 };
 
-const capabilityFor = (proposal: ActProposal): Capability =>
+const capabilityFor = (proposal: ParsedActProposal): Capability =>
   proposal.tool === "navigate"
     ? "navigate"
     : proposal.tool === "set_checked_by_ref" ||
@@ -43,7 +44,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
   const authorizeResume = async (
     session: ActSession,
     run: Run,
-    proposal: ActProposal,
+    proposal: ParsedActProposal,
   ): Promise<void> => {
     const decision = await dependencies.authorizeEnterprise({
       run_id: run.id,
@@ -66,6 +67,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
     if (
       !awaiting ||
       !proposal ||
+      proposal.tool === "call_page_api" ||
       !run ||
       run.phase === "TERMINAL" ||
       awaiting.valueKind !== "text" ||
@@ -107,6 +109,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
     if (
       !awaiting ||
       !proposal ||
+      proposal.tool === "call_page_api" ||
       !run ||
       run.phase !== "AWAITING_CONFIRMATION" ||
       awaiting.confirmationId !== confirmationId ||

@@ -1,5 +1,8 @@
 import { createActExecutionRuntime } from "./act-execution-runtime.js";
 import { createActPostconditionVerifier } from "./act-postcondition-verifier.js";
+import { createPageApiObserver } from "./page-api-observer.js";
+import { createPageApiRunner } from "./page-api-runner.js";
+import { withDeadline } from "../security/deadline.js";
 import {
   boundedCdp,
   chatRequests,
@@ -53,4 +56,23 @@ export const {
   milestone: (tabId, stage) => executionDiagnostics.actForTab(tabId, stage),
   safeFailure,
   verifier,
+});
+
+const pageApiObserver = createPageApiObserver((tabId, remainingMs) =>
+  withDeadline(
+    readActiveSnapshot("all_dom", tabId).then((active) => active.snapshot),
+    remainingMs,
+    "PAGE_API_TIMEOUT",
+  ),
+);
+export const { execute: executePageApi } = createPageApiRunner({
+  ...(chromeApi?.scripting ? { scripting: chromeApi.scripting } : {}),
+  beforeDispatch: (tabId) => chatRequests.beforeDispatch(tabId),
+  documentFor: (tabId, frameId) =>
+    registered.get(registrationKey(tabId, frameId)),
+  scope: (tabId) => pageScopes.get(tabId),
+  observe: pageApiObserver,
+  milestone: (tabId, stage) => executionDiagnostics.actForTab(tabId, stage),
+  progress: (runId, stage) =>
+    chatRunLifecycle.publish(runId, { type: "activity_progress", stage }),
 });

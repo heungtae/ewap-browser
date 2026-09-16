@@ -159,4 +159,34 @@ describe("generic Act tools", () => {
       properties: { target: { enum: ["model-ref-1-abcdefghijkl"] } },
     });
   });
+
+  it("exposes page APIs only through opaque action refs and enum options", () => {
+    const tools = genericActTools(
+      [],
+      { ...snapshot, nodes: [], visible_text: "" },
+      snapshot,
+      undefined,
+      [
+        {
+          action_ref: "action-ref-abcdefghijkl",
+          adapter_id: "fixture_variant",
+          adapter_version: 1,
+          action_id: "select_variant",
+          option_ids: ["low", "high"],
+          option_labels: { low: "Low", high: "High" },
+          label: "Variant 선택",
+          description: "fixture",
+          completion: { control_name: "Variant", option_name: "Variant" },
+        },
+      ],
+    );
+    expect(tools).toHaveLength(1);
+    expect(tools[0]?.function.name).toBe("propose_page_api");
+    expect(tools[0]?.function.parameters).toMatchObject({
+      properties: {
+        action_ref: { enum: ["action-ref-abcdefghijkl"] },
+        option_id: { enum: ["low", "high"] },
+      },
+    });
+  });
 });

@@ -5,6 +5,7 @@ import type {
 import type { ProfileActionTool } from "../profile/profile.js";
 import type { ProviderToolDefinition } from "../providers/types.js";
 import { isCustomListboxOption } from "./page-derived-actions.js";
+import type { PageApiActionRef } from "../contracts/page-api-types.js";
 
 const targetParameter = (targets: readonly string[]) => ({
   type: "string",
@@ -114,115 +115,164 @@ export const genericActTools = (
   modelSnapshot: ModelSemanticSnapshot,
   snapshot: SemanticSnapshot,
   allowedRefIds?: ReadonlySet<string>,
+  pageApiActions: readonly PageApiActionRef[] = [],
 ): ProviderToolDefinition[] =>
-  definitions.flatMap((definition) => {
-    const targets = eligibleTargets(
-      definition,
-      modelSnapshot,
-      snapshot,
-      allowedRefIds,
-    );
-    if (targets.length === 0) return [];
-    if (definition.tool === "click_by_ref")
-      return [genericActClickTool(targets)];
-    if (definition.tool === "navigate")
-      return [genericActNavigateTool(targets)];
-    if (definition.tool === "set_text_by_ref")
-      return [
-        {
-          type: "function",
-          function: {
-            name: "propose_set_text",
-            description:
-              "Propose a visible enabled text field allowed by the current action policy. The user supplies the value after approval; never ask for a credential.",
-            parameters: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                target: targetParameter(targets),
-                approval_scope: approvalScopeParameter,
-                approval_reason: approvalReasonParameter,
+  [
+    ...definitions.flatMap((definition): ProviderToolDefinition[] => {
+      const targets = eligibleTargets(
+        definition,
+        modelSnapshot,
+        snapshot,
+        allowedRefIds,
+      );
+      if (targets.length === 0) return [];
+      if (definition.tool === "click_by_ref")
+        return [genericActClickTool(targets)];
+      if (definition.tool === "navigate")
+        return [genericActNavigateTool(targets)];
+      if (definition.tool === "set_text_by_ref")
+        return [
+          {
+            type: "function",
+            function: {
+              name: "propose_set_text",
+              description:
+                "Propose a visible enabled text field allowed by the current action policy. The user supplies the value after approval; never ask for a credential.",
+              parameters: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  target: targetParameter(targets),
+                  approval_scope: approvalScopeParameter,
+                  approval_reason: approvalReasonParameter,
+                },
+                required: ["target", "approval_scope", "approval_reason"],
               },
-              required: ["target", "approval_scope", "approval_reason"],
             },
           },
-        },
-      ];
-    if (definition.tool === "select_option_by_ref" && definition.option_values)
-      return [
-        {
-          type: "function",
-          function: {
-            name: "propose_select_option",
-            description:
-              "Propose one visible enabled option selection allowed by the current action policy. This is not execution and requires user approval.",
-            parameters: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                target: targetParameter(targets),
-                value: { type: "string", enum: definition.option_values },
-                approval_scope: approvalScopeParameter,
-                approval_reason: approvalReasonParameter,
+        ];
+      if (
+        definition.tool === "select_option_by_ref" &&
+        definition.option_values
+      )
+        return [
+          {
+            type: "function",
+            function: {
+              name: "propose_select_option",
+              description:
+                "Propose one visible enabled option selection allowed by the current action policy. This is not execution and requires user approval.",
+              parameters: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  target: targetParameter(targets),
+                  value: { type: "string", enum: definition.option_values },
+                  approval_scope: approvalScopeParameter,
+                  approval_reason: approvalReasonParameter,
+                },
+                required: [
+                  "target",
+                  "value",
+                  "approval_scope",
+                  "approval_reason",
+                ],
               },
-              required: [
-                "target",
-                "value",
-                "approval_scope",
-                "approval_reason",
-              ],
             },
           },
-        },
-      ];
-    if (definition.tool === "set_checked_by_ref")
-      return [
-        {
-          type: "function",
-          function: {
-            name: "propose_set_checked",
-            description:
-              "Propose a visible enabled checkbox state allowed by the current action policy. This is not execution and requires user approval.",
-            parameters: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                target: targetParameter(targets),
-                checked: { type: "boolean" },
-                approval_scope: approvalScopeParameter,
-                approval_reason: approvalReasonParameter,
+        ];
+      if (definition.tool === "set_checked_by_ref")
+        return [
+          {
+            type: "function",
+            function: {
+              name: "propose_set_checked",
+              description:
+                "Propose a visible enabled checkbox state allowed by the current action policy. This is not execution and requires user approval.",
+              parameters: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  target: targetParameter(targets),
+                  checked: { type: "boolean" },
+                  approval_scope: approvalScopeParameter,
+                  approval_reason: approvalReasonParameter,
+                },
+                required: [
+                  "target",
+                  "checked",
+                  "approval_scope",
+                  "approval_reason",
+                ],
               },
-              required: [
-                "target",
-                "checked",
-                "approval_scope",
-                "approval_reason",
-              ],
             },
           },
-        },
-      ];
-    if (definition.tool === "press_key_by_ref")
-      return [
-        {
-          type: "function",
-          function: {
-            name: "propose_press_key",
-            description:
-              "Propose one visible enabled key press allowed by the current action policy. This is not execution and requires user approval.",
-            parameters: {
-              type: "object",
-              additionalProperties: false,
-              properties: {
-                target: targetParameter(targets),
-                key: { type: "string", enum: ["Enter", "Space", "Escape"] },
-                approval_scope: approvalScopeParameter,
-                approval_reason: approvalReasonParameter,
+        ];
+      if (definition.tool === "press_key_by_ref")
+        return [
+          {
+            type: "function",
+            function: {
+              name: "propose_press_key",
+              description:
+                "Propose one visible enabled key press allowed by the current action policy. This is not execution and requires user approval.",
+              parameters: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  target: targetParameter(targets),
+                  key: { type: "string", enum: ["Enter", "Space", "Escape"] },
+                  approval_scope: approvalScopeParameter,
+                  approval_reason: approvalReasonParameter,
+                },
+                required: [
+                  "target",
+                  "key",
+                  "approval_scope",
+                  "approval_reason",
+                ],
               },
-              required: ["target", "key", "approval_scope", "approval_reason"],
             },
           },
-        },
-      ];
-    return [];
-  });
+        ];
+      return [];
+    }),
+    ...(pageApiActions.length === 0
+      ? []
+      : [
+          {
+            type: "function" as const,
+            function: {
+              name: "propose_page_api",
+              description:
+                "Propose one reviewed local page API action. This is not execution and always requires one user approval.",
+              parameters: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  action_ref: {
+                    type: "string",
+                    enum: pageApiActions.map((action) => action.action_ref),
+                  },
+                  option_id: {
+                    type: "string",
+                    enum: [
+                      ...new Set(
+                        pageApiActions.flatMap((action) => action.option_ids),
+                      ),
+                    ],
+                  },
+                  approval_scope: { type: "string", enum: ["single_step"] },
+                  approval_reason: approvalReasonParameter,
+                },
+                required: [
+                  "action_ref",
+                  "option_id",
+                  "approval_scope",
+                  "approval_reason",
+                ],
+              },
+            },
+          },
+        ]),
+  ] as ProviderToolDefinition[];

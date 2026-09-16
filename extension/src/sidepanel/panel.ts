@@ -66,6 +66,10 @@ export const userMessage: Record<ErrorCode, string> = {
   PANEL_CONTEXT_UNAVAILABLE: "현재 창의 패널 연결을 확인하지 못했습니다.",
   REQUEST_ID_CONFLICT: "같은 요청 ID가 다른 요청에 이미 사용되었습니다.",
   REQUEST_NOT_FOUND: "요청 상태를 찾을 수 없습니다.",
+  PAGE_API_UNAVAILABLE: "이 페이지의 공개 API 작업을 사용할 수 없습니다.",
+  PAGE_API_CONTRACT_INVALID: "페이지 API 작업 계약을 확인하지 못했습니다.",
+  PAGE_API_TIMEOUT: "페이지 API 응답 시간이 초과되었습니다.",
+  PAGE_API_CALL_FAILED: "페이지 API 호출 결과를 확인하지 못했습니다.",
 };
 export const timelineToolLabel = (
   tool: string,

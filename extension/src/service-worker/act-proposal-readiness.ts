@@ -11,7 +11,8 @@ import type {
   ChatEventPayload,
 } from "../contracts/chat-events.js";
 import type { ServiceCoordinator } from "./coordinator.js";
-import type { ActProposal, ActSession } from "./act-session-types.js";
+import type { ActSession } from "./act-session-types.js";
+import type { ParsedActProposal } from "./act-proposal-parser.js";
 
 type Target = {
   enabled: boolean;
@@ -22,7 +23,7 @@ type Target = {
   visible: boolean;
 };
 type Dependencies = {
-  actionView(session: ActSession, proposal: ActProposal): ChatActionView;
+  actionView(session: ActSession, proposal: ParsedActProposal): ChatActionView;
   coordinator: ServiceCoordinator;
   publish(runId: string, event: ChatEventPayload): void;
 };
@@ -34,7 +35,7 @@ export const prepareActProposal = (
   dependencies: Dependencies,
   session: ActSession,
   run: Run,
-  proposal: ActProposal,
+  proposal: ParsedActProposal,
   target: Target,
 ): Prepared => {
   const definition: ActionDefinition = {

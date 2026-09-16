@@ -4,7 +4,7 @@ import type {
   MutationTool,
   SemanticSnapshot,
 } from "../contracts/types.js";
-import { opaqueId } from "../security/canonical.js";
+import { digestCanonical, opaqueId } from "../security/canonical.js";
 import { redactForChat } from "../security/chat-redaction.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import type { ProfileActionTool } from "../profile/profile.js";
@@ -13,6 +13,8 @@ import {
   pageDerivedActionTools,
   pageDerivedOptionValues,
 } from "./page-derived-actions.js";
+import type { PageApiActionRef } from "../contracts/page-api-types.js";
+import { pageApiCompletionDigest } from "./page-api-main.js";
 
 export type ParsedActProposal = {
   id: string;
@@ -25,6 +27,79 @@ export type ParsedActProposal = {
   argument?: { checked?: boolean; key?: "Enter" | "Space" | "Escape" };
   toolCallId: string;
   definition: ProfileActionTool;
+};
+
+export type ParsedPageApiProposal = {
+  id: string;
+  tool: "call_page_api";
+  targetName: string;
+  approvalScope: "single_step";
+  approvalReason: string;
+  optionId: string;
+  action: PageApiActionRef;
+  approvalDigest: string;
+  completionDigest: string;
+  toolCallId: string;
+};
+
+export const parsePageApiProposal = (
+  call: { id: string; name: string; arguments: string },
+  actions: readonly PageApiActionRef[],
+  origin: string,
+): ParsedPageApiProposal => {
+  let value: unknown;
+  try {
+    value = JSON.parse(call.arguments);
+  } catch {
+    return fail("INVALID_ARGUMENT");
+  }
+  if (
+    !isPlainObject(value) ||
+    call.name !== "propose_page_api" ||
+    Object.keys(value).some(
+      (key) =>
+        ![
+          "action_ref",
+          "option_id",
+          "approval_scope",
+          "approval_reason",
+        ].includes(key),
+    ) ||
+    typeof value.action_ref !== "string" ||
+    typeof value.option_id !== "string" ||
+    value.approval_scope !== "single_step" ||
+    typeof value.approval_reason !== "string" ||
+    value.approval_reason.trim().length === 0 ||
+    value.approval_reason.length > 240
+  )
+    return fail("INVALID_ARGUMENT");
+  const action = actions.find((item) => item.action_ref === value.action_ref);
+  if (!action || !action.option_ids.includes(value.option_id))
+    return fail("INVALID_ARGUMENT");
+  const optionName = action.option_labels[value.option_id];
+  if (!optionName) return fail("INVALID_ARGUMENT");
+  return {
+    id: opaqueId(),
+    tool: "call_page_api",
+    targetName: `${action.label}: ${optionName}`,
+    approvalScope: "single_step",
+    approvalReason: redactForChat(value.approval_reason.trim(), 240),
+    optionId: value.option_id,
+    action,
+    toolCallId: call.id,
+    completionDigest: pageApiCompletionDigest(action.completion),
+    approvalDigest: digestCanonical({
+      kind: "page_api",
+      frame_id: 0,
+      origin,
+      adapter_id: action.adapter_id,
+      adapter_version: action.adapter_version,
+      action_id: action.action_id,
+      option_id: value.option_id,
+      completion_digest: pageApiCompletionDigest(action.completion),
+      capability: "page_api",
+    }),
+  };
 };
 
 export const parseActProposal = (

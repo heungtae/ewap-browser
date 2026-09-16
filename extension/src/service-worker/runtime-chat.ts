@@ -11,7 +11,11 @@ import {
   redactedTabTitle,
   serialiseToolResult,
 } from "./ask-tools.js";
-import { executeActContent } from "./runtime-execution.js";
+import {
+  executeActContent,
+  executePageApi as dispatchPageApi,
+} from "./runtime-execution.js";
+import type { PageApiIntent } from "../contracts/page-api-types.js";
 import {
   chatRunLifecycle,
   chatRequests,
@@ -34,6 +38,9 @@ import {
   permissions,
   planScopes,
   readActiveSnapshot,
+  registered,
+  registrationKey,
+  pageScopes,
   resolveProfileFor,
   visionCaptures,
 } from "./runtime-state.js";
@@ -167,6 +174,36 @@ const proposalExecutor = createActProposalExecutor({
     return requestId;
   },
   execute: executeActContent,
+  executePageApi: async (run, session, proposal) => {
+    const active = await readActiveSnapshot("all_dom", run.tabId);
+    const document = registered.get(registrationKey(run.tabId, 0));
+    const scope = pageScopes.get(run.tabId);
+    if (
+      !document ||
+      !scope ||
+      active.origin !== session.origin ||
+      active.snapshot.document_epoch !== run.documentEpoch
+    )
+      return { ok: false, outcome: "FAILED", code: "PAGE_SCOPE_STALE" };
+    const intent: PageApiIntent = {
+      kind: "page_api",
+      run_id: run.id,
+      tab_id: run.tabId,
+      frame_id: 0,
+      document_id: document.documentId,
+      document_epoch: run.documentEpoch,
+      page_scope_epoch: scope.page_scope_epoch,
+      origin: active.origin,
+      adapter_id: proposal.action.adapter_id,
+      adapter_version: proposal.action.adapter_version,
+      action_id: proposal.action.action_id,
+      option_id: proposal.optionId,
+      completion_digest: proposal.completionDigest,
+      capability: "page_api",
+      approval_digest: proposal.approvalDigest,
+    };
+    return dispatchPageApi(intent, active.path);
+  },
   publish: chatRunLifecycle.publish,
   publishTerminal: publishActTerminal,
   actionView,

@@ -4,6 +4,7 @@ import { genericActTools } from "./act-tools.js";
 import { actionReview, actionView } from "./act-review-presentation.js";
 import {
   parseActProposal,
+  parsePageApiProposal,
   workflowDefinitions,
 } from "./act-proposal-parser.js";
 import { selectActActionTools } from "./page-derived-actions.js";
@@ -13,6 +14,9 @@ import type { ActStepDependencies } from "./act-step-dependencies.js";
 import { failActRun } from "./act-run-failure.js";
 import { actStepMessages } from "./act-step-messages.js";
 import { assertRequestActive } from "./request-context.js";
+import { pageApiRegistry } from "../page-api/registry.js";
+import type { PageApiActionRef } from "../contracts/page-api-types.js";
+import { opaqueId } from "../security/canonical.js";
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
   const runStep = async (
     session: ActSession,
@@ -91,11 +95,30 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         projection,
         threadContext: dependencies.threadContext(active.tabId),
       });
+      if (!session.pageApiActions) {
+        const adapter = pageApiRegistry.find(active.origin, active.path);
+        session.pageApiActions = adapter
+          ? adapter.actions.map(
+              (action): PageApiActionRef => ({
+                action_ref: opaqueId(),
+                adapter_id: adapter.adapter_id,
+                adapter_version: adapter.version,
+                action_id: action.action_id,
+                option_ids: action.option_ids,
+                option_labels: action.option_labels,
+                label: action.label,
+                description: action.description,
+                completion: action.completion,
+              }),
+            )
+          : [];
+      }
       const tools = genericActTools(
         session.definitions,
         model.snapshot,
         active.snapshot,
         targetRefId ? new Set([targetRefId]) : undefined,
+        session.pageApiActions,
       );
       dependencies.publish(run.id, {
         type: "activity_progress",
@@ -139,18 +162,24 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       if (response.tool_calls.length !== 1) return fail("INVALID_ARGUMENT");
       const call = response.tool_calls[0];
       if (!call) return fail("INVALID_ARGUMENT");
-      const proposal = parseActProposal(
-        call,
-        model.resolve,
-        active.snapshot,
-        session.definitions,
-        session.discovery,
-        targetRefId,
-      );
+      const proposal =
+        call.name === "propose_page_api"
+          ? parsePageApiProposal(call, session.pageApiActions, active.origin)
+          : parseActProposal(
+              call,
+              model.resolve,
+              active.snapshot,
+              session.definitions,
+              session.discovery,
+              targetRefId,
+            );
       if (session.awaitingExpandedMenuSelection) {
-        const target = active.snapshot.nodes.find(
-          (node) => node.ref_id === proposal.refId,
-        );
+        const target =
+          "refId" in proposal
+            ? active.snapshot.nodes.find(
+                (node) => node.ref_id === proposal.refId,
+              )
+            : undefined;
         if (!target || !["menuitem", "option"].includes(target.role))
           return fail("TARGET_NOT_ACTIONABLE");
         delete session.awaitingExpandedMenuSelection;
@@ -192,6 +221,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     session: ActSession,
     proposal: ActProposal,
   ): Promise<Record<string, unknown>> => {
+    if (proposal.tool === "call_page_api")
+      return fail("WORKFLOW_STATE_MISMATCH");
     const workflow = session.workflow;
     if (!workflow) return runStep(session);
     if (workflow.count >= 11) return fail("WORKFLOW_STEP_LIMIT");

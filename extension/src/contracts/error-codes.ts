@@ -54,6 +54,10 @@ export const errorCodes = new Set<ErrorCode>([
   "PANEL_CONTEXT_UNAVAILABLE",
   "REQUEST_ID_CONFLICT",
   "REQUEST_NOT_FOUND",
+  "PAGE_API_UNAVAILABLE",
+  "PAGE_API_CONTRACT_INVALID",
+  "PAGE_API_TIMEOUT",
+  "PAGE_API_CALL_FAILED",
 ]);
 export const isErrorCode = (value: unknown): value is ErrorCode =>
   typeof value === "string" && errorCodes.has(value as ErrorCode);

@@ -1,6 +1,7 @@
 export const COMPANY_TOOLS = [
   "read_semantic_projection",
   "call_page_business_tool",
+  "call_page_api",
   "find_by_ref",
   "read_page_summary",
   "set_text_by_ref",
@@ -80,7 +81,11 @@ export type ErrorCode =
   | "PROVIDER_UNAVAILABLE"
   | "PANEL_CONTEXT_UNAVAILABLE"
   | "REQUEST_ID_CONFLICT"
-  | "REQUEST_NOT_FOUND";
+  | "REQUEST_NOT_FOUND"
+  | "PAGE_API_UNAVAILABLE"
+  | "PAGE_API_CONTRACT_INVALID"
+  | "PAGE_API_TIMEOUT"
+  | "PAGE_API_CALL_FAILED";
 export type Role =
   | "button"
   | "checkbox"

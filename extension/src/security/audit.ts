@@ -17,6 +17,7 @@ export type AuditEvent = {
   decision?: "ALLOW" | "DENY";
   capability?:
     | "navigate"
+    | "page_api"
     | "click"
     | "type"
     | "network_write"
@@ -80,6 +81,7 @@ export const serializeAudit = (event: AuditEvent): string => {
     (event.capability !== undefined &&
       ![
         "navigate",
+        "page_api",
         "click",
         "type",
         "network_write",
