@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ContentScriptRecovery } from "../../../src/service-worker/content-script-recovery.js";
 
 describe("content script recovery", () => {
-  it("injects the bundled content script only after the optional permission is granted", async () => {
+  it("injects the bundled content script when the required scripting permission is available", async () => {
     const calls: unknown[] = [];
     const recovery = new ContentScriptRecovery(
       { contains: async () => true },

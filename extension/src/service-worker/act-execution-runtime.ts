@@ -1,4 +1,5 @@
 import type { ActionIntent } from "../contracts/types.js";
+import type { ErrorCode } from "../contracts/core-types.js";
 import type {
   BoundedCdpAction,
   BoundedCdpAdapter,
@@ -29,7 +30,7 @@ type Dependencies = {
   send(tabId: number, message: unknown): Promise<unknown>;
   tab(tabId: number): Promise<{ url?: string }>;
   scope?(tabId: number): PageScope | undefined;
-  terminal(run: Run, outcome: Outcome, code?: string): void;
+  terminal(run: Run, outcome: Outcome, code?: ErrorCode): void;
   transition(
     runId: string,
     phase: "VERIFYING_NAVIGATION" | "VERIFYING_RESULT",
@@ -75,7 +76,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
     run: Run,
     intent: ActionIntent,
     value?: string,
-  ): Promise<{ verified: boolean; code?: string }> => {
+  ): Promise<{ verified: boolean; code?: ErrorCode }> => {
     if (dependencies.verifier.verify) {
       const result = await dependencies.verifier.verify(run, intent, value);
       return result.status === "satisfied"
@@ -289,7 +290,11 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
               beforeScope,
             ));
       const outcome = verified ? "VERIFIED" : "UNKNOWN";
-      dependencies.terminal(run, outcome);
+      dependencies.terminal(
+        run,
+        outcome,
+        verified ? undefined : "NAVIGATION_UNVERIFIED",
+      );
       if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
         ? { ok: true, outcome }

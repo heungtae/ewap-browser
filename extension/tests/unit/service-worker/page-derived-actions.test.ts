@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { genericActTools } from "../../../src/service-worker/act-tools.js";
 import {
   isCustomListboxOption,
   pageDerivedActionTools,
@@ -49,6 +50,36 @@ const snapshot = {
 };
 
 describe("page-derived Act discovery", () => {
+  it("offers anchor menu items as navigation, not unverifiable clicks", () => {
+    const page = {
+      ...snapshot,
+      nodes: [
+        {
+          ref_id: "menuitem-abcdefghijkl",
+          role: "menuitem" as const,
+          name: "Variant option",
+          state: {},
+          visible: true,
+          enabled: true,
+          same_origin_link: true,
+        },
+      ],
+    };
+    const tools = genericActTools(
+      pageDerivedActionTools(page),
+      {
+        ...page,
+        nodes: page.nodes.map(({ ref_id, ...node }) => ({
+          ...node,
+          model_ref: ref_id,
+        })),
+      },
+      page,
+    );
+    expect(tools.map((tool) => tool.function.name)).toEqual([
+      "propose_navigate",
+    ]);
+  });
   it("uses only visible enabled controls and their observed options", () => {
     expect(pageDerivedActionTools(snapshot).map((tool) => tool.tool)).toEqual([
       "click_by_ref",

@@ -93,7 +93,7 @@ export const pageDerivedActionTools = (
   if (
     snapshot.nodes.some(
       (node) =>
-        node.role === "link" &&
+        ["link", "menuitem"].includes(node.role) &&
         node.visible &&
         node.enabled &&
         (node.same_origin_link === true || node.cross_origin_link === true),
@@ -103,7 +103,7 @@ export const pageDerivedActionTools = (
       tool: "navigate",
       effect: "local-ui-only",
       risk: "R1",
-      eligible_roles: ["link"],
+      eligible_roles: ["link", "menuitem"],
       verifier: verifier("page-derived-navigation-v1"),
     });
   if (visibleEnabled(snapshot, "textbox"))

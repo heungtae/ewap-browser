@@ -44,6 +44,12 @@ const eligibleTargets = (
       return [];
     if (
       definition.tool === "click_by_ref" &&
+      source.role === "menuitem" &&
+      (source.same_origin_link === true || source.cross_origin_link === true)
+    )
+      return [];
+    if (
+      definition.tool === "click_by_ref" &&
       node.role === "option" &&
       !isCustomListboxOption(snapshot, source)
     )

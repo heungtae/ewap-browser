@@ -176,4 +176,46 @@ describe("Act execution runtime", () => {
     });
     expect(order).toEqual(["verifying-result", "dispatch"]);
   });
+
+  it("records_navigation_unverified_when_the_destination_snapshot_never_validates", async () => {
+    const terminal: Array<[string, string | undefined]> = [];
+    const runtime = createActExecutionRuntime({
+      boundedCdp: undefined,
+      documentFor: () => undefined,
+      isRunActive: () => true,
+      permitCdp: () => undefined,
+      revokeCdp: () => undefined,
+      createId: () => "action-token-abcdefghijklmnop",
+      send: async () => ({
+        ok: true,
+        postcondition: "navigation",
+        target_url: "https://portal.company.test/after",
+      }),
+      tab: async () => ({ url: "https://portal.company.test/before" }),
+      terminal: (_run, outcome, code) => terminal.push([outcome, code]),
+      transition: () => undefined,
+      safeFailure: (code) => ({ ok: false, code }),
+      verifier: {
+        bounded: async () => false,
+        navigationTarget: (url) => (typeof url === "string" ? url : undefined),
+        semantic: async () => false,
+        waitForPageTransition: async () => false,
+        waitForSameOriginNavigation: async () => false,
+        waitForNavigation: async () => true,
+      },
+    });
+
+    await expect(
+      runtime.executeContent(
+        run,
+        { ...ready, intent: { ...ready.intent, tool: "navigate" } },
+        "https://portal.company.test",
+      ),
+    ).resolves.toEqual({
+      ok: false,
+      code: "NAVIGATION_UNVERIFIED",
+      outcome: "UNKNOWN",
+    });
+    expect(terminal).toEqual([["UNKNOWN", "NAVIGATION_UNVERIFIED"]]);
+  });
 });

@@ -92,9 +92,11 @@ const parseNode = (value: unknown): SemanticNode => {
     (node.visibility === "visible" && node.hidden_reason !== undefined) ||
     typeof node.enabled !== "boolean" ||
     (node.same_origin_link !== undefined &&
-      (node.role !== "link" || typeof node.same_origin_link !== "boolean")) ||
+      (!["link", "menuitem"].includes(String(node.role)) ||
+        typeof node.same_origin_link !== "boolean")) ||
     (node.cross_origin_link !== undefined &&
-      (node.role !== "link" || typeof node.cross_origin_link !== "boolean")) ||
+      (!["link", "menuitem"].includes(String(node.role)) ||
+        typeof node.cross_origin_link !== "boolean")) ||
     (node.same_origin_link === true && node.cross_origin_link === true)
   )
     return fail("INVALID_ARGUMENT");

@@ -4,11 +4,15 @@ import { createPageLifecycleMessageHandler } from "../../../src/service-worker/p
 describe("page lifecycle message handler", () => {
   it("releases_navigation_staleness_when_the_new_document_registers", () => {
     const stalePageTabs = new Set([7]);
+    const pageScopes = new Map<
+      number,
+      { document_epoch: string; page_scope_epoch: string }
+    >();
     const handler = createPageLifecycleMessageHandler({
       extensionId: () => "extension-id",
       registrationKey: (tabId, frameId) => `${tabId}:${frameId}`,
       registered: new Map(),
-      pageScopes: new Map(),
+      pageScopes,
       stalePageTabs,
       activeRun: () => undefined,
       cancelRunForPageChange: () => undefined,
@@ -34,5 +38,25 @@ describe("page lifecycle message handler", () => {
 
     expect(stalePageTabs.has(7)).toBe(false);
     expect(respond).toHaveBeenCalledWith({ ok: true });
+    pageScopes.set(7, {
+      document_epoch: "epoch-abcdefghijklmnop",
+      page_scope_epoch: "scope-after-navigation",
+    });
+    handler.handle(
+      {
+        schema_version: 1,
+        kind: "DOCUMENT_REGISTER",
+        document_epoch: "epoch-abcdefghijklmnop",
+      },
+      {
+        id: "extension-id",
+        tab: { id: 7 },
+        frameId: 0,
+        documentId: "document-abcdefghijklmnop",
+        documentLifecycle: "active",
+      },
+      respond,
+    );
+    expect(pageScopes.get(7)?.page_scope_epoch).toBe("scope-after-navigation");
   });
 });

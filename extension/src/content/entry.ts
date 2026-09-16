@@ -66,6 +66,7 @@ const epochBytes = new Uint8Array(18);
 crypto.getRandomValues(epochBytes);
 const documentEpoch = base64Url(epochBytes);
 let pageScopeEpoch = base64Url(crypto.getRandomValues(new Uint8Array(18)));
+let observedPageUrl = location.href;
 const refs = new WeakMap<Element, string>();
 const consumedDeliveries = new Set<string>();
 type RefRecord = {
@@ -490,7 +491,9 @@ const projectionNodes = (
         // <a role="button">). Navigation authority follows the semantic role,
         // not the underlying DOM tag.
         const navigationKind =
-          role === "link" ? linkNavigationKind(element) : undefined;
+          role === "link" || role === "menuitem"
+            ? linkNavigationKind(element)
+            : undefined;
         if (
           !(
             (scope === "visible_only" && !visible) ||
@@ -759,7 +762,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
         !["button", "tab", "menuitem"].includes(record.role)) ||
       (intent.tool === "navigate" &&
         (!(element instanceof HTMLAnchorElement) ||
-          record.role !== "link" ||
+          !["link", "menuitem"].includes(record.role) ||
           !linkNavigationKind(element))) ||
       (intent.tool === "press_key_by_ref" &&
         !["button", "textbox", "combobox", "tab", "menuitem"].includes(
@@ -1108,7 +1111,15 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       respond({ ok: false, code: "INVALID_ARGUMENT" });
       return true;
     }
-    void registerDocument().then((registered) => {
+    void (async () => {
+      if (observedPageUrl !== location.href) {
+        observedPageUrl = location.href;
+        clearPageScopeRefs();
+        pageScopeEpoch = base64Url(crypto.getRandomValues(new Uint8Array(18)));
+        await registerPageScope();
+      }
+      return registerDocument();
+    })().then((registered) => {
       if (!registered) {
         respond({ ok: false, code: "DOCUMENT_NOT_REGISTERED" });
         return;

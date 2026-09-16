@@ -17,6 +17,22 @@ const snapshot = {
   ],
 };
 describe("semantic snapshot contract", () => {
+  it("preserves navigation evidence for anchor menu items without changing their role", () => {
+    expect(
+      validateSemanticSnapshot({
+        ...snapshot,
+        nodes: [
+          { ...snapshot.nodes[0], role: "menuitem", same_origin_link: true },
+        ],
+      }).nodes[0],
+    ).toMatchObject({ role: "menuitem", same_origin_link: true });
+    expect(() =>
+      validateSemanticSnapshot({
+        ...snapshot,
+        nodes: [{ ...snapshot.nodes[0], same_origin_link: true }],
+      }),
+    ).toThrow("INVALID_ARGUMENT");
+  });
   it("given_closed_snapshot_when_validating_then_accepts_projection", () =>
     expect(validateSemanticSnapshot(snapshot)).toMatchObject({
       visible_text: "Google translation result",

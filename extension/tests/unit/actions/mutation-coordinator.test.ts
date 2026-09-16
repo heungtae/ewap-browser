@@ -115,4 +115,17 @@ describe("mutation coordinator", () => {
       ),
     ).toThrow("TARGET_STALE");
   });
+  it("preserves_a_terminal_navigation_failure_code", () => {
+    const runs = new RunCoordinator();
+    const coordinator = new MutationCoordinator(runs);
+    const run = runs.start(1, 0, "epoch", "act");
+
+    coordinator.terminal(run, "UNKNOWN", "NAVIGATION_UNVERIFIED");
+
+    expect(run).toMatchObject({
+      phase: "TERMINAL",
+      outcome: "UNKNOWN",
+      code: "NAVIGATION_UNVERIFIED",
+    });
+  });
 });

@@ -56,10 +56,14 @@ export const createPageLifecycleMessageHandler = (
         epoch,
         documentId: sender.documentId,
       });
-      dependencies.pageScopes.set(sender.tab.id, {
-        document_epoch: epoch,
-        page_scope_epoch: epoch,
-      });
+      if (
+        sender.frameId === 0 &&
+        dependencies.pageScopes.get(sender.tab.id)?.document_epoch !== epoch
+      )
+        dependencies.pageScopes.set(sender.tab.id, {
+          document_epoch: epoch,
+          page_scope_epoch: epoch,
+        });
       // A full navigation may register its document before the separate
       // PAGE_SCOPE_REGISTER message arrives. The document identity is enough
       // to reject the previous page, so do not leave the next request stale.

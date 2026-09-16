@@ -47,7 +47,8 @@ export const {
   send: (tabId, message) => chromeApi!.tabs.sendMessage(tabId, message),
   tab: (tabId) => chromeApi!.tabs.get(tabId),
   scope: (tabId) => pageScopes.get(tabId),
-  terminal: (run, outcome) => coordinator.mutations.terminal(run, outcome),
+  terminal: (run, outcome, code) =>
+    coordinator.mutations.terminal(run, outcome, code),
   transition: (runId, phase) => coordinator.runs.transition(runId, phase),
   milestone: (tabId, stage) => executionDiagnostics.actForTab(tabId, stage),
   safeFailure,

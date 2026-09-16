@@ -1,5 +1,6 @@
 import { digestCanonical } from "../security/canonical.js";
 import { fail } from "../security/validation.js";
+import type { ErrorCode } from "../contracts/core-types.js";
 import { actionIntent, slotBinding } from "./mutation-intent.js";
 import type {
   ActionDefinition,
@@ -130,9 +131,10 @@ export class MutationCoordinator {
   public terminal(
     run: Run,
     outcome: "VERIFIED" | "FAILED" | "UNKNOWN" | "CANCELLED",
+    code?: ErrorCode,
   ): void {
     this.pending.delete(run.id);
-    this.runs.terminal(run.id, outcome);
+    this.runs.terminal(run.id, outcome, code);
   }
 
   private afterValue(

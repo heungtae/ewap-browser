@@ -17,6 +17,7 @@ const expectedPermissions = [
   "activeTab",
   "debugger",
   "offscreen",
+  "scripting",
   "sidePanel",
   "storage",
   "tabs",
@@ -26,15 +27,6 @@ if (
   JSON.stringify(expectedPermissions)
 )
   throw new Error("manifest permission snapshot differs from bounded design");
-if (manifest.permissions.includes("scripting"))
-  throw new Error("manifest contains an unsupported permission");
-if (
-  JSON.stringify([...(manifest.optional_permissions ?? [])].sort()) !==
-  JSON.stringify(["scripting"])
-)
-  throw new Error(
-    "manifest optional permission snapshot differs from recovery design",
-  );
 if (manifest.permissions.includes("webNavigation"))
   throw new Error("manifest contains an unsupported permission");
 if (!manifest.options_ui?.page)
