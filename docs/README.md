@@ -32,6 +32,8 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [Act 완료 조건과 비동기 화면 갱신 검증](25-act-completion-conditions.md)
 - [화면 변경 후 Act 결과 미확인 개선 설계](26-act-result-observation-design.md)
 - [페이지 내부 함수·공개 API 실행 설계 — 구현 인계](27-page-api-execution-design.md)
+- [객체 특성별 Collection Reading 설계 — Planned](28-collection-reading-strategy-design.md)
+- [Page API Discovery 설계 — Planned](29-page-api-discovery-design.md)
 
 ## 비규범 참고자료
 
