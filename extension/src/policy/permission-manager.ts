@@ -9,6 +9,7 @@ export const CAPABILITIES = [
   "download",
   "upload",
   "schedule",
+  "collection_read",
 ] as const;
 export type Capability = (typeof CAPABILITIES)[number];
 export type PermissionDuration = "once" | "always";

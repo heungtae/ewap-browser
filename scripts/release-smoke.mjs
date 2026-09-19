@@ -26,7 +26,8 @@ if (
       "storage",
       "tabs",
     ]) ||
-  JSON.stringify(manifest.host_permissions) !== JSON.stringify(["https://*/*"]) ||
+  JSON.stringify(manifest.host_permissions) !==
+    JSON.stringify(["https://*/*"]) ||
   manifest.storage?.managed_schema !== "managed-storage-schema.json"
 )
   throw new Error("release manifest is missing all-web-page host coverage");

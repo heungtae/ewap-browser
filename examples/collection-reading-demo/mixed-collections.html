@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mixed Collections - Collection Reading Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; }
+    h2 { color: #555; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: #0066cc; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .collection-info { background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    .section { margin-bottom: 40px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #f5f5f5; font-weight: 600; }
+    tr:nth-child(even) { background-color: #fafafa; }
+    .list-container { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; max-height: 300px; overflow-y: auto; }
+    .list { list-style: none; padding: 0; margin: 0; }
+    .list-item { padding: 12px 16px; border-bottom: 1px solid #eee; }
+    .list-item:last-child { border-bottom: none; }
+    .list-item:nth-child(even) { background: #fafafa; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .badge-active { background: #e8f5e9; color: #2e7d32; }
+    .badge-pending { background: #fff3e0; color: #ef6c00; }
+    .badge-done { background: #e3f2fd; color: #1565c0; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">&larr; Back to Index</a>
+  <h1>Mixed Collections</h1>
+
+  <div class="collection-info">
+    <h3>Collection Info</h3>
+    <p><strong>Page contains:</strong> Multiple collection types</p>
+    <p><strong>Purpose:</strong> Tests discovery and selection of different readers</p>
+    <ul>
+      <li>Static table (top)</li>
+      <li>ARIA listbox (middle)</li>
+      <li>SVG chart with data table (bottom)</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>1. Static Table - Recent Orders</h2>
+    <table role="table" aria-label="Recent orders" aria-rowcount="20">
+      <thead>
+        <tr role="row">
+          <th scope="col">Order ID</th>
+          <th scope="col">Customer</th>
+          <th scope="col">Product</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Status</th>
+          <th scope="col">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr role="row" data-row-id="order-1" aria-rowindex="1"><td>ORD-001</td><td>Acme Corp</td><td>Enterprise License</td><td>$5,000</td><td><span class="badge badge-active">Completed</span></td><td>2024-01-15</td></tr>
+        <tr role="row" data-row-id="order-2" aria-rowindex="2"><td>ORD-002</td><td>Beta Inc</td><td>Pro Subscription</td><td>$500</td><td><span class="badge badge-pending">Processing</span></td><td>2024-01-14</td></tr>
+        <tr role="row" data-row-id="order-3" aria-rowindex="3"><td>ORD-003</td><td>Gamma LLC</td><td>Basic Plan</td><td>$50</td><td><span class="badge badge-active">Completed</span></td><td>2024-01-13</td></tr>
+        <tr role="row" data-row-id="order-4" aria-rowindex="4"><td>ORD-004</td><td>Delta Co</td><td>Enterprise License</td><td>$5,000</td><td><span class="badge badge-done">Refunded</span></td><td>2024-01-12</td></tr>
+        <tr role="row" data-row-id="order-5" aria-rowindex="5"><td>ORD-005</td><td>Epsilon Ltd</td><td>Pro Subscription</td><td>$500</td><td><span class="badge badge-active">Completed</span></td><td>2024-01-11</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>2. ARIA Listbox - Feature Requests</h2>
+    <div class="list-container" role="listbox" aria-label="Feature requests" aria-setsize="15">
+      <ul class="list">
+        <li role="option" aria-posinset="1" aria-setsize="15" data-item-id="feat-1" class="list-item">
+          <strong>Dark mode support</strong> - <span class="badge badge-done">Done</span> - Requested by 45 users
+        </li>
+        <li role="option" aria-posinset="2" aria-setsize="15" data-item-id="feat-2" class="list-item">
+          <strong>API rate limit increase</strong> - <span class="badge badge-active">In Progress</span> - Requested by 32 users
+        </li>
+        <li role="option" aria-posinset="3" aria-setsize="15" data-item-id="feat-3" class="list-item">
+          <strong>Bulk export functionality</strong> - <span class="badge badge-pending">Planned</span> - Requested by 28 users
+        </li>
+        <li role="option" aria-posinset="4" aria-setsize="15" data-item-id="feat-4" class="list-item">
+          <strong>Mobile app</strong> - <span class="badge badge-pending">Planned</span> - Requested by 67 users
+        </li>
+        <li role="option" aria-posinset="5" aria-setsize="15" data-item-id="feat-5" class="list-item">
+          <strong>Webhook support</strong> - <span class="badge badge-active">In Progress</span> - Requested by 23 users
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>3. SVG Chart - Quarterly Performance</h2>
+    <svg role="img" aria-label="Quarterly performance chart. Q1: $1.2M. Q2: $1.5M. Q3: $1.4M. Q4: $1.8M." viewBox="0 0 600 250" style="width: 100%; height: 250px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">
+      <defs>
+        <linearGradient id="qGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" style="stop-color:#388e3c"/>
+          <stop offset="100%" style="stop-color:#66bb6a"/>
+        </linearGradient>
+      </defs>
+      <!-- Axes -->
+      <line x1="70" y1="20" x2="70" y2="220" stroke="#999" stroke-width="1"/>
+      <line x1="70" y1="220" x2="550" y2="220" stroke="#999" stroke-width="1"/>
+      <!-- Bars -->
+      <rect x="100" y="100" width="60" height="120" fill="url(#qGradient)" rx="3" aria-label="Q1: $1.2M"/>
+      <text x="130" y="95" text-anchor="middle" font-size="11" fill="#333" font-weight="500">$1.2M</text>
+      <text x="130" y="235" text-anchor="middle" font-size="12" fill="#666">Q1</text>
+
+      <rect x="190" y="70" width="60" height="150" fill="url(#qGradient)" rx="3" aria-label="Q2: $1.5M"/>
+      <text x="220" y="65" text-anchor="middle" font-size="11" fill="#333" font-weight="500">$1.5M</text>
+      <text x="220" y="235" text-anchor="middle" font-size="12" fill="#666">Q2</text>
+
+      <rect x="280" y="85" width="60" height="135" fill="url(#qGradient)" rx="3" aria-label="Q3: $1.4M"/>
+      <text x="310" y="80" text-anchor="middle" font-size="11" fill="#333" font-weight="500">$1.4M</text>
+      <text x="310" y="235" text-anchor="middle" font-size="12" fill="#666">Q3</text>
+
+      <rect x="370" y="40" width="60" height="180" fill="url(#qGradient)" rx="3" aria-label="Q4: $1.8M"/>
+      <text x="400" y="35" text-anchor="middle" font-size="11" fill="#333" font-weight="500">$1.8M</text>
+      <text x="400" y="235" text-anchor="middle" font-size="12" fill="#666">Q4</text>
+    </svg>
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px;">
+      <thead><tr><th style="border: 1px solid #ddd; padding: 8px; background: #f5f5f5;">Quarter</th><th style="border: 1px solid #ddd; padding: 8px; background: #f5f5f5;">Revenue</th><th style="border: 1px solid #ddd; padding: 8px; background: #f5f5f5;">Growth</th></tr></thead>
+      <tbody>
+        <tr><td style="border: 1px solid #ddd; padding: 8px;">Q1</td><td style="border: 1px solid #ddd; padding: 8px;">$1.2M</td><td style="border: 1px solid #ddd; padding: 8px;">+10%</td></tr>
+        <tr><td style="border: 1px solid #ddd; padding: 8px;">Q2</td><td style="border: 1px solid #ddd; padding: 8px;">$1.5M</td><td style="border: 1px solid #ddd; padding: 8px;">+25%</td></tr>
+        <tr><td style="border: 1px solid #ddd; padding: 8px;">Q3</td><td style="border: 1px solid #ddd; padding: 8px;">$1.4M</td><td style="border: 1px solid #ddd; padding: 8px;">-7%</td></tr>
+        <tr><td style="border: 1px solid #ddd; padding: 8px;">Q4</td><td style="border: 1px solid #ddd; padding: 8px;">$1.8M</td><td style="border: 1px solid #ddd; padding: 8px;">+29%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

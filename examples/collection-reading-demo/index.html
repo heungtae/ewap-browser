@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collection Reading Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .card h2 { margin-top: 0; color: #555; }
+    .btn { display: inline-block; padding: 8px 16px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px; }
+    .btn:hover { background: #0055aa; }
+    .description { color: #666; margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>Collection Reading Test Pages</h1>
+  <p>These pages demonstrate different collection types that the collection reader can handle.</p>
+
+  <div class="card">
+    <h2><a href="static-table.html" class="btn">Static Table</a></h2>
+    <p class="description">A regular HTML table with all rows in the DOM. Tests StaticTableListReader.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="virtual-scroll-grid.html" class="btn">Virtual Scroll Grid</a></h2>
+    <p class="description">A grid with virtual scrolling (only visible rows rendered). Tests VirtualScrollReader.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="list.html" class="btn">ARIA List</a></h2>
+    <p class="description">An ARIA listbox with listitems. Tests StaticListReader.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="svg-chart.html" class="btn">SVG Chart</a></h2>
+    <p class="description">An SVG chart with accessible data labels and a data table. Tests SvgChartReader.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="canvas-chart.html" class="btn">Canvas Chart</a></h2>
+    <p class="description">A Canvas chart (viewport only, no data extraction). Tests CanvasChartReader.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="pagination.html" class="btn">Pagination</a></h2>
+    <p class="description">A paginated table with next/prev controls. Tests PaginatedReader (stub).</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="mixed-collections.html" class="btn">Mixed Collections</a></h2>
+    <p class="description">A page with multiple collection types. Tests discovery and selection.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="collection-fixture.html" class="btn">Collection Fixture (for Adapter)</a></h2>
+    <p class="description">A page matching the fixture data adapter (collection-fixture in path, role=grid). Tests ReviewedSiteDataReader with fixture adapter.</p>
+  </div>
+</body>
+</html>

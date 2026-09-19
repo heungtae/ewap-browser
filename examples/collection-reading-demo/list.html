@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARIA List - Collection Reading Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: #0066cc; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .collection-info { background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    .list-container { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+    .list { list-style: none; padding: 0; margin: 0; }
+    .list-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid #eee;
+      gap: 16px;
+    }
+    .list-item:last-child { border-bottom: none; }
+    .list-item:nth-child(even) { background: #fafafa; }
+    .list-item:hover { background: #f0f7ff; }
+    .item-index { width: 50px; font-weight: 600; color: #666; }
+    .item-content { flex: 1; }
+    .item-title { font-weight: 500; font-size: 16px; margin-bottom: 4px; }
+    .item-meta { display: flex; gap: 16px; font-size: 14px; color: #666; }
+    .meta-label { font-weight: 500; color: #333; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .badge-high { background: #e8f5e9; color: #2e7d32; }
+    .badge-medium { background: #fff3e0; color: #ef6c00; }
+    .badge-low { background: #fce4ec; color: #c62828; }
+    .badge-done { background: #e3f2fd; color: #1565c0; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">&larr; Back to Index</a>
+  <h1>ARIA List</h1>
+
+  <div class="collection-info">
+    <h3>Collection Info</h3>
+    <p><strong>Object Kind:</strong> list</p>
+    <p><strong>Reader:</strong> StaticListReader</p>
+    <p><strong>Expected Coverage:</strong> complete (all items in DOM)</p>
+    <p><strong>Features:</strong> ARIA listbox with listitems, posinset/setsize attributes</p>
+  </div>
+
+  <div class="list-container" role="listbox" aria-label="Task list" aria-setsize="30">
+    <ul class="list" id="taskList">
+      <li role="option" aria-selected="false" aria-posinset="1" aria-setsize="30" data-item-id="task-1" class="list-item">
+        <span class="item-index">1</span>
+        <div class="item-content">
+          <div class="item-title">Fix login authentication bug</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-high">High</span></span>
+            <span><span class="meta-label">Assignee:</span> Alice Johnson</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">In Progress</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="2" aria-setsize="30" data-item-id="task-2" class="list-item">
+        <span class="item-index">2</span>
+        <div class="item-content">
+          <div class="item-title">Update API documentation</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-medium">Medium</span></span>
+            <span><span class="meta-label">Assignee:</span> Bob Smith</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">To Do</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="3" aria-setsize="30" data-item-id="task-3" class="list-item">
+        <span class="item-index">3</span>
+        <div class="item-content">
+          <div class="item-title">Implement dark mode toggle</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-low">Low</span></span>
+            <span><span class="meta-label">Assignee:</span> Carol Williams</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">Done</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="4" aria-setsize="30" data-item-id="task-4" class="list-item">
+        <span class="item-index">4</span>
+        <div class="item-content">
+          <div class="item-title">Optimize database queries</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-high">High</span></span>
+            <span><span class="meta-label">Assignee:</span> David Brown</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">In Progress</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="5" aria-setsize="30" data-item-id="task-5" class="list-item">
+        <span class="item-index">5</span>
+        <div class="item-content">
+          <div class="item-title">Add unit tests for payment module</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-medium">Medium</span></span>
+            <span><span class="meta-label">Assignee:</span> Eva Martinez</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">To Do</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="6" aria-setsize="30" data-item-id="task-6" class="list-item">
+        <span class="item-index">6</span>
+        <div class="item-content">
+          <div class="item-title">Refactor user profile component</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-low">Low</span></span>
+            <span><span class="meta-label">Assignee:</span> Frank Anderson</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">In Review</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="7" aria-setsize="30" data-item-id="task-7" class="list-item">
+        <span class="item-index">7</span>
+        <div class="item-content">
+          <div class="item-title">Set up CI/CD pipeline</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-high">High</span></span>
+            <span><span class="meta-label">Assignee:</span> Grace Thomas</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">Done</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="8" aria-setsize="30" data-item-id="task-8" class="list-item">
+        <span class="item-index">8</span>
+        <div class="item-content">
+          <div class="item-title">Design new landing page</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-medium">Medium</span></span>
+            <span><span class="meta-label">Assignee:</span> Henry Jackson</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">To Do</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="9" aria-setsize="30" data-item-id="task-9" class="list-item">
+        <span class="item-index">9</span>
+        <div class="item-content">
+          <div class="item-title">Migrate to TypeScript 5.0</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-low">Low</span></span>
+            <span><span class="meta-label">Assignee:</span> Iris White</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">In Progress</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="10" aria-setsize="30" data-item-id="task-10" class="list-item">
+        <span class="item-index">10</span>
+        <div class="item-content">
+          <div class="item-title">Fix memory leak in data processor</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-high">High</span></span>
+            <span><span class="meta-label">Assignee:</span> Jack Harris</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">To Do</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="11" aria-setsize="30" data-item-id="task-11" class="list-item">
+        <span class="item-index">11</span>
+        <div class="item-content">
+          <div class="item-title">Add keyboard navigation support</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-medium">Medium</span></span>
+            <span><span class="meta-label">Assignee:</span> Karen Martin</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">Done</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="12" aria-setsize="30" data-item-id="task-12" class="list-item">
+        <span class="item-index">12</span>
+        <div class="item-content">
+          <div class="item-title">Implement rate limiting</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-high">High</span></span>
+            <span><span class="meta-label">Assignee:</span> Leo Thompson</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">In Progress</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="13" aria-setsize="30" data-item-id="task-13" class="list-item">
+        <span class="item-index">13</span>
+        <div class="item-content">
+          <div class="item-title">Create user onboarding flow</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-medium">Medium</span></span>
+            <span><span class="meta-label">Assignee:</span> Mia Garcia</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">To Do</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="14" aria-setsize="30" data-item-id="task-14" class="list-item">
+        <span class="item-index">14</span>
+        <div class="item-content">
+          <div class="item-title">Audit third-party dependencies</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-low">Low</span></span>
+            <span><span class="meta-label">Assignee:</span> Noah Robinson</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">To Do</span></span>
+          </div>
+        </div>
+      </li>
+      <li role="option" aria-selected="false" aria-posinset="15" aria-setsize="30" data-item-id="task-15" class="list-item">
+        <span class="item-index">15</span>
+        <div class="item-content">
+          <div class="item-title">Add error boundary components</div>
+          <div class="item-meta">
+            <span><span class="meta-label">Priority:</span> <span class="badge badge-medium">Medium</span></span>
+            <span><span class="meta-label">Assignee:</span> Olivia Clark</span>
+            <span><span class="meta-label">Status:</span> <span class="badge badge-done">In Review</span></span>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <p style="margin-top: 20px; color: #666;">Showing 15 of 30 items. In a real implementation, all 30 items would be in the DOM.</p>
+</body>
+</html>

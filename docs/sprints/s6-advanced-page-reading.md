@@ -4,6 +4,8 @@
 
 hidden DOM을 기본 포함하는 schema v2 page projection, focused read, 본문 추출, find, screenshot/zoom, tab context와 read-only batch를 구현한다.
 
+이 Sprint의 현재 DOM read는 virtual scroll/pagination 밖의 전체 collection을 수집하는 기능이 아니다. 객체 특성별 reader, scroll lifecycle, complete/partial evidence와 API/export adapter는 후속 [28번 Collection Reading 설계](../28-collection-reading-strategy-design.md)의 CR-1~CR-5로 분리한다.
+
 ## 선행 조건
 
 - S5 Chat event/timeline이 tool progress와 image result를 안정적으로 표시한다.

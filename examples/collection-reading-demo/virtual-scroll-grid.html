@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Scroll Grid - Collection Reading Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: #0066cc; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .collection-info { background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    .grid-container {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: white;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 60px 200px 250px 120px 100px 150px;
+      gap: 0;
+    }
+    .grid-header {
+      position: sticky;
+      top: 0;
+      background: #f5f5f5;
+      font-weight: 600;
+      border-bottom: 2px solid #ddd;
+      z-index: 10;
+    }
+    .grid-row {
+      display: contents;
+    }
+    .grid-cell {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      border-right: 1px solid #eee;
+      display: flex;
+      align-items: center;
+    }
+    .grid-row:nth-child(even) .grid-cell { background: #fafafa; }
+    .grid-row:hover .grid-cell { background: #f0f7ff; }
+    .grid-cell:last-child { border-right: none; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .badge-active { background: #e8f5e9; color: #2e7d32; }
+    .badge-inactive { background: #fce4ec; color: #c62828; }
+    .badge-pending { background: #fff3e0; color: #ef6c00; }
+    .scroll-indicator { text-align: center; padding: 10px; color: #666; font-size: 14px; }
+    .loading-row { text-align: center; padding: 20px; color: #999; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">&larr; Back to Index</a>
+  <h1>Virtual Scroll Grid</h1>
+
+  <div class="collection-info">
+    <h3>Collection Info</h3>
+    <p><strong>Object Kind:</strong> grid</p>
+    <p><strong>Reader:</strong> VirtualScrollReader</p>
+    <p><strong>Expected Coverage:</strong> complete (after scrolling to EOF with stable IDs)</p>
+    <p><strong>Features:</strong> 1000 rows, only ~20 rendered at a time, row recycling</p>
+  </div>
+
+  <div class="grid-container" role="grid" aria-label="Product inventory" aria-rowcount="1000" id="gridContainer">
+    <div class="grid" id="grid">
+      <div class="grid-header" role="row">
+        <div class="grid-cell" role="columnheader" aria-sort="ascending">ID</div>
+        <div class="grid-cell" role="columnheader">Product Name</div>
+        <div class="grid-cell" role="columnheader">Description</div>
+        <div class="grid-cell" role="columnheader">Category</div>
+        <div class="grid-cell" role="columnheader">Status</div>
+        <div class="grid-cell" role="columnheader">Price</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator" id="scrollIndicator">Scroll down to load more rows...</div>
+
+  <script>
+    const categories = ['Electronics', 'Clothing', 'Home & Garden', 'Sports', 'Books', 'Toys', 'Automotive', 'Beauty'];
+    const statuses = ['Active', 'Inactive', 'Pending', 'Discontinued'];
+    const adjectives = ['Premium', 'Deluxe', 'Standard', 'Eco', 'Pro', 'Lite', 'Max', 'Ultra'];
+    const nouns = ['Widget', 'Gadget', 'Device', 'Tool', 'Kit', 'Set', 'Pack', 'Bundle'];
+
+    const container = document.getElementById('gridContainer');
+    const grid = document.getElementById('grid');
+    const indicator = document.getElementById('scrollIndicator');
+
+    const ROW_HEIGHT = 52;
+    const VISIBLE_ROWS = 20;
+    const TOTAL_ROWS = 1000;
+    const BUFFER_ROWS = 5;
+
+    let renderedStart = 0;
+    let renderedEnd = VISIBLE_ROWS + BUFFER_ROWS;
+    let isRendering = false;
+
+    function generateProductName(index) {
+      return `${adjectives[index % adjectives.length]} ${nouns[index % nouns.length]} ${index + 1}`;
+    }
+
+    function generateDescription(index) {
+      const features = ['durable', 'lightweight', 'ergonomic', 'versatile', 'compact', 'powerful'];
+      return `A ${features[index % features.length]} ${nouns[index % nouns.length].toLowerCase()} for everyday use.`;
+    }
+
+    function createRow(index) {
+      const row = document.createElement('div');
+      row.className = 'grid-row';
+      row.setAttribute('role', 'row');
+      row.setAttribute('aria-rowindex', index + 1);
+      row.setAttribute('data-row-id', `product-${index + 1}`);
+
+      const idCell = document.createElement('div');
+      idCell.className = 'grid-cell';
+      idCell.setAttribute('role', 'gridcell');
+      idCell.textContent = index + 1;
+
+      const nameCell = document.createElement('div');
+      nameCell.className = 'grid-cell';
+      nameCell.setAttribute('role', 'gridcell');
+      nameCell.textContent = generateProductName(index);
+
+      const descCell = document.createElement('div');
+      descCell.className = 'grid-cell';
+      descCell.setAttribute('role', 'gridcell');
+      descCell.textContent = generateDescription(index);
+
+      const catCell = document.createElement('div');
+      catCell.className = 'grid-cell';
+      catCell.setAttribute('role', 'gridcell');
+      catCell.textContent = categories[index % categories.length];
+
+      const statusCell = document.createElement('div');
+      statusCell.className = 'grid-cell';
+      statusCell.setAttribute('role', 'gridcell');
+      const status = statuses[index % statuses.length];
+      const badge = document.createElement('span');
+      badge.className = `badge badge-${status.toLowerCase()}`;
+      badge.textContent = status;
+      statusCell.appendChild(badge);
+
+      const priceCell = document.createElement('div');
+      priceCell.className = 'grid-cell';
+      priceCell.setAttribute('role', 'gridcell');
+      priceCell.textContent = `$${(Math.random() * 500 + 10).toFixed(2)}`;
+
+      row.appendChild(idCell);
+      row.appendChild(nameCell);
+      row.appendChild(descCell);
+      row.appendChild(catCell);
+      row.appendChild(statusCell);
+      row.appendChild(priceCell);
+
+      return row;
+    }
+
+    function renderRows(start, end) {
+      if (isRendering) return;
+      isRendering = true;
+
+      const fragment = document.createDocumentFragment();
+      for (let i = start; i < Math.min(end, TOTAL_ROWS); i++) {
+        fragment.appendChild(createRow(i));
+      }
+      grid.appendChild(fragment);
+      isRendering = false;
+    }
+
+    function updateVisibleRows() {
+      const scrollTop = container.scrollTop;
+      const newStart = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS);
+      const newEnd = Math.min(TOTAL_ROWS, newStart + VISIBLE_ROWS + BUFFER_ROWS * 2);
+
+      if (newStart !== renderedStart || newEnd !== renderedEnd) {
+        renderedStart = newStart;
+        renderedEnd = newEnd;
+        grid.innerHTML = '';
+        renderRows(renderedStart, renderedEnd);
+      }
+
+      const percent = Math.round((scrollTop / (container.scrollHeight - container.clientHeight)) * 100);
+      indicator.textContent = `Row ${renderedStart + 1}-${Math.min(renderedEnd, TOTAL_ROWS)} of ${TOTAL_ROWS} (${percent}%)`;
+    }
+
+    container.addEventListener('scroll', () => {
+      requestAnimationFrame(updateVisibleRows);
+    });
+
+    renderRows(0, VISIBLE_ROWS + BUFFER_ROWS);
+    updateVisibleRows();
+  </script>
+</body>
+</html>

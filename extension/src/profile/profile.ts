@@ -4,10 +4,7 @@ import { profileModelContext } from "./profile-model-context.js";
 import { businessMcpBindings } from "./mcp-binding.js";
 import { profileActionTools } from "./profile-action-tools.js";
 export { profileActionTools } from "./profile-action-tools.js";
-import type {
-  Profile,
-  ProfileContext,
-} from "./profile-types.js";
+import type { Profile, ProfileContext } from "./profile-types.js";
 export type {
   Profile,
   ProfileActionTool,

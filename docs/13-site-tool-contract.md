@@ -90,6 +90,8 @@ screenshot/zoom, tabs_context와 Business MCP의 batch 지원은 구현되어 �
 mutation, navigation, file, JavaScript와 nested batch는 schema
 validation에서 거부한다.
 
+현재 `read_page`는 collection reader가 아니다. virtual scroll/pagination 밖의 데이터는 이 tool 또는 `read_batch`로 전체 수집하지 않는다. 후속 `collection_read`는 [28번](28-collection-reading-strategy-design.md)의 별도 R0 capability이며, opaque `collection_ref`, bounded chunk, `complete|partial|viewport_only|unavailable` coverage와 object-specific evidence만 노출한다. 모델은 selector, scroll coordinate, framework/API 내부 정보나 raw source cursor를 받지 않는다.
+
 ### 현재 페이지 우선 Act discovery
 
 현재 페이지의 semantic snapshot은 Act discovery의 SSoT다. Profile은 현재
@@ -135,6 +137,8 @@ registry만 primitive별 CDP 허용 여부를 소유하고 service worker가
 preflight 결과로 실행 경로를 결정한다. 페이지가 등록한 WebMCP tool도
 `click` capability와 매 호출 confirmation을 통과해야 하며 raw CDP로
 변환하지 않는다.
+
+collection data adapter는 이 action adapter와 다른 read-only contract다. 실제 site의 public read API/export를 쓰려면 bundled/reviewed code, exact origin/path/version, closed request/result schema, bounded cursor/size 및 `collection_read` permission을 모두 가져야 한다. adapter가 없다는 이유로 private framework state, arbitrary MAIN function 또는 network response를 수집하지 않는다. signed Profile Business MCP는 동등한 read-only closed result contract를 제공할 수 있지만 live discovery나 raw endpoint를 모델에 노출하지 않는다.
 
 ## 3. 결과 계약
 

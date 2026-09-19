@@ -98,7 +98,8 @@ describe("offscreen provider bridge", () => {
             ? { kind: "OFFSCREEN_PROVIDER_READY" }
             : {
                 ok: false,
-                detail: "browser network request failed (check TLS, proxy, VPN, DNS, redirect, or network policy)",
+                detail:
+                  "browser network request failed (check TLS, proxy, VPN, DNS, redirect, or network policy)",
               },
         onMessage: { addListener: () => undefined },
         onConnect: { addListener: () => undefined },

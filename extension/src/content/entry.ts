@@ -1,4 +1,18 @@
 import { digestCanonical } from "../security/canonical.js";
+import {
+  discoverCollections,
+  findCollectionByXPath,
+} from "./collection-discovery.js";
+import {
+  initializeScrollDriver,
+  scrollStep,
+  restorePosition,
+  resetScrollDriver,
+  getDriverState,
+  isAtEof,
+  getStepCount,
+} from "./collection-scroll-driver.js";
+import type { CollectionReadDescriptor } from "../contracts/collection-read-types.js";
 
 type BrowserRuntime = {
   id: string;
@@ -1131,6 +1145,85 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       snapshot.node_count = snapshot.nodes.length;
       respond({ ok: true, snapshot: result });
     });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_DISCOVER"
+  ) {
+    const collections = discoverCollections();
+    respond({ ok: true, collections });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_FIND"
+  ) {
+    const xpath = (message as { xpath?: unknown }).xpath;
+    if (typeof xpath !== "string") {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const collection = findCollectionByXPath(xpath);
+    respond({ ok: true, collection });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_SCROLL_INIT"
+  ) {
+    const descriptor = (message as { descriptor?: unknown }).descriptor;
+    if (!descriptor || typeof descriptor !== "object") {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const result = initializeScrollDriver(
+      descriptor as CollectionReadDescriptor,
+    );
+    respond({ ok: result.ok, error: result.error });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_SCROLL_STEP"
+  ) {
+    void (async () => {
+      const result = await scrollStep();
+      respond({ ok: result.success, ...result });
+    })();
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_SCROLL_RESTORE"
+  ) {
+    const restored = restorePosition();
+    respond({ ok: true, restored });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_SCROLL_RESET"
+  ) {
+    resetScrollDriver();
+    respond({ ok: true });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_SCROLL_STATE"
+  ) {
+    const state = getDriverState();
+    const atEof = isAtEof();
+    const stepCount = getStepCount();
+    respond({ ok: true, state, at_eof: atEof, step_count: stepCount });
     return true;
   }
   return undefined;

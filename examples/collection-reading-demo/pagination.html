@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pagination - Collection Reading Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: #0066cc; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .collection-info { background: #e3f2fd; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f5f5f5; font-weight: 600; }
+    tr:nth-child(even) { background-color: #fafafa; }
+    tr:hover { background-color: #f0f7ff; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .badge-active { background: #e8f5e9; color: #2e7d32; }
+    .badge-inactive { background: #fce4ec; color: #c62828; }
+    .badge-pending { background: #fff3e0; color: #ef6c00; }
+    .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+    .pagination button {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .pagination button:hover:not(:disabled) { background: #f5f5f5; }
+    .pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .pagination button.active { background: #0066cc; color: white; border-color: #0066cc; }
+    .pagination-info { text-align: center; margin: 16px 0; color: #666; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">&larr; Back to Index</a>
+  <h1>Pagination</h1>
+
+  <div class="collection-info">
+    <h3>Collection Info</h3>
+    <p><strong>Object Kind:</strong> pagination</p>
+    <p><strong>Reader:</strong> PaginatedReader (stub)</p>
+    <p><strong>Expected Coverage:</strong> unavailable (v1 requires reviewed contract)</p>
+    <p><strong>Features:</strong> Paginated table with next/prev/page number controls</p>
+  </div>
+
+  <table role="table" aria-label="Paginated user list" aria-rowcount="100">
+    <thead>
+      <tr role="row">
+        <th scope="col" aria-sort="ascending">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Department</th>
+        <th scope="col">Status</th>
+        <th scope="col">Join Date</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <!-- Rows populated by JavaScript -->
+    </tbody>
+  </table>
+
+  <div class="pagination-info" id="paginationInfo">Page 1 of 10 (100 items)</div>
+  <nav class="pagination" role="navigation" aria-label="Pagination" id="pagination">
+    <button id="prevBtn" disabled aria-label="Previous page">&laquo; Previous</button>
+    <button class="active" aria-label="Page 1" aria-current="page">1</button>
+    <button aria-label="Page 2">2</button>
+    <button aria-label="Page 3">3</button>
+    <button aria-label="Page 4">4</button>
+    <button aria-label="Page 5">5</button>
+    <span>...</span>
+    <button aria-label="Page 10">10</button>
+    <button id="nextBtn" aria-label="Next page">Next &raquo;</button>
+  </nav>
+
+  <script>
+    const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Design', 'Support'];
+    const statuses = ['Active', 'Inactive', 'Pending'];
+    const firstNames = ['Alex', 'Blake', 'Casey', 'Drew', 'Emery', 'Finley', 'Gray', 'Harper', 'Indigo', 'Jordan'];
+    const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
+
+    const tbody = document.getElementById('tableBody');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const pagination = document.getElementById('pagination');
+    const paginationInfo = document.getElementById('paginationInfo');
+
+    const TOTAL_ITEMS = 100;
+    const ITEMS_PER_PAGE = 10;
+    const TOTAL_PAGES = Math.ceil(TOTAL_ITEMS / ITEMS_PER_PAGE);
+    let currentPage = 1;
+
+    function generateName() {
+      return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+    }
+
+    function generateEmail(name) {
+      return name.toLowerCase().replace(' ', '.') + '@company.com';
+    }
+
+    function renderPage(page) {
+      tbody.innerHTML = '';
+      const start = (page - 1) * ITEMS_PER_PAGE;
+      const end = Math.min(start + ITEMS_PER_PAGE, TOTAL_ITEMS);
+
+      for (let i = start; i < end; i++) {
+        const name = generateName();
+        const row = document.createElement('tr');
+        row.setAttribute('role', 'row');
+        row.setAttribute('aria-rowindex', i + 1);
+        row.setAttribute('data-row-id', `user-${i + 1}`);
+
+        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        const badgeClass = status === 'Active' ? 'badge-active' : status === 'Inactive' ? 'badge-inactive' : 'badge-pending';
+
+        row.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${name}</td>
+          <td>${generateEmail(name)}</td>
+          <td>${departments[Math.floor(Math.random() * departments.length)]}</td>
+          <td><span class="badge ${badgeClass}">${status}</span></td>
+          <td>202${Math.floor(Math.random() * 4)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}</td>
+        `;
+        tbody.appendChild(row);
+      }
+
+      paginationInfo.textContent = `Page ${page} of ${TOTAL_PAGES} (${TOTAL_ITEMS} items)`;
+      updatePaginationControls(page);
+    }
+
+    function updatePaginationControls(page) {
+      prevBtn.disabled = page === 1;
+      nextBtn.disabled = page === TOTAL_PAGES;
+
+      const pageButtons = pagination.querySelectorAll('button:not(#prevBtn):not(#nextBtn)');
+      pageButtons.forEach(btn => {
+        const pageNum = parseInt(btn.textContent);
+        if (!isNaN(pageNum)) {
+          btn.classList.toggle('active', pageNum === page);
+          btn.setAttribute('aria-current', pageNum === page ? 'page' : 'false');
+        }
+      });
+
+      // Update visible page numbers for large page counts
+      if (TOTAL_PAGES > 7) {
+        // This is a simplified version - a real implementation would be more sophisticated
+      }
+    }
+
+    pagination.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn || btn.disabled) return;
+
+      if (btn === prevBtn) {
+        currentPage = Math.max(1, currentPage - 1);
+      } else if (btn === nextBtn) {
+        currentPage = Math.min(TOTAL_PAGES, currentPage + 1);
+      } else {
+        const pageNum = parseInt(btn.textContent);
+        if (!isNaN(pageNum)) {
+          currentPage = pageNum;
+        }
+      }
+      renderPage(currentPage);
+    });
+
+    renderPage(1);
+  </script>
+</body>
+</html>

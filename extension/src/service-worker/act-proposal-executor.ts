@@ -64,7 +64,9 @@ type Dependencies = {
   endSession(session: ActSession): void;
 };
 
-const capabilityFor = (proposal: ActProposal): Capability =>
+const capabilityFor = (
+  proposal: ActProposal,
+): Exclude<Capability, "collection_read"> =>
   proposal.tool === "call_page_api"
     ? "page_api"
     : proposal.tool === "navigate"

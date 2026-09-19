@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collection Fixture - Collection Reading Demo</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+    h1 { color: #333; }
+    .back-link { display: inline-block; margin-bottom: 20px; color: #0066cc; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+    .collection-info { background: #e8f5e9; padding: 16px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #81c784; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f5f5f5; font-weight: 600; }
+    tr:nth-child(even) { background-color: #fafafa; }
+    tr:hover { background-color: #f0f7ff; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+    .badge-active { background: #e8f5e9; color: #2e7d32; }
+    .badge-pending { background: #fff3e0; color: #ef6c00; }
+    .badge-completed { background: #e3f2fd; color: #1565c0; }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-link">&larr; Back to Index</a>
+  <h1>Collection Fixture (for Adapter)</h1>
+
+  <div class="collection-info">
+    <h3>Collection Info</h3>
+    <p><strong>Object Kind:</strong> table (detected as grid)</p>
+    <p><strong>Reader:</strong> ReviewedSiteDataReader with fixture adapter</p>
+    <p><strong>Expected Coverage:</strong> complete (via adapter with cursor pagination)</p>
+    <p><strong>Fixture Match:</strong> Path contains "collection-fixture", role=grid, origin=collection-read-fixture.invalid</p>
+    <p><strong>Adapter:</strong> fixture_collection_v1 (50 rows per page, 200 total)</p>
+  </div>
+
+  <table role="grid" aria-label="Fixture collection data" aria-rowcount="200" id="fixtureTable">
+    <thead>
+      <tr role="row">
+        <th scope="col" aria-sort="ascending">ID</th>
+        <th scope="col">Column 1</th>
+        <th scope="col">Column 2</th>
+        <th scope="col">Column 3</th>
+      </tr>
+    </thead>
+    <tbody id="fixtureBody">
+      <!-- Rows populated by JavaScript to simulate adapter data -->
+    </tbody>
+  </table>
+
+  <div style="margin-top: 20px; padding: 16px; background: #f5f5f5; border-radius: 8px;">
+    <h3>Fixture Adapter Info</h3>
+    <p>This page matches the <code>fixturePageApiAdapter</code> in the extension:</p>
+    <ul>
+      <li><strong>Origin:</strong> collection-read-fixture.invalid (simulated via path)</li>
+      <li><strong>Path:</strong> Contains "collection-fixture"</li>
+      <li><strong>Role:</strong> grid</li>
+      <li><strong>Pagination:</strong> 50 rows per page, cursor-based</li>
+      <li><strong>Total:</strong> 200 rows</li>
+    </ul>
+    <p>When the collection reader runs, it will use the ReviewedSiteDataReader with the fixture adapter to fetch all 200 rows via cursor pagination.</p>
+  </div>
+
+  <script>
+    const tbody = document.getElementById('fixtureBody');
+    const TOTAL_ROWS = 200;
+    const ROWS_PER_PAGE = 50;
+
+    // Generate all rows to simulate the fixture data
+    for (let i = 0; i < TOTAL_ROWS; i++) {
+      const row = document.createElement('tr');
+      row.setAttribute('role', 'row');
+      row.setAttribute('aria-rowindex', i + 1);
+      row.setAttribute('aria-posinset', i + 1);
+      row.setAttribute('aria-setsize', TOTAL_ROWS);
+      row.setAttribute('data-row-id', `row-${i}`);
+
+      row.innerHTML = `
+        <td role="gridcell">${i + 1}</td>
+        <td role="gridcell">Row ${i + 1} Col 1</td>
+        <td role="gridcell">Row ${i + 1} Col 2</td>
+        <td role="gridcell">Row ${i + 1} Col 3</td>
+      `;
+      tbody.appendChild(row);
+    }
+  </script>
+</body>
+</html>

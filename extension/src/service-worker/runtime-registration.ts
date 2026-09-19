@@ -24,6 +24,13 @@ import {
   workflowSelectionMessageHandler,
   workflowStartMessageHandler,
 } from "./runtime-workflow-handlers.js";
+import { createCollectionReadDomainHandler } from "./collection-read-domain-handler.js";
+import {
+  permissions,
+  coordinator,
+  permissionRequests,
+  planScopes,
+} from "./runtime-state.js";
 
 export const registerServiceWorker = (): void => {
   startStorage();
@@ -32,6 +39,16 @@ export const registerServiceWorker = (): void => {
   });
   const { profile, preferences, provider, runControl } = coreMessageHandlers;
   const { review, start } = actDomainHandlers;
+  const collectionReadHandler = createCollectionReadDomainHandler({
+    chrome: chromeApi!,
+    coordinator,
+    permissions,
+    requests: permissionRequests,
+    planScopes,
+    isPanelSender: pageSenderContext.isPanelSender,
+    isPanelOrSettingsSender: pageSenderContext.isPanelOrSettingsSender,
+    safeFailure,
+  });
   const routeDomain = createDomainMessageRouter({
     handlers: [
       pageLifecycleMessageHandler,
@@ -51,6 +68,7 @@ export const registerServiceWorker = (): void => {
       workflowStartMessageHandler,
       workflowRecordStopMessageHandler,
       start,
+      collectionReadHandler,
     ],
     safeFailure,
   });

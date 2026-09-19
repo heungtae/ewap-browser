@@ -46,6 +46,8 @@ Content script ─────────┼── Service worker ── Provid
 
 page read orchestrator는 기본 `all_dom` tree, `visible_only`/`interactive` override, focused subtree, article text, find와 managed tab context를 제공한다. input current value, credential, executable source, URL query/fragment와 cross-origin frame DOM은 scope와 무관하게 제거한다. Vision adapter는 viewport screenshot과 region zoom만 typed `Page.captureScreenshot`으로 수행하고 이미지를 current run 밖에 저장하지 않는다.
 
+현재 page read는 한 번의 현재 DOM 관측이며 virtual grid/list의 아직 렌더링되지 않은 row나 canvas 원본 데이터를 전체 읽기로 승격하지 않는다. 이 문제는 일반 collector를 framework별 코드로 키우지 않고, [28번 Collection Reading](28-collection-reading-strategy-design.md)의 `CollectionReadOrchestrator -> object-specific reader registry`로 분리해 해결하는 Planned 범위다. 이 reader는 `collection_read` read capability, bounded chunk/evidence 및 명시적 전체 읽기 요청을 사용하며 Act mutation/CDP 경로를 재사용하지 않는다.
+
 ### Bounded CDP adapter
 
 bounded CDP adapter는 service worker가 호출하는 내부 실행 계층이다. 현재 `act-execution-runtime.ts`는 click_by_ref/press_key_by_ref/set_text_by_ref를 CDP로 보내며, 다른 도구는 content executor로 보낸다. DOM 실패 후 자동으로 CDP로 전환하는 탐색 경로가 아니다. 모델, provider plugin, 페이지와 site adapter는 raw CDP method, selector, node ID, 좌표 또는 실행 경로를 지정할 수 없다.
