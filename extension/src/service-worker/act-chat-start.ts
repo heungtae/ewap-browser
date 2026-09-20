@@ -144,7 +144,6 @@ export const createActChatStart =
           candidates: candidates.map((candidate) => candidate.candidate),
         };
       }
-      if (selected.definitions.length === 0) return fail("PROFILE_UNAVAILABLE");
       const session: ActSession = {
         ...(context ? { requestContext: context } : {}),
         id: dependencies.createId(),

@@ -5,6 +5,7 @@ import {
 } from "../contracts/chat-events.js";
 import { renderMarkdown } from "./markdown.js";
 import { failureHelp, timelineToolLabel, userMessage } from "./panel.js";
+import { shouldRenderToolTimelineCard } from "./tool-timeline-policy.js";
 import { redactForChat } from "../security/chat-redaction.js";
 import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
@@ -999,8 +1000,10 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   if (event.type === "tool_started") {
+    const hasActionReview = reviewItems.has(event.run_id);
     lockReview(event.run_id, "실행 중");
     flushDeltas();
+    if (!shouldRenderToolTimelineCard(hasActionReview)) return;
     const existing = tools.get(event.tool_use_id);
     if (existing) {
       const detail = existing.querySelector<HTMLElement>(".event-detail");
@@ -1023,10 +1026,12 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   if (event.type === "tool_finished") {
+    const hasActionReview = reviewItems.has(event.run_id);
     lockReview(
       event.run_id,
       event.result.outcome === "VERIFIED" ? "완료" : "처리됨",
     );
+    if (!shouldRenderToolTimelineCard(hasActionReview)) return;
     const item = tools.get(event.tool_use_id);
     const detail = item?.querySelector<HTMLElement>(".event-detail");
     if (detail) detail.textContent = event.result.summary;
