@@ -1,7 +1,7 @@
 # 28. 객체 특성별 Collection Reading 설계
 
 - 작성일: 2026-09-17
-- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle이 구현됐다. pagination, reviewed adapter, chart의 정확 데이터 및 Side Panel UX는 Planned이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
+- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle, 수동 Side Panel 시작 UX가 구현됐다. 자연어 Ask/Act run에서 collection을 발견·승인·수집하고 그 결과를 같은 run의 모델 분석으로 재개하는 연결은 Planned이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
 - 범위: grid/table/list/chart/pagination처럼 화면에 일부만 렌더링되는 데이터 객체의 **읽기와 처리용 관측**. DOM/ARIA 일반 읽기, Act mutation, Page API action과 별도 capability로 설계한다.
 - 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [S6](sprints/s6-advanced-page-reading.md)
 
@@ -101,6 +101,70 @@ type CollectionReadResult = {
 ```
 
 `complete`는 “화면이 끝까지 한 번 움직였다”가 아니라 객체별 evidence가 충족된 경우에만 쓴다. 어느 조건도 충족하지 못하면 이미 읽은 record는 `partial`로 제공하되, 누락이 없다고 답하지 않는다. 대형 결과는 session memory에서만 보관하고 cursor/chunk로 제공한다. raw record, screenshot, row key, source cursor, selector 및 scroll 위치는 audit, diagnostic, export, 장기 chat history에 남기지 않는다.
+
+### 4.1 자연어 분석 요청의 현재 흐름과 목표 흐름
+
+Ask/Act 모드의 상위 규칙은 [01번 아키텍처](01-architecture.md)의
+“실행 모드 판정과 경계”를 따른다. 선택된 모드는 권한 경계이며 요청 문장만으로
+자동 전환하지 않는다. 의도 판정은 사용자가 선택한 모드를 바꾸지 않고 그 모드
+안에서 collection read를 제안할지, Ask 한계 안내를 반환할지를 결정한다.
+
+#### 현재 구현
+
+`http://localhost:3000/virtual-scroll-grid`에서 Ask로 “데이터를 분석
+요약해”를 요청하면 Ask runner는 현재 semantic projection과 일반 read tool만
+모델에 제공한다. virtual grid의 현재 mount window는 읽을 수 있지만,
+`COLLECTION_DISCOVER`, `COLLECTION_READ_START`, scroll, accumulator, collection
+permission, progress, 수집 chunk의 같은 Ask run 재투입은 호출하지 않는다.
+따라서 모델은 현재 DOM 범위만으로 답하거나 정보가 불충분하다고 답해야 하며,
+전체 grid를 읽었다고 주장해서는 안 된다.
+
+현재 `▤ 페이지 데이터 읽기`는 별도 수동 경로다. 사용자가 객체와 `전체 읽기`를
+선택하고 권한을 승인하면 collection reader가 실행되지만, 결과는 별도 Side Panel
+카드에 표시될 뿐 기존 Ask/Act provider turn에 전달되어 분석을 재개하지 않는다.
+
+#### 목표: Ask의 읽기·분석 요청
+
+“데이터를 분석해”, “데이터를 분석 요약해”처럼 상태 변경 없는 요청은 Ask의
+읽기·분석 의도다. 다음 순서를 따른다.
+
+1. 요청 dispatcher가 provider 호출 전에 Ask 읽기·분석 의도를 확인하고 현재
+   document/page scope에 결속한다.
+2. Browser가 content script에서 collection 후보를 발견한다. 모델은 selector나
+   scroll 값이 아니라 object kind, bounded total hint, virtual 여부와 run 한정
+   `collection_ref`만 받는다.
+3. 분석에 필요한 대상이 유일한 grid/table/list이면 그 대상을 자동 선택하고
+   `full` collection read를 시작한다. “데이터를 분석해”라는 최초 요청이 이
+   읽기의 목적과 범위를 승인한 것이므로, `▤` 클릭이나 같은 대상의 재선택을
+   요구하지 않는다. 후보가 없거나 여러 개여서 대상을 안전하게 하나로 정할 수
+   없을 때만 현재 DOM 범위의 답변 또는 대상 선택을 요청한다.
+4. 전체 읽기가 화면 위치를 바꿀 수 있으므로 worker는 기존
+   `collection_read × host` 권한 정책을 검사한다. 아직 허용되지 않은 host의
+   standard mode에서는 capability 권한을 한 번 요청할 수 있지만, 이것은
+   collection 시작/대상/범위를 다시 묻는 UI가 아니다. 권한이 있거나 permission
+   mode가 허용하면 즉시 scroll을 시작하며, Side Panel에는 진행·limit·복구 상태를
+   표시한다.
+5. 권한 확인 뒤 worker가 document/page scope를 다시 확인하고 content-owned virtual
+   scroll reader를 시작한다. 각 window는 stable row ID 또는 ARIA index로
+   누적하고, EOF·total evidence, Stop·timeout·page change를 검사한 뒤 반드시
+   복구를 시도한다.
+6. terminal 결과와 bounded, redacted record chunk를 **같은 Ask run**의 다음
+   provider turn에 ephemeral context로 전달한다. raw row ID, selector, source
+   cursor와 scroll position은 전달·저장·진단 export하지 않는다.
+7. 모델은 `complete|partial|viewport_only|unavailable` coverage와 수집 개수를
+   명시해 분석·요약한다. `partial` 또는 `unavailable`이면 전체 데이터 분석으로
+   표현하지 않는다.
+
+#### 목표: Act의 읽기·행동 요청
+
+Act는 Ask capability를 포함한다. Act 모드에서 분석 요청은 위 1~7의 read flow를
+그대로 수행하고, 상태 변경이 필요할 때만 그 결과를 근거로 Act proposal과 별도
+사용자 승인을 추가한다. 예를 들어 “분석 후 저장해”는 collection 분석을 마친 뒤
+저장 행동을 proposal하며, 승인·preflight·실행·검증 전에 저장하지 않는다.
+
+반대로 Ask 모드에서 click, 입력, 이동, 저장, 제출 등 Act 의도가 포함된 요청은
+collection read나 상태 변경을 시작하지 않는다. Ask 모드의 한계를 알리고 사용자가
+Act 모드에서 진행할 절차를 자연어로 반환한다.
 
 ## 5. 보안 및 금지 경로
 
