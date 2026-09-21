@@ -274,21 +274,19 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         dependencies.terminal(run, "FAILED");
         return dependencies.safeFailure("TARGET_NOT_ACTIONABLE");
       }
-      const atExpectedUrl = await dependencies.verifier.waitForNavigation(
-        run.tabId,
-        expectedUrl,
-      );
       const verified =
-        atExpectedUrl &&
-        (!beforeUrl || !dependencies.verifier.waitForPageTransition
-          ? true
-          : await dependencies.verifier.waitForPageTransition(
+        beforeUrl && dependencies.verifier.waitForPageTransition
+          ? await dependencies.verifier.waitForPageTransition(
               run,
               beforeUrl,
               new URL(expectedUrl).origin,
               expectedUrl,
               beforeScope,
-            ));
+            )
+          : await dependencies.verifier.waitForNavigation(
+              run.tabId,
+              expectedUrl,
+            );
       const outcome = verified ? "VERIFIED" : "UNKNOWN";
       dependencies.terminal(
         run,

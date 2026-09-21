@@ -12,7 +12,7 @@ export const readDiagnostics = async (
   const value: DiagnosticsPage = {
     records: [],
     dropped_count: 0,
-    level: "basic",
+    level: "error",
     storage_failed: false,
   };
   let cursor = 0;
@@ -32,9 +32,11 @@ export const readDiagnostics = async (
       result.dropped_count >= 0
         ? result.dropped_count
         : 0;
-    value.level = ["off", "basic", "debug"].includes(String(result.level))
+    value.level = ["error", "warn", "info", "debug", "trace"].includes(
+      String(result.level),
+    )
       ? String(result.level)
-      : "basic";
+      : "error";
     value.storage_failed = result.storage_failed === true;
     if (
       result.records.length < 100 ||

@@ -79,12 +79,12 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
   };
   const activeTabForBoundPanel = async (
     sender: BrowserSender,
-  ): Promise<{ id: number }> => {
+  ): Promise<{ id: number; url?: string }> => {
     const windowId = await windowForPanel(sender);
     const tab = (await chrome!.tabs.query({ active: true, windowId }))[0];
     if (tab?.id === undefined)
       throw new ContractError("PANEL_CONTEXT_UNAVAILABLE");
-    return { id: tab.id };
+    return { id: tab.id, ...(tab.url ? { url: tab.url } : {}) };
   };
   const isSettingsSender = (sender: BrowserSender): boolean =>
     sender.id === chrome?.runtime.id &&

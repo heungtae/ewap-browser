@@ -1,7 +1,7 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.63",
+  "version": "0.1.80",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -11,11 +11,11 @@
     "test:fixture": "vitest run extension/tests/fixture",
     "test:e2e": "vitest run extension/tests/e2e",
     "test:chrome-extension": "node scripts/chrome-extension-smoke.mjs",
+    "test:chrome-collection": "node --experimental-websocket scripts/chrome-collection-read-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",
     "check:source-size": "node scripts/check-source-size.mjs",
     "check:module-boundaries": "node scripts/check-module-boundaries.mjs",
-    "demo:semiconductor": "node scripts/serve-semiconductor-demo.mjs",
     "test": "pnpm typecheck && pnpm lint && pnpm build && pnpm validate:package && pnpm test:unit && pnpm test:fixture && pnpm test:e2e",
     "validate:package": "node scripts/validate-package.mjs",
     "test:release": "node scripts/release-smoke.mjs",

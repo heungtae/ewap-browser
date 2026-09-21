@@ -5,7 +5,7 @@ import type {
 } from "../contracts/diagnostic-types.js";
 import { validDiagnostic } from "../contracts/diagnostics-validation.js";
 type Persisted = {
-  level: DiagnosticsLevel;
+  level: DiagnosticsLevel | "off" | "basic";
   records: DiagnosticRecord[];
   dropped_count: number;
   debug_until_ms: number;
@@ -14,9 +14,16 @@ type Persisted = {
 const storageKey = "execution_diagnostics_v1";
 const maxRecords = 2_000;
 const ttlMs = 30 * 60_000;
+const levelRank: Record<DiagnosticsLevel, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  debug: 3,
+  trace: 4,
+};
 
 export class DiagnosticsStorage {
-  protected level: DiagnosticsLevel = "basic";
+  protected level: DiagnosticsLevel = "error";
   protected sequence = 0;
   protected droppedCount = 0;
   protected readonly records: DiagnosticRecord[] = [];
@@ -45,19 +52,19 @@ export class DiagnosticsStorage {
           : 0;
       this.debugUntil =
         typeof saved.debug_until_ms === "number" ? saved.debug_until_ms : 0;
-      this.level =
-        saved.level === "off"
-          ? "off"
-          : saved.level === "debug" && this.debugUntil > Date.now()
-            ? "debug"
-            : "basic";
+      this.level = this.restoreLevel(saved.level);
+      this.retainAtLevel();
       this.prune(Date.now());
     } catch {
       this.storageFailed = true;
     }
   }
   protected prune(now: number): void {
-    if (this.level === "debug" && now >= this.debugUntil) this.level = "basic";
+    if (this.level === "trace" && now >= this.debugUntil) {
+      this.level = "error";
+      this.retainAtLevel();
+      this.persist();
+    }
     while (this.records[0] && now - this.records[0].timestamp_ms > ttlMs)
       this.records.shift();
   }
@@ -85,5 +92,25 @@ export class DiagnosticsStorage {
         this.storageFailed = true;
       }
     });
+  }
+
+  private restoreLevel(
+    value: Persisted["level"] | undefined,
+  ): DiagnosticsLevel {
+    if (value === "trace")
+      return this.debugUntil > Date.now() ? "trace" : "error";
+    if (value === "debug")
+      return this.debugUntil > Date.now() ? "trace" : "error";
+    // Older `basic` diagnostics recorded every lifecycle transition.  Do not
+    // continue that collection after upgrading; a user must opt into trace.
+    if (value === "info" || value === "warn" || value === "error") return value;
+    return "error";
+  }
+
+  protected retainAtLevel(): void {
+    const retained = this.records.filter(
+      (record) => levelRank[record.level] <= levelRank[this.level],
+    );
+    this.records.splice(0, this.records.length, ...retained);
   }
 }

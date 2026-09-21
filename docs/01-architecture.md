@@ -79,6 +79,28 @@ provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api
 
 ## 4. 실행 흐름
 
+### 실행 모드 판정과 경계
+
+모든 요청은 provider 호출이나 tool 노출 전에 요청 의도를 **읽기·분석**과
+**상태 변경 행동**으로 판정한다. Side Panel에서 사용자가 선택한 실행 모드는
+권한 경계이며, 요청 문장만으로 모드를 자동 전환하지 않는다.
+
+- **Ask 모드**는 R0 읽기·분석 전용이다. 읽기, 요약, 비교, 페이지/collection
+  관측은 허용하지만 click, 입력, 선택, 이동, 제출, 외부 전송 등 상태 변경
+  Act는 실행하거나 제안하지 않는다. Ask 요청에 Act 의도가 포함되면 해당
+  행동을 수행하지 않고, 필요한 Act 모드 절차를 자연어로 안내한다.
+- **Act 모드**는 Ask의 읽기·분석 capability를 포함하는 상위 실행 모드다.
+  따라서 Act run은 현재 페이지와 collection을 먼저 읽고 분석한 뒤, 실제
+  상태 변경이 필요할 때만 Act proposal, capability × host 권한, 필요한
+  사용자 확인, preflight, 실행 및 결과 검증 순서를 따른다.
+- 읽기 결과만으로 상태 변경을 암묵 실행하지 않는다. 반대로 Act 모드라는
+  이유만으로 읽기 단계를 생략하지 않는다. 읽기 결과가 불충분하면 이를
+  명시하고, collection 전체 읽기는 해당 capability의 범위·budget·복구
+  계약을 별도로 적용한다.
+
+이 규칙은 이후의 모든 Ask/Act tool schema, dispatcher, Side Panel UX,
+collection reader, 설계 문서와 검증의 우선 기준이다.
+
 ### Ask
 
 1. 사용자가 Side Panel에서 요청한다.

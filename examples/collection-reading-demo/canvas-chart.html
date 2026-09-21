@@ -27,13 +27,13 @@
   <div class="collection-info">
     <h3>Collection Info</h3>
     <p><strong>Object Kind:</strong> chart_canvas</p>
-    <p><strong>Reader:</strong> CanvasChartReader</p>
-    <p><strong>Expected Coverage:</strong> viewport_only (no data extraction from canvas)</p>
-    <p><strong>Features:</strong> Canvas rendering - reader can only provide visual context</p>
+    <p><strong>Reader boundary:</strong> canvas is not part of the current static collection path</p>
+    <p><strong>Expected Coverage:</strong> unavailable for the canvas; future visual policy remains viewport-only with no canvas records</p>
+    <p><strong>Features:</strong> Canvas rendering supplies visual context only; its data table is a separate static candidate</p>
   </div>
 
   <div class="warning">
-    <strong>Note:</strong> Canvas charts cannot be read for exact data values. The collection reader will return <code>viewport_only</code> coverage with no records. For accurate data, use the data table below or an exported API.
+    <strong>Note:</strong> Canvas pixels cannot establish exact data values. Do not infer chart records from this drawing; use the adjacent table or a reviewed export/API contract.
   </div>
 
   <div class="chart-container">

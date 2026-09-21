@@ -13,6 +13,8 @@ import { createChatRequestMessageHandler } from "./chat-request-message-handler.
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
 import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 import type { RequestContext } from "./request-context.js";
+import { chromeApi } from "./runtime-platform.js";
+import type { TabChatSessionStore } from "../state/tab-chat-session-store.js";
 
 type Sender = RuntimeSender;
 type ChatResult = { ok?: boolean };
@@ -24,15 +26,11 @@ export type ChatMessageHandlerDependencies = {
   ): Promise<{ id: number; epoch?: string }>;
   activeTabForPanel(sender: Sender): Promise<ActiveTab>;
   cancelActiveTab(tabId: number): void;
-  chatEvents: {
-    clear(): void;
-    recoverable(tabId: number): unknown;
-    scope(tabId: number): unknown;
-    sinceThreadForRun(runId: string, sequence: number): unknown;
-  };
+  chatEvents: TabChatSessionStore;
   chatPersistence: { clear(): Promise<void> };
   clearScheduledChatPersistence(): void;
   diagnostics?: ExecutionDiagnostics;
+  providerDiagnostics?(): Promise<unknown>;
   isPanelSender(sender: Sender): boolean;
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
@@ -67,8 +65,15 @@ export const createChatMessageHandler = (
     isPanelSender: dependencies.isPanelSender,
     providerAvailable: dependencies.providerAvailable,
     requests: dependencies.requests,
+    chatEvents: dependencies.chatEvents as TabChatSessionStore,
+    sendToContentScript: async (tabId: number, message: unknown) => {
+      return chromeApi!.tabs.sendMessage(tabId, message);
+    },
     ...(dependencies.diagnostics
       ? { diagnostics: dependencies.diagnostics }
+      : {}),
+    ...(dependencies.providerDiagnostics
+      ? { providerDiagnostics: dependencies.providerDiagnostics }
       : {}),
     runAct: dependencies.runActChat,
     runAsk: dependencies.runAskChat,

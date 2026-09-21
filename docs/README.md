@@ -20,7 +20,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [사이트 도구 및 모델 계약](13-site-tool-contract.md)
 - [Semantic Projection 계약](14-semantic-projection-fingerprint.md)
 - [Level 2 Bounded CDP adapter](15-bounded-cdp-adapter.md)
-- [반도체 데모 사이트](16-semiconductor-demo.md)
+- [Accessible items 데모](16-accessible-items-demo.md)
 - [Claude 브라우저 기능 채택 설계](17-claude-browser-capability-adoption-design.md)
 - [Claude 브라우저 기능 채택 검증계획](18-claude-browser-capability-verification-plan.md)
 - [탭 범위 Chat Session과 LLM 문맥 설계](19-tab-scoped-chat-session-design.md)

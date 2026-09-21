@@ -63,7 +63,7 @@
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 
-  `16-semiconductor-demo.md`                            Enterprise
+  `16-accessible-items-demo.md`                         Enterprise
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 

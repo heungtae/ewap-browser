@@ -23,6 +23,13 @@ describe("plan scope", () => {
       plans.origins("run-1").has("https://fixture.company.test:8443"),
     ).toBe(true);
   });
+  it("allows the local development demo origin", () => {
+    const plans = new PlanScopeStore();
+    expect(plans.approve("demo-run", ["http://localhost:3000/"])).toEqual({
+      run_id: "demo-run",
+      origins: ["http://localhost:3000"],
+    });
+  });
   it("rejects wildcard and restricted plan origins", () => {
     const plans = new PlanScopeStore();
     expect(() => plans.approve("run-1", ["https://*.company.test"])).toThrow(

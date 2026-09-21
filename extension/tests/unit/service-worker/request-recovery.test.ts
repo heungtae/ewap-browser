@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ChatRequestLifecycle } from "../../../src/service-worker/chat-request-lifecycle.js";
+import { ExecutionDiagnostics } from "../../../src/service-worker/execution-diagnostics.js";
 import { RequestPersistence } from "../../../src/service-worker/request-persistence.js";
 const input = {
   request_id: "c2f597ec-1096-4e99-8e2e-2c43b05c0dfb",
@@ -24,7 +25,8 @@ describe("request recovery and cancellation", () => {
     first.startRun(input.request_id);
     await first.flush();
     expect(JSON.stringify(data)).not.toContain("secret prompt");
-    const second = new ChatRequestLifecycle(undefined, storage);
+    const diagnostics = new ExecutionDiagnostics();
+    const second = new ChatRequestLifecycle(diagnostics, storage);
     await second.restore();
     expect(second.status(input.request_id, 7, input.owner)).toMatchObject({
       state: "TERMINAL",
@@ -33,6 +35,14 @@ describe("request recovery and cancellation", () => {
     });
     expect(second.start(input).kind).toBe("existing");
     expect(second.startRun(input.request_id)).toBeUndefined();
+    expect(diagnostics.list(input.request_id, 7, 0, 100)?.records).toEqual([
+      expect.objectContaining({
+        event: "request.restored",
+        level: "error",
+        code: "WORKER_RESTARTED",
+        reason: "worker_restarted",
+      }),
+    ]);
   });
   it("retains UNKNOWN after dispatch cancellation and rejects late results", async () => {
     vi.useFakeTimers();
@@ -69,10 +79,19 @@ describe("request recovery and cancellation", () => {
     });
   });
   it("denies other panel instances and document epochs", () => {
-    const requests = new ChatRequestLifecycle();
+    const diagnostics = new ExecutionDiagnostics();
+    const requests = new ChatRequestLifecycle(diagnostics);
     requests.start(input);
     expect(requests.status(input.request_id, 7, "other:epoch")).toBeUndefined();
     expect(requests.cancel(input.request_id, 7, "other:epoch")).toBeUndefined();
+    expect(diagnostics.list(input.request_id, 7, 0, 100)?.records).toEqual([
+      expect.objectContaining({
+        event: "request.status_rejected",
+        level: "error",
+        code: "REQUEST_NOT_FOUND",
+        reason: "panel_context_changed",
+      }),
+    ]);
   });
   it("does not dispatch when the marker cannot be persisted", async () => {
     vi.useFakeTimers();

@@ -1,4 +1,5 @@
 import type { ErrorCode, Outcome } from "../contracts/core-types.js";
+import type { DiagnosticReason } from "./execution-diagnostics.js";
 import type {
   RequestSnapshot,
   RequestStage,
@@ -23,6 +24,7 @@ export abstract class RequestExecution extends RequestStore {
     generation: number,
     outcome: Outcome,
     code?: ErrorCode,
+    reason?: DiagnosticReason,
   ): RequestSnapshot | undefined;
   protected readonly controllers = new Map<string, AbortController>();
   protected readonly budget = new RequestBudget();
@@ -31,13 +33,16 @@ export abstract class RequestExecution extends RequestStore {
     | undefined;
   protected expire(id: string): void {
     const request = this.requests.get(id);
-    if (request)
+    if (request) {
+      this.diagnostics?.timeout(id);
       this.finish(
         id,
         request.generation,
         request.dispatch_started ? "UNKNOWN" : "FAILED",
         "REQUEST_TIMEOUT",
+        "request_timeout",
       );
+    }
   }
   public async beforeDispatch(tabId: number): Promise<void> {
     const request = [...this.requests.values()].find(

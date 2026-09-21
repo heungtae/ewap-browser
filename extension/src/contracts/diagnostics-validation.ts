@@ -43,6 +43,8 @@ export const validDiagnostic = (value: unknown): value is DiagnosticRecord => {
           "stage",
           "outcome",
           "code",
+          "reason",
+          "message",
           "elapsed_ms",
         ].includes(key),
     )
@@ -69,17 +71,34 @@ export const validDiagnostic = (value: unknown): value is DiagnosticRecord => {
     ].includes(String(value.component)) &&
     [
       "request.accepted",
+      "request.status",
+      "request.status_rejected",
+      "request.cancel_requested",
+      "request.timeout",
+      "request.restored",
       "stage.started",
       "stage.finished",
       "request.terminal",
     ].includes(String(value.event)) &&
-    ["info", "warn", "error", "debug"].includes(String(value.level)) &&
+    ["error", "warn", "info", "debug", "trace"].includes(String(value.level)) &&
     (value.stage === undefined ||
       diagnosticStages.includes(String(value.stage))) &&
     (value.outcome === undefined ||
       ["VERIFIED", "FAILED", "UNKNOWN", "CANCELLED"].includes(
         String(value.outcome),
       )) &&
-    (value.code === undefined || isErrorCode(value.code))
+    (value.code === undefined || isErrorCode(value.code)) &&
+    (value.reason === undefined ||
+      [
+        "panel_stop",
+        "request_timeout",
+        "request_settled",
+        "chat_run_terminal",
+        "storage_flush_failed",
+        "worker_restarted",
+        "panel_context_changed",
+      ].includes(String(value.reason))) &&
+    (value.message === undefined ||
+      (typeof value.message === "string" && value.message.length <= 4_000))
   );
 };

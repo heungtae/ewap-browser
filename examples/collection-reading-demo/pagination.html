@@ -46,7 +46,7 @@
     <p><strong>Features:</strong> Paginated table with next/prev/page number controls</p>
   </div>
 
-  <table role="table" aria-label="Paginated user list" aria-rowcount="100">
+  <table role="table" aria-label="Paginated user list" aria-rowcount="101">
     <thead>
       <tr role="row">
         <th scope="col" aria-sort="ascending">ID</th>
@@ -60,20 +60,18 @@
     <tbody id="tableBody">
       <!-- Rows populated by JavaScript -->
     </tbody>
+    <tfoot>
+      <tr><td colspan="6">
+        <div class="pagination-info" id="paginationInfo">Page 1 of 10 (100 items)</div>
+        <nav class="pagination" role="navigation" aria-label="Pagination" id="pagination">
+          <button id="prevBtn" disabled aria-label="Previous page">&laquo; Previous</button>
+          <button class="active" aria-label="Page 1" aria-current="page">1</button>
+          <button aria-label="Page 2">2</button><button aria-label="Page 3">3</button><button aria-label="Page 4">4</button><button aria-label="Page 5">5</button>
+          <span>...</span><button aria-label="Page 10">10</button><button id="nextBtn" aria-label="Next page">Next &raquo;</button>
+        </nav>
+      </td></tr>
+    </tfoot>
   </table>
-
-  <div class="pagination-info" id="paginationInfo">Page 1 of 10 (100 items)</div>
-  <nav class="pagination" role="navigation" aria-label="Pagination" id="pagination">
-    <button id="prevBtn" disabled aria-label="Previous page">&laquo; Previous</button>
-    <button class="active" aria-label="Page 1" aria-current="page">1</button>
-    <button aria-label="Page 2">2</button>
-    <button aria-label="Page 3">3</button>
-    <button aria-label="Page 4">4</button>
-    <button aria-label="Page 5">5</button>
-    <span>...</span>
-    <button aria-label="Page 10">10</button>
-    <button id="nextBtn" aria-label="Next page">Next &raquo;</button>
-  </nav>
 
   <script>
     const departments = ['Engineering', 'Marketing', 'Sales', 'HR', 'Finance', 'Design', 'Support'];
@@ -92,8 +90,8 @@
     const TOTAL_PAGES = Math.ceil(TOTAL_ITEMS / ITEMS_PER_PAGE);
     let currentPage = 1;
 
-    function generateName() {
-      return `${firstNames[Math.floor(Math.random() * firstNames.length)]} ${lastNames[Math.floor(Math.random() * lastNames.length)]}`;
+    function generateName(index) {
+      return `${firstNames[index % firstNames.length]} ${lastNames[Math.floor(index / firstNames.length) % lastNames.length]}`;
     }
 
     function generateEmail(name) {
@@ -106,22 +104,22 @@
       const end = Math.min(start + ITEMS_PER_PAGE, TOTAL_ITEMS);
 
       for (let i = start; i < end; i++) {
-        const name = generateName();
+        const name = generateName(i);
         const row = document.createElement('tr');
         row.setAttribute('role', 'row');
-        row.setAttribute('aria-rowindex', i + 1);
+        row.setAttribute('aria-rowindex', i + 2);
         row.setAttribute('data-row-id', `user-${i + 1}`);
 
-        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        const status = statuses[i % statuses.length];
         const badgeClass = status === 'Active' ? 'badge-active' : status === 'Inactive' ? 'badge-inactive' : 'badge-pending';
 
         row.innerHTML = `
           <td>${i + 1}</td>
           <td>${name}</td>
           <td>${generateEmail(name)}</td>
-          <td>${departments[Math.floor(Math.random() * departments.length)]}</td>
+          <td>${departments[i % departments.length]}</td>
           <td><span class="badge ${badgeClass}">${status}</span></td>
-          <td>202${Math.floor(Math.random() * 4)}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}</td>
+          <td>202${i % 4}-${String((i % 12) + 1).padStart(2, '0')}-${String((i % 28) + 1).padStart(2, '0')}</td>
         `;
         tbody.appendChild(row);
       }

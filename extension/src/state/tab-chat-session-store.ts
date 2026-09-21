@@ -43,6 +43,66 @@ const persistent = (event: ChatEvent): boolean =>
 const bytes = (value: unknown): number =>
   new TextEncoder().encode(JSON.stringify(value)).byteLength;
 const clone = <T>(value: T): T => structuredClone(value);
+const diagnosticEvent = (event: ChatEvent): Record<string, unknown> => {
+  const base = {
+    sequence: event.sequence,
+    run_id: event.run_id,
+    type: event.type,
+  };
+  switch (event.type) {
+    case "user_message":
+    case "assistant_delta":
+      return { ...base, text_length: event.text.length };
+    case "run_started":
+      return {
+        ...base,
+        mode: event.mode,
+        permission_mode: event.permission_mode,
+      };
+    case "activity_started":
+    case "activity_progress":
+    case "activity_finished":
+      return { ...base, stage: event.stage };
+    case "tool_started":
+      return {
+        ...base,
+        tool: event.tool,
+        summary_length: event.summary.length,
+        ...(event.target_name === undefined
+          ? {}
+          : { target_name_length: event.target_name.length }),
+      };
+    case "tool_progress":
+      return { ...base, summary_length: event.summary.length };
+    case "tool_finished":
+      return {
+        ...base,
+        outcome: event.result.outcome,
+        ...(event.result.code === undefined ? {} : { code: event.result.code }),
+      };
+    case "action_review_required":
+      return {
+        ...base,
+        tool: event.action.tool,
+        ...(event.action.approval_scope === undefined
+          ? {}
+          : { approval_scope: event.action.approval_scope }),
+      };
+    case "permission_required":
+      return { ...base, capability: event.capability };
+    case "value_required":
+      return { ...base, value_kind: event.value_kind };
+    case "confirmation_required":
+    case "page_scope_changed":
+      return base;
+    case "run_terminal":
+      return {
+        ...base,
+        outcome: event.outcome,
+        ...(event.code === undefined ? {} : { code: event.code }),
+      };
+  }
+};
 
 /**
  * Browser-lifetime chat state. It intentionally never retains executable
@@ -105,29 +165,8 @@ export class TabChatSessionStore {
     const thread = binding ? this.threads.get(binding.tab_id) : undefined;
     if (!binding || !thread || this.finishedRuns.has(runId))
       return fail("INVALID_ARGUMENT");
-    const sanitized =
-      payload.type === "user_message" || payload.type === "assistant_delta"
-        ? { ...payload, text: redactForChat(payload.text) }
-        : payload.type === "tool_started" || payload.type === "tool_progress"
-          ? {
-              ...payload,
-              summary: redactForChat(payload.summary, 512),
-              ...(payload.type === "tool_started" &&
-              typeof payload.target_name === "string"
-                ? { target_name: redactForChat(payload.target_name, 512) }
-                : {}),
-            }
-          : payload.type === "tool_finished"
-            ? {
-                ...payload,
-                result: {
-                  ...payload.result,
-                  summary: redactForChat(payload.result.summary, 512),
-                },
-              }
-            : payload;
     const event = validateChatEvent({
-      ...sanitized,
+      ...payload,
       session_id: this.sessionId,
       thread_id: binding.thread_id,
       tab_id: binding.tab_id,
@@ -212,6 +251,28 @@ export class TabChatSessionStore {
         scope: clone(thread.scope),
         events: thread.events.filter(persistent).map(clone),
       })),
+    };
+  }
+
+  /**
+   * Downloadable diagnostics retain lifecycle evidence only. Raw prompts,
+   * model output, action labels/values, origins, paths, and capability tokens
+   * must not leave the extension as support data.
+   */
+  public diagnosticSnapshot(tabId: number): unknown {
+    const thread = this.threads.get(tabId);
+    if (!thread)
+      return { schema_version: 1, session_id: this.sessionId, threads: [] };
+    return {
+      schema_version: 1,
+      session_id: this.sessionId,
+      threads: [
+        {
+          thread_id: thread.thread_id,
+          tab_id: thread.tab_id,
+          events: thread.events.map(diagnosticEvent),
+        },
+      ],
     };
   }
 

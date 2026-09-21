@@ -6,12 +6,15 @@ import {
 } from "../contracts/diagnostics-validation.js";
 
 import type {
+  DiagnosticReason,
   DiagnosticsLevel,
+  DiagnosticRecordLevel,
   DiagnosticComponent,
   DiagnosticEvent,
   DiagnosticRecord,
 } from "../contracts/diagnostic-types.js";
 export type {
+  DiagnosticReason,
   DiagnosticsLevel,
   DiagnosticRecord,
 } from "../contracts/diagnostic-types.js";
@@ -20,11 +23,30 @@ type RequestInfo = { tabId: number; startedAt: number; terminal: boolean };
 const maxRecords = 2_000;
 const maxRequestRecords = 300;
 const ttlMs = 30 * 60_000;
-/**
- * A deliberately closed, local-only trace. Its API only accepts allowlisted
- * fields so prompts, URL data, provider payloads, and exception messages have
- * no path into storage or the developer console.
- */
+const levelRank: Record<DiagnosticsLevel, number> = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  debug: 3,
+  trace: 4,
+};
+const diagnosticMessage = (
+  event: DiagnosticEvent,
+  stage?: string,
+  outcome?: Outcome,
+  code?: ErrorCode,
+  reason?: DiagnosticReason,
+): string =>
+  [
+    `Processed ${event}`,
+    stage ? `at stage ${stage}` : undefined,
+    outcome ? `with outcome ${outcome}` : undefined,
+    code ? `(code: ${code})` : undefined,
+    reason ? `(reason: ${reason})` : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ");
+/** Local execution trace with one conventional, human-readable message per event. */
 export class ExecutionDiagnostics extends DiagnosticsStorage {
   private readonly requests = new Map<string, RequestInfo>();
   private readonly workerInstanceId = crypto.randomUUID();
@@ -39,7 +61,7 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
 
   public accept(requestId: string, tabId: number, startedAt: number): void {
     this.requests.set(requestId, { tabId, startedAt, terminal: false });
-    this.add(requestId, "panel", "request.accepted", "info", "ACCEPTED");
+    this.add(requestId, "panel", "request.accepted", "debug", "ACCEPTED");
   }
 
   public stage(
@@ -53,7 +75,7 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
       requestId,
       component,
       finished ? "stage.finished" : "stage.started",
-      "info",
+      "debug",
       stage,
     );
   }
@@ -81,22 +103,100 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
     if (requestId) this.stage(requestId, "act", stage, finished);
   }
 
-  public terminal(requestId: string, outcome: Outcome, code?: ErrorCode): void {
+  public status(requestId: string, stage: string): void {
+    this.add(requestId, "panel", "request.status", "trace", stage);
+  }
+
+  public statusRejected(requestId: string): void {
+    this.add(
+      requestId,
+      "panel",
+      "request.status_rejected",
+      "error",
+      undefined,
+      undefined,
+      "REQUEST_NOT_FOUND",
+      "panel_context_changed",
+    );
+  }
+
+  public restored(requestId: string, outcome: Outcome): void {
+    this.add(
+      requestId,
+      "storage",
+      "request.restored",
+      "error",
+      "TERMINAL",
+      outcome,
+      "WORKER_RESTARTED",
+      "worker_restarted",
+    );
+  }
+
+  public cancelRequested(requestId: string): void {
+    this.add(
+      requestId,
+      "panel",
+      "request.cancel_requested",
+      "trace",
+      undefined,
+      undefined,
+      undefined,
+      "panel_stop",
+    );
+  }
+
+  public timeout(requestId: string): void {
+    this.add(
+      requestId,
+      "router",
+      "request.timeout",
+      "error",
+      undefined,
+      undefined,
+      "REQUEST_TIMEOUT",
+      "request_timeout",
+    );
+  }
+
+  public terminal(
+    requestId: string,
+    outcome: Outcome,
+    code?: ErrorCode,
+    reason: DiagnosticReason = "request_settled",
+  ): void {
     const request = this.requests.get(requestId);
     if (request) request.terminal = true;
     this.add(
       requestId,
       "router",
       "request.terminal",
-      outcome === "VERIFIED" ? "info" : "error",
+      outcome === "VERIFIED"
+        ? "info"
+        : outcome === "CANCELLED"
+          ? "warn"
+          : "error",
       "TERMINAL",
       outcome,
       code,
+      reason,
     );
   }
 
   public list(requestId: string, tabId: number, after: number, limit: number) {
     this.prune(Date.now());
+    if (requestId === "__all__") {
+      const records = this.records
+        .filter((record) => record.sequence > after)
+        .slice(0, limit);
+      return {
+        records,
+        next_sequence: records.at(-1)?.sequence ?? after,
+        dropped_count: this.droppedCount,
+        level: this.level,
+        storage_failed: this.storageFailed,
+      };
+    }
     const request = this.requests.get(requestId);
     if (!request || request.tabId !== tabId) return;
     const records = this.records
@@ -113,9 +213,32 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
     };
   }
 
+  /** Export-only view: records are still limited to the bound tab. */
+  public listForTab(tabId: number): {
+    records: DiagnosticRecord[];
+    dropped_count: number;
+    level: DiagnosticsLevel;
+    storage_failed: boolean;
+  } {
+    this.prune(Date.now());
+    return {
+      records: this.records.filter(
+        (record) => this.requests.get(record.request_id)?.tabId === tabId,
+      ),
+      dropped_count: this.droppedCount,
+      level: this.level,
+      storage_failed: this.storageFailed,
+    };
+  }
+
+  public getWorkerInstanceId(): string {
+    return this.workerInstanceId;
+  }
+
   public setLevel(level: DiagnosticsLevel): DiagnosticsLevel {
     this.level = level;
-    this.debugUntil = level === "debug" ? Date.now() + ttlMs : 0;
+    this.debugUntil = level === "trace" ? Date.now() + ttlMs : 0;
+    if (level !== "trace") this.retainAtLevel();
     this.persist(true);
     return this.level;
   }
@@ -134,13 +257,14 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
     requestId: string,
     component: DiagnosticComponent,
     event: DiagnosticEvent,
-    level: DiagnosticRecord["level"],
+    level: DiagnosticRecordLevel,
     stage?: string,
     outcome?: Outcome,
     code?: ErrorCode,
+    reason?: DiagnosticReason,
   ): void {
     this.prune(Date.now());
-    if (this.level === "off") return;
+    if (levelRank[level] > levelRank[this.level]) return;
     const request = this.requests.get(requestId);
     if (!request) return;
     this.prune(Date.now());
@@ -167,6 +291,8 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
       ...(stage ? { stage } : {}),
       ...(outcome ? { outcome } : {}),
       ...(code ? { code } : {}),
+      ...(reason ? { reason } : {}),
+      message: diagnosticMessage(event, stage, outcome, code, reason),
       elapsed_ms: Math.max(0, Date.now() - request.startedAt),
     };
     if (!validDiagnostic(record)) return;
@@ -177,7 +303,7 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
       this.records.shift();
       this.droppedCount += 1;
     }
-    if (this.level === "debug") console.info("[ContextPilot][trace]", record);
+    if (this.level === "trace") console.info("[ContextPilot][trace]", record);
     this.persist(event === "request.terminal");
   }
 }

@@ -1,14 +1,55 @@
 import { describe, expect, it, vi } from "vitest";
 import { createChatMessageHandler } from "../../../src/service-worker/chat-message-handler.js";
 import { ChatRequestLifecycle } from "../../../src/service-worker/chat-request-lifecycle.js";
+import type { TabChatSessionStore } from "../../../src/state/tab-chat-session-store.js";
+import type { ChatEvent } from "../../../src/contracts/chat-events.js";
+import type { PageScope } from "../../../src/state/tab-chat-session-store.js";
+import type { ChatSessionSnapshot } from "../../../src/state/tab-chat-session-store.js";
 
 const flush = async (): Promise<void> => {
   await Promise.resolve();
   await Promise.resolve();
 };
 
+const createMockChatEvents = (
+  calls: string[],
+): Pick<
+  TabChatSessionStore,
+  | "clear"
+  | "recoverable"
+  | "scope"
+  | "sinceThreadForRun"
+  | "snapshot"
+  | "has"
+  | "terminal"
+> => {
+  const eventsMap = new Map<number, ChatEvent[]>();
+  return {
+    clear: () => {
+      calls.push("events:clear");
+      eventsMap.clear();
+    },
+    recoverable: (_tabId: number) => eventsMap.get(_tabId) ?? [],
+    scope: (_tabId: number): PageScope | undefined => ({
+      document_epoch: "epoch",
+      page_scope_epoch: "scope",
+      origin: "https://example.com",
+      path: "/",
+    }),
+    sinceThreadForRun: (_runId: string, _sequence: number) => [],
+    snapshot: (): ChatSessionSnapshot => ({
+      schema_version: 1,
+      session_id: "test-session",
+      threads: [],
+    }),
+    has: (_runId: string) => false,
+    terminal: (_runId: string) => false,
+  };
+};
+
 const createHandler = () => {
   const calls: string[] = [];
+  const mockChatEvents = createMockChatEvents(calls);
   const handler = createChatMessageHandler({
     activeTabForBoundPanel: async () => ({ id: 7 }),
     activeTabForPanel: async () => ({
@@ -17,12 +58,7 @@ const createHandler = () => {
       url: "https://www.google.com/search?q=contextpilot#top",
     }),
     cancelActiveTab: (tabId) => calls.push(`cancel:${tabId}`),
-    chatEvents: {
-      clear: () => calls.push("events:clear"),
-      recoverable: (tabId) => [`event:${tabId}`],
-      scope: (tabId) => ({ tabId }),
-      sinceThreadForRun: (runId, sequence) => [`${runId}:${sequence}`],
-    },
+    chatEvents: mockChatEvents as unknown as TabChatSessionStore,
     chatPersistence: {
       clear: async () => {
         calls.push("persistence:clear");
@@ -139,6 +175,53 @@ describe("chat runtime message handler", () => {
     );
   });
 
+  it("keeps the same bound panel request readable after the page epoch changes", async () => {
+    const calls: string[] = [];
+    const requests = new ChatRequestLifecycle();
+    let pageEpoch = "before-navigation";
+    const handler = createChatMessageHandler({
+      activeTabForBoundPanel: async () => ({ id: 7, epoch: pageEpoch }),
+      activeTabForPanel: async () => ({ id: 7 }),
+      cancelActiveTab: () => undefined,
+      chatEvents: createMockChatEvents(calls) as unknown as TabChatSessionStore,
+      chatPersistence: { clear: async () => undefined },
+      clearScheduledChatPersistence: () => undefined,
+      isPanelSender: (sender) => sender.url === "panel",
+      providerAvailable: () => true,
+      requests,
+      runActChat: async () => ({ ok: true }),
+      runAskChat: async () => ({ ok: true }),
+      safeFailure: (code) => ({ ok: false, code }),
+    });
+    const sender = { url: "panel", documentId: "panel-document" };
+    const id = "c2f597ec-1096-4e99-8e2e-2c43b05c0dfb";
+    const start = vi.fn();
+    const status = vi.fn();
+
+    handler.handle(
+      {
+        schema_version: 1,
+        kind: "CHAT_REQUEST_START",
+        request_id: id,
+        payload: { mode: "ask", prompt: "run" },
+      },
+      sender,
+      start,
+    );
+    await vi.waitFor(() => expect(start).toHaveBeenCalled());
+
+    pageEpoch = "after-navigation";
+    handler.handle(
+      { schema_version: 1, kind: "CHAT_REQUEST_STATUS", request_id: id },
+      sender,
+      status,
+    );
+    await vi.waitFor(() => expect(status).toHaveBeenCalled());
+    expect(status).toHaveBeenCalledWith(
+      expect.objectContaining({ ok: true, request: expect.any(Object) }),
+    );
+  });
+
   it("recovers the active tab thread and clears it in the existing order", async () => {
     const { calls, handler } = createHandler();
     const recover = vi.fn();
@@ -149,8 +232,13 @@ describe("chat runtime message handler", () => {
     expect(recover).toHaveBeenCalledWith({
       ok: true,
       tab_id: 7,
-      events: ["event:7"],
-      scope: { tabId: 7 },
+      events: [],
+      scope: {
+        document_epoch: "epoch",
+        page_scope_epoch: "scope",
+        origin: "https://example.com",
+        path: "/",
+      },
       page: { title: "Google 검색 결과", origin: "https://www.google.com" },
     });
 

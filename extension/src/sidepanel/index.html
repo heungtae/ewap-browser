@@ -694,6 +694,41 @@
       .new-chat-dialog .confirm-new-chat:hover:not(:disabled) {
         background: #e34e5b;
       }
+      dialog.diagnostics-dialog {
+        width: min(560px, calc(100vw - 32px));
+        max-height: min(72vh, 620px);
+        margin: auto;
+        padding: 16px;
+        color: var(--text);
+        border: 1px solid #35486f;
+        border-radius: 14px;
+        background: #182440;
+        box-shadow: 0 24px 80px rgb(0 0 0 / 48%);
+      }
+      dialog.diagnostics-dialog::backdrop {
+        background: rgb(4 8 18 / 68%);
+        backdrop-filter: blur(2px);
+      }
+      .diagnostics-dialog h2 {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+      .diagnostics-dialog pre {
+        max-height: min(54vh, 450px);
+        margin: 0 0 12px;
+        padding: 10px;
+        overflow: auto;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #0d1424;
+        font:
+          11px/1.45 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+        white-space: pre-wrap;
+      }
       @media (max-width: 360px) {
         .header {
           padding-inline: 10px;
@@ -761,6 +796,15 @@
             </button>
             <button
               class="new-chat"
+              id="page-api-discovery"
+              type="button"
+              title="Page API 힌트 검색"
+              aria-label="Page API 힌트 검색"
+            >
+              API
+            </button>
+            <button
+              class="new-chat"
               id="collection-discover"
               type="button"
               title="페이지 데이터 읽기"
@@ -813,9 +857,7 @@
           <summary>실행 상세</summary>
           <pre id="execution-trace"></pre>
           <button id="diagnostics-debug" type="button">개발 추적 켜기</button>
-          <button id="diagnostics-export" type="button">
-            진단 JSON 다운로드
-          </button>
+          <button id="diagnostics-export" type="button">진단 다운로드</button>
         </details>
         <div class="mode-row">
           <div class="mode-group" role="group" aria-label="작업 모드">
@@ -905,6 +947,15 @@
             </button>
           </div>
         </form>
+      </dialog>
+      <dialog
+        class="diagnostics-dialog"
+        id="diagnostics-dialog"
+        aria-labelledby="diagnostics-dialog-title"
+      >
+        <h2 id="diagnostics-dialog-title">진단 기록</h2>
+        <pre id="diagnostics-dialog-trace"></pre>
+        <button id="diagnostics-dialog-close" type="button">닫기</button>
       </dialog>
     </main>
     <script type="module" src="../js/panel.js"></script>

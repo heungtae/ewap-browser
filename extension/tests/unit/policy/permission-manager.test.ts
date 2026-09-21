@@ -40,11 +40,11 @@ describe("permission manager", () => {
 
   it("given_local_demo_origin_when_granted_once_then_allows_only_the_run", () => {
     const manager = new PermissionManager();
-    expect(manager.check("click", "http://127.0.0.1:8443", "demo-run")).toBe(
+    expect(manager.check("click", "http://localhost:3000", "demo-run")).toBe(
       "REQUIRE_PERMISSION",
     );
-    manager.decide("click", "http://127.0.0.1:8443", "demo-run", "once");
-    expect(manager.check("click", "http://127.0.0.1:8443", "demo-run")).toBe(
+    manager.decide("click", "http://localhost:3000", "demo-run", "once");
+    expect(manager.check("click", "http://localhost:3000", "demo-run")).toBe(
       "ALLOW",
     );
   });

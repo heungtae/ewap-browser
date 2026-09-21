@@ -31,9 +31,9 @@
   <div class="collection-info">
     <h3>Collection Info</h3>
     <p><strong>Object Kind:</strong> chart_svg</p>
-    <p><strong>Reader:</strong> SvgChartReader</p>
-    <p><strong>Expected Coverage:</strong> complete (accessible labels + data table)</p>
-    <p><strong>Features:</strong> SVG bar chart with text labels, embedded data table</p>
+    <p><strong>Reader boundary:</strong> chart reads are not part of the current static collection path</p>
+    <p><strong>Expected Coverage:</strong> unavailable for the chart; the companion table is a separate static candidate</p>
+    <p><strong>Features:</strong> SVG labels provide visual context, while the adjacent table is the authoritative fixture data</p>
   </div>
 
   <div class="chart-container">

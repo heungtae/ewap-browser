@@ -3,6 +3,7 @@ import { isPlainObject } from "../security/validation.js";
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
 import type { RequestContext } from "./request-context.js";
 import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
+import { TabChatSessionStore } from "../state/tab-chat-session-store.js";
 import { exactKeys, type RuntimeSender } from "./runtime-message-router.js";
 
 type Payload = { mode: Mode; prompt: string };
@@ -14,6 +15,9 @@ export type Dependencies = {
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
   diagnostics?: ExecutionDiagnostics;
+  chatEvents: TabChatSessionStore;
+  providerDiagnostics?(): Promise<unknown>;
+  sendToContentScript(tabId: number, message: unknown): Promise<unknown>;
   runAct(payload: unknown, context?: RequestContext): Promise<Result>;
   runAsk(payload: unknown, context?: RequestContext): Promise<Result>;
   safeFailure(code: string): unknown;

@@ -15,6 +15,7 @@ export type BrowserRuntime = {
   id: string;
   getURL(path: string): string;
   sendMessage(message: unknown): Promise<unknown>;
+  getManifest(): { version: string; name: string; manifest_version: number };
   getContexts?: (filter: {
     contextTypes: Array<"OFFSCREEN_DOCUMENT" | "SIDE_PANEL">;
     documentUrls?: string[];

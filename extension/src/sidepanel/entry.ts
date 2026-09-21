@@ -66,6 +66,7 @@ const newChatDialog = byId<HTMLDialogElement>("new-chat-dialog");
 const newChatConfirm = byId<HTMLButtonElement>("new-chat-confirm");
 const newChatCancel = byId<HTMLButtonElement>("new-chat-cancel");
 const workflowRecordButton = byId<HTMLButtonElement>("workflow-record");
+const pageApiDiscoveryButton = byId<HTMLButtonElement>("page-api-discovery");
 const collectionDiscoverButton = byId<HTMLButtonElement>("collection-discover");
 const permissionModeBadge = byId<HTMLElement>("permission-mode-badge");
 const threadScope = byId<HTMLElement>("thread-scope");
@@ -100,6 +101,7 @@ let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
 let workflowRecordingId: string | undefined;
+let pageApiDiscoveryActive = false;
 let collectionReadActive = false;
 let collectionProgressTimer: number | undefined;
 let lastRequest: Record<string, unknown> | undefined;
@@ -176,6 +178,10 @@ const diagnosticsView = createDiagnosticsView({
   active: () => runActive,
   label: (stage) => activityLabel(stage),
   version: () => runtime?.getManifest?.().version ?? "알 수 없음",
+  message: (code) =>
+    code in userMessage
+      ? userMessage[code as keyof typeof userMessage]
+      : "작업을 안전하게 완료하지 못했습니다.",
   failure: (code) => showFailure(code),
 });
 const openSettings = (): void => {
@@ -367,16 +373,21 @@ const showFailure = (code?: string): void => {
       ? "작업을 실행하지 않았습니다"
       : code === "POSTCONDITION_UNVERIFIED"
         ? "작업은 실행됐지만 결과를 확인하지 못했습니다"
-        : "작업 결과를 확인할 수 없습니다";
+        : code === "NAVIGATION_UNVERIFIED"
+          ? "페이지 이동 결과를 확인하지 못했습니다"
+          : "작업 결과를 확인할 수 없습니다";
   const item = card("error", title, detail);
   const guidance = document.createElement("p");
   guidance.className = "failure-guidance";
   guidance.textContent = help.guidance;
   item.append(guidance);
+  const actions = actionRow(item);
+  actions.append(
+    actionButton("진단 보기", "", () => diagnosticsView.open()),
+    actionButton("진단 다운로드", "primary", () => diagnosticsView.download()),
+  );
   if (help.openSettings)
-    actionRow(item).append(
-      actionButton("AI 설정 열기", "primary", openSettings),
-    );
+    actions.append(actionButton("AI 설정 열기", "primary", openSettings));
   append(item);
   setStatus(detail + " " + help.guidance);
 };
@@ -403,6 +414,7 @@ const sendRuntime = async (
       : "INTERNAL_FAILURE";
   throw new Error(code);
 };
+
 type CollectionSummary = {
   collection_ref: string;
   object_kind: string;
@@ -1505,6 +1517,73 @@ workflowRecordButton?.addEventListener("click", () => {
     .catch((error) =>
       showFailure(error instanceof Error ? error.message : undefined),
     );
+});
+pageApiDiscoveryButton?.addEventListener("click", () => {
+  if (runActive) return;
+  if (pageApiDiscoveryActive) {
+    void sendRuntime({ kind: "PAGE_API_DISCOVERY_STOP" }).finally(() => {
+      pageApiDiscoveryActive = false;
+      if (pageApiDiscoveryButton) pageApiDiscoveryButton.textContent = "API";
+      setStatus("Page API 힌트 검색 중단을 요청했습니다.");
+    });
+    return;
+  }
+  pageApiDiscoveryActive = true;
+  pageApiDiscoveryButton.textContent = "■";
+  setStatus("Page API 공개 힌트를 확인하고 있습니다.");
+  void sendRuntime({ kind: "PAGE_API_DISCOVERY_START" })
+    .then((response) => {
+      const result = response.result;
+      if (typeof result !== "object" || result === null)
+        throw new Error("INTERNAL_FAILURE");
+      const value = result as {
+        terminal?: unknown;
+        candidates?: unknown;
+        truncated?: unknown;
+      };
+      const terminal =
+        typeof value.terminal === "string" ? value.terminal : "UNKNOWN";
+      const candidates = Array.isArray(value.candidates)
+        ? value.candidates
+        : [];
+      const item = card(
+        "review",
+        "Page API Discovery",
+        terminal === "COMPLETED"
+          ? candidates.length === 0
+            ? "공개 힌트를 찾지 못했습니다. 이는 API 부재의 증거가 아닙니다."
+            : `${candidates.length}개의 비실행 힌트를 찾았습니다. adapter 검토가 필요합니다.`
+          : `검색 결과를 사용할 수 없습니다: ${terminal}`,
+      );
+      for (const candidate of candidates) {
+        if (typeof candidate !== "object" || candidate === null) continue;
+        const label = (candidate as { label?: unknown }).label;
+        if (typeof label !== "string") continue;
+        const line = document.createElement("p");
+        line.textContent = label;
+        item.append(line);
+        const mark = actionButton("adapter 검토 필요", "warning", () => {
+          mark.disabled = true;
+          mark.textContent = "검토 필요로 표시됨";
+        });
+        actionRow(item).append(mark);
+      }
+      if (value.truncated === true) {
+        const note = document.createElement("p");
+        note.textContent =
+          "결과가 제한에 도달했습니다. 누락이 없다고 판단하지 않습니다.";
+        item.append(note);
+      }
+      append(item);
+      setStatus("Page API 힌트 검색을 마쳤습니다.");
+    })
+    .catch((error) =>
+      showFailure(error instanceof Error ? error.message : undefined),
+    )
+    .finally(() => {
+      pageApiDiscoveryActive = false;
+      if (pageApiDiscoveryButton) pageApiDiscoveryButton.textContent = "API";
+    });
 });
 collectionDiscoverButton?.addEventListener("click", () => {
   if (collectionReadActive) {

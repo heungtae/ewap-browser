@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page API Discovery Fixture</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: #101827;
+        color: #e7edf7;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 48px 24px 72px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 28px;
+      }
+      h2 {
+        font-size: 16px;
+        margin: 0 0 10px;
+      }
+      p {
+        color: #b8c3d6;
+        line-height: 1.6;
+      }
+      code {
+        color: #c4d7ff;
+      }
+      .notice,
+      section {
+        border: 1px solid #2d3d58;
+        border-radius: 12px;
+        background: #162136;
+      }
+      .notice {
+        padding: 16px 18px;
+        margin: 24px 0;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+      }
+      section {
+        padding: 18px;
+      }
+      .good {
+        border-color: #267451;
+      }
+      .blocked {
+        border-color: #8b4f61;
+      }
+      .muted {
+        color: #91a0b8;
+        font-size: 14px;
+      }
+      button {
+        border: 1px solid #4c79c7;
+        border-radius: 8px;
+        padding: 9px 12px;
+        background: #214e97;
+        color: white;
+        cursor: pointer;
+      }
+      button + button {
+        margin-left: 8px;
+      }
+      #status {
+        min-height: 1.5em;
+        margin-top: 14px;
+        color: #b8c3d6;
+      }
+      ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+        color: #cbd5e5;
+        line-height: 1.7;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Page API Discovery fixture</h1>
+      <p>
+        doc 29의 정적·비실행 discovery 경계를 확인하는 로컬 테스트 페이지입니다.
+        이 페이지의 함수와 endpoint-like 문자열은 모두 가짜이며 호출되지
+        않습니다.
+      </p>
+
+      <div class="notice">
+        확장 프로그램 Side Panel에서 <code>API</code>를 눌러 scan하세요.
+        결과에는 redacted 후보 분류만 나타나야 하며, 경로·함수명·반환값은
+        나타나거나 실행되면 안 됩니다.
+      </div>
+
+      <div class="grid">
+        <section class="good">
+          <h2>허용 root: own data descriptor</h2>
+          <p class="muted">
+            <code>appData</code>, <code>gridApi</code>,
+            <code>demoControls</code>에 one-level public 함수 형태를 제공합니다.
+            실행용 API가 아니라 hint용 shape입니다.
+          </p>
+        </section>
+        <section class="blocked">
+          <h2>제외돼야 하는 입력</h2>
+          <p class="muted">
+            allowlist 밖 <code>privateBackdoor</code>, getter, hostile Proxy와
+            external script는 후보나 오류 상세로 노출되면 안 됩니다.
+          </p>
+        </section>
+        <section>
+          <h2>Inline endpoint hint</h2>
+          <p class="muted">
+            아래 inline dormant 코드에 literal 호출 형태가 있습니다. 네트워크
+            요청은 발생하지 않고 scan은 URL 대신 저신뢰 hint만 반환해야 합니다.
+          </p>
+        </section>
+      </div>
+
+      <section style="margin-top: 14px">
+        <h2>경계 확인 조작</h2>
+        <button id="add-oversized-script" type="button">
+          Oversized inline script 추가
+        </button>
+        <button id="navigate" type="button">새 document로 이동</button>
+        <p id="status" aria-live="polite">
+          초기 상태: inline script budget 안입니다. scan 뒤 oversized script를
+          추가하면 다음 scan은
+          <code>truncated</code>여야 합니다.
+        </p>
+      </section>
+
+      <section style="margin-top: 14px">
+        <h2>기대 결과</h2>
+        <ul>
+          <li>
+            공개 함수 hint: medium confidence, own-data-descriptor /
+            function-shape evidence
+          </li>
+          <li>
+            inline literal endpoint hint: low confidence, raw URL이나 source는
+            표시하지 않음
+          </li>
+          <li>
+            external script의 literal과 allowlist 밖 root는 후보에 포함하지 않음
+          </li>
+          <li>
+            getter / Proxy 오류는 상세 없이 생략하고, 함수 호출·HTTP
+            요청·storage 변경은 하지 않음
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      // The scanner may inspect only these fixed, own data-descriptor roots.
+      // None of the functions below are invoked by this fixture.
+      window.appData = Object.freeze({
+        listSummary: function () {
+          return [{ id: "fixture-only" }];
+        },
+        getPublicStatus: function () {
+          return "fixture-ready";
+        },
+      });
+      window.gridApi = {
+        getVisibleRowCount: function () {
+          return 12;
+        },
+      };
+      window.demoControls = {};
+      Object.defineProperty(window.demoControls, "openFixture", {
+        configurable: true,
+        value: function () {
+          return "not invoked";
+        },
+      });
+      Object.defineProperty(window.demoControls, "dangerousGetter", {
+        configurable: true,
+        get: function () {
+          throw new Error("getter must not run");
+        },
+      });
+
+      // Not allowlisted: its function shape must be invisible to discovery.
+      window.privateBackdoor = {
+        revealFixtureSecret: function () {
+          return false;
+        },
+      };
+
+      // Allowed root name, but hostile reflection must be ignored without retrying.
+      window.chartManager = new Proxy(
+        {},
+        {
+          ownKeys: function () {
+            throw new Error("proxy reflection is untrusted");
+          },
+        },
+      );
+
+      // Dormant static patterns: scan classifies only a redacted hint, never calls them.
+      function dormantInventoryRead() {
+        return fetch("/fixture-api/inventory");
+      }
+      function dormantFixtureWrite() {
+        return axios.post("/fixture-api/apply", { fixture: true });
+      }
+      function dynamicEndpoint(path) {
+        return fetch(path);
+      }
+
+      document
+        .getElementById("add-oversized-script")
+        .addEventListener("click", function () {
+          if (document.getElementById("oversized-inline-fixture")) return;
+          const script = document.createElement("script");
+          script.id = "oversized-inline-fixture";
+          script.textContent = "/*" + "x".repeat(70 * 1024) + "*/";
+          document.head.appendChild(script);
+          document.getElementById("status").textContent =
+            "70 KiB inline fixture를 추가했습니다. 다음 scan은 truncated=true여야 합니다.";
+        });
+      document
+        .getElementById("navigate")
+        .addEventListener("click", function () {
+          window.location.assign("?document=reloaded");
+        });
+    </script>
+    <script src="./external-fixture.js"></script>
+  </body>
+</html>

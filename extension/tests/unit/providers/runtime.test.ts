@@ -21,6 +21,35 @@ const config: ProviderConfig = {
 };
 
 describe("provider runtime", () => {
+  it("redacts credentials, header values, and endpoint URLs from diagnostics", async () => {
+    let stored: Record<string, unknown> = {};
+    const runtime = new ProviderRuntime({
+      async get() {
+        return stored;
+      },
+      async set(value) {
+        stored = value;
+      },
+    });
+    const diagnosticConfig = {
+      ...config,
+      label: "secret-label",
+      headers: [{ name: "X-Fixture", value: "secret-header-value" }],
+    };
+    await runtime.handle("PROVIDER_SAVE", {
+      id: "test",
+      config: diagnosticConfig,
+    });
+
+    const diagnostics = JSON.stringify(await runtime.diagnostics());
+
+    expect(diagnostics).toContain('"has_api_key":true');
+    expect(diagnostics).not.toContain(diagnosticConfig.api_key);
+    expect(diagnostics).not.toContain(diagnosticConfig.base_url);
+    expect(diagnostics).not.toContain(diagnosticConfig.label);
+    expect(diagnostics).not.toContain(diagnosticConfig.headers[0]!.value);
+  });
+
   it("given_provider_save_when_listing_then_secret_is_not_returned", async () => {
     let stored: Record<string, unknown> = {};
     const runtime = new ProviderRuntime({

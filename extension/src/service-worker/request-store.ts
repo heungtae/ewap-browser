@@ -2,6 +2,7 @@ import type { Mode } from "../contracts/core-types.js";
 import type { RequestSnapshot } from "../contracts/request-types.js";
 import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 import { ContractError } from "../security/validation.js";
+import { digestCanonical } from "../security/canonical.js";
 import { RequestPersistence } from "./request-persistence.js";
 export type Request = RequestSnapshot & {
   mode: Mode;
@@ -65,6 +66,8 @@ export class RequestStore {
         request.started_at_ms,
         true,
       );
+      if (request.code === "WORKER_RESTARTED" && request.outcome)
+        this.diagnostics?.restored(request.request_id, request.outcome);
     }
     await this.flush();
   }
@@ -124,5 +127,26 @@ export class RequestStore {
     this.requests.set(input.request_id, request);
     this.diagnostics?.accept(input.request_id, input.tab_id, now);
     return { kind: "accepted", snapshot: copy(request) };
+  }
+
+  /** A bundle can survive a document-owner change, but never a tab change. */
+  public diagnosticSnapshot(
+    requestId: string,
+    tabId: number,
+  ):
+    | (RequestSnapshot & {
+        mode: Mode;
+        prompt_length: number;
+        prompt_digest: string;
+      })
+    | undefined {
+    const request = this.requests.get(requestId);
+    if (!request || request.tab_id !== tabId) return;
+    return {
+      ...copy(request),
+      mode: request.mode,
+      prompt_length: request.prompt.length,
+      prompt_digest: digestCanonical(request.prompt),
+    };
   }
 }

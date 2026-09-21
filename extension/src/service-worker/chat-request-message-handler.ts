@@ -46,6 +46,8 @@ export const createChatRequestMessageHandler = (dependencies: Dependencies) => {
         return diagnosticsHandler.diagnostics(message, sender, respond, kind);
       if (kind === "DIAGNOSTICS_SETTINGS_SET")
         return diagnosticsHandler.settings(message, sender, respond);
+      if (kind === "DIAGNOSTICS_BUNDLE_EXPORT")
+        return diagnosticsHandler.bundleExport(message, sender, respond);
       return { handled: false };
     },
     start(
@@ -78,9 +80,11 @@ export const createChatRequestMessageHandler = (dependencies: Dependencies) => {
           const started = dependencies.requests.start({
             request_id: id,
             tab_id: active.id,
-            owner:
-              (sender.documentId ?? "") +
-              (active.epoch ? ":" + active.epoch : ""),
+            // Page epoch deliberately changes during a verified navigation.
+            // The authenticated side-panel document and bound tab are the
+            // request owner; tying ownership to the page epoch makes the same
+            // panel lose status/cancel access immediately after navigation.
+            owner: sender.documentId ?? "",
             ...input,
           });
           if (started.kind === "conflict") {
@@ -93,8 +97,10 @@ export const createChatRequestMessageHandler = (dependencies: Dependencies) => {
             dependencies.requests.cancel(
               id,
               active.id,
-              (sender.documentId ?? "") +
-                (active.epoch ? ":" + active.epoch : ""),
+              sender.documentId ?? "",
+              "storage_flush_failed",
+              "FAILED",
+              "STORAGE_BOUNDARY_UNAVAILABLE",
             );
             respond(dependencies.safeFailure("STORAGE_BOUNDARY_UNAVAILABLE"));
             return;
@@ -161,13 +167,13 @@ export const createChatRequestMessageHandler = (dependencies: Dependencies) => {
       void dependencies
         .activeTab(sender)
         .then((active) => {
-          const owner =
-            (sender.documentId ?? "") +
-            (active.epoch ? ":" + active.epoch : "");
+          const owner = sender.documentId ?? "";
           const previous = dependencies.requests.status(id, active.id, owner);
+          if (kind === "CHAT_REQUEST_CANCEL" && previous)
+            dependencies.diagnostics?.cancelRequested(id);
           const snapshot =
             kind === "CHAT_REQUEST_CANCEL"
-              ? dependencies.requests.cancel(id, active.id, owner)
+              ? dependencies.requests.cancel(id, active.id, owner, "panel_stop")
               : previous;
           if (!snapshot)
             return respond(dependencies.safeFailure("REQUEST_NOT_FOUND"));

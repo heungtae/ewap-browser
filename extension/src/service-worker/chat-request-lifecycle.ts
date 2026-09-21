@@ -2,6 +2,7 @@ import type { ErrorCode, Outcome } from "../contracts/core-types.js";
 import { isErrorCode } from "../contracts/error-codes.js";
 import { copy, type Request } from "./request-store.js";
 import { RequestExecution } from "./request-execution.js";
+import type { DiagnosticReason } from "./execution-diagnostics.js";
 
 import type {
   RequestSnapshot,
@@ -25,6 +26,7 @@ export class ChatRequestLifecycle extends RequestExecution {
     generation: number,
     outcome: Outcome,
     code?: ErrorCode,
+    reason: DiagnosticReason = "request_settled",
   ): RequestSnapshot | undefined {
     const request = this.requests.get(requestId);
     if (
@@ -41,7 +43,7 @@ export class ChatRequestLifecycle extends RequestExecution {
       outcome = "UNKNOWN";
     request.outcome = outcome;
     if (code) request.code = code;
-    this.diagnostics?.terminal(requestId, outcome, code);
+    this.diagnostics?.terminal(requestId, outcome, code, reason);
     this.controllers.get(requestId)?.abort();
     this.controllers.delete(requestId);
     this.budget.stop(requestId);
@@ -56,9 +58,13 @@ export class ChatRequestLifecycle extends RequestExecution {
     owner = "",
   ): RequestSnapshot | undefined {
     const request = this.requests.get(requestId);
-    return request?.tab_id === tabId && request.owner === owner
-      ? copy(request)
-      : undefined;
+    if (request?.tab_id !== tabId || request.owner !== owner) {
+      if (request?.tab_id === tabId)
+        this.diagnostics?.statusRejected(requestId);
+      return;
+    }
+    this.diagnostics?.status(requestId, request.stage);
+    return copy(request);
   }
 
   public result(requestId: string): Record<string, unknown> | undefined {
@@ -107,7 +113,13 @@ export class ChatRequestLifecycle extends RequestExecution {
       (item) => item.tab_id === tabId && item.state !== "TERMINAL",
     );
     if (request)
-      this.finish(request.request_id, request.generation, outcome, code);
+      this.finish(
+        request.request_id,
+        request.generation,
+        outcome,
+        code,
+        "chat_run_terminal",
+      );
   }
 
   public progress(tabId: number, stage: RequestStage): void {
@@ -135,6 +147,9 @@ export class ChatRequestLifecycle extends RequestExecution {
     requestId: string,
     tabId: number,
     owner = "",
+    reason: DiagnosticReason = "panel_stop",
+    outcome: Outcome = "CANCELLED",
+    code?: ErrorCode,
   ): RequestSnapshot | undefined {
     const request = this.requests.get(requestId);
     if (request?.owner !== owner) return;
@@ -142,12 +157,13 @@ export class ChatRequestLifecycle extends RequestExecution {
       return request?.tab_id === tabId ? copy(request) : undefined;
     request.generation += 1;
     this.transition(request, "TERMINAL", "TERMINAL");
-    request.outcome = request.dispatch_started ? "UNKNOWN" : "CANCELLED";
+    request.outcome = request.dispatch_started ? "UNKNOWN" : outcome;
+    if (code) request.code = code;
     this.controllers.get(requestId)?.abort();
     this.controllers.delete(requestId);
     this.budget.stop(requestId);
-    this.onTerminal?.(request.tab_id, request.outcome);
-    this.diagnostics?.terminal(requestId, request.outcome);
+    this.onTerminal?.(request.tab_id, request.outcome, code);
+    this.diagnostics?.terminal(requestId, request.outcome, code, reason);
     void this.flush().catch(() => undefined);
     return copy(request);
   }

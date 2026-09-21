@@ -66,11 +66,11 @@ workflow 선언 원문과 branch 값은 진단·provider egress·영구 transcri
 Service Worker 재시작을 복구한다. confirmation nonce, model ref, action value, 실행 대상 ref와 원본 코드에는
 저장소 복구 경로가 없으며 browser 종료·만료·실행·일반 한 단계 실행 때 폐기한다.
 
-## 반도체 데모
+## Accessible items 데모
 
-`trend-analysis.html`은 `제품군 → 공정 노드 → 생산 캠퍼스 → 분석 기간 → 수율 추세 분석 실행`
-선언을 제공한다. `trend-analysis.js`의 disabled/unlock 동작은 계속 실제 페이지 상태의 source of
-truth이며, declaration만으로 비활성 control을 실행할 수 없다.
+`examples/accessible-items-demo/index.html`은 `보고서 범위 → 상세 결과 포함 → 미리보기 생성`
+선언을 제공한다. 범위 선택과 checkbox 전환 뒤에만 미리보기 버튼이 활성화되는 동작은 계속
+실제 페이지 상태의 source of truth이며, declaration만으로 비활성 control을 실행할 수 없다.
 
 ## 워크플로우 카탈로그와 사용자 선택
 

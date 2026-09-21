@@ -75,6 +75,37 @@ export class ProviderRuntime {
     }
   }
 
+  /**
+   * Provider state that is safe to put in a diagnostics bundle.  The full
+   * configuration is intentionally never a diagnostic value: API keys,
+   * custom-header values, and endpoint URLs can all be credentials.
+   */
+  public async diagnostics(): Promise<Record<string, unknown>> {
+    try {
+      const config = await this.settings.active();
+      const publicConfig = {
+        plugin_id: config.plugin_id,
+        plugin_version: config.plugin_version,
+        wire_api: config.wire_api,
+        model: config.model,
+        api_key_header: config.api_key_header,
+        timeout_ms: config.timeout_ms,
+        enabled: config.enabled,
+        ...(config.private_network_opt_in === undefined
+          ? {}
+          : { private_network_opt_in: config.private_network_opt_in }),
+        has_api_key: config.api_key.length > 0,
+        custom_header_count: config.headers.length,
+      };
+      return {
+        configured: true,
+        config: publicConfig,
+      };
+    } catch {
+      return { configured: false };
+    }
+  }
+
   public async handle(
     kind: string,
     payload: unknown,

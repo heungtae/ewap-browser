@@ -104,7 +104,7 @@ describe("tab chat session store", () => {
     ]);
   });
 
-  it("does not persist capability events and redacts transcript secrets", () => {
+  it("persists full transcript content while excluding live-only capability events", () => {
     const store = new TabChatSessionStore();
     store.bindRun("run-abcdefghijklmnop", 1, scope);
     store.append("run-abcdefghijklmnop", {
@@ -126,8 +126,9 @@ describe("tab chat session store", () => {
       "action_review_required",
     ]);
     const snapshot = JSON.stringify(store.snapshot());
-    expect(snapshot).toContain("[REDACTED]");
-    expect(snapshot).not.toContain("not-for-egress");
+    expect(snapshot).toContain(
+      "password=not-for-egress and sk-abcdefghijklmnop",
+    );
     expect(snapshot).not.toContain("action_review_required");
   });
 
@@ -243,5 +244,40 @@ describe("tab chat session store", () => {
     expect(restored.recoverable(1)).toMatchObject([
       { type: "assistant_delta", text: "safe" },
     ]);
+  });
+
+  it("redacts transcript, action, and page scope contents from diagnostics", () => {
+    const store = new TabChatSessionStore();
+    store.bindRun("run-abcdefghijklmnop", 1, {
+      ...scope,
+      origin: "https://private.example.test",
+      path: "/account/secret",
+    });
+    store.append("run-abcdefghijklmnop", {
+      type: "user_message",
+      text: "password=not-for-diagnostics",
+    });
+    store.append("run-abcdefghijklmnop", {
+      type: "action_review_required",
+      action: {
+        session_id: "session-abcdefghijklmnop",
+        proposal_id: "proposal-abcdefghijklmnop",
+        tool: "set_text_by_ref",
+        target_name: "Account secret",
+        suggested_value: "not-for-diagnostics",
+      },
+    });
+    store.append("run-abcdefghijklmnop", {
+      type: "run_terminal",
+      outcome: "UNKNOWN",
+      code: "NAVIGATION_UNVERIFIED",
+    });
+
+    const snapshot = JSON.stringify(store.diagnosticSnapshot(1));
+    expect(snapshot).not.toContain("not-for-diagnostics");
+    expect(snapshot).not.toContain("private.example.test");
+    expect(snapshot).not.toContain("Account secret");
+    expect(snapshot).toContain("NAVIGATION_UNVERIFIED");
+    expect(snapshot).toContain('"text_length":28');
   });
 });

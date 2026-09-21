@@ -8,9 +8,15 @@ afterEach(() => {
 });
 it("downloads a safe panel failure when no worker request was accepted", async () => {
   vi.useFakeTimers();
-  let click: (() => void) | undefined;
   const link = { href: "", download: "", click: vi.fn() };
   const trace = { textContent: "" };
+  const details = {
+    hidden: true,
+    open: false,
+    scrollIntoView: vi.fn(),
+  };
+  const dialog = { open: false, showModal: vi.fn(), close: vi.fn() };
+  const dialogTrace = { textContent: "" };
   const createObjectURL = vi
     .fn<(blob: Blob | MediaSource) => string>()
     .mockReturnValue("blob:test");
@@ -19,16 +25,34 @@ it("downloads a safe panel failure when no worker request was accepted", async (
     querySelector: (selector: string) =>
       selector === "#diagnostics-export"
         ? {
-            addEventListener: (_event: string, listener: () => void) => {
-              click = listener;
-            },
+            addEventListener: vi.fn(),
           }
         : selector === "#execution-trace"
           ? trace
-          : null,
+          : selector === "#execution-details"
+            ? details
+            : selector === "#diagnostics-dialog"
+              ? dialog
+              : selector === "#diagnostics-dialog-trace"
+                ? dialogTrace
+                : null,
     createElement: () => link,
   });
-  const send = vi.fn();
+  const send = vi.fn().mockResolvedValue({
+    ok: true,
+    data: {
+      schema_version: 1,
+      extension_version: "test",
+      collected_at_ms: 1,
+      sections: {
+        execution_trace: { status: "collected", data: { records: [] } },
+        request: { status: "unavailable", code: "REQUEST_NOT_FOUND" },
+        llm_processing: { status: "collected", data: {} },
+        llm_memory: { status: "collected", data: { threads: [] } },
+        page: { status: "unavailable", code: "CONTENT_SCRIPT_UNAVAILABLE" },
+      },
+    },
+  });
   const view = createDiagnosticsView({
     send,
     current: () => undefined,
@@ -37,20 +61,27 @@ it("downloads a safe panel failure when no worker request was accepted", async (
     active: () => false,
     label: () => "",
     version: () => "test",
+    message: (code) => `화면 메시지: ${code}`,
     failure: vi.fn(),
   });
   view.failure("PANEL_CONTEXT_UNAVAILABLE");
-  click!();
-  await Promise.resolve();
+  await view.download();
   const blob = createObjectURL.mock.calls[0]?.[0] as Blob | undefined;
   expect(blob).toBeDefined();
-  expect(JSON.parse(await blob!.text())).toMatchObject({
-    panel_failure_code: "PANEL_CONTEXT_UNAVAILABLE",
-    extension_version: "test",
-    records: [],
-    storage_failed: true,
-  });
+  const archive = new TextDecoder().decode(await blob!.arrayBuffer());
+  expect(archive).toContain("manifest.json");
+  expect(archive).toContain("panel-failures.json");
+  expect(archive).toContain("PANEL_CONTEXT_UNAVAILABLE");
+  expect(archive).toContain("REQUEST_NOT_FOUND");
   expect(link.click).toHaveBeenCalledOnce();
-  expect(send).not.toHaveBeenCalled();
+  expect(send).toHaveBeenCalledWith({
+    schema_version: 1,
+    kind: "DIAGNOSTICS_BUNDLE_EXPORT",
+  });
   expect(trace.textContent).toContain("PANEL_CONTEXT_UNAVAILABLE");
+  view.open();
+  expect(details).toMatchObject({ hidden: false, open: true });
+  expect(details.scrollIntoView).toHaveBeenCalledWith({ block: "nearest" });
+  expect(dialog.showModal).toHaveBeenCalledOnce();
+  expect(dialogTrace.textContent).toContain("PANEL_CONTEXT_UNAVAILABLE");
 });

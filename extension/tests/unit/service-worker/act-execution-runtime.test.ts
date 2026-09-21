@@ -218,4 +218,48 @@ describe("Act execution runtime", () => {
     });
     expect(terminal).toEqual([["UNKNOWN", "NAVIGATION_UNVERIFIED"]]);
   });
+
+  it("waits_for_the_destination_snapshot_instead_of_failing_at_the_short_url_probe", async () => {
+    const calls: string[] = [];
+    const runtime = createActExecutionRuntime({
+      boundedCdp: undefined,
+      documentFor: () => undefined,
+      isRunActive: () => true,
+      permitCdp: () => undefined,
+      revokeCdp: () => undefined,
+      createId: () => "action-token-abcdefghijklmnop",
+      send: async () => ({
+        ok: true,
+        postcondition: "navigation",
+        target_url: "https://portal.company.test/after",
+      }),
+      tab: async () => ({ url: "https://portal.company.test/before" }),
+      terminal: () => undefined,
+      transition: () => undefined,
+      safeFailure: (code) => ({ ok: false, code }),
+      verifier: {
+        bounded: async () => false,
+        navigationTarget: (url) => (typeof url === "string" ? url : undefined),
+        semantic: async () => false,
+        waitForPageTransition: async () => {
+          calls.push("snapshot");
+          return true;
+        },
+        waitForSameOriginNavigation: async () => false,
+        waitForNavigation: async () => {
+          calls.push("short-url-probe");
+          return false;
+        },
+      },
+    });
+
+    await expect(
+      runtime.executeContent(
+        run,
+        { ...ready, intent: { ...ready.intent, tool: "navigate" } },
+        "https://portal.company.test",
+      ),
+    ).resolves.toEqual({ ok: true, outcome: "VERIFIED" });
+    expect(calls).toEqual(["snapshot"]);
+  });
 });

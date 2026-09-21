@@ -1,61 +1,186 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Collection Reading Demo</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-    h1 { color: #333; }
-    .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin: 16px 0; }
-    .card h2 { margin-top: 0; color: #555; }
-    .btn { display: inline-block; padding: 8px 16px; background: #0066cc; color: white; text-decoration: none; border-radius: 4px; }
-    .btn:hover { background: #0055aa; }
-    .description { color: #666; margin: 8px 0; }
-  </style>
-</head>
-<body>
-  <h1>Collection Reading Test Pages</h1>
-  <p>These pages demonstrate different collection types that the collection reader can handle.</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collection Reading Fixtures</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        color: #172033;
+        background: #f6f8fc;
+      }
+      body {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 40px 24px 64px;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        letter-spacing: -0.04em;
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      p {
+        line-height: 1.55;
+      }
+      .lede {
+        max-width: 760px;
+        font-size: 1.1rem;
+        color: #475467;
+      }
+      .notice {
+        margin: 28px 0;
+        padding: 16px 18px;
+        border: 1px solid #b9c8ef;
+        border-radius: 12px;
+        background: #edf3ff;
+      }
+      .notice strong {
+        color: #183c89;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-height: 190px;
+        padding: 20px;
+        border: 1px solid #d9e0ef;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 1px 2px rgb(16 24 40 / 4%);
+      }
+      .card p {
+        margin: 0;
+        color: #52607a;
+      }
+      .card a {
+        color: #1249b8;
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .card a:hover,
+      .card a:focus-visible {
+        text-decoration: underline;
+      }
+      .status {
+        display: inline-flex;
+        width: fit-content;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.02em;
+      }
+      .available {
+        color: #13633b;
+        background: #e7f7ee;
+      }
+      .boundary {
+        color: #93520b;
+        background: #fff4df;
+      }
+      .meta {
+        margin-top: 36px;
+        color: #667085;
+        font-size: 0.9rem;
+      }
+      code {
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="status available">CONTROLLED LOCAL FIXTURES</p>
+      <h1>Collection reading fixtures</h1>
+      <p class="lede">
+        Use these pages to distinguish a collection already present in the
+        document from a collection that would need scrolling, a reviewed
+        transition, or a trusted data source.
+      </p>
+    </header>
 
-  <div class="card">
-    <h2><a href="static-table.html" class="btn">Static Table</a></h2>
-    <p class="description">A regular HTML table with all rows in the DOM. Tests StaticTableListReader.</p>
-  </div>
+    <aside class="notice">
+      <strong>Current extension boundary:</strong> non-virtual collections are
+      read from their current DOM. A virtual ARIA grid can use the bounded
+      scroll lifecycle only when stable row identity, EOF, and the total hint
+      agree; pagination and chart fixtures remain negative controls.
+    </aside>
 
-  <div class="card">
-    <h2><a href="virtual-scroll-grid.html" class="btn">Virtual Scroll Grid</a></h2>
-    <p class="description">A grid with virtual scrolling (only visible rows rendered). Tests VirtualScrollReader.</p>
-  </div>
+    <main class="grid">
+      <article class="card">
+        <span class="status available">STATIC DOM · COMPLETE</span>
+        <h2>Static table</h2>
+        <p>
+          Twenty-five deterministic rows are present in the document. This is
+          the baseline for a complete static collection read.
+        </p>
+        <a href="static-table.html">Open static table →</a>
+      </article>
+      <article class="card">
+        <span class="status available">STATIC DOM · COMPLETE</span>
+        <h2>ARIA list</h2>
+        <p>
+          Fifteen visible options have stable item identifiers and matching ARIA
+          position metadata.
+        </p>
+        <a href="list.html">Open ARIA list →</a>
+      </article>
+      <article class="card">
+        <span class="status available">BOUNDED SCROLL · EVIDENCE REQUIRED</span>
+        <h2>Virtual scroll grid</h2>
+        <p>
+          A recycled viewport is read through a bounded scroll lifecycle. It is
+          complete only when stable row IDs, EOF, and the total hint agree.
+        </p>
+        <a href="virtual-scroll-grid.html">Open virtual grid →</a>
+      </article>
+      <article class="card">
+        <span class="status boundary">NEGATIVE CONTROL · UNAVAILABLE</span>
+        <h2>Pagination</h2>
+        <p>
+          Changing pages is a state transition. Generic next-button clicking is
+          not a collection-reading fallback.
+        </p>
+        <a href="pagination.html">Open pagination →</a>
+      </article>
+      <article class="card">
+        <span class="status boundary">VISUAL CONTEXT ONLY</span>
+        <h2>SVG and canvas charts</h2>
+        <p>
+          The SVG chart has an accessible companion table; the canvas chart
+          deliberately has no extracted records.
+        </p>
+        <a href="svg-chart.html">Open SVG chart →</a
+        ><a href="canvas-chart.html">Open canvas chart →</a>
+      </article>
+      <article class="card">
+        <span class="status boundary">DISCOVERY / ADAPTER BOUNDARY</span>
+        <h2>Multiple and adapter-bound collections</h2>
+        <p>
+          One page may yield multiple candidates. A local fixture never
+          impersonates a reviewed adapter's exact origin.
+        </p>
+        <a href="mixed-collections.html">Open multiple candidates →</a
+        ><a href="collection-fixture.html">Open adapter boundary →</a>
+      </article>
+    </main>
 
-  <div class="card">
-    <h2><a href="list.html" class="btn">ARIA List</a></h2>
-    <p class="description">An ARIA listbox with listitems. Tests StaticListReader.</p>
-  </div>
-
-  <div class="card">
-    <h2><a href="svg-chart.html" class="btn">SVG Chart</a></h2>
-    <p class="description">An SVG chart with accessible data labels and a data table. Tests SvgChartReader.</p>
-  </div>
-
-  <div class="card">
-    <h2><a href="canvas-chart.html" class="btn">Canvas Chart</a></h2>
-    <p class="description">A Canvas chart (viewport only, no data extraction). Tests CanvasChartReader.</p>
-  </div>
-
-  <div class="card">
-    <h2><a href="pagination.html" class="btn">Pagination</a></h2>
-    <p class="description">A paginated table with next/prev controls. Tests PaginatedReader (stub).</p>
-  </div>
-
-  <div class="card">
-    <h2><a href="mixed-collections.html" class="btn">Mixed Collections</a></h2>
-    <p class="description">A page with multiple collection types. Tests discovery and selection.</p>
-  </div>
-
-  <div class="card">
-    <h2><a href="collection-fixture.html" class="btn">Collection Fixture (for Adapter)</a></h2>
-    <p class="description">A page matching the fixture data adapter (collection-fixture in path, role=grid). Tests ReviewedSiteDataReader with fixture adapter.</p>
-  </div>
-</body>
+    <p class="meta">
+      Run locally with
+      <code>scripts/run-examples.sh collection-reading-demo</code>. Reload the
+      extension build, this page, and the Side Panel before controlled Chrome
+      verification.
+    </p>
+  </body>
 </html>

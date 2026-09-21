@@ -104,6 +104,8 @@ export const chatMessageHandler = createChatMessageHandler({
   chatPersistence: chatRunLifecycle.persistence,
   clearScheduledChatPersistence: chatRunLifecycle.clearScheduled,
   diagnostics: executionDiagnostics,
+  providerDiagnostics: () =>
+    providerRuntime?.diagnostics() ?? Promise.resolve({ configured: false }),
   isPanelSender: pageSenderContext.isPanelSender,
   providerAvailable: () => !!providerRuntime,
   requests: chatRequests,

@@ -70,7 +70,16 @@ export const checkDiagnostics = async (panelUrl) => {
       if (await evaluate(expression)) return;
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-    throw new Error("Chrome diagnostics assertion timed out: " + expression);
+    throw new Error(
+      "Chrome diagnostics assertion timed out: " +
+        expression +
+        "\nPanel state: " +
+        JSON.stringify(
+          await evaluate(
+            "({status:document.querySelector('#status')?.textContent,messages:document.querySelector('#chat-messages')?.textContent,send:document.querySelector('#chat-send')?.dataset.state})",
+          ),
+        ),
+    );
   };
   try {
     await call("Page.reload");
@@ -79,8 +88,34 @@ export const checkDiagnostics = async (panelUrl) => {
     await evaluate(
       "document.querySelector('#diagnostics-debug').click();document.querySelector('#chat-input').value='fixture';document.querySelector('#chat-form').requestSubmit()",
     );
+    await wait("document.querySelector('#chat-send').dataset.state==='send'");
+    const panelStatus = await evaluate(
+      "document.querySelector('#status').textContent",
+    );
+    // A CDP-created extension page is not an actual Chrome Side Panel. Newer
+    // panel-window binding correctly rejects it, but it still gives us a real
+    // browser check of the failure-card diagnostic viewer.
+    if (String(panelStatus).includes("패널 연결")) {
+      await evaluate(
+        "Array.from(document.querySelectorAll('#chat-messages button')).find(button=>button.textContent==='진단 보기').click()",
+      );
+      await wait(
+        "document.querySelector('#diagnostics-dialog').open && document.querySelector('#diagnostics-dialog-trace').textContent.includes('PANEL_CONTEXT_UNAVAILABLE')",
+      );
+      console.log("Chrome failure-card diagnostic viewer passed");
+      return;
+    }
     await wait(
-      "document.querySelector('#chat-send').dataset.state==='send' && document.querySelector('#chat-messages').textContent.includes('제한 시간')",
+      "document.querySelector('#chat-messages').textContent.includes('제한 시간')",
+    );
+    await evaluate(
+      "Array.from(document.querySelectorAll('#chat-messages button')).find(button=>button.textContent==='진단 보기').click()",
+    );
+    await wait(
+      "document.querySelector('#diagnostics-dialog').open && document.querySelector('#diagnostics-dialog-trace').textContent.includes('PAGE_SNAPSHOT_TIMEOUT')",
+    );
+    await evaluate(
+      "document.querySelector('#diagnostics-dialog-close').click()",
     );
     await evaluate(
       "document.querySelector('#mode-act').click();document.querySelector('#chat-input').value='fixture action';document.querySelector('#chat-form').requestSubmit()",

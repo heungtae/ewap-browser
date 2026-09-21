@@ -29,11 +29,11 @@
     <h3>Collection Info</h3>
     <p><strong>Object Kind:</strong> table</p>
     <p><strong>Reader:</strong> StaticTableListReader</p>
-    <p><strong>Expected Coverage:</strong> complete (all rows in DOM)</p>
-    <p><strong>Features:</strong> All 50 rows present in DOM, no scrolling needed</p>
+    <p><strong>Expected Coverage:</strong> complete (all 25 rows are in the DOM)</p>
+    <p><strong>Features:</strong> Stable row IDs, ARIA row indices, and no pagination or virtual scrolling</p>
   </div>
 
-  <table role="table" aria-label="User accounts" aria-rowcount="50">
+  <table role="table" aria-label="User accounts" aria-rowcount="25">
     <thead>
       <tr role="row">
         <th scope="col" aria-sort="ascending">ID</th>
@@ -249,6 +249,6 @@
     </tbody>
   </table>
 
-  <p style="margin-top: 20px; color: #666;">Showing 25 of 50 rows. In a real implementation, all 50 rows would be in the DOM.</p>
+  <p style="margin-top: 20px; color: #666;">All 25 rows are mounted in this static fixture.</p>
 </body>
 </html>

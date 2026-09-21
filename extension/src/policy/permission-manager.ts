@@ -45,7 +45,7 @@ export const permissionHost = (rawUrl: string): string => {
     (url.protocol !== "https:" && !(url.protocol === "http:" && loopback)) ||
     (host.endsWith(".localhost") && host !== "localhost") ||
     (isIp(host) && !loopback) ||
-    !host.includes(".")
+    (!loopback && !host.includes("."))
   )
     return fail("ORIGIN_NOT_ALLOWED");
   return host;

@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accessible Items Fixture</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+        background: #101827;
+        color: #e8edf7;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 24px 72px;
+      }
+      nav,
+      .card {
+        border: 1px solid #30415e;
+        border-radius: 12px;
+        background: #17243a;
+      }
+      nav {
+        display: flex;
+        gap: 16px;
+        padding: 12px 16px;
+      }
+      a {
+        color: #a8c7ff;
+      }
+      h1 {
+        margin: 28px 0 8px;
+      }
+      h2 {
+        margin-top: 0;
+        font-size: 18px;
+      }
+      p,
+      .hint {
+        color: #bcc9dc;
+        line-height: 1.6;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        padding: 18px;
+        margin-top: 16px;
+      }
+      fieldset {
+        border: 1px solid #425674;
+        border-radius: 8px;
+        margin: 14px 0;
+      }
+      label {
+        display: block;
+        margin: 10px 0;
+      }
+      input,
+      select,
+      textarea,
+      button {
+        box-sizing: border-box;
+        font: inherit;
+        margin-top: 5px;
+        padding: 8px 10px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid #587197;
+        border-radius: 7px;
+        background: #0f1a2c;
+        color: inherit;
+      }
+      input[type="checkbox"],
+      input[type="radio"] {
+        width: auto;
+        margin: 0 7px 0 0;
+      }
+      button {
+        border: 1px solid #6d9be5;
+        border-radius: 7px;
+        background: #285ba8;
+        color: white;
+        cursor: pointer;
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+      }
+      [role="tablist"] {
+        display: flex;
+        gap: 8px;
+        border-bottom: 1px solid #425674;
+        padding-bottom: 10px;
+      }
+      [role="tab"][aria-selected="true"] {
+        background: #4779c4;
+      }
+      [role="tabpanel"] {
+        padding-top: 14px;
+      }
+      [role="menu"] {
+        display: none;
+        margin-top: 10px;
+        padding: 8px;
+        border: 1px solid #587197;
+        border-radius: 8px;
+        background: #0f1a2c;
+      }
+      [role="menu"][data-open="true"] {
+        display: grid;
+        gap: 8px;
+      }
+      dialog {
+        width: min(420px, calc(100% - 48px));
+        border: 1px solid #6d9be5;
+        border-radius: 12px;
+        background: #17243a;
+        color: inherit;
+      }
+      #result {
+        min-height: 1.5em;
+        color: #b7e8c8;
+      }
+      .excluded {
+        color: #91a1ba;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav aria-label="Fixture navigation">
+        <a href="#controls">Controls</a>
+        <a href="#states">State examples</a>
+        <a href="https://example.com/" target="_blank" rel="noreferrer"
+          >External example</a
+        >
+      </nav>
+
+      <h1>Accessible items fixture</h1>
+      <p>
+        This local page tests ordinary DOM/ARIA items. It is intentionally not a
+        collection or Page API Discovery fixture.
+      </p>
+
+      <div class="grid">
+        <section class="card" aria-labelledby="read-title">
+          <h2 id="read-title">Read scope examples</h2>
+          <p>
+            Headings, text, links, and form controls are available from the
+            semantic projection. Use the Side Panel to compare read scopes.
+          </p>
+          <details id="more-details">
+            <summary>Open additional visible text</summary>
+            <p>Collapsed content is hidden until this disclosure is open.</p>
+          </details>
+          <p class="excluded" aria-hidden="true">
+            This aria-hidden sentence must not be surfaced as usable content.
+          </p>
+        </section>
+
+        <section class="card" id="states" aria-labelledby="state-title">
+          <h2 id="state-title">State examples</h2>
+          <button id="disabled-action" type="button" disabled>
+            Disabled action
+          </button>
+          <p class="hint">
+            The button remains a semantic node but is not actionable.
+          </p>
+          <input type="hidden" value="not-projected" />
+          <label
+            >Account password
+            <input
+              type="password"
+              autocomplete="current-password"
+              value="not-projected"
+          /></label>
+          <label
+            >One-time code
+            <input
+              aria-label="One-time code"
+              autocomplete="one-time-code"
+              value="not-projected"
+          /></label>
+          <p class="excluded">
+            The hidden, password, and OTP-like inputs must be excluded from
+            projection.
+          </p>
+        </section>
+      </div>
+
+      <section class="card" id="controls" aria-labelledby="controls-title">
+        <h2 id="controls-title">Interactive controls</h2>
+        <label for="search"
+          >Search query
+          <input id="search" type="search" placeholder="Type a local query"
+        /></label>
+        <label for="notes"
+          >Notes
+          <textarea
+            id="notes"
+            rows="3"
+            placeholder="Local text only"
+          ></textarea>
+        </label>
+        <label for="report-scope"
+          >Report scope
+          <select id="report-scope">
+            <option value="">Choose a scope</option>
+            <option value="summary">Summary</option>
+            <option value="detailed">Detailed</option>
+          </select>
+        </label>
+        <label
+          ><input id="include-details" type="checkbox" /> Include detailed
+          results</label
+        >
+        <fieldset>
+          <legend>Delivery format</legend>
+          <label
+            ><input name="format" type="radio" value="screen" checked />
+            Screen</label
+          >
+          <label
+            ><input name="format" type="radio" value="download" />
+            Download</label
+          >
+        </fieldset>
+        <button id="preview" type="button" disabled>Generate preview</button>
+        <p id="result" role="status" aria-live="polite">
+          Choose a report scope and include detailed results to enable preview.
+        </p>
+      </section>
+
+      <section class="card" aria-labelledby="widgets-title">
+        <h2 id="widgets-title">Tabs, menu, and dialog</h2>
+        <div role="tablist" aria-label="Preview category">
+          <button
+            id="overview-tab"
+            role="tab"
+            aria-selected="true"
+            aria-controls="overview-panel"
+          >
+            Overview
+          </button>
+          <button
+            id="activity-tab"
+            role="tab"
+            aria-selected="false"
+            aria-controls="activity-panel"
+          >
+            Activity
+          </button>
+        </div>
+        <div id="overview-panel" role="tabpanel" aria-labelledby="overview-tab">
+          Overview panel is selected.
+        </div>
+        <div
+          id="activity-panel"
+          role="tabpanel"
+          aria-labelledby="activity-tab"
+          hidden
+        >
+          Activity panel is selected.
+        </div>
+        <p>
+          <button
+            id="menu-button"
+            type="button"
+            aria-expanded="false"
+            aria-controls="action-menu"
+          >
+            Open local menu
+          </button>
+        </p>
+        <div
+          id="action-menu"
+          role="menu"
+          aria-label="Local actions"
+          data-open="false"
+        >
+          <button role="menuitem" type="button" id="mark-reviewed">
+            Mark reviewed
+          </button>
+          <button role="menuitem" type="button" id="open-dialog">
+            Open confirmation dialog
+          </button>
+        </div>
+      </section>
+
+      <dialog id="confirmation-dialog" aria-labelledby="dialog-title">
+        <h2 id="dialog-title">Local confirmation</h2>
+        <p>This dialog only changes fixture UI state.</p>
+        <button id="close-dialog" type="button">Close dialog</button>
+      </dialog>
+    </main>
+
+    <script type="application/contextpilot-workflow+json">
+      {
+        "schema_version": 1,
+        "id": "accessible-items-preview-v1",
+        "title": "Generate local preview",
+        "steps": [
+          {
+            "id": "scope",
+            "tool": "select_option_by_ref",
+            "target": { "role": "combobox", "name": "Report scope" },
+            "next": "details"
+          },
+          {
+            "id": "details",
+            "tool": "set_checked_by_ref",
+            "target": {
+              "role": "checkbox",
+              "name": "Include detailed results"
+            },
+            "next": "preview"
+          },
+          {
+            "id": "preview",
+            "tool": "click_by_ref",
+            "target": { "role": "button", "name": "Generate preview" }
+          }
+        ]
+      }
+    </script>
+    <script>
+      const scope = document.getElementById("report-scope");
+      const includeDetails = document.getElementById("include-details");
+      const preview = document.getElementById("preview");
+      const result = document.getElementById("result");
+      const updatePreview = () => {
+        preview.disabled = !(scope.value && includeDetails.checked);
+      };
+      scope.addEventListener("change", updatePreview);
+      includeDetails.addEventListener("change", updatePreview);
+      preview.addEventListener("click", () => {
+        result.textContent = `Preview generated for ${scope.options[scope.selectedIndex].text}.`;
+      });
+
+      const tabs = [
+        ["overview-tab", "overview-panel"],
+        ["activity-tab", "activity-panel"],
+      ];
+      for (const [tabId, panelId] of tabs)
+        document.getElementById(tabId).addEventListener("click", () => {
+          for (const [otherTabId, otherPanelId] of tabs) {
+            const selected = otherTabId === tabId;
+            document
+              .getElementById(otherTabId)
+              .setAttribute("aria-selected", String(selected));
+            document.getElementById(otherPanelId).hidden = !selected;
+          }
+        });
+      const menuButton = document.getElementById("menu-button");
+      const menu = document.getElementById("action-menu");
+      menuButton.addEventListener("click", () => {
+        const open = menu.dataset.open !== "true";
+        menu.dataset.open = String(open);
+        menuButton.setAttribute("aria-expanded", String(open));
+      });
+      document.getElementById("mark-reviewed").addEventListener("click", () => {
+        result.textContent = "Local item marked reviewed.";
+      });
+      const dialog = document.getElementById("confirmation-dialog");
+      document
+        .getElementById("open-dialog")
+        .addEventListener("click", () => dialog.showModal());
+      document
+        .getElementById("close-dialog")
+        .addEventListener("click", () => dialog.close());
+    </script>
+  </body>
+</html>
