@@ -1,7 +1,7 @@
 # 28. 객체 특성별 Collection Reading 설계
 
 - 작성일: 2026-09-17
-- 상태: Planned — 현재 구현에는 포함되지 않는다.
+- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle이 구현됐다. pagination, reviewed adapter, chart의 정확 데이터 및 Side Panel UX는 Planned이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
 - 범위: grid/table/list/chart/pagination처럼 화면에 일부만 렌더링되는 데이터 객체의 **읽기와 처리용 관측**. DOM/ARIA 일반 읽기, Act mutation, Page API action과 별도 capability로 설계한다.
 - 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [S6](sprints/s6-advanced-page-reading.md)
 
@@ -111,6 +111,29 @@ type CollectionReadResult = {
 
 ## 6. 구현 단계와 검증
 
+### 6.1 구현 체크리스트
+
+이 체크리스트는 이 문서의 설계 항목을 구현 단위로 분해한 것이다. `완료`는
+코드·회귀 test·통제 fixture 검증이 함께 있는 상태만 뜻하며, 실제 Chrome
+fixture E2E는 별도 증거를 남긴다.
+
+- [x] **CR-1**: panel-bound discovery, static table/grid/list의 `viewport`·`full`
+      mode, record cap 및 민감값 redaction
+- [x] **CR-2**: content-owned virtual scroll, stable identity/EOF/total complete
+      판정, Stop·timeout·scope 변경, 원위치 복구와 ref 해제
+- [x] **공통 lifecycle**: document/page-scope 결속, message deadline, reader
+      registry 선택, accumulator, bounded chunk/cursor와 panel progress
+- [x] **CR-3**: origin-bound reviewed adapter 등록/선택/closed-schema 검증과
+      adapter 부재 시 fail-closed 처리
+- [x] **CR-4**: SVG accessible-data의 보수적 viewport read 및 canvas의
+      `viewport_only` 정책
+- [x] **CR-5**: reviewed pagination transition contract. generic next-click은
+      계속 금지한다.
+- [x] **UX**: Side Panel의 discover/start/stop/status UI
+- [ ] **E2E evidence**: 통제된 Chrome virtual-grid fixture의 full-read/restore
+      evidence. runner는 구현됐으나 headless Chromium은 실제 Side Panel context를
+      열지 못하므로, headed Chrome for Testing에서 실행해 증거를 기록해야 한다.
+
 | 단계 | 범위                                                     | 종료 조건                                                                                          |
 | ---- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | CR-1 | contracts, discovery, registry, static table/list reader | object ambiguity, sensitive redaction, node/text cap와 chunk validation test                       |
@@ -121,24 +144,24 @@ type CollectionReadResult = {
 
 필수 negative test는 다음을 포함한다.
 
-- 1,000개보다 큰 static table에서 cap이 걸리면 `complete`가 아닌 `partial`이다.
+- 10,000개보다 큰 static table에서 cap이 걸리면 `complete`가 아닌 `partial`이다.
 - virtual row가 같은 DOM node를 재활용하거나 같은 label을 반복하면, 안정 index/ID 없이 deduplicate 또는 complete 처리하지 않는다.
 - infinite list, 로딩 spinner 고정, render timeout, document/page scope 변경, Stop, worker restart에서 더 이상 scroll하지 않고 terminal을 한 번만 낸다.
 - hidden/password/OTP/token 값, raw selector/scroll position/API response는 모델 외 기록·진단·storage/export에 유출되지 않는다.
 - canvas screenshot/OCR만으로 전체 series 또는 정확한 수치를 반환하지 않는다.
 - adapter가 없거나 origin/path/version/schema가 다르면 private page state/network를 읽지 않고 `ADAPTER_UNAVAILABLE` 또는 `UNSUPPORTED_OBJECT`을 반환한다.
 
-CR-2 이후에는 통제된 virtual grid fixture에서 Side Panel의 전체 읽기 시작→진행→Stop과 원위치 복구→`complete/partial` evidence를 실제 Chrome으로 확인한다. 단위 test나 일반 DOM fixture만으로 실제 virtual-scroll 지원을 선언하지 않는다.
+CR-2 구현은 content script가 현재 mounted window를 읽고, worker가 bounded scroll/EOF/total evidence를 조정한 뒤 위치를 복구하는 방식이다. 통제된 virtual grid fixture에서 Side Panel의 전체 읽기 시작→진행→Stop과 원위치 복구→`complete/partial` evidence를 실제 Chrome으로 확인하기 전에는 지원 완료로 선언하지 않는다.
 
 ## 7. 리뷰 tracker
 
-| 항목                                           | 상태                   | 닫는 증거                                                    |
-| ---------------------------------------------- | ---------------------- | ------------------------------------------------------------ |
-| 객체별 reader 분리와 generic collector 비확장  | Decided                | 이 문서의 registry/interface 및 code review                  |
-| `collection_read` capability/permission schema | Planned                | CR-1 contracts와 policy exhaustive test                      |
-| virtual scroll 정확성/복구                     | Planned                | CR-2 실제 Chrome fixture evidence                            |
-| pagination의 read-only transition contract     | Planned                | CR-5 approval/negative test                                  |
-| API/export/Business MCP data contract          | Planned                | CR-3 schema/privacy review 및 fixture evidence               |
-| canvas 전체 데이터 지원                        | Blocked by data source | export/public API/approved adapter 없이는 viewport-only 유지 |
+| 항목                                           | 상태                  | 닫는 증거                                                                                                     |
+| ---------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| 객체별 reader 분리와 generic collector 비확장  | Decided               | 이 문서의 registry/interface 및 code review                                                                   |
+| `collection_read` capability/permission schema | Implemented           | panel-bound short-lived `collection_ref`, host grant, scope/deadline/chunk unit test와 Side Panel UX          |
+| virtual scroll 정확성/복구                     | Partial verification  | content-owned bounded scroll/read/restore unit test; CR-2 실제 Chrome fixture evidence                        |
+| pagination의 read-only transition contract     | Implemented           | exact reviewed adapter route만 실행하며 generic next-click은 unavailable                                      |
+| API/export/Business MCP data contract          | Implemented framework | exact origin/path/version/closed-schema registry; 승인된 site adapter 등록과 fixture evidence는 사이트별 작업 |
+| canvas 전체 데이터 지원                        | Deliberately limited  | export/public API/approved adapter 없이는 viewport-only 유지                                                  |
 
 이 설계는 구현을 시작하라는 지시가 아니다. Browser 로컬 collection reader와 Platform/Workspace의 API·MCP release contract는 독립적으로 검토·배포한다.

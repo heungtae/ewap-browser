@@ -27,9 +27,10 @@ import {
 import { createCollectionReadDomainHandler } from "./collection-read-domain-handler.js";
 import {
   permissions,
-  coordinator,
   permissionRequests,
-  planScopes,
+  pageScopes,
+  registered,
+  registrationKey,
 } from "./runtime-state.js";
 
 export const registerServiceWorker = (): void => {
@@ -41,10 +42,11 @@ export const registerServiceWorker = (): void => {
   const { review, start } = actDomainHandlers;
   const collectionReadHandler = createCollectionReadDomainHandler({
     chrome: chromeApi!,
-    coordinator,
     permissions,
     requests: permissionRequests,
-    planScopes,
+    activeTabForBoundPanel: pageSenderContext.activeTabForBoundPanel,
+    documentFor: (tabId) => registered.get(registrationKey(tabId, 0)),
+    scopeFor: (tabId) => pageScopes.get(tabId),
     isPanelSender: pageSenderContext.isPanelSender,
     isPanelOrSettingsSender: pageSenderContext.isPanelOrSettingsSender,
     safeFailure,

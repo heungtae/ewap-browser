@@ -2,6 +2,11 @@ import { digestCanonical } from "../security/canonical.js";
 import {
   discoverCollections,
   findCollectionByXPath,
+  readCollectionViewport,
+  readCollectionWindow,
+  readStaticCollection,
+  releaseAllCollections,
+  releaseCollection,
 } from "./collection-discovery.js";
 import {
   initializeScrollDriver,
@@ -172,9 +177,25 @@ document.addEventListener("click", recordWorkflowTarget, true);
 const clearPageScopeRefs = (): void => {
   refRecords.clear();
   consumedDeliveries.clear();
+  releaseAllCollections();
   for (const marker of boundedMarkers.values())
     marker.removeAttribute("data-contextpilot-action-token");
   boundedMarkers.clear();
+};
+const collectionScope = (): {
+  document_epoch: string;
+  page_scope_epoch: string;
+} => {
+  if (observedPageUrl !== location.href) {
+    observedPageUrl = location.href;
+    clearPageScopeRefs();
+    pageScopeEpoch = base64Url(crypto.getRandomValues(new Uint8Array(18)));
+    void registerPageScope();
+  }
+  return {
+    document_epoch: documentEpoch,
+    page_scope_epoch: pageScopeEpoch,
+  };
 };
 type BoundedTargetRequest = {
   kind: "PREPARE_BOUNDED_CDP_TARGET" | "CLEAR_BOUNDED_CDP_TARGET";
@@ -1152,8 +1173,19 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     message !== null &&
     (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_DISCOVER"
   ) {
-    const collections = discoverCollections();
-    respond({ ok: true, collections });
+    respond({
+      ok: true,
+      collections: discoverCollections(),
+      ...collectionScope(),
+    });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_CONTEXT"
+  ) {
+    respond({ ok: true, ...collectionScope() });
     return true;
   }
   if (
@@ -1168,6 +1200,213 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     }
     const collection = findCollectionByXPath(xpath);
     respond({ ok: true, collection });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_READ_WINDOW"
+  ) {
+    const collectionRef = (message as { collection_ref?: unknown })
+      .collection_ref;
+    if (typeof collectionRef !== "string") {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const result = readCollectionWindow(collectionRef);
+    if (!result) {
+      respond({ ok: false, code: "UNSUPPORTED_OBJECT" });
+      return true;
+    }
+    respond({ ok: true, result });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_READ_VIEWPORT"
+  ) {
+    const collectionRef = (message as { collection_ref?: unknown })
+      .collection_ref;
+    if (typeof collectionRef !== "string") {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const result = readCollectionViewport(collectionRef);
+    if (!result) {
+      respond({ ok: false, code: "UNSUPPORTED_OBJECT" });
+      return true;
+    }
+    respond({ ok: true, result });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_RELEASE"
+  ) {
+    const collectionRef = (message as { collection_ref?: unknown })
+      .collection_ref;
+    if (typeof collectionRef !== "string") {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    releaseCollection(collectionRef);
+    respond({ ok: true });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_READ_STATIC"
+  ) {
+    const collectionRef = (message as { collection_ref?: unknown })
+      .collection_ref;
+    if (typeof collectionRef !== "string") {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const result = readStaticCollection(collectionRef);
+    if (!result) {
+      respond({ ok: false, code: "UNSUPPORTED_OBJECT" });
+      return true;
+    }
+    respond({ ok: true, result });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_DIAGNOSTICS_SUMMARY"
+  ) {
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js")
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    const encoder = new TextEncoder();
+    const count = (selector: string): number =>
+      document.querySelectorAll(selector).length;
+    const cap = <T>(values: T[], limit = 100): [T[], boolean] => [
+      values.slice(0, limit),
+      values.length > limit,
+    ];
+    const roles = [
+      "button",
+      "checkbox",
+      "combobox",
+      "dialog",
+      "grid",
+      "heading",
+      "link",
+      "list",
+      "listitem",
+      "menu",
+      "option",
+      "row",
+      "table",
+      "tab",
+      "textbox",
+    ];
+    const roleCounts = Object.fromEntries(
+      roles
+        .map((role) => [role, count(`[role="${role}"]`)] as const)
+        .filter(([, total]) => total > 0),
+    );
+    const tables = Array.from(document.querySelectorAll("table")).map(
+      (table) => ({
+        rows: table.rows.length,
+        columns: Math.max(
+          0,
+          ...Array.from(table.rows).map((row) => row.cells.length),
+        ),
+      }),
+    );
+    const [tableShape, tablesTruncated] = cap(tables);
+    const scriptEntries = Array.from(document.scripts).map((script) => {
+      const text = script.src ? "" : (script.textContent ?? "");
+      const type =
+        script.type === "module"
+          ? "module"
+          : script.type === "application/json" || script.type.endsWith("+json")
+            ? "json"
+            : script.type
+              ? "other"
+              : "classic";
+      return {
+        type,
+        external: Boolean(script.src),
+        bytes: encoder.encode(text).byteLength,
+        digest: digestCanonical({
+          type,
+          external: Boolean(script.src),
+          ...(script.src ? {} : { text }),
+        }),
+      };
+    });
+    const [scripts, scriptsTruncated] = cap(scriptEntries);
+    const typeCounts = Object.fromEntries(
+      [...new Set(scriptEntries.map((script) => script.type))].map((type) => [
+        type,
+        scriptEntries.filter((script) => script.type === type).length,
+      ]),
+    );
+    const inputCounts = Object.fromEntries(
+      ["input", "textarea", "select", "button"].map((kind) => [
+        kind,
+        count(kind),
+      ]),
+    );
+    const html = document.documentElement.outerHTML;
+    const currentUrl = new URL(location.href);
+    respond({
+      ok: true,
+      schema_version: 1,
+      document_epoch_digest: digestCanonical(documentEpoch),
+      page_scope_epoch_digest: digestCanonical(pageScopeEpoch),
+      document: {
+        ready_state: document.readyState,
+        element_count: document.getElementsByTagName("*").length,
+        role_counts: roleCounts,
+        table_count: tables.length,
+        table_shape: tableShape,
+        list_count: count("ul, ol, [role=list]"),
+        form_count: count("form"),
+        input_counts: inputCounts,
+      },
+      artifacts: {
+        html: {
+          bytes: encoder.encode(html).byteLength,
+          sha256: digestCanonical(html),
+        },
+        scripts: {
+          total: scriptEntries.length,
+          inline_count: scriptEntries.filter((script) => !script.external)
+            .length,
+          external_count: scriptEntries.filter((script) => script.external)
+            .length,
+          total_bytes: scriptEntries.reduce(
+            (total, script) => total + script.bytes,
+            0,
+          ),
+          digests: scripts.map((script) => script.digest),
+          type_counts: typeCounts,
+          truncated: tablesTruncated || scriptsTruncated,
+        },
+      },
+      page: {
+        url_shape: {
+          has_query: currentUrl.search.length > 0,
+          has_fragment: currentUrl.hash.length > 0,
+          path_segment_count: currentUrl.pathname.split("/").filter(Boolean)
+            .length,
+        },
+        title_length: document.title.length,
+        referrer_present: document.referrer.length > 0,
+      },
+    });
     return true;
   }
   if (

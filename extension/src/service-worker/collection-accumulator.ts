@@ -122,8 +122,9 @@ export class CollectionAccumulator {
     ) {
       return `pos:${record.aria_pos_in_set}:${record.aria_set_size}`;
     }
-    const cellHash = record.cells.join("|").slice(0, 100);
-    return `hash:${cellHash}`;
+    // Repeated labels/text are not an identity. Keep them as separate partial
+    // observations rather than silently discarding page data.
+    return null;
   }
 
   public getResult(): AccumulatedResult {

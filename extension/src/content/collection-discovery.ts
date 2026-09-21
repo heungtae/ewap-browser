@@ -8,6 +8,13 @@ const MAX_SAMPLE_ROWS = 5;
 const MAX_CELLS_PER_ROW = 20;
 const MAX_CELL_TEXT_LENGTH = 200;
 const XPATH_MAX_DEPTH = 50;
+export const MAX_STATIC_COLLECTION_RECORDS = 10_000;
+const DISCOVERED_COLLECTION_TTL_MS = 60_000;
+const MAX_DISCOVERED_COLLECTIONS = 128;
+const discoveredCollectionTargets = new Map<
+  string,
+  { element: Element; objectKind: CollectionObjectKind; expiresAt: number }
+>();
 
 const PAGINATION_SELECTOR =
   "[role=navigation], nav, .pagination, [aria-label*=page i], [aria-label*=paging i]";
@@ -66,8 +73,31 @@ function getRoles(element: Element): string[] {
 
 function extractCellText(cell: Element): string {
   const text = cell.textContent?.trim() ?? "";
-  return text.slice(0, MAX_CELL_TEXT_LENGTH);
+  return isSensitiveElement(cell)
+    ? "[REDACTED]"
+    : text.slice(0, MAX_CELL_TEXT_LENGTH);
 }
+
+const sensitiveName = /password|secret|otp|mfa|인증|비밀번호|token|recovery/i;
+const isSensitiveElement = (element: Element): boolean => {
+  const input = element.closest("input, textarea, select");
+  if (input instanceof HTMLInputElement && input.type === "password")
+    return true;
+  return sensitiveName.test(
+    [
+      element.getAttribute("name"),
+      element.getAttribute("id"),
+      element.getAttribute("autocomplete"),
+      element.getAttribute("aria-label"),
+      input?.getAttribute("name"),
+      input?.getAttribute("id"),
+      input?.getAttribute("autocomplete"),
+      input?.getAttribute("aria-label"),
+    ]
+      .filter((value): value is string => !!value)
+      .join(" "),
+  );
+};
 
 function extractRowData(
   row: Element,
@@ -187,6 +217,9 @@ function getEstimatedTotal(element: Element): number | undefined {
 export function discoverCollections(
   root: Element = document.body,
 ): CollectionReadDescriptor[] {
+  const now = Date.now();
+  for (const [ref, target] of discoveredCollectionTargets)
+    if (target.expiresAt <= now) discoveredCollectionTargets.delete(ref);
   const candidates: CollectionReadDescriptor[] = [];
   const seen = new WeakSet<Element>();
 
@@ -247,6 +280,16 @@ export function discoverCollections(
     };
 
     candidates.push(descriptor);
+    discoveredCollectionTargets.set(descriptor.collection_ref, {
+      element,
+      objectKind,
+      expiresAt: now + DISCOVERED_COLLECTION_TTL_MS,
+    });
+    while (discoveredCollectionTargets.size > MAX_DISCOVERED_COLLECTIONS) {
+      const oldest = discoveredCollectionTargets.keys().next().value;
+      if (oldest === undefined) break;
+      discoveredCollectionTargets.delete(oldest);
+    }
     seen.add(element);
   }
 
@@ -274,4 +317,138 @@ export function findCollectionByXPath(
   } catch {
     return null;
   }
+}
+
+export type StaticCollectionRead = {
+  records: readonly SanitizedCollectionRecord[];
+  total_rows: number;
+  truncated: boolean;
+};
+
+export type CollectionWindowRead = {
+  records: readonly SanitizedCollectionRecord[];
+};
+
+/** Removes the short-lived content-script reference when a read run ends. */
+export function releaseCollection(collectionRef: string): void {
+  discoveredCollectionTargets.delete(collectionRef);
+}
+
+/** Drops all page-bound references after a document or scope transition. */
+export function releaseAllCollections(): void {
+  discoveredCollectionTargets.clear();
+}
+
+const rowsFor = (
+  element: Element,
+  objectKind: CollectionObjectKind,
+): SanitizedCollectionRecord[] => {
+  const rowSelector =
+    objectKind === "list"
+      ? "li, [role=listitem], [role=option]"
+      : "tr, [role=row]";
+  const records: SanitizedCollectionRecord[] = [];
+  for (const row of element.querySelectorAll(rowSelector)) {
+    const record = extractRowData(row, objectKind);
+    if (
+      objectKind === "grid" &&
+      !record?.row_id &&
+      record?.aria_row_index === 1
+    )
+      continue;
+    if (record) records.push({ ...record, index: records.length });
+  }
+  return records;
+};
+
+/**
+ * Returns only the rows mounted in the current virtualized DOM window. The
+ * collection reference remains content-script-local until the worker restores
+ * the original scroll position and ends the bounded run.
+ */
+export function readCollectionWindow(
+  collectionRef: string,
+): CollectionWindowRead | null {
+  const target = discoveredCollectionTargets.get(collectionRef);
+  if (
+    !target ||
+    target.expiresAt <= Date.now() ||
+    !target.element.isConnected ||
+    !["table", "grid", "list"].includes(target.objectKind)
+  )
+    return null;
+
+  return { records: rowsFor(target.element, target.objectKind) };
+}
+
+/**
+ * Reads only currently mounted, accessible evidence. Charts never infer data
+ * from pixels; SVG text is viewport context and canvas yields no records.
+ */
+export function readCollectionViewport(
+  collectionRef: string,
+): CollectionWindowRead | null {
+  const target = discoveredCollectionTargets.get(collectionRef);
+  if (!target || target.expiresAt <= Date.now() || !target.element.isConnected)
+    return null;
+  if (["table", "grid", "list"].includes(target.objectKind))
+    return readCollectionWindow(collectionRef);
+  if (target.objectKind !== "chart_svg") return { records: [] };
+
+  const records: SanitizedCollectionRecord[] = [];
+  for (const element of target.element.querySelectorAll(
+    "text, tspan, [role=img], [role=cell], [role=gridcell]",
+  )) {
+    const text = extractCellText(element);
+    if (text && records.length < MAX_SAMPLE_ROWS * 20)
+      records.push({ index: records.length, cells: [text] });
+  }
+  return { records };
+}
+
+/**
+ * Reads only rows that already exist in the current document.  Virtual and
+ * paginated objects deliberately do not use this path: a DOM snapshot cannot
+ * establish their completeness.
+ */
+export function readStaticCollection(
+  collectionRef: string,
+  maxRecords = MAX_STATIC_COLLECTION_RECORDS,
+): StaticCollectionRead | null {
+  const target = discoveredCollectionTargets.get(collectionRef);
+  if (
+    !target ||
+    target.expiresAt <= Date.now() ||
+    !target.element.isConnected ||
+    !["table", "grid", "list"].includes(target.objectKind)
+  )
+    return null;
+  // A discovered locator is single-use. Do not retain page element references
+  // or permit a cursor to resume after this collection read.
+  discoveredCollectionTargets.delete(collectionRef);
+
+  const container = target.element;
+  const virtual = hasVirtualScroll(container);
+  const paginated = hasPaginationControls(container);
+  if (virtual || paginated) return null;
+
+  const rowSelector =
+    target.objectKind === "list"
+      ? "li, [role=listitem], [role=option]"
+      : "tr, [role=row]";
+  const rows = Array.from(container.querySelectorAll(rowSelector));
+  const records: SanitizedCollectionRecord[] = [];
+  for (const row of rows) {
+    if (records.length >= maxRecords) break;
+    const record = extractRowData(row, target.objectKind);
+    if (record) {
+      record.index = records.length;
+      records.push(record);
+    }
+  }
+  return {
+    records,
+    total_rows: rows.length,
+    truncated: rows.length > records.length,
+  };
 }

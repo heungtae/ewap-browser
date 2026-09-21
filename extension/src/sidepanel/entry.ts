@@ -66,6 +66,7 @@ const newChatDialog = byId<HTMLDialogElement>("new-chat-dialog");
 const newChatConfirm = byId<HTMLButtonElement>("new-chat-confirm");
 const newChatCancel = byId<HTMLButtonElement>("new-chat-cancel");
 const workflowRecordButton = byId<HTMLButtonElement>("workflow-record");
+const collectionDiscoverButton = byId<HTMLButtonElement>("collection-discover");
 const permissionModeBadge = byId<HTMLElement>("permission-mode-badge");
 const threadScope = byId<HTMLElement>("thread-scope");
 
@@ -99,6 +100,8 @@ let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
 let workflowRecordingId: string | undefined;
+let collectionReadActive = false;
+let collectionProgressTimer: number | undefined;
 let lastRequest: Record<string, unknown> | undefined;
 const inputHistory = new InputHistory();
 
@@ -220,7 +223,8 @@ const card = (
     | "value"
     | "confirmation"
     | "error"
-    | "page-scope",
+    | "page-scope"
+    | "collection",
   title: string,
   detail: string,
 ): HTMLElement => {
@@ -398,6 +402,167 @@ const sendRuntime = async (
       ? (response as { code: string }).code
       : "INTERNAL_FAILURE";
   throw new Error(code);
+};
+type CollectionSummary = {
+  collection_ref: string;
+  object_kind: string;
+  estimated_total?: number;
+  has_virtual_scroll: boolean;
+  has_pagination: boolean;
+  sample_row_count: number;
+};
+const isCollectionSummary = (value: unknown): value is CollectionSummary =>
+  typeof value === "object" &&
+  value !== null &&
+  typeof (value as { collection_ref?: unknown }).collection_ref === "string" &&
+  typeof (value as { object_kind?: unknown }).object_kind === "string" &&
+  typeof (value as { has_virtual_scroll?: unknown }).has_virtual_scroll ===
+    "boolean" &&
+  typeof (value as { has_pagination?: unknown }).has_pagination === "boolean";
+
+const renderCollectionResult = (
+  collection: CollectionSummary,
+  result: Record<string, unknown>,
+): void => {
+  const coverage =
+    typeof result.coverage === "string" ? result.coverage : "unavailable";
+  const count =
+    typeof result.collected_count === "number" ? result.collected_count : 0;
+  const reason = typeof result.reason === "string" ? ` · ${result.reason}` : "";
+  const item = card(
+    "collection",
+    "데이터 읽기 결과",
+    `${collection.object_kind} · ${coverage} · ${count}개${reason}`,
+  );
+  append(item);
+  setStatus(`데이터 읽기 결과: ${coverage} (${count}개)`);
+};
+
+const renderCollectionPermission = (
+  collection: CollectionSummary,
+  mode: "viewport" | "full",
+  requestId: string,
+): void => {
+  const item = card(
+    "permission",
+    "데이터 읽기 권한",
+    "이 사이트의 읽기 작업을 허용할까요?",
+  );
+  const row = actionRow(item);
+  const decide = async (
+    decision: "once" | "always" | "deny",
+  ): Promise<void> => {
+    for (const button of row.querySelectorAll<HTMLButtonElement>("button"))
+      button.disabled = true;
+    await sendRuntime({
+      kind: "PERMISSION_DECISION",
+      permission_request_id: requestId,
+      decision,
+    });
+    if (decision === "deny") {
+      setStatus("데이터 읽기 권한을 거부했습니다.");
+      return;
+    }
+    await startCollectionRead(collection, mode);
+  };
+  row.append(
+    actionButton("이번만 허용", "primary", () => void decide("once")),
+    actionButton("항상 허용", "", () => void decide("always")),
+    actionButton("거부", "danger", () => void decide("deny")),
+  );
+  append(item);
+};
+
+const startCollectionRead = async (
+  collection: CollectionSummary,
+  mode: "viewport" | "full",
+): Promise<void> => {
+  if (collectionReadActive) return;
+  collectionReadActive = true;
+  if (collectionDiscoverButton) collectionDiscoverButton.textContent = "■";
+  collectionProgressTimer = window.setInterval(() => {
+    void sendRuntime({ kind: "COLLECTION_READ_STATE" })
+      .then((response) => {
+        const state = response.state;
+        if (!state || typeof state !== "object") return;
+        const count = (state as { collectedCount?: unknown }).collectedCount;
+        const step = (state as { stepCount?: unknown }).stepCount;
+        if (typeof count === "number" && typeof step === "number")
+          setStatus(`데이터 수집 중 · ${count}개 · ${step} 단계`);
+      })
+      .catch(() => undefined);
+  }, 500);
+  setStatus(
+    mode === "full"
+      ? "전체 데이터를 읽고 원래 위치로 복구합니다."
+      : "현재 화면 데이터를 읽고 있습니다.",
+  );
+  try {
+    const response = await sendRuntime({
+      kind: "COLLECTION_READ_START",
+      request: { collection_ref: collection.collection_ref, mode },
+    });
+    if (
+      response.code === "REQUIRE_PERMISSION" &&
+      typeof response.request_id === "string"
+    ) {
+      renderCollectionPermission(collection, mode, response.request_id);
+      return;
+    }
+    const result = response.result;
+    if (typeof result !== "object" || result === null)
+      throw new Error(
+        typeof response.code === "string" ? response.code : "INTERNAL_FAILURE",
+      );
+    renderCollectionResult(collection, result as Record<string, unknown>);
+  } finally {
+    collectionReadActive = false;
+    if (collectionProgressTimer !== undefined) {
+      clearInterval(collectionProgressTimer);
+      collectionProgressTimer = undefined;
+    }
+    if (collectionDiscoverButton) collectionDiscoverButton.textContent = "▤";
+  }
+};
+
+const renderCollectionChoices = (collections: CollectionSummary[]): void => {
+  const item = card(
+    "collection",
+    "페이지 데이터",
+    collections.length
+      ? `${collections.length}개 객체를 찾았습니다. 읽을 범위를 선택하세요.`
+      : "읽을 수 있는 table, grid, list 또는 chart를 찾지 못했습니다.",
+  );
+  for (const collection of collections) {
+    const row = actionRow(item);
+    const label = [
+      collection.object_kind,
+      collection.estimated_total === undefined
+        ? undefined
+        : `예상 ${collection.estimated_total}개`,
+      collection.has_virtual_scroll ? "가상 스크롤" : undefined,
+      collection.has_pagination ? "페이지 전환" : undefined,
+    ]
+      .filter((value): value is string => !!value)
+      .join(" · ");
+    const heading = document.createElement("p");
+    heading.className = "failure-guidance";
+    heading.textContent = label;
+    item.append(heading);
+    row.append(
+      actionButton(
+        "현재 화면",
+        "",
+        () => void startCollectionRead(collection, "viewport"),
+      ),
+      actionButton(
+        "전체 읽기",
+        "primary",
+        () => void startCollectionRead(collection, "full"),
+      ),
+    );
+  }
+  append(item);
 };
 const actionSummary = (action: ChatActionView): string =>
   (action.workflow_title
@@ -1340,6 +1505,35 @@ workflowRecordButton?.addEventListener("click", () => {
     .catch((error) =>
       showFailure(error instanceof Error ? error.message : undefined),
     );
+});
+collectionDiscoverButton?.addEventListener("click", () => {
+  if (collectionReadActive) {
+    void sendRuntime({ kind: "COLLECTION_READ_CANCEL" })
+      .then(() => setStatus("데이터 읽기 중단을 요청했습니다."))
+      .catch((error) =>
+        showFailure(error instanceof Error ? error.message : undefined),
+      );
+    return;
+  }
+  collectionDiscoverButton.disabled = true;
+  setStatus("페이지의 읽기 가능한 데이터 객체를 확인하고 있습니다.");
+  void sendRuntime({ kind: "COLLECTION_DISCOVER" })
+    .then((response) => {
+      if (!Array.isArray(response.collections))
+        throw new Error(
+          typeof response.code === "string"
+            ? response.code
+            : "INTERNAL_FAILURE",
+        );
+      renderCollectionChoices(response.collections.filter(isCollectionSummary));
+      setStatus("데이터 객체를 선택하세요.");
+    })
+    .catch((error) =>
+      showFailure(error instanceof Error ? error.message : undefined),
+    )
+    .finally(() => {
+      if (collectionDiscoverButton) collectionDiscoverButton.disabled = false;
+    });
 });
 const cancelRun = (): void => {
   if (!runActive) return;

@@ -114,12 +114,17 @@ export type CollectionReaderAdapter = {
   readonly adapter_id: string;
   readonly version: number;
   readonly origins: readonly string[];
+  /** Exact pathnames; wildcards and user-provided endpoints are forbidden. */
+  readonly paths: readonly string[];
   matchesDescriptor(descriptor: CollectionReadDescriptor): boolean;
   readWindow(
     descriptor: CollectionReadDescriptor,
     cursor?: string | undefined,
   ): Promise<CollectionReadStepResult>;
-  readonly resultSchema: unknown;
+  readonly resultSchema: {
+    readonly type: "collection_read_v1";
+    readonly additionalProperties: false;
+  };
 };
 
 export type CollectionReadRequest = {
@@ -132,6 +137,8 @@ export type CollectionReadRequest = {
   document_epoch: string;
   page_scope_epoch: string;
   origin: string;
+  /** Worker-only selected page URL; never sent to the model or panel. */
+  page_url: string;
   capability: "collection_read";
   approval_digest: string;
 };
