@@ -1,9 +1,9 @@
 # 28. 객체 특성별 Collection Reading 설계
 
 - 작성일: 2026-09-17
-- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle, 수동 Side Panel 시작 UX가 구현됐다. 자연어 Ask/Act run에서 collection을 발견·승인·수집하고 그 결과를 같은 run의 모델 분석으로 재개하는 연결은 Planned이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
+- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle, 수동 Side Panel 시작 UX가 구현됐다. 자연어 Ask/Act run에서 collection을 발견·승인·수집하고 그 결과를 같은 run의 모델 분석으로 재개하는 연결은 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
 - 범위: grid/table/list/chart/pagination처럼 화면에 일부만 렌더링되는 데이터 객체의 **읽기와 처리용 관측**. DOM/ARIA 일반 읽기, Act mutation, Page API action과 별도 capability로 설계한다.
-- 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [S6](sprints/s6-advanced-page-reading.md)
+- 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [Page API Discovery](29-page-api-discovery-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md), [S6](sprints/s6-advanced-page-reading.md)
 
 ## 1. 현재 상태와 문제
 
@@ -108,6 +108,18 @@ Ask/Act 모드의 상위 규칙은 [01번 아키텍처](01-architecture.md)의
 “실행 모드 판정과 경계”를 따른다. 선택된 모드는 권한 경계이며 요청 문장만으로
 자동 전환하지 않는다. 의도 판정은 사용자가 선택한 모드를 바꾸지 않고 그 모드
 안에서 collection read를 제안할지, Ask 한계 안내를 반환할지를 결정한다.
+
+#### 분석 source로서의 역할
+
+28번의 collection descriptor는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 5.2에서 `collection` analysis source가 된다. 같은 단계에서 29번은 Page API source availability를 발견할 수 있지만, Page API discovery candidate가 collection descriptor를 대체하거나 collection reader의 selector/scroll/record 권한을 넓히지 않는다.
+
+5.3에서 Browser는 다음을 결정한다.
+
+1. 요청 의도와 맞는 collection source가 하나면, typed `collection_ref`를 선택한다. 전체 데이터 분석 의도는 이 unique source의 `full` read 범위까지 포함하며, scope-changing read의 capability permission과 진행/복구 안내를 Panel에 표시한다.
+2. 여러 collection이거나 안전하게 하나로 좁힐 수 없는 경우에만, Panel은 객체 선택을 요청한다. 모델은 임의 selector나 scroll 값을 선택하지 않는다.
+3. discovery 결과가 Page API source만 가리키면, reviewed read-only adapter의 `page_api_read` source가 `READY`인 경우에만 27번/32번 경로가 사용된다. adapter 없는 29번 candidate는 `REQUIRES_ADAPTER_REVIEW`이며 collection read의 fallback이 아니다.
+
+5.4의 collection read 결과는 5.5에서 bounded `SanitizedCollectionRecord` chunk, coverage, reason, evidence로 정규화한다. 이 결과만 같은 Ask/Act run의 다음 Provider turn에 ephemeral context로 전달한다. `complete|partial|viewport_only|unavailable` 표현 의무는 Provider 답변과 Act의 후속 계획 모두에 적용된다.
 
 #### 현재 구현
 

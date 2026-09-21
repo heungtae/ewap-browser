@@ -51,6 +51,22 @@ registry가 exact origin과 경로를 확인한 다음에만 probe한다. 지원
 
 invoke는 고정 property 접근으로 receiver를 보존해 호출한다. 예: `const api = window.demoControls; api.selectVariant(args.option_id)`. dot-path 문자열을 순회하지 않는다. 페이지 getter나 함수가 임의 코드일 수 있다는 점은 MAIN trust boundary로 취급한다.
 
+### 3.1 Read-only Page API data adapter — Proposed
+
+[29번 Discovery](29-page-api-discovery-design.md)가 발견한 source hint는 호출 가능한 adapter가 아니다. Ask/Act의 페이지 데이터 분석에서 Page API를 사용하려면, 별도 코드리뷰와 bundle 배포를 거친 read-only adapter가 [32번 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 5.4 `page_api_read` source로 등록돼야 한다.
+
+| 항목              | read-only adapter 계약                                                                                                                                                                 |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| capability / risk | `page_api_read` / R0. 기존 `page_api` action capability, action approval과 분리                                                                                                        |
+| binding           | exact origin/path/version, top-level `tabId`, Chrome `documentId`, document/page scope를 고정                                                                                          |
+| source selection  | Browser만 adapter availability를 `READY`로 만들며, discovery `candidate_ref`/function path는 Provider 입력이 아님                                                                      |
+| invocation        | bundle-defined fixed function과 closed, 비민감 argument enum만 사용. arbitrary property path, selector, URL, endpoint, request body는 금지                                             |
+| output            | bundle validator가 허용한 bounded record schema, coverage, reason, count, cursor/eof evidence만 반환                                                                                   |
+| data boundary     | row ID, cursor 원문, credential, cookie, token, raw page object, function return object, URL/source text는 Provider·chat history·diagnostics·export·persistent storage에 전달하지 않음 |
+| lifecycle         | timeout, Stop, navigation, worker restart, document/scope 변경, schema 불일치에서 read를 중단하고 partial/unavailable로 종료. 자동 재호출 금지                                         |
+
+read-only adapter 결과는 같은 Ask/Act request의 5.5 ephemeral analysis context로만 전달된다. Ask는 coverage를 밝힌 분석 답변으로 끝내고, Act는 그 분석 뒤에도 별도 action proposal·approval·preflight·completion verification을 거쳐야 한다. read 성공은 action approval, Page API action dispatch 또는 server-side 완료의 근거가 아니다.
+
 ## 4. 모델·승인·정책 계약
 
 신규 logical tool은 `call_page_api`, 모델 제안 함수는 `propose_page_api`로 한다. 기존 `call_page_business_tool` 및 Business MCP와 혼합하지 않는다.

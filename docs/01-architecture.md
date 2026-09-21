@@ -46,7 +46,7 @@ Content script ─────────┼── Service worker ── Provid
 
 page read orchestrator는 기본 `all_dom` tree, `visible_only`/`interactive` override, focused subtree, article text, find와 managed tab context를 제공한다. input current value, credential, executable source, URL query/fragment와 cross-origin frame DOM은 scope와 무관하게 제거한다. Vision adapter는 viewport screenshot과 region zoom만 typed `Page.captureScreenshot`으로 수행하고 이미지를 current run 밖에 저장하지 않는다.
 
-현재 page read는 한 번의 현재 DOM 관측이며 virtual grid/list의 아직 렌더링되지 않은 row나 canvas 원본 데이터를 전체 읽기로 승격하지 않는다. 이 문제는 일반 collector를 framework별 코드로 키우지 않고, [28번 Collection Reading](28-collection-reading-strategy-design.md)의 `CollectionReadOrchestrator -> object-specific reader registry`로 분리해 해결하는 Planned 범위다. 이 reader는 `collection_read` read capability, bounded chunk/evidence 및 명시적 전체 읽기 요청을 사용하며 Act mutation/CDP 경로를 재사용하지 않는다.
+현재 page read는 한 번의 현재 DOM 관측이며 virtual grid/list의 아직 렌더링되지 않은 row나 canvas 원본 데이터를 전체 읽기로 승격하지 않는다. 이 문제는 일반 collector를 framework별 코드로 키우지 않고, [28번 Collection Reading](28-collection-reading-strategy-design.md)의 `CollectionReadOrchestrator -> object-specific reader registry`로 분리해 해결하는 Planned 범위다. 이 reader는 `collection_read` read capability, bounded chunk/evidence 및 명시적 전체 읽기 요청을 사용하며 Act mutation/CDP 경로를 재사용하지 않는다. [32번 Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)는 이 reader와 reviewed read-only Page API adapter를 Ask/Act의 Provider turn 전 공통 수집 단계로 연결하는 목표 계약이다.
 
 ### Bounded CDP adapter
 
@@ -103,17 +103,32 @@ provider는 `plugin_id`, `plugin_version`, `base_url`, `wire_api`, `model`, `api
 이 규칙은 이후의 모든 Ask/Act tool schema, dispatcher, Side Panel UX,
 collection reader, 설계 문서와 검증의 우선 기준이다.
 
+### 분석 데이터 수집 — Proposed
+
+페이지에 존재하는 table/list/grid/chart 또는 reviewed Page API 데이터가 분석 대상이면, 기본 semantic projection 뒤와 Provider turn 전에 다음 공통 단계를 둔다.
+
+```text
+5.1 semantic projection
+  -> 5.2 analysis source discovery (collection descriptor / Page API availability)
+  -> 5.3 source selection and R0 permission
+  -> 5.4 bounded data read
+  -> 5.5 coverage/evidence normalization
+  -> 8.1 Provider analysis or Act planning
+```
+
+28번의 collection descriptor는 직접 R0 read source가 될 수 있다. 29번 Page API Discovery candidate는 data·invoke authority가 아니며, exact origin/path/version에 결속된 reviewed read-only adapter가 있을 때만 R0 `page_api_read` source가 된다. adapter 없는 후보는 검토 필요 상태로 끝나며 모델·Provider·Act proposal에 전달하지 않는다. Act의 mutation approval은 수집 permission과 별도다. 상세 계약과 현재 구현과의 차이는 [32번](32-ask-act-analysis-data-acquisition-design.md)을 따른다.
+
 ### Ask
 
 1. 사용자가 Side Panel에서 요청한다.
-2. service worker가 현재 문서를 확인하고 content script에 projection을 요청한다.
+2. service worker가 현재 문서를 확인하고 content script에 projection을 요청한다. 분석 데이터 의도가 있고 32번 계약이 구현된 뒤에는 5.2~5.5의 source discovery/read를 먼저 수행한다.
 3. 내부 `ref_id`를 run 한정 `model_ref`로 바꾼 기본 `all_dom` snapshot, 읽기 도구 schema와 Ask system prompt를 선택한 provider plugin을 통해 보낸다. snapshot과 이후 tool 결과는 항상 untrusted data 경계로 감싼다.
 4. 모델은 답변을 바로 반환하거나 `read_page`, `get_page_text`, `find`, screenshot/zoom, tab context, read batch, `read_semantic_projection` 또는 Profile이 허용한 Business MCP read tool을 호출한다. service worker는 이름·schema·현재 binding을 검증하고 result를 다음 모델 turn에 전달한다.
 5. 최대 tool turn을 넘기지 않고 최종 자연어 답변만 Side Panel에 렌더링한다. 현재 웹페이지의 Chrome DevTools Console `Info`와 service worker Console에는 각 turn의 최종 LLM `messages`/tool schema와 정규화된 응답 message를 기록한다. `Verbose`에는 active-tab·projection·Profile·provider dispatch와 원본 provider response를 service worker에만 기록한다. provider credential·browser credential·raw ref mapping은 기록하지 않는다.
 
 ### Act
 
-1. Ask와 같은 snapshot 생성 뒤 모델이 도구와 `model_ref`를 제안한다.
+1. Ask와 같은 snapshot 생성 뒤, 분석 데이터 의도가 있으면 32번의 5.2~5.5를 먼저 끝낸다. 그 다음 모델이 도구와 `model_ref`를 제안한다.
 2. service worker가 현재 run의 permission mode, capability × host 권한, target visibility, 민감 필드, 도구 schema를 검사한다. `skip_all_permission_checks`는 capability prompt만 생략한다.
 3. 권한이 없으면 사용자는 이번 작업만 허용, 항상 허용, 거부 중 하나를 선택한다.
 4. 제출·외부 전송·결제·삭제 같은 결과적 행동은 매 실행마다 별도 확인을 요구한다.

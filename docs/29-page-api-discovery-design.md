@@ -1,10 +1,10 @@
 # 29. Page API Discovery 설계
 
 - 작성일: 2026-09-19
-- 상태: Partial implementation — fixed scanner, document-bound controller, ephemeral candidate result, Side Panel scan/Stop UI가 구현됐다. 실제 unpacked Chrome fixture 검증과 Profile Builder 전용 surface 분리는 Planned다.
+- 상태: Partial implementation — fixed scanner, document-bound controller, ephemeral candidate result, Side Panel scan/Stop UI가 구현됐다. Ask/Act 분석 데이터 source discovery 연결과 reviewed read-only adapter를 통한 data read는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed다. 실제 unpacked Chrome fixture 검증과 Profile Builder 전용 surface 분리는 Planned다.
 - 구현 인계 대상: Browser extension
 - 범위: Browser 로컬 구현. `page-api/` 번들 레지스트리에 추가할 후보를 사람이 검토하기 위한 **발견 증거**만 정의한다.
-- 관련: [페이지 내부 함수·공개 API 실행 설계](27-page-api-execution-design.md), [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md), [객체 특성별 Collection Reading 설계](28-collection-reading-strategy-design.md)
+- 관련: [페이지 내부 함수·공개 API 실행 설계](27-page-api-execution-design.md), [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md), [객체 특성별 Collection Reading 설계](28-collection-reading-strategy-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)
 
 ## 1. 결정
 
@@ -28,14 +28,25 @@ doc 27 registry에 exact origin/path/version/action을 등록
 
 따라서 후보를 Test, Invoke, HTTP fetch, WebSocket 연결, event dispatch, storage read/write로 전환하지 않는다. `page-api`의 제품 실행은 계속 [doc 27](27-page-api-execution-design.md)의 reviewed bundled adapter만 사용한다.
 
-### 1.1 v1 목표
+### 1.1 Ask/Act 분석 source discovery 역할 — Proposed
+
+Ask/Act에서 사용자가 페이지 데이터 분석을 명시적으로 요청하면, Provider가 tool call로 scanner를 지시하는 것이 아니라 Browser request dispatcher가 [32번](32-ask-act-analysis-data-acquisition-design.md)의 5.2에서 fixed scanner를 시작할 수 있다. scanner는 Page API **source availability**만 판단한다.
+
+- candidate와 raw scanner result는 Provider, model, chat history, diagnostics, export에 전달하지 않는다.
+- exact origin/path/version에 결속된 reviewed read-only adapter가 candidate 유형과 일치할 때만 Browser는 `page_api_read` analysis source를 `READY`로 만든다.
+- adapter가 없으면 Panel은 `REQUIRES_ADAPTER_REVIEW`만 보이며, 현재 Ask/Act run은 candidate를 호출하거나 그 후보를 데이터 분석의 근거로 삼지 않는다.
+- collection descriptor는 28번의 별도 `collection` source이며, Page API candidate가 collection reader의 selector/scroll 권한 또는 coverage를 변경하지 않는다.
+
+이 역할은 Page API 실행 action capability와 다르다. `page_api_read`는 R0 관측이고, `page_api` action은 기존의 단일 승인·dispatch·postcondition 계약을 유지한다.
+
+### 1.2 v1 목표
 
 - 명시적 사용자 동작으로 현재 top-level document의 제한된 public JavaScript 함수 후보를 찾는다.
 - inline script에서 endpoint-like 호출 패턴을 **정적 힌트**로 분류한다.
 - 후보의 신뢰도·제한·폐기 사유를 표시하고, 검토자가 adapter 작업 항목을 만들 수 있게 한다.
 - navigation, page-scope 변경, 취소, worker 재시작에서 후보를 fail-closed로 폐기한다.
 
-### 1.2 v1 비목표 및 금지 경로
+### 1.3 v1 비목표 및 금지 경로
 
 - 임의 전역 객체의 재귀 열거, framework/private state, closure/module scope, `eval`, `new Function`, `Runtime.evaluate`
 - external script 또는 source map 다운로드·보관·분석, network response/HAR/CDP instrumentation
@@ -59,7 +70,7 @@ Bound Side Panel
 
 scan은 다음 조건을 모두 만족할 때만 시작한다.
 
-1. bound Side Panel의 명시적 사용자 click으로 시작한다. Chat/LLM tool, page message, content script가 scan을 시작할 수 없다.
+1. bound Side Panel의 명시적 Page Data 분석 요청 또는 Profile Builder scan click으로 시작한다. Chat/LLM tool, page message, content script는 scanner를 직접 시작할 수 없다. Ask/Act의 경우에도 Provider 응답 뒤에 scanner를 시작하지 않으며 Browser dispatcher가 Provider turn 전에 시작한다.
 2. worker가 active top-level `tabId`, `documentId`, origin, content `document_epoch`, `page_scope_epoch`를 함께 고정하고 managed/enterprise origin policy를 재검사한다.
 3. `chrome.scripting.executeScript` target은 `tabId`와 그 `documentIds: [documentId]`만 사용한다. frame/allFrames target은 사용하지 않는다.
 4. scan 중 navigation, document/page scope 변경, panel unbind, Stop, worker restart가 발생하면 결과를 버리고 `STALE`, `CANCELLED`, 또는 `UNKNOWN`으로 terminal 한다. stale result를 재시도하거나 다른 document에 적용하지 않는다.
@@ -182,7 +193,15 @@ cap 또는 자료 크기 제한에 걸리면 `truncated: true`를 반드시 반�
 
 candidate mapping은 worker memory에만 두며 10분, navigation, page-scope 변경, panel close, Stop, terminal 중 먼저 발생한 시점에 폐기한다. `chrome.storage`, cache, Profile, diagnostics, chat history, export에는 저장하지 않는다. worker restart 뒤에는 `UNKNOWN`으로 끝내고 scan을 자동 복구하지 않는다.
 
-## 7. Profile Builder UX
+## 7. UI와 source 선택
+
+### 7.1 Ask/Act 분석 source 선택 — Proposed
+
+5.2에서 발견한 source가 하나이고 reviewed read-only adapter가 `READY`면 Browser가 5.3에서 해당 source를 선택할 수 있다. unique collection의 전체 데이터 분석 의도는 `full` 범위까지 포함하며 capability permission과 진행/복구 안내를 표시한다. collection과 Page API read source가 복수이거나 안전하게 하나로 좁힐 수 없는 경우에만 Panel은 source를 선택하게 한다.
+
+Panel은 adapter 없는 candidate에 대해 "adapter 검토 필요"만 표시한다. "호출", "이 후보로 분석", endpoint/URL 표시, raw script 보기, selector 입력은 제공하지 않는다. 선택된 source의 실제 data read와 Provider 전달은 27번/28번 및 32번의 5.4~5.5 계약을 따른다.
+
+### 7.2 Profile Builder UX
 
 ```text
 Page API Discovery (developer review only)
@@ -203,7 +222,7 @@ UI는 "Test selected", "Add to Profile", "Invoke", "Scan All", endpoint/CORS/aut
 
 모델은 Discovery 후보, label, evidence, raw page data를 보지 않는다. LLM assisted profiling은 v1 범위 밖이다. adapter가 나중에 번들에 등록된 뒤에도 모델에는 doc 27의 run-scoped opaque `action_ref`와 reviewed option enum만 노출한다.
 
-## 8. Page Profile 및 실행 연계
+## 8. Page Profile, read adapter 및 실행 연계
 
 Discovery는 Page Profile에 `pageApis`를 자동 생성하거나 수정하지 않는다. 특히 다음 필드는 Discovery output이나 Profile runtime schema에 추가하지 않는다.
 
@@ -213,7 +232,9 @@ requestHeaders, requestBodySchema, responseSchema, websocket URL,
 storage key/value, feature flag value, event payload schema
 ```
 
-검토 완료 뒤 개발자가 adapter를 추가하면, 그것은 별도 source change다. adapter는 doc 27의 다음 조건을 모두 충족해야 한다.
+검토 완료 뒤 개발자가 adapter를 추가하면, 그것은 별도 source change다. read-only adapter는 32번의 `page_api_read` source로서 closed read schema, record/byte/cursor cap, data allowlist와 coverage/evidence를 가져야 한다. action adapter와 동일한 구현을 재사용할 수 있어도, read 결과를 action return value나 성공 판정으로 해석하지 않는다.
+
+action 또는 read adapter는 doc 27의 다음 조건을 모두 충족해야 한다.
 
 - exact HTTPS origin/path와 version을 bundle에서 검증한다.
 - action은 reviewed label, closed `option_id` enum, effect/risk, independent UI postcondition을 가진다.

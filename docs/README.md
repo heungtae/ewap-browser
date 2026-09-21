@@ -35,6 +35,8 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [객체 특성별 Collection Reading 설계 — Planned](28-collection-reading-strategy-design.md)
 - [Page API Discovery 설계 — Planned](29-page-api-discovery-design.md)
 - [Act 요청 처리 현재 구현 경로](31-act-request-execution-current-implementation.md)
+- [Ask/Act 분석 데이터 수집 통합 설계 — Proposed](32-ask-act-analysis-data-acquisition-design.md)
+- [Ask 요청 처리 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
 ## 비규범 참고자료
 
