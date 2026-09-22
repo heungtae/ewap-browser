@@ -111,15 +111,15 @@ Ask/Act 모드의 상위 규칙은 [01번 아키텍처](01-architecture.md)의
 
 #### 분석 source로서의 역할
 
-28번의 collection descriptor는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 5.2에서 `collection` analysis source가 된다. 같은 단계에서 29번은 Page API source availability를 발견할 수 있지만, Page API discovery candidate가 collection descriptor를 대체하거나 collection reader의 selector/scroll/record 권한을 넓히지 않는다.
+28번의 collection descriptor는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 4.1에서 `collection` analysis source가 된다. 같은 단계에서 29번은 Page API source availability를 발견할 수 있지만, Page API discovery candidate가 collection descriptor를 대체하거나 collection reader의 selector/scroll/record 권한을 넓히지 않는다.
 
-5.3에서 Browser는 다음을 결정한다.
+4.2에서 Browser는 다음을 결정한다.
 
 1. 요청 의도와 맞는 collection source가 하나면, typed `collection_ref`를 선택한다. 전체 데이터 분석 의도는 이 unique source의 `full` read 범위까지 포함하며, scope-changing read의 capability permission과 진행/복구 안내를 Panel에 표시한다.
 2. 여러 collection이거나 안전하게 하나로 좁힐 수 없는 경우에만, Panel은 객체 선택을 요청한다. 모델은 임의 selector나 scroll 값을 선택하지 않는다.
 3. discovery 결과가 Page API source만 가리키면, reviewed read-only adapter의 `page_api_read` source가 `READY`인 경우에만 27번/32번 경로가 사용된다. adapter 없는 29번 candidate는 `REQUIRES_ADAPTER_REVIEW`이며 collection read의 fallback이 아니다.
 
-5.4의 collection read 결과는 5.5에서 bounded `SanitizedCollectionRecord` chunk, coverage, reason, evidence로 정규화한다. 이 결과만 같은 Ask/Act run의 다음 Provider turn에 ephemeral context로 전달한다. `complete|partial|viewport_only|unavailable` 표현 의무는 Provider 답변과 Act의 후속 계획 모두에 적용된다.
+4.3~4.4의 collection read 결과는 bounded `SanitizedCollectionRecord` chunk, coverage, reason, evidence로 정규화한다. 이 결과만 같은 Ask/Act run의 다음 Provider turn에 ephemeral context로 전달한다. `complete|partial|viewport_only|unavailable` 표현 의무는 Provider 답변과 Act의 후속 계획 모두에 적용된다.
 
 #### 현재 구현
 

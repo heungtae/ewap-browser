@@ -1,10 +1,10 @@
 # 27. 페이지 내부 함수·공개 API 실행 설계
 
 - 작성일: 2026-09-16
-- 상태: Implemented (자동 검증 완료) / 실제 Chrome fixture 증거 대기
+- 상태: Action path implemented (자동 검증 완료) / 실제 Chrome fixture 증거 대기; read-only analysis adapter는 Proposed
 - 구현 인계 대상: GPT-5.6 Terra
 - 범위: Browser 로컬 구현. 이번 변경은 설계 문서만 추가한다.
-- 관련: [완료 조건](25-act-completion-conditions.md), [결과 관측](26-act-result-observation-design.md), [Profile 계약](22-page-profile-provider-design.md), [bounded CDP](15-bounded-cdp-adapter.md)
+- 관련: [완료 조건](25-act-completion-conditions.md), [결과 관측](26-act-result-observation-design.md), [Profile 계약](22-page-profile-provider-design.md), [bounded CDP](15-bounded-cdp-adapter.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask/Act 분석 데이터 수집](32-ask-act-analysis-data-acquisition-design.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
 ## 1. 목표와 현재 상태
 
@@ -53,7 +53,7 @@ invoke는 고정 property 접근으로 receiver를 보존해 호출한다. 예: 
 
 ### 3.1 Read-only Page API data adapter — Proposed
 
-[29번 Discovery](29-page-api-discovery-design.md)가 발견한 source hint는 호출 가능한 adapter가 아니다. Ask/Act의 페이지 데이터 분석에서 Page API를 사용하려면, 별도 코드리뷰와 bundle 배포를 거친 read-only adapter가 [32번 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 5.4 `page_api_read` source로 등록돼야 한다.
+[29번 Discovery](29-page-api-discovery-design.md)가 발견한 source hint는 호출 가능한 adapter가 아니다. Ask/Act의 페이지 데이터 분석에서 Page API를 사용하려면, 별도 코드리뷰와 bundle 배포를 거친 read-only adapter가 [32번 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 4.3 `page_api_read` source로 등록돼야 한다. 현재 31번 Act와 33번 Ask에는 이 분석 source 연결이 없으므로, 이 절은 목표 계약이다.
 
 | 항목              | read-only adapter 계약                                                                                                                                                                 |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -65,7 +65,9 @@ invoke는 고정 property 접근으로 receiver를 보존해 호출한다. 예: 
 | data boundary     | row ID, cursor 원문, credential, cookie, token, raw page object, function return object, URL/source text는 Provider·chat history·diagnostics·export·persistent storage에 전달하지 않음 |
 | lifecycle         | timeout, Stop, navigation, worker restart, document/scope 변경, schema 불일치에서 read를 중단하고 partial/unavailable로 종료. 자동 재호출 금지                                         |
 
-read-only adapter 결과는 같은 Ask/Act request의 5.5 ephemeral analysis context로만 전달된다. Ask는 coverage를 밝힌 분석 답변으로 끝내고, Act는 그 분석 뒤에도 별도 action proposal·approval·preflight·completion verification을 거쳐야 한다. read 성공은 action approval, Page API action dispatch 또는 server-side 완료의 근거가 아니다.
+read-only adapter 결과는 같은 Ask/Act request의 4.4 정규화 이후 5.x ephemeral analysis context로만 전달된다. Ask는 coverage를 밝힌 분석 답변으로 끝내고, Act는 그 분석 뒤에도 별도 action proposal·approval·preflight·completion verification을 거쳐야 한다. read 성공은 action approval, Page API action dispatch 또는 server-side 완료의 근거가 아니다.
+
+현재 구현 경계는 다음과 같다. Page API action은 Act의 별도 action proposal·승인·dispatch·postcondition 경로에만 연결되어 있다. Ask의 일반 read tool과 현재 Act action 경로는 `page_api_read`를 자동 발견·호출하지 않으며, 29번 discovery candidate도 callable source가 아니다. 자연어 분석 요청에서 이 adapter를 사용하려면 32번 4.1~4.4와 Act의 `QUESTION`/`ANALYSIS_READ_REQUIRED`/`ACTION_REQUIRED` route 연결이 먼저 구현되어야 한다.
 
 ## 4. 모델·승인·정책 계약
 

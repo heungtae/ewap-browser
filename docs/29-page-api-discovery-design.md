@@ -30,7 +30,7 @@ doc 27 registry에 exact origin/path/version/action을 등록
 
 ### 1.1 Ask/Act 분석 source discovery 역할 — Proposed
 
-Ask/Act에서 사용자가 페이지 데이터 분석을 명시적으로 요청하면, Provider가 tool call로 scanner를 지시하는 것이 아니라 Browser request dispatcher가 [32번](32-ask-act-analysis-data-acquisition-design.md)의 5.2에서 fixed scanner를 시작할 수 있다. scanner는 Page API **source availability**만 판단한다.
+Ask/Act에서 사용자가 페이지 데이터 분석을 명시적으로 요청하면, Provider가 tool call로 scanner를 지시하는 것이 아니라 Browser request dispatcher가 [32번](32-ask-act-analysis-data-acquisition-design.md)의 4.1에서 fixed scanner를 시작할 수 있다. scanner는 Page API **source availability**만 판단한다.
 
 - candidate와 raw scanner result는 Provider, model, chat history, diagnostics, export에 전달하지 않는다.
 - exact origin/path/version에 결속된 reviewed read-only adapter가 candidate 유형과 일치할 때만 Browser는 `page_api_read` analysis source를 `READY`로 만든다.
@@ -197,9 +197,9 @@ candidate mapping은 worker memory에만 두며 10분, navigation, page-scope �
 
 ### 7.1 Ask/Act 분석 source 선택 — Proposed
 
-5.2에서 발견한 source가 하나이고 reviewed read-only adapter가 `READY`면 Browser가 5.3에서 해당 source를 선택할 수 있다. unique collection의 전체 데이터 분석 의도는 `full` 범위까지 포함하며 capability permission과 진행/복구 안내를 표시한다. collection과 Page API read source가 복수이거나 안전하게 하나로 좁힐 수 없는 경우에만 Panel은 source를 선택하게 한다.
+4.1~4.2에서 발견한 source가 하나이고 reviewed read-only adapter가 `READY`면 Browser가 4.2에서 해당 source를 선택할 수 있다. unique collection의 전체 데이터 분석 의도는 `full` 범위까지 포함하며 capability permission과 진행/복구 안내를 표시한다. collection과 Page API read source가 복수이거나 안전하게 하나로 좁힐 수 없는 경우에만 Panel은 source를 선택하게 한다.
 
-Panel은 adapter 없는 candidate에 대해 "adapter 검토 필요"만 표시한다. "호출", "이 후보로 분석", endpoint/URL 표시, raw script 보기, selector 입력은 제공하지 않는다. 선택된 source의 실제 data read와 Provider 전달은 27번/28번 및 32번의 5.4~5.5 계약을 따른다.
+Panel은 adapter 없는 candidate에 대해 "adapter 검토 필요"만 표시한다. "호출", "이 후보로 분석", endpoint/URL 표시, raw script 보기, selector 입력은 제공하지 않는다. 선택된 source의 실제 data read와 Provider 전달은 27번/28번 및 32번의 4.3~4.4 계약을 따른다.
 
 ### 7.2 Profile Builder UX
 
