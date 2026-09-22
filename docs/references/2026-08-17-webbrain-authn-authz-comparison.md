@@ -124,7 +124,7 @@ WebBrain은 다음 제품 기능을 우선한다.
 - `docs/02-security-policy.md`
 - `docs/04-llm-provider-plugin.md`
 - `docs/06-data-audit-and-privacy.md`
-- `docs/11-sprint-progress.md`
+- `docs/sprint-progress.md`
 
 WebBrain checkout:
 

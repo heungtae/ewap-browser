@@ -1,4 +1,4 @@
-# 09. Sprint 개발 계획서
+# Sprint 개발 계획서
 
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 

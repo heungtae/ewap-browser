@@ -31,19 +31,19 @@
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 
-  `08-sprint-design.md`                                 Enterprise
+  `sprint-design.md`                                    Enterprise
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 
-  `09-sprint-development-plan.md`                       Enterprise
+  `sprint-development-plan.md`                          Enterprise
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 
-  `10-sprint-verification-plan.md`                      Enterprise
+  `sprint-verification-plan.md`                         Enterprise
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 
-  `11-sprint-progress.md`                               Enterprise
+  `sprint-progress.md`                                  Enterprise
                                                         Runtime/Profile/MCP/Policy/Validation
                                                         alignment
 

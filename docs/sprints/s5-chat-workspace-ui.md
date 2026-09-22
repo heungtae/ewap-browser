@@ -59,7 +59,7 @@ provider transport, mutation policy와 CDP command allowlist 변경은 이 Sprin
 - permission-less badge가 실제 run mode와 불일치하지 않음
 - UI 로그·debug detail·error에 provider/browser credential과 raw action value 없음
 - 실제 Chrome에서 service worker suspend와 panel close/reopen 증적
-- `docs/11-sprint-progress.md`에 commit, test와 Chrome evidence 연결
+- `docs/sprint-progress.md`에 commit, test와 Chrome evidence 연결
 
 ## 비완료 조건
 

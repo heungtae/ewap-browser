@@ -14,7 +14,7 @@
 
 ## 비교 기준
 
-- 현재 제품 설계: 2026-08-17 작업 트리의 `docs/01-architecture.md`, `docs/03-extension-design.md`, `docs/11-sprint-progress.md`, `docs/15-bounded-cdp-adapter.md`
+- 현재 제품 설계: 2026-08-17 작업 트리의 `docs/01-architecture.md`, `docs/03-extension-design.md`, `docs/sprint-progress.md`, `docs/15-bounded-cdp-adapter.md`
 - 현재 제품 구현: `extension/manifest.json`, `extension/src/content/`, `extension/src/service-worker/`
 - WebBrain 구현: 로컬 `webbrain` 링크가 가리키는 checkout의 commit `70271912921afa4c208a62b1408f99a0b9e7d7f1`
 - WebBrain 근거: `src/chrome/manifest.json`, `src/chrome/src/cdp/`, `src/chrome/src/offscreen/`, `src/chrome/src/agent/agent.js`, `src/chrome/ARCHITECTURE.md`
@@ -259,7 +259,7 @@ Offscreen을 실제 개발 범위로 채택할 때는 `docs/01-architecture.md`,
 - `scripts/chrome-extension-smoke.mjs`
 - `docs/01-architecture.md`
 - `docs/03-extension-design.md`
-- `docs/11-sprint-progress.md`
+- `docs/sprint-progress.md`
 - `docs/15-bounded-cdp-adapter.md`
 - `references/company-web-agent-detailed-design(1).md`
 

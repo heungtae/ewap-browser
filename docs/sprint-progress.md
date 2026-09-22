@@ -1,4 +1,4 @@
-# 11. Sprint 진행 상태
+# Sprint 진행 상태
 
 ## Enterprise Web AI Platform 전환 상태 (2026-08-31)
 

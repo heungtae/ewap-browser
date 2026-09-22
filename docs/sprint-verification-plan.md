@@ -1,4 +1,4 @@
-# 10. Sprint 검증 계획서
+# Sprint 검증 계획서
 
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 

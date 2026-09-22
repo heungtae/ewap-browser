@@ -1,4 +1,4 @@
-# 08. Sprint 설계 인덱스
+# Sprint 설계 인덱스
 
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
