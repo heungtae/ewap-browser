@@ -5,6 +5,7 @@ import { createActProposalExecutor } from "./act-proposal-executor.js";
 import type { ActSession } from "./act-session-types.js";
 import { createActStepRunner } from "./act-step-runner.js";
 import { createAskChatRunner } from "./ask-chat-runner.js";
+import { createAnalysisDataAcquisition } from "./analysis-data-acquisition.js";
 import {
   askReadTools,
   askSystemPrompt,
@@ -112,6 +113,11 @@ export const runAskChat = createAskChatRunner({
   vision: (runId, captureId) => visionCaptures.get(`${runId}:${captureId}`),
   rememberVision: chatRunLifecycle.rememberVision,
   releaseVision: chatRunLifecycle.releaseVision,
+  collectAnalysisData: createAnalysisDataAcquisition({
+    chrome: chromeApi!,
+    permissions,
+    scopeFor: (tabId) => pageScopes.get(tabId),
+  }),
 });
 const proposalExecutorRef: {
   current?: ReturnType<typeof createActProposalExecutor>;

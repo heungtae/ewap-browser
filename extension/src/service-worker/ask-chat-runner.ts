@@ -70,6 +70,13 @@ export const createAskChatRunner =
       run.id,
       active.snapshot,
     ).snapshot;
+    const analysisData = await dependencies.collectAnalysisData?.(
+      value.prompt,
+      active,
+      run.id,
+      context,
+    );
+    assertRequestActive(context);
     const pageDigest = digestCanonical(active.snapshot);
     dependencies.publish(run.id, {
       type: "activity_progress",
@@ -91,7 +98,7 @@ export const createAskChatRunner =
       ...dependencies.threadContext(active.tabId),
       {
         role: "user",
-        content: `${modelContext ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]\n\n` : ""}[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\nUser question: ${safeChatText(value.prompt)}`,
+        content: `${modelContext ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]\n\n` : ""}[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\n${analysisData ? `[UNTRUSTED_ANALYSIS_DATA]\n${dependencies.serialise(analysisData)}\n[/UNTRUSTED_ANALYSIS_DATA]\n\n` : ""}User question: ${safeChatText(value.prompt)}`,
       },
     ];
     const mcp = new BusinessMcpClient(dependencies.providerFetch);

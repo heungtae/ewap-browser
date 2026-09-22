@@ -11,6 +11,8 @@ import type { VisionCapture } from "./vision-capture.js";
 import type { BrowserChromeApi } from "./browser-api.js";
 import type { ServiceCoordinator } from "./coordinator.js";
 import type { ActivePage } from "./page-context-runtime.js";
+import type { AnalysisDataContext } from "./analysis-data-acquisition.js";
+import type { RequestContext } from "./request-context.js";
 
 export type AskChatDependencies = {
   chrome: BrowserChromeApi;
@@ -35,4 +37,10 @@ export type AskChatDependencies = {
   vision(runId: string, captureId: string): VisionCapture | undefined;
   rememberVision(runId: string, capture: VisionCapture): void;
   releaseVision(runId: string): void;
+  collectAnalysisData?(
+    prompt: string,
+    active: ActivePage,
+    runId: string,
+    context?: RequestContext,
+  ): Promise<AnalysisDataContext | undefined>;
 };

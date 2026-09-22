@@ -13,10 +13,11 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
 -   S13 Enterprise Audit/Evidence: Planned
 -   S14 Studio Integration: Planned
 -   S15 Managed Enterprise Release: Planned
--   S6-R Collection Reading: Planned — object-specific reader registry, virtual
-    scroll/pagination lifecycle, reviewed API/export reader와 실제 Chrome
-    completeness evidence는 S6의 현재 DOM read 완료 증거와 별도다. 세부
-    계약과 CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
+-   S6-R Collection Reading: In Progress — Ask의 explicit unique collection
+    read/reinjection은 구현·unit 검증됐다. 복수 source 선택 및 승인 후 재개,
+    Act 연결, reviewed API/export reader와 실제 Chrome completeness evidence는
+    별도다. 세부 계약과 CR-1~CR-5는
+    [28번](28-collection-reading-strategy-design.md)을 따른다.
 
 기준일: 2026-08-22
 

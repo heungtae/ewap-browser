@@ -12,12 +12,12 @@ Ask는 현재 페이지를 **한 번** semantic projection으로 읽고, 그 pro
 
 1. Side Panel과 `RequestClient`가 Ask 요청 ID를 만들고 `CHAT_REQUEST_START`를 전송한다. Service Worker는 인증된 Panel, request schema, provider와 Panel에 결합된 active tab을 검사·고정하고 durable request 수명·취소를 관리한다(3절 단계 1.1~1.4).
 2. `createAskChatRunner()`가 Ask mode·prompt·request active·document epoch를 검증한 뒤 현재 top-level page의 initial semantic projection을 한 번 수집한다(단계 2.1~2.2).
-3. page-data 분석이 필요하고 32번 계약이 구현된 뒤에는 단계 4.1~4.4에서 source를 발견·읽고 bounded context를 만든다. 일반 질문은 이 단계를 건너뛴다.
+3. 명시적 page-data 분석 요청은 단계 4.1~4.4에서 collection source를 발견·읽고 bounded context를 만든다. 일반 질문은 이 단계를 건너뛴다. 현재는 unique collection과 기존 R0 allow만 자동 진행하며, 복수 source·권한 미허용은 unavailable context로 끝난다.
 4. Ask run은 projection을 run-scoped opaque `model_ref`로 바꾸고, matching Profile이 있을 때만 Profile 문맥과 approved read-only Business MCP binding을 더한다. 이어 Provider에 system prompt, 같은 tab thread, untrusted projection, 사용자 질문을 전달한다(단계 5.1~5.3).
 5. Provider가 read tool call을 반환하면 Browser는 최초 model snapshot에 묶인 read-only tool만 실행하고 결과를 같은 대화에 재투입한다. Provider turn은 tool 재호출을 포함해 최대 세 번이다(단계 5.4~5.5).
 6. non-empty 답변은 `VERIFIED` terminal로 끝내고, 빈 답변·turn 한도·provider 오류·취소·deadline·scope stale은 dispatch 없이 실패 또는 취소로 끝낸다(단계 5.6~5.7).
 
-Ask는 click, type, navigate, submit, DOM mutation, workflow 실행, Act proposal/approval, collection scroll을 수행하지 않는다. 단계 4.1~4.4(분석 source 발견·선택·R0 권한·bounded read·정규화)는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 **Proposed, not implemented** 단계다. 따라서 현재 28번 Collection Reading과 29번 Page API Discovery는 Ask request의 Provider turn에 연결되어 있지 않다.
+Ask는 click, type, navigate, submit, DOM mutation, workflow 실행, Act proposal/approval을 수행하지 않는다. 명시적 분석 요청의 unique collection은 R0 `collection_read`로 bounded read/scroll을 수행할 수 있지만, Page API Discovery candidate를 호출하지 않는다. 복수 대상, permission 미허용, scope 변경은 model에게 raw source를 주지 않고 unavailable context로 끝난다.
 
 ## 2. 전체 시퀀스
 
@@ -40,8 +40,9 @@ sequenceDiagram
     SW-->>Client: accepted(request_id, revision)
     SW->>Page: readActive semantic snapshot
     Page-->>SW: validated snapshot, origin, path
-    opt Proposed 단계 4.1~4.4 분석 data 필요
-        SW->>SW: source 발견·선택·R0 read·정규화
+    opt explicit unique-collection 분석 요청
+        SW->>Page: collection descriptor discover
+        SW->>SW: scope + existing R0 allow 검사, bounded full read·정규화
     end
     SW->>SW: run 생성, model_ref projection, Profile/MCP binding resolve
     SW->>Provider: system + thread context + projection + user question
@@ -81,10 +82,10 @@ sequenceDiagram
 | 1.4 요청 수명·취소                     | `extension/src/service-worker/chat-request-lifecycle.ts`의 `startRun`, `progress`, `settled`, `finish`, `cancel`                                                                                    | `ACCEPTED → RUNNING → TERMINAL`을 관리한다. Provider body progress는 `PROVIDER_BODY`로 기록한다. dispatch 표식은 Ask에서 설정하지 않으므로 취소/실패는 원칙적으로 `CANCELLED`/`FAILED`로 끝난다. owner/tab이 다른 status·cancel은 거절한다. | Implemented                 |
 | 2.1 Ask 입력 검증·초기 snapshot 수집   | `extension/src/service-worker/ask-chat-runner.ts`의 `createAskChatRunner`                                                                                                                           | `mode="ask"`, prompt 길이와 request active를 검사하고 `readActive()`로 현재 top-level page를 읽는다. request에 고정된 document epoch와 다르면 `PAGE_SCOPE_STALE`로 끝낸다.                                                                  | Implemented                 |
 | 2.2 초기 semantic projection 수집      | `ask-chat-runner.ts` → `page-context-runtime.ts`의 `read` → `content/entry.ts`의 `CONTENT_SNAPSHOT`                                                                                                 | 이 Ask run에서 Provider가 처음 받는 화면 문맥을 한 번 수집한다. Content Script가 만든 raw snapshot은 Worker에서 schema·origin·document epoch 검증을 거친다.                                                                                 | Implemented                 |
-| 4.1 분석 source 발견                   | **Proposed:** `analysis-data-acquisition.ts`의 `discoverSources`; 재사용 후보: `collection-read-message-handler.ts`의 `handleCollectionDiscover`, `page-api-discovery-domain-handler.ts`의 `handle` | 28번 collection descriptor와 29번 Page API source availability를 Provider 호출 전에 발견할 목표 단계다. 현재 Ask dispatcher는 이 handler들을 호출하지 않으며 raw Page API candidate를 Provider에 보내지 않는다.                             | Proposed, not implemented   |
-| 4.2 source 선택·R0 권한                | **Proposed:** `analysis-data-acquisition.ts`의 `selectSource`, `authorizeRead`                                                                                                                      | unique collection은 분석 의도에 맞으면 선택할 수 있고, 복수/모호 source만 Panel 선택을 요구한다. `collection_read` 또는 새 `page_api_read` R0 capability를 Act action 권한과 분리해 확인한다.                                               | Proposed, not implemented   |
-| 4.3 bounded analysis data read         | **Proposed:** `analysis-data-acquisition.ts`의 `readSelectedSource`, `page-api-read-runner.ts`의 `read`; 재사용 후보: `CollectionReadOrchestrator.start`                                            | collection은 object-specific reader로, Page API는 exact origin/path/version에 묶인 reviewed read-only adapter로만 읽는다. 29번 discovery candidate 자체를 호출하지 않는다.                                                                  | Proposed, not implemented   |
-| 4.4 분석 결과 정규화·재투입            | **Proposed:** `analysis-data-acquisition.ts`의 `buildAnalysisDataContext` → `ask-chat-runner.ts`                                                                                                    | bounded sanitized record chunk, coverage, reason, count, evidence만 같은 request의 Provider 문맥으로 전달할 목표 단계다. raw row ID/cursor/selector/function path/endpoint/source는 전달·저장하지 않는다.                                   | Proposed, not implemented   |
+| 4.1 분석 source 발견                   | `analysis-data-acquisition.ts`의 `createAnalysisDataAcquisition`                                                                                                                                    | 명시적 분석 문구일 때 content script의 collection descriptor를 발견하고 document/page scope를 확인한다. Page API discovery는 이 Ask path에서 호출하지 않는다.                                                                                       | Implemented, collection only |
+| 4.2 source 선택·R0 권한                | `analysis-data-acquisition.ts`의 unique source/`permissions.check`                                                                                                                                | 정확히 하나인 collection만 Browser가 고른다. 복수 source는 `REQUIRES_SELECTION`, existing grant가 없으면 `PERMISSION_REQUIRED` unavailable context가 된다. Panel selection 및 승인 뒤 재개, `page_api_read`는 Proposed다.                       | Partial, fail-closed        |
+| 4.3 bounded analysis data read         | `analysis-data-acquisition.ts` → `CollectionReadOrchestrator.start`                                                                                                                                | 선택된 collection만 `full` lifecycle로 읽고 Stop signal·scope 검사를 유지한다. Page API adapter는 없으며 discovery candidate 자체를 호출하지 않는다.                                                                                                      | Implemented, collection only |
+| 4.4 분석 결과 정규화·재투입            | `analysis-data-acquisition.ts` → `ask-chat-runner.ts`                                                                                                                                                | coverage, closed reason, count, bounded cells만 `[UNTRUSTED_ANALYSIS_DATA]`로 같은 Provider turn에 넣는다. raw row ID/ARIA row position/cursor/locator/source/page URL은 전달하지 않는다.                                                        | Implemented, collection only |
 | 5.1 읽기 전용 run·모델 projection 생성 | `ask-chat-runner.ts`의 `coordinator.runs.start`, `bindRun`; `coordinator.ts`의 `modelSnapshot`                                                                                                      | Ask run을 page scope에 결속하고, source `ref_id`를 run-scoped opaque `model_ref`로 치환한다. Ask에는 ref reverse-resolve나 실행 authority가 필요 없으므로 이 model snapshot만 읽기 도구의 입력으로 보관한다.                                | Implemented                 |
 | 5.2 Profile·Business MCP binding 해석  | `ask-chat-runner.ts`의 `resolveProfile`, `businessMcpBindings`, `profileModelContext`, `businessMcpTool`                                                                                            | Profile resolve 실패는 Ask를 중단시키지 않는다. matching Profile의 model context와 approved read-only Business MCP binding이 있을 때만 추가 context/tool을 만든다. binding이 없으면 일반 Ask read tool만 제공한다.                          | Implemented, conditional    |
 | 5.3 읽기 전용 Provider turn            | `ask-chat-runner.ts`의 message 조립과 `provider.chat`                                                                                                                                               | system prompt, 같은 tab의 thread context, 선택적 Profile context, `[UNTRUSTED_PAGE_PROJECTION]`, 사용자 질문을 보낸다. streaming delta는 32ms 또는 4,096자 단위로 Panel에 전달한다.                                                         | Implemented                 |
@@ -107,7 +108,8 @@ sequenceDiagram
 2. `chatEvents.context(tabId)`: 같은 tab thread의 과거 user/assistant 텍스트를 추가한다.
 3. matching Profile이 있으면 `[UNTRUSTED_PAGE_PROFILE_CONTEXT]`를 추가한다.
 4. 처음 읽은 model snapshot 전체를 `[UNTRUSTED_PAGE_PROJECTION]`로 추가한다.
-5. `safeChatText(prompt)`로 정규화한 현재 사용자 질문을 추가한다.
+5. analysis context가 있으면 `[UNTRUSTED_ANALYSIS_DATA]`를 추가한다. coverage/count를 답변에 반영하도록 system prompt가 요구한다.
+6. `safeChatText(prompt)`로 정규화한 현재 사용자 질문을 추가한다.
 
 그 뒤 base Ask read tool 8개와, Profile binding이 하나 이상일 때만 `call_page_business_tool` 하나를 Provider에 제공한다. Provider가 tool call 없이 content를 반환하면 즉시 답변을 끝낸다. tool call이 있으면 assistant message와 tool result를 같은 대화에 쌓아 다음 turn을 호출한다.
 

@@ -2,13 +2,22 @@
 
 - 작성일: 2026-09-21
 - 수정일: 2026-09-22
-- 상태: Proposed — 코드 연결 전 설계
+- 상태: Partial implementation — Ask의 explicit unique-collection 경로가
+  구현됐다. Act 연결, source-selection UI 재개, Page API read adapter는
+  Proposed다.
 - 범위: Ask/Act 요청에서 페이지의 분석 대상을 발견·선택·권한 확인·수집하고, bounded 결과만 같은 요청의 Provider 분석에 전달하는 공통 경로
 - 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
 ## 1. 결정
 
 Collection Reading과 Page API Discovery를 독립 Side Panel 도구로만 끝내지 않는다. Ask/Act의 page-data 분석 의도가 확인되면, Provider 실행계획 turn 전에 Browser가 두 경로를 공통 분석 데이터 수집 단계로 사용한다.
+
+현재 `createAnalysisDataAcquisition()`은 Ask의 명시적 분석 문구에 한해
+collection descriptor를 발견한다. 대상이 정확히 하나이고 기존
+`collection_read` R0 허용이 있으며 document/page scope가 일치할 때만
+`full` read를 시작해 같은 Ask Provider turn에 bounded context를 넣는다.
+복수 대상, permission 미허용, Page API candidate는 fail-closed
+`unavailable` context로 남기며, 자동 선택·호출하지 않는다.
 
 단, 두 경로의 권한은 다르다.
 
@@ -138,4 +147,14 @@ record field allowlist와 byte/record cap은 adapter/reader contract에서 검�
 
 ## 7. 현재 구현과 분리
 
-이 문서는 목표 계약이다. 현재 구현의 28번 수동 collection reader와 29번 수동 discovery UI는 같은 Ask/Act Provider run에 데이터를 재투입하지 않는다. 구현 시에는 이 문서의 순서·권한·data boundary를 먼저 계약과 테스트로 반영하고, 그 뒤 runtime을 연결한다.
+`extension/src/service-worker/analysis-data-acquisition.ts`와
+`ask-chat-runner.ts`는 Ask의 단일 collection 경로를 구현한다. provider
+context에는 `source kind/label`, coverage, closed reason, collected count,
+bounded cells만 전달하며 raw row ID, ARIA row position, collection ref,
+locator, cursor, page URL은 전달하지 않는다. request Stop signal은 active
+collection orchestration을 취소한다.
+
+아직 구현하지 않은 범위는 Act route/재투입, 복수 source의 Panel 선택과
+permission 승인 뒤 같은 request 재개, reviewed `page_api_read` adapter,
+실제 Chrome Side Panel 증적이다. 이 항목들은 이 문서의 목표 계약을
+변경하지 않으며, 구현 완료로 해석하지 않는다.

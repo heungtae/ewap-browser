@@ -1,7 +1,7 @@
 # 28. 객체 특성별 Collection Reading 설계
 
 - 작성일: 2026-09-17
-- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle, 수동 Side Panel 시작 UX가 구현됐다. 자연어 Ask/Act run에서 collection을 발견·승인·수집하고 그 결과를 같은 run의 모델 분석으로 재개하는 연결은 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
+- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle, 수동 Side Panel 시작 UX가 구현됐다. Ask는 명시적 분석 요청의 unique collection과 기존 `collection_read` 허용에 한해 결과를 같은 Provider turn에 재투입한다. Act, 복수 대상 선택/승인 후 재개, Page API adapter 연결은 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
 - 범위: grid/table/list/chart/pagination처럼 화면에 일부만 렌더링되는 데이터 객체의 **읽기와 처리용 관측**. DOM/ARIA 일반 읽기, Act mutation, Page API action과 별도 capability로 설계한다.
 - 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [Page API Discovery](29-page-api-discovery-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md), [S6](sprints/s6-advanced-page-reading.md)
 
