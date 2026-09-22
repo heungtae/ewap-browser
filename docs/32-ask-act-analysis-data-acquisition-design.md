@@ -2,9 +2,11 @@
 
 - 작성일: 2026-09-21
 - 수정일: 2026-09-22
-- 상태: Partial implementation — Ask의 explicit unique-collection 경로가
-  구현됐다. Act 연결, source-selection UI 재개, Page API read adapter는
-  Proposed다.
+- 상태: In progress — Ask의 explicit unique-collection 경로는 구현됐다.
+  이번 S13 slice는 Act의 closed route gate와 read-only 재투입, 그리고
+  명시적 분석이 선행된 action route의 bounded collection context를
+  구현한다. 복수 source selection UI/승인 뒤 같은 request 재개와
+  Page API read adapter는 Proposed다.
 - 범위: Ask/Act 요청에서 페이지의 분석 대상을 발견·선택·권한 확인·수집하고, bounded 결과만 같은 요청의 Provider 분석에 전달하는 공통 경로
 - 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
@@ -154,7 +156,16 @@ bounded cells만 전달하며 raw row ID, ARIA row position, collection ref,
 locator, cursor, page URL은 전달하지 않는다. request Stop signal은 active
 collection orchestration을 취소한다.
 
-아직 구현하지 않은 범위는 Act route/재투입, 복수 source의 Panel 선택과
-permission 승인 뒤 같은 request 재개, reviewed `page_api_read` adapter,
-실제 Chrome Side Panel 증적이다. 이 항목들은 이 문서의 목표 계약을
-변경하지 않으며, 구현 완료로 해석하지 않는다.
+이번 slice에서 Act route gate는 Provider의 closed route 응답만 받아
+`QUESTION`, `ANALYSIS_READ_REQUIRED`, `ACTION_REQUIRED`로 분기한다. 앞의
+두 route는 Act request identity를 유지한 읽기 전용 runner로 재투입하며
+workflow/action tool을 계산하지 않는다. `ACTION_REQUIRED` 중 명시적
+collection-analysis 요청은 action tool/workflow discovery 전에 같은
+bounded collection read를 수행하고, 결과가 있을 때만 untrusted analysis
+context로 action-planning turn에 전달한다. 수집 성공은 action 승인이나
+dispatch 권한이 아니다.
+
+여전히 구현하지 않은 범위는 복수 source의 Panel 선택과 permission 승인 뒤
+같은 request 재개, reviewed `page_api_read` adapter, 그리고 실제 Chrome
+Side Panel 증적이다. 이 항목들은 이 문서의 목표 계약을 변경하지 않으며,
+구현 완료로 해석하지 않는다.

@@ -178,8 +178,9 @@ export const createAnalysisDataAcquisition =
     active: ActivePage,
     runId: string,
     context?: RequestContext,
+    force = false,
   ): Promise<AnalysisDataContext | undefined> => {
-    if (!requestsCollectionAnalysis(prompt)) return undefined;
+    if (!force && !requestsCollectionAnalysis(prompt)) return undefined;
     assertRequestActive(context);
     const initialScope = dependencies.scopeFor(active.tabId);
     if (

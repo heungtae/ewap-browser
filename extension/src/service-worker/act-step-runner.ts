@@ -89,11 +89,15 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       const profileContext = session.modelContext
         ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(session.modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]`
         : undefined;
+      const analysisContext = session.analysisData
+        ? `[UNTRUSTED_ANALYSIS_DATA]\n${dependencies.serialise(session.analysisData)}\n[/UNTRUSTED_ANALYSIS_DATA]`
+        : undefined;
       const messages = actStepMessages({
         session,
         profileContext,
         projection,
         threadContext: dependencies.threadContext(active.tabId),
+        ...(analysisContext ? { analysisContext } : {}),
       });
       if (!session.pageApiActions) {
         const adapter = pageApiRegistry.find(active.origin, active.path);

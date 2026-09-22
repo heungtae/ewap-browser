@@ -5,7 +5,9 @@ import { createActProposalExecutor } from "./act-proposal-executor.js";
 import type { ActSession } from "./act-session-types.js";
 import { createActStepRunner } from "./act-step-runner.js";
 import { createAskChatRunner } from "./ask-chat-runner.js";
+import type { AskChatDependencies } from "./ask-chat-dependencies.js";
 import { createAnalysisDataAcquisition } from "./analysis-data-acquisition.js";
+import { createAskActIntentRouter } from "./ask-act-intent-router.js";
 import {
   askReadTools,
   askSystemPrompt,
@@ -93,7 +95,12 @@ export const publishActTerminal = (
     ...(code ? { code } : {}),
   });
 };
-export const runAskChat = createAskChatRunner({
+const analysisDataAcquisition = createAnalysisDataAcquisition({
+  chrome: chromeApi!,
+  permissions,
+  scopeFor: (tabId) => pageScopes.get(tabId),
+});
+const askChatDependencies: AskChatDependencies = {
   chrome: chromeApi!,
   coordinator,
   provider: providerRuntime!,
@@ -113,11 +120,12 @@ export const runAskChat = createAskChatRunner({
   vision: (runId, captureId) => visionCaptures.get(`${runId}:${captureId}`),
   rememberVision: chatRunLifecycle.rememberVision,
   releaseVision: chatRunLifecycle.releaseVision,
-  collectAnalysisData: createAnalysisDataAcquisition({
-    chrome: chromeApi!,
-    permissions,
-    scopeFor: (tabId) => pageScopes.get(tabId),
-  }),
+  collectAnalysisData: analysisDataAcquisition,
+};
+export const runAskChat = createAskChatRunner(askChatDependencies);
+const runActReadOnly = createAskChatRunner({
+  ...askChatDependencies,
+  mode: "act",
 });
 const proposalExecutorRef: {
   current?: ReturnType<typeof createActProposalExecutor>;
@@ -159,6 +167,9 @@ export const runActChat = createActChatStart({
   progressActivity,
   finishActivity,
   runStep: actStepRunner.runStep,
+  route: createAskActIntentRouter({ provider: providerRuntime! }),
+  runReadOnly: runActReadOnly,
+  collectAnalysisData: analysisDataAcquisition,
 });
 const proposalExecutor = createActProposalExecutor({
   coordinator,

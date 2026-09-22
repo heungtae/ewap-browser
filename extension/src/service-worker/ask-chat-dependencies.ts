@@ -15,6 +15,7 @@ import type { AnalysisDataContext } from "./analysis-data-acquisition.js";
 import type { RequestContext } from "./request-context.js";
 
 export type AskChatDependencies = {
+  mode?: "ask" | "act";
   chrome: BrowserChromeApi;
   coordinator: ServiceCoordinator;
   provider: ProviderRuntime;
@@ -42,5 +43,6 @@ export type AskChatDependencies = {
     active: ActivePage,
     runId: string,
     context?: RequestContext,
+    force?: boolean,
   ): Promise<AnalysisDataContext | undefined>;
 };

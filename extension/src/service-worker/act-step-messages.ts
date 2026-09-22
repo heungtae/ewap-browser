@@ -7,6 +7,7 @@ type Input = {
   profileContext: string | undefined;
   projection: string;
   threadContext: ProviderMessage[];
+  analysisContext?: string;
 };
 
 export const actStepMessages = ({
@@ -14,6 +15,7 @@ export const actStepMessages = ({
   profileContext,
   projection,
   threadContext,
+  analysisContext,
 }: Input): ProviderMessage[] =>
   session.workflow
     ? [
@@ -25,6 +27,9 @@ export const actStepMessages = ({
           role: "user",
           content: `Workflow step ${session.workflow.count + 1}/${session.workflow.declaration.steps.length}. Propose exactly one call to the supplied tool for this fixed current step. For option selection, choose exactly one supplied enum value. Do not repeat a previous tool call or target. User execution request: ${safeChatText(session.prompt)}`,
         },
+        ...(analysisContext
+          ? [{ role: "user" as const, content: analysisContext }]
+          : []),
         { role: "user", content: projection },
       ]
     : [
@@ -34,5 +39,8 @@ export const actStepMessages = ({
           : []),
         ...threadContext,
         ...session.messages.slice(1),
+        ...(analysisContext
+          ? [{ role: "user" as const, content: analysisContext }]
+          : []),
         { role: "user", content: projection },
       ];

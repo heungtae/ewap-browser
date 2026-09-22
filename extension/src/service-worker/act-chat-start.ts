@@ -12,6 +12,9 @@ import {
 } from "./act-session-types.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
 import { withDeadline } from "../security/deadline.js";
+import type { AnalysisDataContext } from "./analysis-data-acquisition.js";
+import { requestsCollectionAnalysis } from "./analysis-data-acquisition.js";
+import type { ActIntentRoute } from "./ask-act-intent-router.js";
 
 type WorkflowCandidate = { candidate: { id: string } };
 type PendingSelection = {
@@ -45,6 +48,23 @@ type Dependencies = {
     stage: "SELECTION_REQUIRED" | "COMPLETED" | "FAILED",
   ): void;
   runStep(session: ActSession): Promise<Record<string, unknown>>;
+  route(
+    prompt: string,
+    active: ActivePage,
+    context?: RequestContext,
+  ): Promise<ActIntentRoute>;
+  runReadOnly(
+    payload: unknown,
+    context?: RequestContext,
+    options?: { analysisRequested?: boolean },
+  ): Promise<Record<string, unknown>>;
+  collectAnalysisData?(
+    prompt: string,
+    active: ActivePage,
+    runId: string,
+    context?: RequestContext,
+    force?: boolean,
+  ): Promise<AnalysisDataContext | undefined>;
 };
 
 export const createActChatStart =
@@ -69,6 +89,11 @@ export const createActChatStart =
       active.snapshot.document_epoch !== context.documentEpoch
     )
       return fail("PAGE_SCOPE_STALE");
+    const route = await dependencies.route(value.prompt, active, context);
+    if (route !== "ACTION_REQUIRED")
+      return dependencies.runReadOnly(value, context, {
+        analysisRequested: route === "ANALYSIS_READ_REQUIRED",
+      });
     const activityId = dependencies.startActivity(active);
     try {
       dependencies.progressActivity(activityId, "RESOLVING_PROFILE");
@@ -112,6 +137,33 @@ export const createActChatStart =
         resolved.profile.model_context !== undefined
           ? profileModelContext(resolved.profile.model_context)
           : undefined;
+      const session: ActSession = {
+        ...(context ? { requestContext: context } : {}),
+        id: dependencies.createId(),
+        tabId: active.tabId,
+        origin: active.origin,
+        prompt: value.prompt,
+        messages: [
+          { role: "system", content: genericActSystemPrompt },
+          { role: "user", content: `User execution request: ${value.prompt}` },
+        ],
+        profile,
+        ...(modelContext ? { modelContext } : {}),
+        discovery: selected.discovery,
+        definitions: selected.definitions,
+        profileDefinitions: matchedProfile?.definitions ?? [],
+      };
+      if (requestsCollectionAnalysis(value.prompt)) {
+        const analysisData = await dependencies.collectAnalysisData?.(
+          value.prompt,
+          active,
+          session.id,
+          context,
+          true,
+        );
+        if (analysisData) session.analysisData = analysisData;
+      }
+      assertRequestActive(context);
       dependencies.progressActivity(activityId, "DISCOVERING_WORKFLOWS");
       const candidates = await withDeadline(
         dependencies.candidates(active, matchedProfile),
@@ -144,22 +196,6 @@ export const createActChatStart =
           candidates: candidates.map((candidate) => candidate.candidate),
         };
       }
-      const session: ActSession = {
-        ...(context ? { requestContext: context } : {}),
-        id: dependencies.createId(),
-        tabId: active.tabId,
-        origin: active.origin,
-        prompt: value.prompt,
-        messages: [
-          { role: "system", content: genericActSystemPrompt },
-          { role: "user", content: `User execution request: ${value.prompt}` },
-        ],
-        profile,
-        ...(modelContext ? { modelContext } : {}),
-        discovery: selected.discovery,
-        definitions: selected.definitions,
-        profileDefinitions: matchedProfile?.definitions ?? [],
-      };
       dependencies.sessions.set(session.id, session);
       dependencies.finishActivity(activityId, "COMPLETED");
       return dependencies.runStep(session);

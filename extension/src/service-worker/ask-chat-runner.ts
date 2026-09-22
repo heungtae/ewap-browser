@@ -29,13 +29,14 @@ export const createAskChatRunner =
   async (
     payload: unknown,
     context?: RequestContext,
+    options?: { analysisRequested?: boolean },
   ): Promise<Record<string, unknown>> => {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     if (
       typeof value.prompt !== "string" ||
       value.prompt.length === 0 ||
       value.prompt.length > 8_000 ||
-      value.mode !== "ask"
+      value.mode !== (dependencies.mode ?? "ask")
     )
       return fail("INVALID_ARGUMENT");
     assertRequestActive(context);
@@ -50,7 +51,7 @@ export const createAskChatRunner =
       active.tabId,
       active.snapshot.frame_id,
       active.snapshot.document_epoch,
-      "ask",
+      dependencies.mode ?? "ask",
     );
     dependencies.bindRun(run.id, active.tabId, dependencies.pageScope(active));
     dependencies.publish(run.id, {
@@ -59,7 +60,7 @@ export const createAskChatRunner =
     });
     dependencies.publish(run.id, {
       type: "run_started",
-      mode: "ask",
+      mode: dependencies.mode ?? "ask",
       permission_mode: dependencies.preferences().permission_mode,
     });
     dependencies.publish(run.id, {
@@ -75,6 +76,7 @@ export const createAskChatRunner =
       active,
       run.id,
       context,
+      options?.analysisRequested === true,
     );
     assertRequestActive(context);
     const pageDigest = digestCanonical(active.snapshot);
