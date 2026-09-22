@@ -7,15 +7,15 @@
 
 ## 1. 요약
 
-Act는 모델이 곧바로 페이지를 조작하는 구조가 아니다. 한 요청은 다음의 순서를 따른다.
+Act는 모델이 곧바로 페이지를 조작하는 구조가 아니다. 현재 구현된 한 요청은 다음 단계를 따른다.
 
-1. Side Panel이 `CHAT_REQUEST_START`로 요청 ID를 만들고 요청을 접수한다.
-2. Service Worker가 인증된 Panel에 결합된 활성 탭과 요청 상태를 고정한다.
-3. 현재 semantic snapshot, Page Profile, workflow 후보를 확인한다.
-4. Provider는 정보성 답변 또는 **한 개의 실행 제안**만 반환한다.
-5. 제안은 Panel의 사용자 승인, 값 입력 또는 추가 확인을 통과해야 한다.
-6. 실행 직전에 정책, page scope, target freshness를 다시 확인한 뒤 bounded CDP 또는 Content Script로 dispatch한다.
-7. 화면의 semantic evidence를 관측해 `VERIFIED`, `FAILED`, `CANCELLED`, `UNKNOWN`으로 끝낸다. dispatch 뒤 증거가 부족하면 자동 재실행하지 않는다.
+1. Side Panel과 `RequestClient`가 Act 요청 ID를 만들고 `CHAT_REQUEST_START`를 전송한다. Service Worker는 인증된 Panel, request schema, provider와 Panel에 결합된 active tab을 검사·고정하고 durable request 수명 상태를 시작한다(3절 1~4단계).
+2. `createActChatStart()`가 초기 semantic snapshot, Profile, action tool과 workflow 후보를 준비한다(3절 5~7단계). **현재는** 요청 처리 경로를 먼저 판별하는 gate가 없으므로, 정보성 Act 요청도 action tool 계산을 수행하고 workflow 후보가 있으면 Provider 호출 전에 사용자 선택을 기다릴 수 있다.
+3. workflow를 선택·시작하는 경우에만 scope snapshot을 다시 확인한다. 그 뒤 `runStep()`은 fresh model projection과 opaque `model_ref` tool을 만들어 Provider에 전달한다. Provider는 tool 없는 정보성 답변 또는 유효한 **한 개의 실행 제안**을 반환할 수 있다(3절 7.1~9단계).
+4. 실행 제안은 Panel의 검토, 승인·거절, 값 입력 또는 추가 확인을 거친다. 승인 뒤에만 enterprise policy·local permission·page scope·target freshness를 재검사하고 bounded CDP 또는 Content Script로 dispatch한다(3절 10~12단계).
+5. dispatch 뒤에는 semantic evidence를 반복 관측하여 `VERIFIED`, `FAILED`, `CANCELLED`, `UNKNOWN`으로 끝낸다. 성공한 non-navigation action만 fresh projection으로 다음 workflow step 또는 bounded session continuation을 시작할 수 있으며, 증거가 부족하면 자동 재실행하지 않는다(3절 13~14.1단계).
+
+3절의 5.2~5.6(요청 route 결정, 분석 source 발견·선택·권한·read·정규화)은 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 **Proposed, not implemented** 단계다. 따라서 현재 Act 요청은 `QUESTION`/`ANALYSIS_READ_REQUIRED`/`ACTION_REQUIRED`로 분기하지 않고, collection·Page API 분석 데이터를 Provider turn에 연결하지 않는다.
 
 ## 2. 전체 시퀀스
 

@@ -7,9 +7,15 @@
 
 ## 1. 요약
 
-Ask는 현재 페이지를 **한 번** semantic projection으로 읽고, 그 projection과 같은 tab thread의 대화 문맥을 Provider에 전달해 읽기 전용 답변을 생성한다. Provider가 tool call을 반환하면 Browser는 고정된 Ask tool만 실행하고 그 결과를 같은 Provider 대화에 붙인다. 최대 세 번의 Provider turn 뒤 답변이 없으면 실패한다.
+Ask는 현재 페이지를 **한 번** semantic projection으로 읽고, 그 projection과 같은 tab thread의 대화 문맥을 Provider에 전달해 읽기 전용 답변을 생성한다. 현재 구현된 한 요청은 다음 단계를 따른다.
 
-Ask는 click, type, navigate, submit, DOM mutation, workflow 실행, Act proposal/approval, collection scroll을 수행하지 않는다. 현재 28번 Collection Reading과 29번 Page API Discovery는 Ask request의 Provider turn에 연결되어 있지 않다. 분석 데이터 수집을 연결할 목표 단계 5.2~5.5는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 **Proposed** 계약이다.
+1. Side Panel과 `RequestClient`가 Ask 요청 ID를 만들고 `CHAT_REQUEST_START`를 전송한다. Service Worker는 인증된 Panel, request schema, provider와 Panel에 결합된 active tab을 검사·고정하고 durable request 수명·취소를 관리한다(3절 1~4단계).
+2. `createAskChatRunner()`가 Ask mode·prompt·request active·document epoch를 검증한 뒤 현재 top-level page의 initial semantic projection을 한 번 수집한다(3절 5~5.1단계).
+3. Ask run은 이 projection을 run-scoped opaque `model_ref`로 바꾸고, matching Profile이 있을 때만 Profile 문맥과 approved read-only Business MCP binding을 더한다. 이어 Provider에 system prompt, 같은 tab thread, untrusted projection, 사용자 질문을 전달한다(3절 6~8단계).
+4. Provider가 read tool call을 반환하면 Browser는 최초 model snapshot에 묶인 semantic/page/text/find read, 조건부 vision·현재 탭 문맥, 또는 Profile-bound Business MCP read만 실행한다. 결과는 `[UNTRUSTED_TOOL_RESULT]`로 같은 대화에 재투입하며, Provider turn은 tool 재호출을 포함해 최대 세 번이다(3절 9~10단계).
+5. non-empty 답변은 `VERIFIED` terminal로 끝내고, 빈 답변·turn 한도·provider 오류·취소·deadline·scope stale은 dispatch 없이 실패 또는 취소로 끝낸다(3절 11~12단계).
+
+Ask는 click, type, navigate, submit, DOM mutation, workflow 실행, Act proposal/approval, collection scroll을 수행하지 않는다. 3절의 5.2~5.5(분석 source 발견·선택·R0 권한·bounded read·정규화)는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 **Proposed, not implemented** 단계다. 따라서 현재 28번 Collection Reading과 29번 Page API Discovery는 Ask request의 Provider turn에 연결되어 있지 않다.
 
 ## 2. 전체 시퀀스
 
