@@ -1,9 +1,10 @@
 # 32. Ask/Act 분석 데이터 수집 통합 설계
 
 - 작성일: 2026-09-21
+- 수정일: 2026-09-22
 - 상태: Proposed — 코드 연결 전 설계
 - 범위: Ask/Act 요청에서 페이지의 분석 대상을 발견·선택·권한 확인·수집하고, bounded 결과만 같은 요청의 Provider 분석에 전달하는 공통 경로
-- 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md)
+- 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
 ## 1. 결정
 
@@ -19,7 +20,9 @@ Collection Reading과 Page API Discovery를 독립 Side Panel 도구로만 끝�
 
 ## 2. Ask/Act 공통 단계
 
-공통 분석 데이터 수집은 기존 5.1 기본 semantic projection 뒤, Provider 계획/분석 turn인 8.1 전에 삽입한다.
+이 절의 실행 단계 번호는 31번과 33번의 공통 채번을 따른다.
+
+공통 분석 데이터 수집은 단계 2.2 기본 semantic projection 뒤에 삽입한다. 읽기·분석 답변은 단계 5로, 실제 상태 변경이 필요한 Act는 단계 6의 action 제안과 단계 7의 승인·실행·검증으로 이어진다.
 
 ```mermaid
 sequenceDiagram
@@ -32,34 +35,39 @@ sequenceDiagram
     participant Provider as Provider
 
     User->>SW: Ask 또는 Act에서 페이지 데이터 분석 요청
-    SW->>SW: 5.1 semantic projection 및 분석 의도 확인
-    SW->>DOM: 5.2 collection descriptor 발견
-    SW->>API: 5.2 page API source hint 발견
-    SW->>SW: 5.3 source의 binding, availability, policy 평가
+    SW->>SW: 2.2 semantic projection 및 분석 의도 확인
+    SW->>DOM: 4.1 collection descriptor 발견
+    SW->>API: 4.1 page API source hint 발견
+    SW->>SW: 4.2 source의 binding, availability, policy 평가
     alt 분석 source 하나가 안전하게 결정됨
-        SW->>Reader: 5.4 bounded R0 read
+        SW->>Reader: 4.3 bounded R0 read
     else 복수 source 또는 사용자 범위 필요
         SW-->>Panel: 대상과 범위 선택 요청
         User->>Panel: source와 viewport/full 선택
         Panel->>SW: 선택 결과
-        SW->>Reader: 5.4 bounded R0 read
+        SW->>Reader: 4.3 bounded R0 read
     else adapter 없는 Page API 후보
         SW-->>Panel: adapter 검토 필요, 호출 없음
     end
-    Reader-->>SW: 5.5 sanitized result, coverage, evidence
-    SW->>Provider: 8.1 projection + bounded analysis data context
-    Provider-->>SW: Ask answer 또는 Act proposal
+    Reader-->>SW: 4.4 sanitized result, coverage, evidence
+    alt Ask 또는 Act의 읽기·분석 route
+        SW->>Provider: 5.x read-only answer + bounded analysis context
+        Provider-->>SW: answer
+    else Act의 ACTION_REQUIRED route
+        SW->>Provider: 6.x action planning + bounded analysis context
+        Provider-->>SW: Act proposal
+    end
 ```
 
-| 단계                  | 책임                                                                  | Ask                       | Act                                      |
-| --------------------- | --------------------------------------------------------------------- | ------------------------- | ---------------------------------------- |
-| 5.2 분석 source 발견  | Collection descriptor와 Page API source availability를 Browser가 수집 | 분석 source 후보 생성     | 동일                                     |
-| 5.3 source 선택·권한  | unique source 자동 선택 또는 Panel 선택, binding·capability 확인      | R0 read만 허용            | 동일. Act 권한/승인은 아직 시작하지 않음 |
-| 5.4 bounded data read | collection reader 또는 reviewed read-only adapter가 데이터 수집       | 결과를 분석에 사용        | 동일                                     |
-| 5.5 정규화·evidence   | bounded chunk, coverage, reason, source binding을 정규화              | 다음 Provider turn에 전달 | 다음 Provider turn에 전달                |
-| 8.1 Provider turn     | projection과 5.5 결과를 untrusted context로 전달                      | 분석 답변                 | 분석 결과를 근거로 필요한 action만 제안  |
+| 단계                  | 책임                                                                  | Ask                   | Act                                      |
+| --------------------- | --------------------------------------------------------------------- | --------------------- | ---------------------------------------- |
+| 4.1 분석 source 발견  | Collection descriptor와 Page API source availability를 Browser가 수집 | 분석 source 후보 생성 | 동일                                     |
+| 4.2 source 선택·권한  | unique source 자동 선택 또는 Panel 선택, binding·capability 확인      | R0 read만 허용        | 동일. Act 권한/승인은 아직 시작하지 않음 |
+| 4.3 bounded data read | collection reader 또는 reviewed read-only adapter가 데이터 수집       | 결과를 분석에 사용    | 동일                                     |
+| 4.4 정규화·evidence   | bounded chunk, coverage, reason, source binding을 정규화              | 단계 5에 전달         | 단계 5 또는 6에 전달                     |
+| 5/6 Provider turn     | projection과 단계 4.4 결과를 untrusted context로 전달                 | 단계 5의 분석 답변    | route에 따라 단계 5 답변 또는 6 action   |
 
-Act의 page mutation은 8.1 이후 기존 9~14단계를 그대로 따른다. 수집 성공은 click, save, submit, Page API action 실행의 승인이나 성공 근거가 아니다.
+Act의 page mutation은 `ACTION_REQUIRED`일 때만 단계 6의 action 제안 뒤 단계 7의 승인·실행·검증을 따른다. 수집 성공은 click, save, submit, Page API action 실행의 승인이나 성공 근거가 아니다.
 
 ## 3. source 발견과 선택 계약
 
@@ -91,7 +99,7 @@ type AnalysisSourceSummary = {
 
 ### 4.2 Provider context
 
-5.5의 output은 현재 요청 메모리에만 둔다. Provider에는 다음만 전달한다.
+단계 4.4의 output은 현재 요청 메모리에만 둔다. Provider에는 다음만 전달한다.
 
 ```ts
 type AnalysisDataContext = {
@@ -110,7 +118,7 @@ record field allowlist와 byte/record cap은 adapter/reader contract에서 검�
 
 ## 5. Page API Discovery의 역할
 
-29번 scanner는 Ask/Act의 5.2에서 source **availability**를 확인할 수 있다. 이때에도 scanner가 반환하는 것은 redacted kind/evidence/limitation뿐이며, Page API 호출 또는 raw data read는 하지 않는다.
+29번 scanner는 Ask/Act의 단계 4.1에서 source **availability**를 확인할 수 있다. 이때에도 scanner가 반환하는 것은 redacted kind/evidence/limitation뿐이며, Page API 호출 또는 raw data read는 하지 않는다.
 
 발견 결과의 사용처는 두 가지다.
 
@@ -121,8 +129,8 @@ record field allowlist와 byte/record cap은 adapter/reader contract에서 검�
 
 ## 6. 구현 전 수용 기준
 
-- Ask의 "이 페이지 데이터 분석"은 unique safe source에 대해 5.2~5.5를 거친 뒤 bounded context로 답한다.
-- Act의 "데이터 분석 후 저장"은 5.2~5.5 결과를 먼저 만들고, 저장 action은 별도 proposal/approval/preflight/verification을 거친다.
+- Ask의 "이 페이지 데이터 분석"은 unique safe source에 대해 단계 4.1~4.4를 거친 뒤 단계 5의 bounded read-only answer로 답한다.
+- Act의 "데이터 분석 후 저장"은 단계 4.1~4.4 결과를 먼저 만들고, 저장 action은 단계 6~7의 별도 proposal/approval/preflight/verification을 거친다.
 - 복수 collection은 무단 선택하지 않고 대상 선택을 요구한다.
 - adapter 없는 Page API discovery candidate는 호출·Provider 전달·action proposal 없이 `REQUIRES_ADAPTER_REVIEW`로 끝난다.
 - navigation/scope 변경, Stop, timeout, schema 실패 뒤에는 이전 source/chunk를 다음 Provider turn에 전달하지 않는다.
