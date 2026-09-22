@@ -28,16 +28,16 @@ Collection Reading 또는 reviewed read-only Page API adapter를 안전하게 �
 
 ## 구현 카드
 
-| 카드 | 산출물 | 종료 조건 |
-| --- | --- | --- |
-| S13-C1 | route gate | 사용자 선택 mode를 바꾸지 않고 closed route만 반환 |
-| S13-C2 | source discovery/selection | unique 자동 선택, ambiguous Panel 선택, stale 폐기 |
-| S13-C3 | R0 acquisition runtime | collection/API read 분리, no retry, bounded terminal |
-| S13-C4 | analysis context | sanitized records, count, coverage, reason, truncated만 전달 |
-| S13-C5 | Ask integration | 분석 source 결과 후 read-only Provider answer 재개 |
-| S13-C6 | Act integration | 분석 후 별도 proposal/approval/preflight/verification |
-| S13-C7 | security and lifecycle | raw candidate/data 비노출, Stop/navigation/restart cleanup |
-| S13-C8 | Chrome/provider matrix | Ask·Act fixture의 discover→read→answer/proposal evidence |
+| 카드   | 산출물                     | 종료 조건                                                                                                                                                |
+| ------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S13-C1 | route gate                 | 사용자 선택 mode를 바꾸지 않고 closed route만 반환                                                                                                       |
+| S13-C2 | source discovery/selection | unique 자동 선택, ambiguous Panel 선택, stale 폐기                                                                                                       |
+| S13-C3 | R0 acquisition runtime     | collection/API read 분리, no retry, bounded terminal                                                                                                     |
+| S13-C4 | analysis context           | sanitized records, count, coverage, reason, truncated만 전달                                                                                             |
+| S13-C5 | Ask integration            | 분석 source 결과 후 read-only Provider answer 재개                                                                                                       |
+| S13-C6 | Act integration            | 분석 후 별도 proposal/approval/preflight/verification                                                                                                    |
+| S13-C7 | security and lifecycle     | raw candidate/data 비노출, Stop/navigation/restart cleanup                                                                                               |
+| S13-C8 | Chrome/provider matrix     | Ask·Act fixture의 discover→read→answer/proposal evidence. 실제 Side Panel·service worker·HTTPS 제어 provider fixture까지 구현; live provider 검증은 별도 |
 
 ## 완료 조건
 

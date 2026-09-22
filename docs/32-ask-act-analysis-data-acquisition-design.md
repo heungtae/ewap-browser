@@ -2,11 +2,11 @@
 
 - 작성일: 2026-09-21
 - 수정일: 2026-09-22
-- 상태: In progress — Ask의 explicit unique-collection 경로는 구현됐다.
-  이번 S13 slice는 Act의 closed route gate와 read-only 재투입, 그리고
-  명시적 분석이 선행된 action route의 bounded collection context를
-  구현한다. 복수 source selection UI/승인 뒤 같은 request 재개와
-  Page API read adapter는 Proposed다.
+- 상태: In progress — Ask의 explicit unique-collection 경로와 Act의 closed
+  route gate/read-only 재투입, 명시적 분석이 선행된 action route의 bounded
+  collection context를 구현했다. 실제 Side Panel과 HTTPS 제어 provider fixture는
+  Ask/Act의 unique-source context 전달을 검증했다. 복수 source selection UI/승인
+  뒤 같은 request 재개와 Page API read adapter는 Proposed다.
 - 범위: Ask/Act 요청에서 페이지의 분석 대상을 발견·선택·권한 확인·수집하고, bounded 결과만 같은 요청의 Provider 분석에 전달하는 공통 경로
 - 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
@@ -165,7 +165,9 @@ bounded collection read를 수행하고, 결과가 있을 때만 untrusted analy
 context로 action-planning turn에 전달한다. 수집 성공은 action 승인이나
 dispatch 권한이 아니다.
 
-여전히 구현하지 않은 범위는 복수 source의 Panel 선택과 permission 승인 뒤
-같은 request 재개, reviewed `page_api_read` adapter, 그리고 실제 Chrome
-Side Panel 증적이다. 이 항목들은 이 문서의 목표 계약을 변경하지 않으며,
-구현 완료로 해석하지 않는다.
+복수 source의 Panel 선택과 permission 승인 뒤 같은 request 재개, reviewed
+`page_api_read` adapter는 여전히 구현하지 않았다. `test:chrome-analysis-data`
+는 실제 Chrome Side Panel, service worker, content script, HTTPS 제어 provider를
+사용해 Ask의 read-only answer와 Act의 action-planning turn에 unique collection의
+bounded context가 전달됨을 검증한다. 이 fixture는 live provider 또는 복수 source
+선택의 증거가 아니며, 해당 범위를 구현 완료로 해석하지 않는다.
