@@ -15,6 +15,7 @@ type AnalysisReason =
   | "PERMISSION_REQUIRED"
   | "UNAVAILABLE"
   | "CAP_REACHED"
+  | "CONTEXT_TRUNCATED"
   | "NO_STABLE_ID"
   | "NO_EOF_EVIDENCE"
   | "PAGE_CHANGED"
@@ -125,10 +126,15 @@ const boundedRecords = (
 ): { records: AnalysisDataContext["records"]; truncated: boolean } => {
   const result: { index: number; cells: readonly string[] }[] = [];
   let characters = 0;
+  let truncated = false;
   for (const record of records) {
-    if (result.length >= MAX_CONTEXT_RECORDS) break;
-    const cells = record.cells.slice(0, MAX_CONTEXT_CELLS).map((cell) =>
-      cell
+    if (result.length >= MAX_CONTEXT_RECORDS) {
+      truncated = true;
+      break;
+    }
+    if (record.cells.length > MAX_CONTEXT_CELLS) truncated = true;
+    const cells = record.cells.slice(0, MAX_CONTEXT_CELLS).map((cell) => {
+      const normalized = cell
         .split("")
         .filter((character) => {
           const code = character.charCodeAt(0);
@@ -136,16 +142,20 @@ const boundedRecords = (
         })
         .join("")
         .replace(/\s+/g, " ")
-        .trim()
-        .slice(0, MAX_CONTEXT_CELL_CHARS),
-    );
+        .trim();
+      if (normalized.length > MAX_CONTEXT_CELL_CHARS) truncated = true;
+      return normalized.slice(0, MAX_CONTEXT_CELL_CHARS);
+    });
     const size = cells.reduce((total, cell) => total + cell.length, 0);
-    if (characters + size > MAX_CONTEXT_CHARS) break;
+    if (characters + size > MAX_CONTEXT_CHARS) {
+      truncated = true;
+      break;
+    }
     characters += size;
     // Worker-only row IDs and ARIA positions do not cross into model context.
     result.push({ index: result.length, cells });
   }
-  return { records: result, truncated: result.length < records.length };
+  return { records: result, truncated };
 };
 
 const contextFromResult = (
@@ -153,16 +163,24 @@ const contextFromResult = (
   result: CollectionReadResult,
 ): AnalysisDataContext => {
   const bounded = boundedRecords(result.records);
+  const truncated =
+    bounded.truncated || result.records.length < result.collected_count;
+  const reason =
+    truncated && result.coverage === "complete"
+      ? "CONTEXT_TRUNCATED"
+      : result.reason && terminalReasons.has(result.reason)
+        ? result.reason
+        : truncated
+          ? "CONTEXT_TRUNCATED"
+          : undefined;
   return {
     source: { kind: "collection", label: labelFor(descriptor) },
-    coverage: result.coverage,
-    ...(result.reason && terminalReasons.has(result.reason)
-      ? { reason: result.reason }
-      : {}),
+    coverage:
+      truncated && result.coverage === "complete" ? "partial" : result.coverage,
+    ...(reason ? { reason } : {}),
     collected_count: result.collected_count,
     records: bounded.records,
-    truncated:
-      bounded.truncated || result.records.length < result.collected_count,
+    truncated,
   };
 };
 

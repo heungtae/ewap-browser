@@ -126,6 +126,14 @@ type AnalysisDataContext = {
 
 record field allowlist와 byte/record cap은 adapter/reader contract에서 검증한다. credential, input value, token, cookie, selector, raw row ID, raw cursor, scroll position, function path, endpoint, source text, page object 또는 arbitrary return object는 collection 경계에서 제거하고 Provider·chat history·diagnostics·export·persistent storage에 넣지 않는다.
 
+Provider context의 `coverage`는 Provider가 실제로 받은 데이터 범위를 나타낸다.
+reader가 전체 source를 읽었더라도 Provider record/byte/cell cap 때문에 행이나
+셀 내용이 빠지면 `truncated=true`, `coverage=partial`,
+`reason=CONTEXT_TRUNCATED`로 전달한다. 기존 reader의 `partial` 또는
+`viewport_only` 판정과 terminal reason은 보존하고, 그 경우에도 Provider
+cap에 걸렸다면 `truncated=true`로 표시한다. `collected_count`는 reader가
+수집한 행 수이며 Provider에 전달된 행 수는 `records.length`다.
+
 모델은 `coverage`와 `collected_count`를 답변에 반영해야 한다. `partial`, `viewport_only`, `unavailable` 결과를 전체 데이터 분석이라고 표현할 수 없다.
 
 ## 5. Page API Discovery의 역할
@@ -185,3 +193,8 @@ Profile resolve 뒤 메시지를 만들 때, Act는 각 action-planning turn의 
 달라졌다면 기존 행을 메시지에 재사용하지 않고 `PAGE_CHANGED`·`unavailable`·
 0건으로 대체한다. 이 scope 표식은 worker 메모리에만 두고 Provider context,
 chat history, diagnostics, storage에 싣지 않는다.
+
+S13-C4 Provider context cap은 행 수뿐 아니라 셀 수와 셀 길이도 절단으로
+계산한다. reader `complete` 결과 중 한 셀이라도 잘린 경우 Provider context는
+`partial`/`CONTEXT_TRUNCATED`가 된다. 이 판정은 reader의 원본 완료 근거를
+바꾸지 않는다.

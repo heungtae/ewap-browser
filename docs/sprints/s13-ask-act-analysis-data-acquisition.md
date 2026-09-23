@@ -39,6 +39,19 @@ Collection Reading 또는 reviewed read-only Page API adapter를 안전하게 �
 | S13-C7 | security and lifecycle     | raw candidate/data 비노출, Stop/navigation/restart cleanup                                                                                               |
 | S13-C8 | Chrome/provider matrix     | Ask·Act fixture의 discover→read→answer/proposal evidence. 실제 Side Panel·service worker·HTTPS 제어 provider fixture까지 구현; live provider 검증은 별도 |
 
+## S13-C4 Provider context cap 보정 (2026-09-23)
+
+reader의 `complete` 결과도 Provider 전달 단계의 record/byte/cell cap에서
+잘릴 수 있다. 이때 Provider context의 `truncated`를 켜고 `coverage=partial`,
+`reason=CONTEXT_TRUNCATED`로 표시한다. reader가 이미 `partial` 또는
+`viewport_only`인 경우 기존 coverage와 terminal reason을 유지한다.
+`collected_count`는 reader 수집 행 수이고 `records.length`는 Provider에
+실제로 전달된 행 수다. Ask·Act의 Provider 지시에도 이 차이를 명시한다.
+
+이 변경은 S13-C4의 Provider 범위 표시 구현이며, 복수 source 선택과
+승인 후 재개, Page API read adapter, live provider 및 virtual-scroll
+완전성 증거를 완료 처리하지 않는다.
+
 ## 완료 조건
 
 - Ask의 페이지 데이터 분석이 safe unique source를 통해서만 bounded context를 받는다.

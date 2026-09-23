@@ -27,6 +27,10 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     turn 사이에 page scope가 달라지면 수집 행을 `PAGE_CHANGED`·0건으로
     대체한다. scope 표식은 worker 메모리에만 보관한다. TypeScript, ESLint,
     format 검사는 통과했으며 이 추가 경계의 런타임/Chrome 검증은 별도다.
+-   S13-C4 Provider context cap 보정: reader가 `complete`여도 Provider에
+    전달할 행·셀·문자가 잘리면 `partial`·`CONTEXT_TRUNCATED`·`truncated`로
+    표시한다. 기존 reader의 `partial`/`viewport_only` 사유는 유지한다.
+    범위 표시는 소스 변경 단계이며 Provider 응답의 정확성 검증은 별도다.
 
 기준일: 2026-08-22
 
