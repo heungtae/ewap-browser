@@ -698,7 +698,7 @@ const workflowCandidateFrom = (
     typeof (value as { origin?: unknown }).origin !== "string" ||
     typeof (value as { path_prefix?: unknown }).path_prefix !== "string" ||
     typeof (value as { step_count?: unknown }).step_count !== "number" ||
-    !["verified", "draft", "stale"].includes(
+    !["verified", "draft", "stale", "incomparable"].includes(
       (value as { status?: unknown }).status as string,
     ) ||
     typeof (value as { detail?: unknown }).detail !== "string"
@@ -834,12 +834,14 @@ const renderWorkflowCandidates = (
   };
   item.append(divider());
   for (const candidate of candidates) {
+    const blocked =
+      candidate.status === "stale" || candidate.status === "incomparable";
     const row = actionRow(item);
     const button = actionButton(
       `${candidate.title} · ${sourceLabel(candidate)} · ${candidate.step_count}단계 실행`,
-      candidate.status === "stale" ? "" : "primary",
+      blocked ? "" : "primary",
       async () => {
-        if (candidate.status === "stale") return;
+        if (blocked) return;
         lockChoices();
         button.disabled = true;
         row.setAttribute("aria-busy", "true");
@@ -857,9 +859,9 @@ const renderWorkflowCandidates = (
         }
       },
     );
-    if (candidate.status === "stale") {
+    if (blocked) {
       button.disabled = true;
-      button.textContent = `${candidate.title} · ${sourceLabel(candidate)} · 페이지 변경됨`;
+      button.textContent = `${candidate.title} · ${sourceLabel(candidate)} · ${candidate.status === "stale" ? "페이지 변경됨" : "페이지 비교 불가"}`;
     }
     row.append(button);
   }

@@ -14,3 +14,4 @@
 - [S11](s11-collection-reading-chrome-completion.md)
 - [S12](s12-diagnostics-download-bundle.md)
 - [S13](s13-ask-act-analysis-data-acquisition.md)
+- [S14 Browser 경계](s14-studio-integration-browser-boundary.md)

@@ -35,6 +35,11 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     각 Provider 호출 직전과 응답 직후 현재 page scope를 새 snapshot으로
     확인한다. 변경·조회 실패 시 `PAGE_SCOPE_STALE`로 종료하고 assistant
     delta도 확인 전에는 표시하지 않는다. 런타임/Chrome 검증은 별도다.
+-   S14-B1 Browser 로컬 비교: 기록된 워크플로우의 현재 projection이 잘렸거나
+    비교 범위가 다르면 `incomparable`로 표시하고 선택·시작을 차단한다.
+    선택·시작 시 저장 기록과 현재 snapshot을 다시 대조한다. Platform의
+    capture ingest, C06/C07 계약, Change/Impact 서비스, L0~L6 검증은
+    미구현이므로 S14 전체 상태는 Planned다.
 
 기준일: 2026-08-22
 

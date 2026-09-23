@@ -7,7 +7,11 @@ import {
 } from "./workflow.js";
 
 export type WorkflowSource = "profile" | "recorded" | "runtime";
-export type WorkflowCandidateStatus = "verified" | "draft" | "stale";
+export type WorkflowCandidateStatus =
+  | "verified"
+  | "draft"
+  | "stale"
+  | "incomparable";
 export type WorkflowCandidate = {
   id: string;
   source: WorkflowSource;
@@ -120,16 +124,43 @@ export const emptyWorkflowCatalog = (): WorkflowCatalogState => ({
   records: [],
 });
 
+export const comparableWorkflowSnapshot = (
+  snapshot: SemanticSnapshot,
+): boolean =>
+  snapshot.frame_id === 0 &&
+  snapshot.scope === "all_dom" &&
+  snapshot.truncated === false &&
+  snapshot.node_count === snapshot.nodes.length &&
+  snapshot.nodes.length <= 500;
+
+export const recordComparison = (
+  item: StoredWorkflow,
+  origin: string,
+  path: string,
+  snapshot: SemanticSnapshot,
+): "verified" | "stale" | "incomparable" => {
+  if (
+    !item.enabled ||
+    item.origin !== origin ||
+    !path.startsWith(item.path_prefix)
+  )
+    return "stale";
+  if (!comparableWorkflowSnapshot(snapshot)) return "incomparable";
+  try {
+    return item.fingerprint === semanticFingerprint(snapshot).fingerprint
+      ? "verified"
+      : "stale";
+  } catch {
+    return "incomparable";
+  }
+};
+
 export const recordMatchesPage = (
   item: StoredWorkflow,
   origin: string,
   path: string,
   snapshot: SemanticSnapshot,
-): boolean =>
-  item.enabled &&
-  item.origin === origin &&
-  path.startsWith(item.path_prefix) &&
-  item.fingerprint === semanticFingerprint(snapshot).fingerprint;
+): boolean => recordComparison(item, origin, path, snapshot) === "verified";
 
 export const recordCandidate = (
   item: StoredWorkflow,
@@ -145,5 +176,7 @@ export const recordCandidate = (
   detail:
     status === "verified"
       ? `내가 기록함 · ${item.updated_at.slice(0, 10)}`
-      : "현재 페이지 구조가 기록과 다릅니다.",
+      : status === "incomparable"
+        ? "현재 페이지 관찰이 불완전하여 기록과 비교할 수 없습니다."
+        : "현재 페이지 구조가 기록과 다릅니다.",
 });

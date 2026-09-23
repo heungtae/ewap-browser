@@ -1,10 +1,11 @@
 import type { WorkflowDeclaration } from "../contracts/workflow.js";
 import type { BrowserSender } from "./browser-api.js";
+import type { ActivePage } from "./page-context-runtime.js";
 import { exactKeys } from "./runtime-message-router.js";
 
 type Respond = (response: unknown) => void;
 type Candidate = {
-  candidate: { status: string };
+  candidate: { id: string; source: string; status: string };
   declaration: WorkflowDeclaration;
 };
 type Selection = {
@@ -16,16 +17,11 @@ type Selection = {
   candidates: Map<string, Candidate>;
   selectedId?: string;
 };
-type Active = {
-  tabId: number;
-  origin: string;
-  path: string;
-  snapshot: { document_epoch: string };
-};
 type Dependencies = {
   isPanelSender(sender: BrowserSender): boolean;
   selection(id: string): Selection | undefined;
-  active(): Promise<Active>;
+  active(): Promise<ActivePage>;
+  recordedCurrent(id: string, active: ActivePage): Promise<boolean>;
   start(
     selection: Selection,
     candidate: Candidate,
@@ -53,7 +49,11 @@ export const createWorkflowStartMessageHandler = (
       return { handled: true };
     }
     const candidate = selection.candidates.get(selection.selectedId);
-    if (!candidate || candidate.candidate.status === "stale") {
+    if (
+      !candidate ||
+      candidate.candidate.status === "stale" ||
+      candidate.candidate.status === "incomparable"
+    ) {
       respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
       return { handled: true };
     }
@@ -65,6 +65,11 @@ export const createWorkflowStartMessageHandler = (
           active.origin !== selection.origin ||
           active.path !== selection.path ||
           active.snapshot.document_epoch !== selection.documentEpoch
+        )
+          return respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
+        if (
+          candidate.candidate.source === "recorded" &&
+          !(await dependencies.recordedCurrent(candidate.candidate.id, active))
         )
           return respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
         await dependencies.start(selection, candidate, respond);

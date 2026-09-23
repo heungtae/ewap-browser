@@ -1,7 +1,8 @@
 import {
+  comparableWorkflowSnapshot,
   emptyWorkflowCatalog,
+  recordComparison,
   recordCandidate,
-  recordMatchesPage,
   validateWorkflowCatalogState,
   type WorkflowCandidate,
   type WorkflowCatalogState,
@@ -9,6 +10,7 @@ import {
 import type { WorkflowDeclaration } from "../contracts/workflow.js";
 import type { SemanticSnapshot } from "../contracts/types.js";
 import { semanticFingerprint } from "../profile/fingerprint.js";
+import { fail } from "../security/validation.js";
 
 export type CandidateDefinition = {
   candidate: WorkflowCandidate;
@@ -93,14 +95,12 @@ export const createWorkflowCatalogRuntime = (dependencies: Dependencies) => {
         !active.path.startsWith(item.path_prefix)
       )
         continue;
-      const status = recordMatchesPage(
+      const status = recordComparison(
         item,
         active.origin,
         active.path,
         active.snapshot,
-      )
-        ? "verified"
-        : "stale";
+      );
       result.push({
         candidate: recordCandidate(item, status),
         declaration: item.declaration,
@@ -110,11 +110,25 @@ export const createWorkflowCatalogRuntime = (dependencies: Dependencies) => {
       result.push(runtimeCandidate(active.workflow, active, "page-declared"));
     return result;
   };
+  const recordedCurrent = async (
+    id: string,
+    active: { origin: string; path: string; snapshot: SemanticSnapshot },
+  ): Promise<boolean> => {
+    const catalog = await load();
+    const item = catalog.records.find((record) => record.id === id);
+    return (
+      !!item &&
+      recordComparison(item, active.origin, active.path, active.snapshot) ===
+        "verified"
+    );
+  };
   const record = async (
     declaration: WorkflowDeclaration,
     active: { origin: string; path: string; snapshot: SemanticSnapshot },
     title: string,
   ): Promise<WorkflowCandidate> => {
+    if (!comparableWorkflowSnapshot(active.snapshot))
+      return fail("PAGE_SCOPE_STALE");
     const catalog = await load();
     const now = new Date().toISOString();
     const id = dependencies.createId();
@@ -134,5 +148,5 @@ export const createWorkflowCatalogRuntime = (dependencies: Dependencies) => {
     await save(catalog);
     return recordCandidate(saved, "verified");
   };
-  return { load, save, runtimeCandidate, collect, record };
+  return { load, save, runtimeCandidate, collect, recordedCurrent, record };
 };

@@ -10,6 +10,12 @@ Platform [semantic-v1](../../ewap-platform/docs/aidlc/contracts/change-impact.md
 
 Target Browser는 허용된 scope의 sanitized observation과 mismatch/failure만 제공한다. Platform Change Detector가 baseline/diff/classification, Impact Analyzer가 dependency graph/score를 소유한다. incomplete observation/누락 frame/algorithm 차이는 INCOMPARABLE로 처리하며 Browser가 baseline을 갱신하거나 영향 없음으로 판정하지 않는다. `extension/src/studio/*`의 test-only helper는 이 서비스 구현이 아니다.
 
+S14-B1은 Browser에 저장된 로컬 워크플로우의 v1 fingerprint를 현재
+projection과 비교한다. top frame의 complete `all_dom` snapshot만
+`verified` 또는 `stale`로 판단한다. snapshot이 잘렸거나 scope·node count가
+비교에 부적합하면 `incomparable`로 표시하고 선택을 막는다. 이 상태는
+Platform의 `semantic-v1` change event 또는 L0~L6 결과로 보내지 않는다.
+
 ## 1. snapshot
 
 schema v2 snapshot의 기본 scope는 `all_dom`이다. 현재 문서에서 수집한

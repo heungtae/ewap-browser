@@ -49,7 +49,9 @@ const candidate = (
     !Number.isInteger(value.step_count) ||
     value.step_count < 1 ||
     value.step_count > 12 ||
-    !["verified", "draft", "stale"].includes(value.status as string) ||
+    !["verified", "draft", "stale", "incomparable"].includes(
+      value.status as string,
+    ) ||
     typeof value.detail !== "string"
   )
     return fail("INVALID_ARGUMENT");

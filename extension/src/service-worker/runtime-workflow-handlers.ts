@@ -95,6 +95,7 @@ export const workflowSelectionMessageHandler =
     isPanelSender: pageSenderContext.isPanelSender,
     selection: workflowSelections.selection,
     active: readActiveSnapshot,
+    recordedCurrent: workflowCatalogRuntime.recordedCurrent,
     persist: workflowSelections.persist,
     safeFailure,
   });
@@ -137,6 +138,7 @@ export const workflowStartMessageHandler = createWorkflowStartMessageHandler({
   isPanelSender: pageSenderContext.isPanelSender,
   selection: workflowSelections.selection,
   active: readActiveSnapshot,
+  recordedCurrent: workflowCatalogRuntime.recordedCurrent,
   start: (selection, candidate, respond) =>
     workflowActions.start(
       selection as Parameters<typeof workflowActions.start>[0],

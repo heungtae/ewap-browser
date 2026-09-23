@@ -1,8 +1,9 @@
 import { exactKeys } from "./runtime-message-router.js";
 import type { BrowserSender } from "./browser-api.js";
+import type { ActivePage } from "./page-context-runtime.js";
 
 type Respond = (response: unknown) => void;
-type Candidate = { candidate: { status: string } };
+type Candidate = { candidate: { id: string; source: string; status: string } };
 type Selection = {
   id: string;
   tabId: number;
@@ -12,16 +13,11 @@ type Selection = {
   candidates: Map<string, Candidate>;
   selectedId?: string;
 };
-type Active = {
-  tabId: number;
-  origin: string;
-  path: string;
-  snapshot: { document_epoch: string };
-};
 type Dependencies = {
   isPanelSender(sender: BrowserSender): boolean;
   selection(id: string): Selection | undefined;
-  active(): Promise<Active>;
+  active(): Promise<ActivePage>;
+  recordedCurrent(id: string, active: ActivePage): Promise<boolean>;
   persist(): Promise<void>;
   safeFailure(code: string): unknown;
 };
@@ -52,7 +48,11 @@ export const createWorkflowSelectionMessageHandler = (
       return { handled: true };
     }
     const candidate = selection.candidates.get(candidateId);
-    if (!candidate || candidate.candidate.status === "stale") {
+    if (
+      !candidate ||
+      candidate.candidate.status === "stale" ||
+      candidate.candidate.status === "incomparable"
+    ) {
       respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
       return { handled: true };
     }
@@ -64,6 +64,11 @@ export const createWorkflowSelectionMessageHandler = (
           active.origin !== selection.origin ||
           active.path !== selection.path ||
           active.snapshot.document_epoch !== selection.documentEpoch
+        )
+          return respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
+        if (
+          candidate.candidate.source === "recorded" &&
+          !(await dependencies.recordedCurrent(candidate.candidate.id, active))
         )
           return respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
         selection.selectedId = candidateId;

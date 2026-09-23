@@ -10,6 +10,9 @@ const snapshot = {
   schema_version: 2 as const,
   document_epoch: "abcdefghijklmnop",
   frame_id: 0,
+  scope: "all_dom" as const,
+  truncated: false,
+  node_count: 1,
   visible_text: "",
   nodes: [
     {
