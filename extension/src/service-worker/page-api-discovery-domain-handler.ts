@@ -7,6 +7,7 @@ type Dependencies = {
     sender: BrowserSender,
   ): Promise<{ id: number; url?: string }>;
   isPanelSender(sender: BrowserSender): boolean;
+  ensureDocument(tabId: number): Promise<void>;
   documentFor(tabId: number): { epoch: string; documentId: string } | undefined;
   scopeFor(
     tabId: number,
@@ -70,6 +71,11 @@ export const createPageApiDiscoveryDomainHandler = (
       .activeTabForBoundPanel(sender)
       .then(async (active) => {
         const origin = originFor(active.url);
+        // Service-worker restart clears the in-memory document registry. The
+        // content script re-registers the current document only; it never
+        // discovers a different tab, frame, or page scope on this path.
+        if (!dependencies.documentFor(active.id))
+          await dependencies.ensureDocument(active.id);
         const document = dependencies.documentFor(active.id);
         const scope = dependencies.scopeFor(active.id);
         if (

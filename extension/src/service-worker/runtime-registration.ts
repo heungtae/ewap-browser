@@ -31,6 +31,7 @@ import {
 import { createCollectionReadDomainHandler } from "./collection-read-domain-handler.js";
 import { createPageApiDiscoveryDomainHandler } from "./page-api-discovery-domain-handler.js";
 import { createDiscoveryController } from "../page-api/discovery/discovery-controller.js";
+import { withDeadline } from "../security/deadline.js";
 import {
   localPageProfile,
   permissions,
@@ -66,6 +67,21 @@ export const registerServiceWorker = (): void => {
   const pageApiDiscoveryHandler = createPageApiDiscoveryDomainHandler({
     activeTabForBoundPanel: pageSenderContext.activeTabForBoundPanel,
     isPanelSender: pageSenderContext.isPanelSender,
+    ensureDocument: async (tabId) => {
+      const response = await withDeadline(
+        chromeApi!.tabs.sendMessage(tabId, {
+          kind: "CONTENT_DOCUMENT_CONTEXT",
+        }),
+        5_000,
+        "DOCUMENT_NOT_REGISTERED",
+      );
+      if (
+        typeof response !== "object" ||
+        response === null ||
+        (response as { ok?: unknown }).ok !== true
+      )
+        throw new Error("DOCUMENT_NOT_REGISTERED");
+    },
     documentFor: (tabId) => registered.get(registrationKey(tabId, 0)),
     scopeFor: (tabId) => pageScopes.get(tabId),
     authorize: async ({ tabId, documentEpoch, origin }) =>

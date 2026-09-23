@@ -24,13 +24,27 @@ adapter로 인계할 수 있는 상태를 완성한다.
 
 ## 구현 카드
 
-| 카드 | 산출물 | 종료 조건 |
-| --- | --- | --- |
-| S10-C1 | Page API Chrome fixture | 승인부터 VERIFIED/UNKNOWN까지 실제 trace와 UI evidence |
-| S10-C2 | Page API security matrix | API-01~14 및 기존 경로 회귀 통과 |
-| S10-C3 | Discovery Chrome fixture | D-01~D-08, redaction, truncation, stale 폐기 증거 |
-| S10-C4 | Profile Builder handoff | 후보는 review-needed로만 표시되고 실행 경로에 유입되지 않음 |
-| S10-C5 | read-only adapter contract | `page_api_read`의 binding, cap, schema, no-retry 검증 |
+| 카드   | 산출물                     | 종료 조건                                                   |
+| ------ | -------------------------- | ----------------------------------------------------------- |
+| S10-C1 | Page API Chrome fixture    | 승인부터 VERIFIED/UNKNOWN까지 실제 trace와 UI evidence      |
+| S10-C2 | Page API security matrix   | API-01~14 및 기존 경로 회귀 통과                            |
+| S10-C3 | Discovery Chrome fixture   | D-01~D-08, redaction, truncation, stale 폐기 증거           |
+| S10-C4 | Profile Builder handoff    | 후보는 review-needed로만 표시되고 실행 경로에 유입되지 않음 |
+| S10-C5 | read-only adapter contract | `page_api_read`의 binding, cap, schema, no-retry 검증       |
+
+## 구현 상태 (2026-09-23)
+
+- S10-C3의 통제 Chrome runner를 추가했다. 실제 Side Panel에서 fixed MAIN
+  scanner를 실행해 public-function/inline-endpoint hint가 redacted label로만
+  반환되는지, raw root/function/endpoint/source text가 Panel 응답에 없는지,
+  oversized inline script가 `truncated=true`가 되는지를 확인한다.
+- Discovery 시작은 worker의 in-memory document 등록이 비어 있을 때 current
+  content document만 재등록한다. 재등록 뒤에도 document/page scope가 맞지
+  않으면 `PAGE_SCOPE_STALE`로 종료하며 다른 tab/frame을 찾거나 재결속하지
+  않는다.
+- 이 runner는 Discovery만 검증한다. 후보를 invoke/data-read authority로
+  승격하지 않으며 `page_api_read` adapter, Profile Builder surface, 실제 사이트
+  검증은 여전히 미구현이다.
 
 ## 완료 조건
 
