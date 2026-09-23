@@ -9,6 +9,7 @@ import { createAskToolExecutor } from "./ask-tool-executor.js";
 import { businessMcpTool } from "./business-mcp-tools.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
+import { analysisDataForScope } from "./analysis-data-scope.js";
 
 const readSummary = (tool: string): string =>
   ({
@@ -71,7 +72,8 @@ export const createAskChatRunner =
       run.id,
       active.snapshot,
     ).snapshot;
-    const analysisData = await dependencies.collectAnalysisData?.(
+    const analysisScope = dependencies.pageScope(active);
+    const collectedAnalysisData = await dependencies.collectAnalysisData?.(
       value.prompt,
       active,
       run.id,
@@ -92,6 +94,13 @@ export const createAskChatRunner =
       : [];
     const modelContext = profile?.profile.model_context
       ? profileModelContext(profile.profile.model_context)
+      : undefined;
+    const analysisData = collectedAnalysisData
+      ? analysisDataForScope(
+          collectedAnalysisData,
+          analysisScope,
+          dependencies.pageScope(active),
+        )
       : undefined;
     const tool = businessMcpTool(bindings);
     const tools = [...dependencies.askTools, ...(tool ? [tool] : [])];

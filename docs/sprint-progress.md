@@ -19,6 +19,14 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     전달도 검증됐다. 복수 source 선택 및 승인 후 재개, reviewed API/export reader,
     live provider 및 virtual-scroll completeness evidence는 별도다. 세부 계약과
     CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
+-   S13 Ask/Act Analysis Data (Browser slice): In Progress — S13-C7에서 수집 종료
+    뒤 page scope를 재검사하고 page change·Stop·timeout 결과의 수집 행을
+    Provider context에서 버리는 경계를 unit 검증했다. Chrome 실사용 검증과
+    복수 source 선택·권한 승인 후 같은 요청 재개는 미완료다.
+-   S13-C7 Provider 투입 경계: Ask의 Profile resolve와 Act의 action-planning
+    turn 사이에 page scope가 달라지면 수집 행을 `PAGE_CHANGED`·0건으로
+    대체한다. scope 표식은 worker 메모리에만 보관한다. TypeScript, ESLint,
+    format 검사는 통과했으며 이 추가 경계의 런타임/Chrome 검증은 별도다.
 
 기준일: 2026-08-22
 

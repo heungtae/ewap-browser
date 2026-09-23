@@ -17,6 +17,7 @@ import { assertRequestActive } from "./request-context.js";
 import { pageApiRegistry } from "../page-api/registry.js";
 import type { PageApiActionRef } from "../contracts/page-api-types.js";
 import { opaqueId } from "../security/canonical.js";
+import { analysisDataForScope } from "./analysis-data-scope.js";
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
   const runStep = async (
     session: ActSession,
@@ -89,6 +90,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       const profileContext = session.modelContext
         ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(session.modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]`
         : undefined;
+      if (session.analysisData)
+        session.analysisData = analysisDataForScope(
+          session.analysisData,
+          session.analysisScope,
+          dependencies.pageScope(active),
+        );
       const analysisContext = session.analysisData
         ? `[UNTRUSTED_ANALYSIS_DATA]\n${dependencies.serialise(session.analysisData)}\n[/UNTRUSTED_ANALYSIS_DATA]`
         : undefined;

@@ -15,6 +15,7 @@ import { withDeadline } from "../security/deadline.js";
 import type { AnalysisDataContext } from "./analysis-data-acquisition.js";
 import { requestsCollectionAnalysis } from "./analysis-data-acquisition.js";
 import type { ActIntentRoute } from "./ask-act-intent-router.js";
+import type { PageScope } from "../state/tab-chat-session-store.js";
 
 type WorkflowCandidate = { candidate: { id: string } };
 type PendingSelection = {
@@ -31,6 +32,7 @@ type PendingSelection = {
 };
 
 type Dependencies = {
+  pageScope(active: ActivePage): PageScope;
   readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
   resolveProfile(active: ActivePage): Promise<ResolvedProfile>;
   candidates(
@@ -154,6 +156,7 @@ export const createActChatStart =
         profileDefinitions: matchedProfile?.definitions ?? [],
       };
       if (requestsCollectionAnalysis(value.prompt)) {
+        const analysisScope = dependencies.pageScope(active);
         const analysisData = await dependencies.collectAnalysisData?.(
           value.prompt,
           active,
@@ -161,7 +164,10 @@ export const createActChatStart =
           context,
           true,
         );
-        if (analysisData) session.analysisData = analysisData;
+        if (analysisData) {
+          session.analysisData = analysisData;
+          session.analysisScope = analysisScope;
+        }
       }
       assertRequestActive(context);
       dependencies.progressActivity(activityId, "DISCOVERING_WORKFLOWS");

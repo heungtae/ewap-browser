@@ -5,8 +5,9 @@
 - 상태: In progress — Ask의 explicit unique-collection 경로와 Act의 closed
   route gate/read-only 재투입, 명시적 분석이 선행된 action route의 bounded
   collection context를 구현했다. 실제 Side Panel과 HTTPS 제어 provider fixture는
-  Ask/Act의 unique-source context 전달을 검증했다. 복수 source selection UI/승인
-  뒤 같은 request 재개와 Page API read adapter는 Proposed다.
+  Ask/Act의 unique-source context 전달을 검증했다. 수집 중 page scope 변경·
+  취소·시간 초과 시 이미 수집한 행의 Provider 재투입을 차단한다. 복수 source
+  selection UI/승인 뒤 같은 request 재개와 Page API read adapter는 Proposed다.
 - 범위: Ask/Act 요청에서 페이지의 분석 대상을 발견·선택·권한 확인·수집하고, bounded 결과만 같은 요청의 Provider 분석에 전달하는 공통 경로
 - 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
@@ -171,3 +172,16 @@ dispatch 권한이 아니다.
 사용해 Ask의 read-only answer와 Act의 action-planning turn에 unique collection의
 bounded context가 전달됨을 검증한다. 이 fixture는 live provider 또는 복수 source
 선택의 증거가 아니며, 해당 범위를 구현 완료로 해석하지 않는다.
+
+수집 결과를 Provider에 넣기 직전 worker의 document/page scope를 다시 확인한다.
+reader가 `PAGE_CHANGED`, `CANCELLED`, `TIMEOUT`을 반환하거나 최종 scope가
+달라졌다면 해당 run의 수집 행을 버리고 `unavailable`·0건만 전달한다.
+대상이 0개면 `UNAVAILABLE`, 복수면 `REQUIRES_SELECTION`으로 구분한다.
+이 경계는 unit 회귀 검증을 마쳤으며 Chrome 실사용 검증을 대체하지 않는다.
+
+수집을 마친 뒤 Provider 호출까지 다른 비동기 단계가 이어질 수 있다. Ask는
+Profile resolve 뒤 메시지를 만들 때, Act는 각 action-planning turn의 메시지를
+만들 때 수집 시작 시점의 document/page scope와 현재 scope를 다시 비교한다.
+달라졌다면 기존 행을 메시지에 재사용하지 않고 `PAGE_CHANGED`·`unavailable`·
+0건으로 대체한다. 이 scope 표식은 worker 메모리에만 두고 Provider context,
+chat history, diagnostics, storage에 싣지 않는다.

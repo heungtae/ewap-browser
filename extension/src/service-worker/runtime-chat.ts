@@ -156,6 +156,7 @@ const actStepRunner = createActStepRunner({
   },
 });
 export const runActChat = createActChatStart({
+  pageScope: chatPageScope,
   readActive: readActiveSnapshot,
   resolveProfile: resolveProfileFor,
   candidates: workflowCatalogRuntime.collect,

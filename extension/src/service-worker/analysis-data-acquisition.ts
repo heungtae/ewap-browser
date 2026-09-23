@@ -64,6 +64,11 @@ const terminalReasons = new Set<AnalysisReason>([
   "CANCELLED",
   "TIMEOUT",
 ]);
+const invalidatedReadReasons = new Set<AnalysisReason>([
+  "PAGE_CHANGED",
+  "CANCELLED",
+  "TIMEOUT",
+]);
 const MAX_CONTEXT_RECORDS = 100;
 const MAX_CONTEXT_CELLS = 20;
 const MAX_CONTEXT_CELL_CHARS = 160;
@@ -106,12 +111,7 @@ const isDiscovery = (
 const labelFor = (descriptor: CollectionReadDescriptor): string =>
   `${descriptor.object_kind.replace("_", " ")} data`;
 
-const unavailable = (
-  reason: Extract<
-    AnalysisReason,
-    "REQUIRES_SELECTION" | "PERMISSION_REQUIRED" | "UNAVAILABLE"
-  >,
-): AnalysisDataContext => ({
+const unavailable = (reason: AnalysisReason): AnalysisDataContext => ({
   source: { kind: "collection", label: "page collection" },
   coverage: "unavailable",
   reason,
@@ -216,7 +216,8 @@ export const createAnalysisDataAcquisition =
     )
       return unavailable("UNAVAILABLE");
     const collections = discovery.collections.filter(isDescriptor);
-    if (collections.length !== 1) return unavailable("REQUIRES_SELECTION");
+    if (collections.length === 0) return unavailable("UNAVAILABLE");
+    if (collections.length > 1) return unavailable("REQUIRES_SELECTION");
     const descriptor = collections[0];
     if (!descriptor) return unavailable("UNAVAILABLE");
     const permission = dependencies.permissions.check(
@@ -254,9 +255,20 @@ export const createAnalysisDataAcquisition =
           dependencies.chrome.tabs.sendMessage(tabId, message),
       );
       assertRequestActive(context);
-      return response.ok
-        ? contextFromResult(descriptor, response.result)
-        : unavailable("UNAVAILABLE");
+      const finalScope = dependencies.scopeFor(active.tabId);
+      if (
+        !finalScope ||
+        finalScope.document_epoch !== discovery.document_epoch ||
+        finalScope.page_scope_epoch !== discovery.page_scope_epoch
+      )
+        return unavailable("PAGE_CHANGED");
+      if (!response.ok) return unavailable("UNAVAILABLE");
+      if (
+        response.result.reason &&
+        invalidatedReadReasons.has(response.result.reason)
+      )
+        return unavailable(response.result.reason);
+      return contextFromResult(descriptor, response.result);
     } finally {
       context?.signal.removeEventListener("abort", cancel);
     }

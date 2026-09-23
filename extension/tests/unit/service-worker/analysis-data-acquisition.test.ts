@@ -121,6 +121,117 @@ describe("analysis data acquisition", () => {
     expect(sendMessage).toHaveBeenCalledTimes(1);
   });
 
+  it("reports no collection as unavailable without asking the user to select one", async () => {
+    const sendMessage = vi.fn(async () => ({
+      ok: true,
+      collections: [],
+      document_epoch: "doc",
+      page_scope_epoch: "scope",
+    }));
+    const check = vi.fn(() => "ALLOW" as const);
+    const collect = createAnalysisDataAcquisition({
+      chrome: { tabs: { sendMessage } } as never,
+      permissions: { check },
+      scopeFor: scope,
+    });
+
+    await expect(collect("데이터를 분석해", active(), "run")).resolves.toEqual(
+      expect.objectContaining({
+        coverage: "unavailable",
+        reason: "UNAVAILABLE",
+        records: [],
+      }),
+    );
+    expect(check).not.toHaveBeenCalled();
+  });
+
+  it("discards rows when the reader detects a page change after collecting them", async () => {
+    let contextChecks = 0;
+    const sendMessage = vi.fn(async (_tabId: number, message: unknown) => {
+      const kind = (message as { kind?: unknown }).kind;
+      if (kind === "CONTENT_COLLECTION_DISCOVER")
+        return {
+          collections: [descriptor],
+          document_epoch: "doc",
+          page_scope_epoch: "scope",
+        };
+      if (kind === "CONTENT_COLLECTION_CONTEXT")
+        return {
+          ok: true,
+          document_epoch: "doc",
+          page_scope_epoch: ++contextChecks === 1 ? "scope" : "new-scope",
+        };
+      if (kind === "CONTENT_COLLECTION_READ_STATIC")
+        return {
+          ok: true,
+          result: {
+            records: [{ index: 0, cells: ["stale row"] }],
+            total_rows: 1,
+            truncated: false,
+          },
+        };
+      throw new Error(`unexpected ${String(kind)}`);
+    });
+    const collect = createAnalysisDataAcquisition({
+      chrome: { tabs: { sendMessage } } as never,
+      permissions: { check: () => "ALLOW" },
+      scopeFor: scope,
+    });
+
+    const result = await collect("표 데이터를 분석해", active(), "run");
+    expect(result).toMatchObject({
+      coverage: "unavailable",
+      reason: "PAGE_CHANGED",
+      collected_count: 0,
+      records: [],
+    });
+    expect(JSON.stringify(result)).not.toContain("stale row");
+    expect(contextChecks).toBe(2);
+  });
+
+  it("checks worker scope again after a successful read before reinjection", async () => {
+    let currentScope = scope();
+    const sendMessage = vi.fn(async (_tabId: number, message: unknown) => {
+      const kind = (message as { kind?: unknown }).kind;
+      if (kind === "CONTENT_COLLECTION_DISCOVER")
+        return {
+          collections: [descriptor],
+          document_epoch: "doc",
+          page_scope_epoch: "scope",
+        };
+      if (kind === "CONTENT_COLLECTION_CONTEXT")
+        return { ok: true, ...scope() };
+      if (kind === "CONTENT_COLLECTION_READ_STATIC") {
+        // The content reader still reports the old scope; the worker observes
+        // the navigation only after the reader completes.
+        currentScope = { document_epoch: "doc", page_scope_epoch: "new-scope" };
+        return {
+          ok: true,
+          result: {
+            records: [{ index: 0, cells: ["stale row"] }],
+            total_rows: 1,
+            truncated: false,
+          },
+        };
+      }
+      throw new Error(`unexpected ${String(kind)}`);
+    });
+    const collect = createAnalysisDataAcquisition({
+      chrome: { tabs: { sendMessage } } as never,
+      permissions: { check: () => "ALLOW" },
+      scopeFor: () => currentScope,
+    });
+
+    const result = await collect("표 데이터를 분석해", active(), "run");
+    expect(result).toMatchObject({
+      coverage: "unavailable",
+      reason: "PAGE_CHANGED",
+      collected_count: 0,
+      records: [],
+    });
+    expect(JSON.stringify(result)).not.toContain("stale row");
+  });
+
   it("keeps the provider context unavailable until collection_read is allowed", async () => {
     const sendMessage = vi.fn(async () => ({
       ok: true,

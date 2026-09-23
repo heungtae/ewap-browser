@@ -10,6 +10,12 @@ describe("Act chat start", () => {
       message: "표의 내용을 요약했습니다.",
     }));
     const start = createActChatStart({
+      pageScope: (active) => ({
+        document_epoch: active.snapshot.document_epoch,
+        page_scope_epoch: "scope",
+        origin: active.origin,
+        path: active.path,
+      }),
       readActive: async () => ({
         tabId: 7,
         origin: "https://reports.company.test",
@@ -70,6 +76,12 @@ describe("Act chat start", () => {
       return { ok: true, state: "ANSWER", message: "ready" };
     });
     const start = createActChatStart({
+      pageScope: (active) => ({
+        document_epoch: active.snapshot.document_epoch,
+        page_scope_epoch: "scope",
+        origin: active.origin,
+        path: active.path,
+      }),
       readActive: async () => ({
         tabId: 7,
         origin: "https://reports.company.test",
