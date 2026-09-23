@@ -1,7 +1,7 @@
 # 29. Page API Discovery 설계
 
 - 작성일: 2026-09-19
-- 상태: Partial implementation — fixed scanner, document-bound controller, ephemeral candidate result, Side Panel scan/Stop UI가 구현됐다. Ask/Act 분석 데이터 source discovery 연결과 reviewed read-only adapter를 통한 data read는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed다. 실제 unpacked Chrome fixture 검증과 Profile Builder 전용 surface 분리는 Planned다.
+- 상태: Partial implementation — fixed scanner, document-bound controller, ephemeral candidate result와 별도 Browser 검토 dialog가 구현됐다. Ask/Act 분석 데이터 source discovery 연결과 reviewed read-only adapter를 통한 data read는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed다. 실제 검토자 인증/외부 작업 항목 생성 및 전체 unpacked Chrome fixture 검증은 별도다.
 - 구현 인계 대상: Browser extension
 - 범위: Browser 로컬 구현. `page-api/` 번들 레지스트리에 추가할 후보를 사람이 검토하기 위한 **발견 증거**만 정의한다.
 - 관련: [페이지 내부 함수·공개 API 실행 설계](27-page-api-execution-design.md), [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md), [객체 특성별 Collection Reading 설계](28-collection-reading-strategy-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)
@@ -218,7 +218,7 @@ Limitations: URL and request details are intentionally not retained; direct HTTP
 [ Mark adapter review needed ]
 ```
 
-UI는 "Test selected", "Add to Profile", "Invoke", "Scan All", endpoint/CORS/auth 표시를 제공하지 않는다. `Mark adapter review needed`는 실행 가능한 Profile entry를 만들지 않고, local ephemeral candidate ref와 독립된 사람이 작성한 업무 설명만 사용해 검토 작업을 만든다.
+UI는 "Test selected", "Add to Profile", "Invoke", "Scan All", endpoint/CORS/auth 표시를 제공하지 않는다. Browser의 `Mark adapter review needed`는 현재 dialog에만 일시적으로 표시한다. 외부 검토 작업 생성은 검토자 인증과 별도 계약이 확정된 뒤 연결하며 실행 가능한 Profile entry를 만들지 않는다.
 
 모델은 Discovery 후보, label, evidence, raw page data를 보지 않는다. LLM assisted profiling은 v1 범위 밖이다. adapter가 나중에 번들에 등록된 뒤에도 모델에는 doc 27의 run-scoped opaque `action_ref`와 reviewed option enum만 노출한다.
 

@@ -40,6 +40,11 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     선택·시작 시 저장 기록과 현재 snapshot을 다시 대조한다. Platform의
     capture ingest, C06/C07 계약, Change/Impact 서비스, L0~L6 검증은
     미구현이므로 S14 전체 상태는 Planned다.
+-   S10-C4 Browser 검토 화면: Page API 후보를 대화 기록과 분리한 일시적
+    dialog에 표시한다. 닫기·탭 변경·페이지 변경 때 목록과 늦은 응답을
+    폐기하고, `adapter 검토 필요`는 화면 상태로만 남긴다. 검토자 인증,
+    외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
+    matrix는 별도이므로 S10 전체 상태는 Planned다.
 
 기준일: 2026-08-22
 

@@ -14,6 +14,7 @@ import { eventSequenceDecision } from "./event-sequence.js";
 import { RequestClient } from "./request-client.js";
 import { createDiagnosticsView } from "./diagnostics-view.js";
 import { InputHistory } from "./input-history.js";
+import { createProfileBuilderDiscovery } from "./profile-builder-discovery.js";
 
 type BrowserRuntime = {
   getManifest?(): { version: string };
@@ -28,6 +29,11 @@ type BrowserRuntime = {
   onMessage: { addListener(listener: (message: unknown) => void): void };
 };
 type BrowserTabs = {
+  onUpdated?: {
+    addListener(
+      listener: (tabId: number, changeInfo: { url?: string }) => void,
+    ): void;
+  };
   onActivated?: {
     addListener(
       listener: (activeInfo: { tabId: number; windowId: number }) => void,
@@ -101,7 +107,6 @@ let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
 let workflowRecordingId: string | undefined;
-let pageApiDiscoveryActive = false;
 let collectionReadActive = false;
 let collectionProgressTimer: number | undefined;
 let lastRequest: Record<string, unknown> | undefined;
@@ -414,6 +419,33 @@ const sendRuntime = async (
       : "INTERNAL_FAILURE";
   throw new Error(code);
 };
+const discoveryDialog = byId<HTMLDialogElement>("discovery-dialog");
+const discoveryScan = byId<HTMLButtonElement>("discovery-scan");
+const discoveryStop = byId<HTMLButtonElement>("discovery-stop");
+const discoveryClose = byId<HTMLButtonElement>("discovery-close");
+const discoverySummary = byId<HTMLElement>("discovery-summary");
+const discoveryCandidates = byId<HTMLElement>("discovery-candidates");
+const profileBuilderDiscovery =
+  discoveryDialog &&
+  pageApiDiscoveryButton &&
+  discoveryScan &&
+  discoveryStop &&
+  discoveryClose &&
+  discoverySummary &&
+  discoveryCandidates
+    ? createProfileBuilderDiscovery({
+        dialog: discoveryDialog,
+        openButton: pageApiDiscoveryButton,
+        scanButton: discoveryScan,
+        stopButton: discoveryStop,
+        closeButton: discoveryClose,
+        summary: discoverySummary,
+        candidates: discoveryCandidates,
+        send: sendRuntime,
+        status: setStatus,
+        canScan: () => !runActive,
+      })
+    : undefined;
 
 type CollectionSummary = {
   collection_ref: string;
@@ -1134,6 +1166,9 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   if (event.type === "page_scope_changed") {
+    profileBuilderDiscovery?.invalidate(
+      "페이지가 변경되어 힌트를 폐기했습니다.",
+    );
     append(
       card(
         "page-scope",
@@ -1269,6 +1304,7 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
 };
 const selectThread = (tabId: number): void => {
   if (activeThreadTabId === tabId) return;
+  profileBuilderDiscovery?.close(false);
   activeThreadTabId = tabId;
   clearConversation();
   if (threadScope) threadScope.textContent = "이 탭의 문맥";
@@ -1402,7 +1438,16 @@ if (runtime) {
   window.addEventListener("pagehide", stopConnection, { once: true });
 }
 runtime?.onMessage.addListener(receiveChatEvent);
-chromeApi?.tabs?.onActivated?.addListener(() => void recoverChatEvents());
+chromeApi?.tabs?.onActivated?.addListener(() => {
+  profileBuilderDiscovery?.close(false);
+  void recoverChatEvents();
+});
+chromeApi?.tabs?.onUpdated?.addListener((tabId, changeInfo) => {
+  if (tabId === activeThreadTabId && changeInfo.url)
+    profileBuilderDiscovery?.invalidate(
+      "페이지가 변경되어 힌트를 폐기했습니다.",
+    );
+});
 attachmentTrigger?.addEventListener("click", () => attachmentInput?.click());
 suggestedPrompt?.addEventListener("click", () => {
   if (!chatInput) return;
@@ -1519,73 +1564,6 @@ workflowRecordButton?.addEventListener("click", () => {
     .catch((error) =>
       showFailure(error instanceof Error ? error.message : undefined),
     );
-});
-pageApiDiscoveryButton?.addEventListener("click", () => {
-  if (runActive) return;
-  if (pageApiDiscoveryActive) {
-    void sendRuntime({ kind: "PAGE_API_DISCOVERY_STOP" }).finally(() => {
-      pageApiDiscoveryActive = false;
-      if (pageApiDiscoveryButton) pageApiDiscoveryButton.textContent = "API";
-      setStatus("Page API 힌트 검색 중단을 요청했습니다.");
-    });
-    return;
-  }
-  pageApiDiscoveryActive = true;
-  pageApiDiscoveryButton.textContent = "■";
-  setStatus("Page API 공개 힌트를 확인하고 있습니다.");
-  void sendRuntime({ kind: "PAGE_API_DISCOVERY_START" })
-    .then((response) => {
-      const result = response.result;
-      if (typeof result !== "object" || result === null)
-        throw new Error("INTERNAL_FAILURE");
-      const value = result as {
-        terminal?: unknown;
-        candidates?: unknown;
-        truncated?: unknown;
-      };
-      const terminal =
-        typeof value.terminal === "string" ? value.terminal : "UNKNOWN";
-      const candidates = Array.isArray(value.candidates)
-        ? value.candidates
-        : [];
-      const item = card(
-        "review",
-        "Page API Discovery",
-        terminal === "COMPLETED"
-          ? candidates.length === 0
-            ? "공개 힌트를 찾지 못했습니다. 이는 API 부재의 증거가 아닙니다."
-            : `${candidates.length}개의 비실행 힌트를 찾았습니다. adapter 검토가 필요합니다.`
-          : `검색 결과를 사용할 수 없습니다: ${terminal}`,
-      );
-      for (const candidate of candidates) {
-        if (typeof candidate !== "object" || candidate === null) continue;
-        const label = (candidate as { label?: unknown }).label;
-        if (typeof label !== "string") continue;
-        const line = document.createElement("p");
-        line.textContent = label;
-        item.append(line);
-        const mark = actionButton("adapter 검토 필요", "warning", () => {
-          mark.disabled = true;
-          mark.textContent = "검토 필요로 표시됨";
-        });
-        actionRow(item).append(mark);
-      }
-      if (value.truncated === true) {
-        const note = document.createElement("p");
-        note.textContent =
-          "결과가 제한에 도달했습니다. 누락이 없다고 판단하지 않습니다.";
-        item.append(note);
-      }
-      append(item);
-      setStatus("Page API 힌트 검색을 마쳤습니다.");
-    })
-    .catch((error) =>
-      showFailure(error instanceof Error ? error.message : undefined),
-    )
-    .finally(() => {
-      pageApiDiscoveryActive = false;
-      if (pageApiDiscoveryButton) pageApiDiscoveryButton.textContent = "API";
-    });
 });
 collectionDiscoverButton?.addEventListener("click", () => {
   if (collectionReadActive) {

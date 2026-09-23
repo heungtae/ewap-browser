@@ -709,6 +709,43 @@
         background: rgb(4 8 18 / 68%);
         backdrop-filter: blur(2px);
       }
+      dialog.discovery-dialog {
+        width: min(500px, calc(100vw - 32px));
+        max-height: 75vh;
+        margin: auto;
+        padding: 16px;
+        overflow: auto;
+        color: var(--text);
+        border: 1px solid #35486f;
+        border-radius: 14px;
+        background: #182440;
+      }
+      dialog.discovery-dialog::backdrop {
+        background: rgb(4 8 18 / 68%);
+      }
+      .discovery-dialog h2 {
+        margin: 0 0 8px;
+        font-size: 15px;
+      }
+      .discovery-dialog p,
+      .discovery-dialog li {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .discovery-dialog ul {
+        padding-left: 20px;
+      }
+      .discovery-dialog li {
+        margin-block: 12px;
+      }
+      .discovery-dialog li p {
+        margin-block: 4px;
+      }
+      .discovery-dialog .dialog-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
       .diagnostics-dialog h2 {
         margin: 0 0 10px;
         font-size: 15px;
@@ -947,6 +984,24 @@
             </button>
           </div>
         </form>
+      </dialog>
+      <dialog
+        class="discovery-dialog"
+        id="discovery-dialog"
+        aria-labelledby="discovery-title"
+      >
+        <h2 id="discovery-title">Page API 후보 검토</h2>
+        <p>
+          현재 페이지의 비실행 힌트입니다. 실행과 데이터 읽기에는 사용할 수
+          없습니다.
+        </p>
+        <div class="dialog-actions">
+          <button id="discovery-scan" type="button">공개 힌트 검색</button>
+          <button id="discovery-stop" type="button">중단</button>
+          <button id="discovery-close" type="button">닫기</button>
+        </div>
+        <p id="discovery-summary" role="status" aria-live="polite"></p>
+        <ul id="discovery-candidates"></ul>
       </dialog>
       <dialog
         class="diagnostics-dialog"

@@ -43,8 +43,24 @@ adapter로 인계할 수 있는 상태를 완성한다.
   않으면 `PAGE_SCOPE_STALE`로 종료하며 다른 tab/frame을 찾거나 재결속하지
   않는다.
 - 이 runner는 Discovery만 검증한다. 후보를 invoke/data-read authority로
-  승격하지 않으며 `page_api_read` adapter, Profile Builder surface, 실제 사이트
-  검증은 여전히 미구현이다.
+  승격하지 않으며 `page_api_read` adapter와 실제 사이트 검증은 미구현이다.
+
+## S10-C4 Browser review surface 계약
+
+Header의 API 진입점은 대화 transcript와 분리된 Page API 검토 dialog를 연다.
+검토자가 dialog에서 명시적으로 검색을 시작하며, 완료된 비실행 후보만
+`kind`·`confidence`·제한과 함께 표시한다. `adapter 검토 필요` 표시는
+dialog 메모리 안의 일시적인 검토 상태이며 Profile, adapter registry, chat
+history, Provider context, storage, diagnostics 또는 외부 작업 항목을 만들지
+않는다. 별도 검토 작업 시스템과 검토자 인증은 이 Browser slice에 없다.
+
+닫기·탭 변경·재검색은 목록을 즉시 지우고 진행 중인 검색의 사용을 중단한다.
+탭 변경 후 이전 탭 worker scan은 300ms deadline까지 끝날 수 있지만 결과는
+UI generation 불일치로 폐기한다.
+뒤늦은 응답은 UI generation이 맞지 않으면 버린다. 완료 외 terminal에서는
+후보를 표시하지 않는다. `truncated=true`는 일부 힌트만 관찰했음을 명시한다.
+현재 worker의 bound panel, top document, page scope 및 policy 검사는 그대로
+적용한다. 이 화면은 후보 실행·데이터 읽기·Profile 생성 버튼을 제공하지 않는다.
 
 ## 완료 조건
 
