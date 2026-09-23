@@ -194,6 +194,16 @@ Profile resolve 뒤 메시지를 만들 때, Act는 각 action-planning turn의 
 0건으로 대체한다. 이 scope 표식은 worker 메모리에만 두고 Provider context,
 chat history, diagnostics, storage에 싣지 않는다.
 
+Ask의 read-only tool loop는 최대 세 번 Provider를 호출할 수 있다. 분석 수집
+결과가 있는 요청은 **매 Provider 호출 직전** 현재 tab의 page snapshot을 새로
+읽어 수집 당시 document/page scope·origin·path와 비교한다. 현재 페이지를
+확인할 수 없거나 scope가 다르면 `PAGE_SCOPE_STALE`로 요청을 중단하고
+실행 run을 실패 terminal로 닫는다. 기존 수집 행은 뒤따르는 Provider turn에
+재전송하지 않는다. 이 검사는
+첫 turn 전에 수행한 in-memory scope 비교를 보강한다. Provider 응답을 받은
+뒤에도 scope를 다시 확인한 후 tool 호출 또는 최종 답변을 처리한다. 분석
+데이터가 있는 turn의 assistant delta는 이 확인 전에는 Panel에 표시하지 않는다.
+
 S13-C4 Provider context cap은 행 수뿐 아니라 셀 수와 셀 길이도 절단으로
 계산한다. reader `complete` 결과 중 한 셀이라도 잘린 경우 Provider context는
 `partial`/`CONTEXT_TRUNCATED`가 된다. 이 판정은 reader의 원본 완료 근거를

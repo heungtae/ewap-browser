@@ -146,7 +146,44 @@ export const createAskChatRunner =
       redactTitle: dependencies.redactedTitle,
       businessBindings: bindings,
     });
+    const analysisPageCurrent = async (): Promise<boolean> => {
+      if (!collectedAnalysisData) return true;
+      const current = await dependencies
+        .readActive(undefined, active.tabId)
+        .catch(() => undefined);
+      assertRequestActive(context);
+      return (
+        !!current &&
+        current.tabId === active.tabId &&
+        analysisDataForScope(
+          collectedAnalysisData,
+          analysisScope,
+          dependencies.pageScope(current),
+        ).reason !== "PAGE_CHANGED"
+      );
+    };
+    const failStaleAnalysis = (): Record<string, unknown> => {
+      if (run.phase !== "TERMINAL") {
+        dependencies.coordinator.runs.terminal(
+          run.id,
+          "FAILED",
+          "PAGE_SCOPE_STALE",
+        );
+        dependencies.publish(run.id, {
+          type: "activity_finished",
+          stage: "FAILED",
+        });
+        dependencies.publish(run.id, {
+          type: "run_terminal",
+          outcome: "FAILED",
+          code: "PAGE_SCOPE_STALE",
+        });
+      }
+      dependencies.releaseVision(run.id);
+      return fail("PAGE_SCOPE_STALE");
+    };
     for (let step = 1; step <= 3; step += 1) {
+      if (!(await analysisPageCurrent())) return failStaleAnalysis();
       let streamed = false;
       let pending = "";
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -178,8 +215,9 @@ export const createAskChatRunner =
                 : {}),
               onDelta: (text) => {
                 if (
+                  collectedAnalysisData ||
                   dependencies.coordinator.runs.byId(run.id)?.phase ===
-                  "TERMINAL"
+                    "TERMINAL"
                 )
                   return;
                 streamed = true;
@@ -194,6 +232,7 @@ export const createAskChatRunner =
         }
       })();
       assertRequestActive(context);
+      if (!(await analysisPageCurrent())) return failStaleAnalysis();
       if (run.phase === "TERMINAL")
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
       if (response.tool_calls.length === 0) {

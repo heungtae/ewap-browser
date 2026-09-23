@@ -52,6 +52,16 @@ reader의 `complete` 결과도 Provider 전달 단계의 record/byte/cell cap에
 승인 후 재개, Page API read adapter, live provider 및 virtual-scroll
 완전성 증거를 완료 처리하지 않는다.
 
+## S13-C7 Ask tool loop의 scope 재검사 (2026-09-23)
+
+Ask가 collection 분석 데이터를 받은 경우 각 Provider 호출 직전과 응답 직후
+현재 tab의 snapshot을 다시 읽는다. 수집 당시 document/page scope와 다르거나
+페이지를 확인할 수 없으면 `PAGE_SCOPE_STALE`로 종료한다. 검사가 끝나기 전에는
+해당 Provider turn의 assistant delta를 Panel에 표시하지 않는다. 이 경계는
+첫 답변과 read-only tool 호출 뒤 이어지는 Provider turn에 모두 적용된다.
+
+런타임/Chrome 증거와 복수 source 선택·권한 승인 뒤 재개는 별도 완료 조건이다.
+
 ## 완료 조건
 
 - Ask의 페이지 데이터 분석이 safe unique source를 통해서만 bounded context를 받는다.

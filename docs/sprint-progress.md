@@ -31,6 +31,10 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     전달할 행·셀·문자가 잘리면 `partial`·`CONTEXT_TRUNCATED`·`truncated`로
     표시한다. 기존 reader의 `partial`/`viewport_only` 사유는 유지한다.
     범위 표시는 소스 변경 단계이며 Provider 응답의 정확성 검증은 별도다.
+-   S13-C7 Ask tool loop scope 보정: collection 분석 데이터가 있는 Ask는
+    각 Provider 호출 직전과 응답 직후 현재 page scope를 새 snapshot으로
+    확인한다. 변경·조회 실패 시 `PAGE_SCOPE_STALE`로 종료하고 assistant
+    delta도 확인 전에는 표시하지 않는다. 런타임/Chrome 검증은 별도다.
 
 기준일: 2026-08-22
 
