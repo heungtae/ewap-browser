@@ -82,7 +82,9 @@ describe("profile resolver replay protection", () =>
         allowedOrigins: ["https://resolver.company.test"],
         keyRing: { k1: publicKey },
       },
-      async (_input, init) => {
+      async function (this: unknown, _input, init) {
+        expect(this).toBe(globalThis);
+        expect(init?.credentials).toBe("omit");
         const request = JSON.parse(String(init?.body)) as {
           resolver_request_nonce: string;
           page: { page_context_digest: string; fingerprint: string };

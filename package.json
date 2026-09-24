@@ -13,6 +13,7 @@
     "test:chrome-extension": "node scripts/chrome-extension-smoke.mjs",
     "test:chrome-collection": "node --experimental-websocket scripts/chrome-collection-read-smoke.mjs",
     "test:chrome-analysis-data": "node --experimental-websocket scripts/chrome-analysis-data-smoke.mjs",
+    "test:chrome-s1": "node --experimental-websocket scripts/chrome-s1-smoke.mjs",
     "test:chrome-page-api-discovery": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",

@@ -17,14 +17,12 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
   269 unit/1 fixture/1 source E2E가 통과했다. Chrome for Testing 147의
   격리된 profile에서 unpacked Service Worker, Side Panel 문서와 Settings
   로드를 확인했다. [S0 증거](evidence/s0-closure-2026-09-24.md).
-- **S1~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
+- **S1: Completed** — 실제 Side Panel과 HTTPS fixture에서 projection,
+  Resolver 정상/손상 JWS, Ask, 민감값·credential header 비노출,
+  DOM 교체·navigation·worker 재시작을 확인했다.
+  [S1 증거](evidence/s1-closure-2026-09-24.md).
+- **S2~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
   증거를 현재 빌드에서 확인한 뒤 순서대로 판정한다.
-- **S1 재검증 착수** — 통제 HTTPS provider의 실제 Side Panel Ask/Act
-  분석 요청은 통과했다. 기존 preview runner의 미구현
-  `CONTENT_DEVTOOLS_LOG` 기대는 제거했다. 재실행에서 초기 semantic
-  projection을 통과한 뒤 S2/S7 click 단계가 결과 관계 부재로
-  `UNSUPPORTED_COMPLETION`을 반환했다. S1의 navigation·worker restart,
-  Resolver JWS 및 credential egress matrix는 아직 완료 증거가 없다.
 - **S9: In Progress** — S0~S8 `Completed`가 선행 조건이다. 현재
   `scripts/release-smoke.mjs`는 manifest host coverage 기대값 불일치로
   실패했으며 Linux clean-profile upgrade/rollback은 아직 실행하지 않았다.
@@ -75,8 +73,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
     matrix는 별도이므로 S10 전체 상태는 Planned다.
 
-기준일: 2026-09-24. S1~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
-현재 빌드의 종료 재검증은 아직 끝나지 않았다.
+기준일: 2026-09-24. S2~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
+현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0·S1은 위 최신 증거를 따른다.
 
   ----------------------------------------------------------------------------
   Sprint   상태       완료 조건
@@ -84,8 +82,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
   S0       Completed  clean build, package, Community 로그인 비필수,
                      Linux Chrome smoke — 2026-09-24 증거 연결
 
-  S1       In         projection·Ask E2E와 browser credential 비노출
-           Progress   
+  S1       Completed  projection·Ask E2E와 browser credential 비노출 —
+                     2026-09-24 증거 연결
 
   S2       In         permission/R0-R3, credential 거부, bounded CDP와
            Progress   detach-leak E2E
@@ -159,7 +157,7 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
                                                 # CFT semantic preview + bounded mutation regression
 ```
 
-S1~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
+S2~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
 남아 있기 때문이다. S5는 통제된 provider SSE 1,000 delta/tool interleave와
 worker suspend·panel close/reopen 뒤 event-store 복구, modal Stop race,
 accessibility/performance gate를 실제 Chrome에서 실행해야 한다. S6는

@@ -49,8 +49,9 @@ export class ProfileResolver {
     const nonce = opaqueId();
     let response: Response;
     try {
-      response = await this.fetcher(endpoint, {
+      response = await this.fetcher.call(globalThis, endpoint, {
         method: "POST",
+        credentials: "omit",
         redirect: "error",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

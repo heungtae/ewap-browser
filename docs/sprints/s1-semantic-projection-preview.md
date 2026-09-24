@@ -11,3 +11,30 @@ S1의 projection은 최초 visible baseline이다. S6는 [schema v2 계약](../1
 제거한다. 실제 `START_PREVIEW` projection, credential redaction,
 stale target 및 navigation 검증은 유지한다. 디버그 로그 relay 성공을
 S1 기능 완료로 주장하지 않는다.
+
+## S1 종료 재검증 시나리오 (2026-09-24)
+
+S1 전용 Chrome runner는 다음을 실제 unpacked Extension의 Side Panel과
+HTTPS 통제 fixture에서 검사한다. S2/S7의 action dispatch는 호출하지 않는다.
+
+1. labelled control과 민감 입력이 섞인 페이지의 초기 projection에서
+   password·OTP·token·cookie 값이 제외되고 `model_ref`가 raw DOM 경로를
+   노출하지 않는다.
+2. Resolver 설정 부재, 정상 ES256 JWS, 서명 손상 순서로
+   `RESOLVE_PROFILE`을 호출한다. 정상 응답만 `MATCHED`이며 실패는
+   `PROFILE_UNAVAILABLE`로 닫는다.
+3. 실제 Ask를 통제 Provider로 보내 답변을 확인하고 Provider 요청의
+   projection/tool schema에 민감 marker가 없는지 검사한다.
+4. 같은 문서의 control 교체, 다른 path navigation, Service Worker 종료
+   뒤 재시작에서 이전 ref/document identity 재사용을 거부하고 새
+   projection을 얻는다.
+
+각 검사는 구별되는 실패 코드를 남긴다. Chrome runtime 증거와 unit/schema
+검증을 상태 원장에 연결한 뒤 S1 `Completed`를 판정한다.
+
+Chrome 검증에서 `ProfileResolver`가 전달받은 `fetch`를 인스턴스 메서드로
+호출해 `WorkerGlobalScope`의 `Illegal invocation`이 발생함을 확인했다.
+Resolver HTTPS 호출은 Service Worker global을 receiver로 사용하고
+browser credential을 제외해야 한다. 수정 뒤 정상 JWS가 도달·검증되고
+손상 JWS만 거부됨을 [S1 증거](../evidence/s1-closure-2026-09-24.md)로
+확인했다. 실패 응답에는 endpoint나 원문을 넣지 않는다.
