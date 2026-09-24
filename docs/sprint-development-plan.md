@@ -21,7 +21,7 @@ Enterprise 구현은 S10\~S15에서 이어간다.
 
 ## 순서
 
-1.  S0: Node, pnpm, MV3 build, Chrome fixture와 package 생성, 제품
+1.  S0: Node, pnpm, MV3 build, Linux Chrome fixture와 package 생성, 제품
     계정·SSO·Cloud Sync surface 부재 baseline
 2.  S1: document registration, projection, `ref_id`/`model_ref`, Page
     Profile Resolver 설정·검증, Ask chat UI와 browser credential 비노출
@@ -46,8 +46,8 @@ Enterprise 구현은 S10\~S15에서 이어간다.
     demo 외 Chrome E2E
 9.  S8: `standard`, `follow_a_plan`, `skip_all_permission_checks` mode와
     permission-less hard-policy security matrix
-10. S9: Windows/Linux Community Browser Runtime 설치·업데이트·rollback,
-    provider 인증/행동 인가 release evidence
+10. S9: Linux Community Browser Runtime 로컬 release candidate의
+    설치·업데이트·rollback, provider 인증/행동 인가 evidence
 
 각 Sprint는 code, unit test, Chrome E2E, 상태 원장 증적을 같은 변경
 세트로 가진다. 인증과 인가 검증은 웹사이트 session, 제품 사용자

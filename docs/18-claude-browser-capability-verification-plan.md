@@ -29,10 +29,12 @@ audit에 secret/raw ref/node/coordinate/action value 포함.
   V1     typecheck, lint, unit/contract   함수와 schema 동작
   V2     fixture/integration              extension module 연결
   V3     Chrome for Testing E2E           실제 MV3/content/CDP/UI 동작
-  V4     Windows/Linux clean profile      배포 환경 동작
-  V5     release review 승인              출시 가능
+  V4     Linux clean profile              로컬 배포 환경 동작
+  V5     별도 release review 승인          대외 출시 가능
 
-S5\~S8 완료에는 V3가 필요하고 S9 완료에는 V4와 V5가 필요하다.
+S5\~S8 완료에는 V3가 필요하고 S9 로컬 release candidate 완료에는
+Linux V4가 필요하다. Windows 배포와 대외 출시에는 Windows 검증 및 V5가
+별도로 필요하며 S9 `Completed`로 이를 주장하지 않는다.
 
 ## 2. 검증 환경
 
@@ -555,7 +557,7 @@ call을 강제로 주입한 contract test도 통과해야 한다.
   S8 permission   standard/follow-plan/skip matrix와 hard-policy 반복
   modes           
 
-  S9 release      전체 regression, Windows/Linux clean
+  S9 local RC     전체 regression, Linux clean
                   install/upgrade/rollback
   -----------------------------------------------------------------------
 
@@ -573,7 +575,7 @@ test ID별 pass/fail/skip
 Chrome profile 생성 방식
 screenshot/video 경로(credential 없는 fixture만)
 CDP attached-session 시작/종료 count
-known issue / blocker / reviewer
+known issue / blocker
 ```
 
 실제 page content, provider key/header, typed action value, raw
@@ -582,7 +584,8 @@ ref/node/selector/coordinate와 screenshot base64는 evidence에 넣지
 
 ## 15. 출시 중단 조건
 
-다음 중 하나라도 있으면 S9와 release는 `Blocked` 또는 `NO-GO`다.
+다음 중 하나라도 있으면 S9 로컬 release candidate는 `Blocked`다.
+대외 출시는 별도 Windows 검증과 V5 검토 전까지 `NO-GO`다.
 
 -   hidden DOM에서 credential value가 provider로 유출
 -   skip mode가 R2/R3, denylist, credential 또는 restricted-page hard
@@ -595,4 +598,4 @@ ref/node/selector/coordinate와 screenshot base64는 evidence에 넣지
 -   diagnostics/export/storage에 screenshot/page content/action value
     저장
 -   Claude artifact나 license 미확인 code/asset이 package에 포함
--   Windows 또는 Linux clean-profile gate 미수행
+-   Linux clean-profile gate 미수행

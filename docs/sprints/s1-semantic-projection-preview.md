@@ -5,3 +5,9 @@ content script의 document registration, semantic projection, stale ref 폐기, 
 완료 조건: 실제 Chrome에서 labelled control, navigation, dynamic replacement, worker restart, Resolver Profile JWS 검증과 Ask chat request를 검증한다. Resolver가 없거나 서명이 틀리면 Profile을 사용하지 않고 fail closed한다. password, OTP, recovery code, token, cookie와 browser credential이 semantic projection, prompt, tool schema, audit와 diagnostics에 포함되지 않는 negative test를 수행하고 credential 화면에서는 redacted projection만 제공하거나 fail closed임을 확인한다.
 
 S1의 projection은 최초 visible baseline이다. S6는 [schema v2 계약](../14-semantic-projection-fingerprint.md)에 따라 hidden DOM을 기본 `all_dom` read로 확장하지만 hidden target을 mutation mapping에 넣지 않는다. 이 확장은 S1 완료 증적을 소급 변경하지 않으며 S6의 별도 Chrome E2E로 검증한다.
+
+2026-09-24 종료 재검증에서는 현재 Content Script 메시지 계약에 없는
+`CONTENT_DEVTOOLS_LOG` relay를 Chrome preview runner의 종료 gate에서
+제거한다. 실제 `START_PREVIEW` projection, credential redaction,
+stale target 및 navigation 검증은 유지한다. 디버그 로그 relay 성공을
+S1 기능 완료로 주장하지 않는다.

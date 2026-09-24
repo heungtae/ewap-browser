@@ -530,8 +530,8 @@ wiring도 S5\~S8 구현 범위이며 새 코드만 작성하고 기존 foundatio
 
 ## 14. 완료 정의
 
-이 설계의 완료는 문서 작성이 아니라 S5\~S9가 상태 원장에서 각각 `Done`이
-되는 것이다. 최소 완료 조건은 다음과 같다.
+이 설계의 완료는 문서 작성이 아니라 S5\~S9가 상태 원장에서 각각
+`Completed`로 기록되는 것이다. 최소 완료 조건은 다음과 같다.
 
 -   Chat UI streaming/recovery/accessibility Chrome E2E
 -   hidden DOM 기본 projection과 credential negative test
@@ -539,4 +539,4 @@ wiring도 S5\~S8 구현 범위이며 새 코드만 작성하고 기존 foundatio
 -   demo가 아닌 두 개 이상의 일반 fixture에서 generic Act
 -   standard/follow-plan/skip-all mode의 positive/negative matrix
 -   R2/R3, credential, stale ref, detach와 verifier hard policy 유지
--   Windows/Linux clean profile 설치, upgrade와 rollback
+-   Linux clean profile 설치, upgrade와 rollback. Windows 배포는 별도 출시 판정

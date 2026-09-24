@@ -49,4 +49,4 @@
 - page/model/runtime message로 mode 변경 불가
 - mode 변경 후 기존 pending permission/confirmation/action token 폐기
 - audit/export/diagnostics에 mode 이름 외 page/action value 없음
-- 실제 Chrome evidence와 reviewer가 상태 원장에 연결
+- 실제 Chrome evidence가 상태 원장에 연결

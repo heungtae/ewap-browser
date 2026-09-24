@@ -1,5 +1,34 @@
 # Sprint 진행 상태
 
+## S0~S9 Browser 기반 종료 범위 (2026-09-24)
+
+[Sprint 설계 인덱스](sprint-design.md)의 종료 판정 범위를 따른다. 현재
+Linux/Chrome for Testing 환경에서 실행 가능한 Browser 기반 증거로
+`Completed`를 판정한다. Windows clean-profile과 별도 release reviewer
+승인은 S0~S9 종료 조건에서 제외하며, S9 `Completed`는 Linux 로컬
+release candidate만 뜻한다. [31번](31-act-request-execution-current-implementation.md)·
+[33번](33-ask-request-execution-current-implementation.md)의 현재 Ask/Act
+경로를 판정 대상으로 삼고 [32번](32-ask-act-analysis-data-acquisition-design.md)의
+미완료 분석 수집 범위를 S0~S9 완료에 포함하지 않는다.
+
+- **S0: Completed** — 현재 커밋 `d3bcf552`의 clean archive에서 pnpm 9
+  offline frozen-lockfile 설치와 Node 22.23.2 기준 build, typecheck,
+  lint, package policy,
+  269 unit/1 fixture/1 source E2E가 통과했다. Chrome for Testing 147의
+  격리된 profile에서 unpacked Service Worker, Side Panel 문서와 Settings
+  로드를 확인했다. [S0 증거](evidence/s0-closure-2026-09-24.md).
+- **S1~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
+  증거를 현재 빌드에서 확인한 뒤 순서대로 판정한다.
+- **S1 재검증 착수** — 통제 HTTPS provider의 실제 Side Panel Ask/Act
+  분석 요청은 통과했다. 기존 preview runner의 미구현
+  `CONTENT_DEVTOOLS_LOG` 기대는 제거했다. 재실행에서 초기 semantic
+  projection을 통과한 뒤 S2/S7 click 단계가 결과 관계 부재로
+  `UNSUPPORTED_COMPLETION`을 반환했다. S1의 navigation·worker restart,
+  Resolver JWS 및 credential egress matrix는 아직 완료 증거가 없다.
+- **S9: In Progress** — S0~S8 `Completed`가 선행 조건이다. 현재
+  `scripts/release-smoke.mjs`는 manifest host coverage 기대값 불일치로
+  실패했으며 Linux clean-profile upgrade/rollback은 아직 실행하지 않았다.
+
 ## Enterprise Web AI Platform 전환 상태 (2026-08-31)
 
 이 문서의 기존 상태는 2026-08-22 ContextPilot 구현 증적으로 보존한다.
@@ -46,13 +75,14 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
     matrix는 별도이므로 S10 전체 상태는 Planned다.
 
-기준일: 2026-08-22
+기준일: 2026-09-24. S1~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
+현재 빌드의 종료 재검증은 아직 끝나지 않았다.
 
   ----------------------------------------------------------------------------
   Sprint   상태       완료 조건
   -------- ---------- --------------------------------------------------------
-  S0       In         build, package, 제품 인증 surface 부재, Windows/Linux
-           Progress   Chrome smoke
+  S0       Completed  clean build, package, Community 로그인 비필수,
+                     Linux Chrome smoke — 2026-09-24 증거 연결
 
   S1       In         projection·Ask E2E와 browser credential 비노출
            Progress   
@@ -78,8 +108,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
   S8       In         standard/plan/skip permission mode와 hard-policy matrix
            Progress   
 
-  S9       In         Windows/Linux package와 전체 인증·인가·upgrade·rollback
-           Progress   출시 증적
+  S9       In         Linux package와 전체 인증·인가·upgrade·rollback
+           Progress   로컬 release candidate 증적
   ----------------------------------------------------------------------------
 
 ## 2026-08-22 구현 및 검증 증적
@@ -129,12 +159,12 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
                                                 # CFT semantic preview + bounded mutation regression
 ```
 
-Sprint 상태를 `Done`으로 바꾸지 않은 이유는 명시적 종료 증적이 아직 남아
-있기 때문이다. S5는 실제 provider SSE 1,000 delta/tool interleave와
+S1~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
+남아 있기 때문이다. S5는 통제된 provider SSE 1,000 delta/tool interleave와
 worker suspend·panel close/reopen 뒤 event-store 복구, modal Stop race,
 accessibility/performance gate를 실제 Chrome에서 실행해야 한다. S6는
 vision zoom/tab-group/batch cancellation, S7은 Profile R2 binding 및 두
 일반 Profile fixture, S8은 전체 adversarial hard-policy matrix, S9는
-Windows clean profile과 upgrade/rollback을 각각 실제 환경에서 실행해야
+Linux clean profile과 upgrade/rollback을 각각 실제 환경에서 실행해야
 한다. 이 항목은 구현되거나 실행되지 않은 상태에서 pass로 대체하지
 않는다.

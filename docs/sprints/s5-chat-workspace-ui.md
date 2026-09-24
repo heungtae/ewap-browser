@@ -63,4 +63,4 @@ provider transport, mutation policy와 CDP command allowlist 변경은 이 Sprin
 
 ## 비완료 조건
 
-React component snapshot만 있거나 source-based E2E만 통과한 경우, mock screenshot만 렌더링한 경우, 실제 worker recovery를 수행하지 않은 경우에는 `Done`으로 표시하지 않는다.
+React component snapshot만 있거나 source-based E2E만 통과한 경우, mock screenshot만 렌더링한 경우, 실제 worker recovery를 수행하지 않은 경우에는 `Completed`로 표시하지 않는다.

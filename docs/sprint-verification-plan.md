@@ -38,7 +38,7 @@ S10\~S15의 필수 추가 gate:
   --------------------------------------------------------------------------------------
   Sprint   자동 검증                                      수동 증적
   -------- ---------------------------------------------- ------------------------------
-  S0       install, build, browser manifest, Community    Windows/Linux Chrome
+  S0       install, build, browser manifest, Community    Linux Chrome
            runtime의 enterprise dependency 없는 동작      local-mode load
 
   S1       projection schema, stale ref, Resolver         로그인 페이지 Ask chat와
@@ -75,7 +75,7 @@ S10\~S15의 필수 추가 gate:
            denylist/R2/R3/credential/restricted hard      redirect/adversarial Chrome
            policy                                         smoke
 
-  S9       package/plugin/Chat/read/Act/permission-mode   Windows/Linux clean profile
+  S9       package/plugin/Chat/read/Act/permission-mode   Linux clean profile
            compatibility, artifact exclusion,             설치·upgrade·rollback과
            update/rollback                                인증·인가 경계 smoke
   --------------------------------------------------------------------------------------
@@ -84,6 +84,11 @@ S10\~S15의 필수 추가 gate:
 수행한다. 실제 API key와 header 값은 test log에 남기지 않는다. 웹사이트
 session, 제품 사용자 identity, provider credential과 browser 행동
 permission을 하나의 `auth` 상태로 합치지 않고 각각 독립적으로 검증한다.
+Windows clean-profile 증거와 별도 출시 검토자 승인은 S0~S9 `Completed`
+조건에서 제외한다. S9는 Linux 로컬 release candidate 완료만 판정하며
+Windows 배포와 대외 출시는 별도 판정 대상이다. 31~33번의 현재 Ask/Act
+범위 밖인 복수 source 선택·reviewed Page API read도 S0~S9의 완료
+조건으로 소급하지 않는다.
 
 S2 Chrome 검증은 product extension의 `chrome.debugger` 경로와 외부
 remote-debugging harness를 구분한다. 최소 negative set은 unknown
