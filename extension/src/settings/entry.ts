@@ -14,7 +14,10 @@ type BrowserPermissions = {
     permissions?: string[];
     origins?: string[];
   }): Promise<boolean>;
-  remove(query: { permissions: string[] }): Promise<boolean>;
+  remove(query: {
+    permissions?: string[];
+    origins?: string[];
+  }): Promise<boolean>;
 };
 import { validateProfileResolverSettings } from "./profile-settings.js";
 import {
@@ -720,6 +723,43 @@ revokePermissions?.addEventListener("click", () => {
 const agentPreferencesStatus = document.querySelector<HTMLOutputElement>(
   "#agent-preferences-status",
 );
+const screenshotPermissionRequest = document.querySelector<HTMLButtonElement>(
+  "#screenshot-permission-request",
+);
+const screenshotPermissionStatus = document.querySelector<HTMLOutputElement>(
+  "#screenshot-permission-status",
+);
+const screenshotOrigins = { origins: ["<all_urls>"] };
+const refreshScreenshotPermission = async (): Promise<void> => {
+  const enabled = await browserPermissions
+    ?.contains(screenshotOrigins)
+    .catch(() => false);
+  if (screenshotPermissionRequest)
+    screenshotPermissionRequest.disabled = !browserPermissions || !!enabled;
+  if (screenshotPermissionStatus)
+    screenshotPermissionStatus.value = enabled
+      ? "전체 사이트 접근이 허용되었습니다. 철회는 Chrome 확장 프로그램의 사이트 접근 설정에서 하세요."
+      : "모델 screenshot을 사용하려면 전체 사이트 접근 권한을 허용하세요.";
+};
+screenshotPermissionRequest?.addEventListener("click", () => {
+  void (async () => {
+    if (!browserPermissions || !screenshotPermissionRequest) return;
+    screenshotPermissionRequest.disabled = true;
+    try {
+      const changed = await browserPermissions.request(screenshotOrigins);
+      if (!changed && screenshotPermissionStatus)
+        screenshotPermissionStatus.value =
+          "화면 캡처 권한이 허용되지 않았습니다.";
+      await refreshScreenshotPermission();
+    } catch {
+      if (screenshotPermissionStatus)
+        screenshotPermissionStatus.value =
+          "화면 캡처 권한을 요청하지 못했습니다.";
+      await refreshScreenshotPermission();
+    }
+  })();
+});
+void refreshScreenshotPermission();
 const contentRecoveryEnable = document.querySelector<HTMLInputElement>(
   "#content-recovery-enable",
 );

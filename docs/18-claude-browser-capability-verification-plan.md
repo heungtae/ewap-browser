@@ -36,6 +36,13 @@ S5\~S8 완료에는 V3가 필요하고 S9 로컬 release candidate 완료에는
 Linux V4가 필요하다. Windows 배포와 대외 출시에는 Windows 검증 및 V5가
 별도로 필요하며 S9 `Completed`로 이를 주장하지 않는다.
 
+아래 READ/FIND/VIS/TAB/BATCH 표는 원래의 확장 후보 전체를 보존한다.
+현재 S6 종료에서는 [S6 범위](sprints/s6-advanced-page-reading.md)의
+snapshot-only·단일 active tab·`chrome.tabs.captureVisibleTab`에 해당하는
+항목만 적용한다. 5,000 node, rerank, CDP screenshot, tab group과
+화면 annotation 조건은 S6 종료 조건에서 삭제했다. 수행 여부는
+[S6 종료 증거](evidence/s6-closure-2026-09-25.md)에 항목별로 기록한다.
+
 ## 2. 검증 환경
 
 ### 2.1 고정 환경

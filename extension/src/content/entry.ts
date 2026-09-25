@@ -321,9 +321,11 @@ const boundedTextContent = (
     const parent = node.parentElement;
     if (
       !skipNonContent ||
-      !parent?.closest(
-        "script,style,noscript,template,[hidden],[aria-hidden=true]",
-      )
+      (parent &&
+        !parent.closest(
+          "script,style,noscript,template,[hidden],[aria-hidden=true]",
+        ) &&
+        hiddenReasonFor(parent) === undefined)
     )
       result += (node.nodeValue ?? "").slice(0, maxCharacters - result.length);
     node = walker.nextNode();

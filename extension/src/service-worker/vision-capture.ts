@@ -71,8 +71,12 @@ export const zoomViewportCapture = async (
   capture: VisionCapture,
   region: ZoomRegion,
 ): Promise<VisionCapture> => {
+  const encoded = capture.data_url.slice(capture.data_url.indexOf(",") + 1);
+  const bytes = Uint8Array.from(atob(encoded), (character) =>
+    character.charCodeAt(0),
+  );
   const image = await createImageBitmap(
-    await (await fetch(capture.data_url)).blob(),
+    new Blob([bytes], { type: capture.mime_type }),
   );
   try {
     const sourceWidth = Math.floor(image.width * (region.right - region.left));

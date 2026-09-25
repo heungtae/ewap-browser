@@ -31,9 +31,9 @@ if (manifest.permissions.includes("webNavigation"))
   throw new Error("manifest contains an unsupported permission");
 if (
   JSON.stringify(manifest.optional_host_permissions) !==
-  JSON.stringify(["http://*/*"])
+  JSON.stringify(["http://*/*", "<all_urls>"])
 )
-  throw new Error("optional HTTP provider host boundary differs");
+  throw new Error("optional host permission boundary differs");
 if (!manifest.options_ui?.page)
   throw new Error("provider Settings page is missing");
 if (manifest.storage?.managed_schema !== "managed-storage-schema.json")

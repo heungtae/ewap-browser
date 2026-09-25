@@ -8,9 +8,10 @@ export const requireProviderHostPermission = async (
 ): Promise<void> => {
   if (url.protocol !== "http:") return;
   const pattern = providerHttpHostPattern(url);
-  const granted = await chromeApi?.permissions?.contains({
-    origins: [pattern],
-  });
+  // A screenshot opt-in can grant <all_urls>; it does not grant an HTTP
+  // Provider endpoint. Require the endpoint's own optional host grant.
+  const grants = await chromeApi?.permissions?.getAll();
+  const granted = grants?.origins?.includes(pattern) === true;
   if (!granted)
     throw new ContractError(
       "PROVIDER_UNAVAILABLE",

@@ -545,6 +545,15 @@
               <option value="disabled">사용 안 함</option>
             </select>
           </label>
+          <div class="content-recovery-control">
+            <button id="screenshot-permission-request" type="button">
+              모델 화면 캡처용 전체 사이트 접근 허용
+            </button>
+            <output
+              id="screenshot-permission-status"
+              aria-live="polite"
+            ></output>
+          </div>
           <label class="checkbox-row">
             <input name="group_tools_in_timeline" type="checkbox" checked />
             연속 읽기 도구를 timeline에서 묶기

@@ -10,6 +10,7 @@ import { businessMcpTool } from "./business-mcp-tools.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
 import { analysisDataForScope } from "./analysis-data-scope.js";
+import { allowsModelScreenshot } from "../policy/permission-mode.js";
 
 const readSummary = (tool: string): string =>
   ({
@@ -117,8 +118,10 @@ export const createAskChatRunner =
       snapshot: modelSnapshot,
       tabId: active.tabId,
       runId: run.id,
-      screenshotEnabled:
-        dependencies.preferences().screenshot_policy !== "disabled",
+      ...(context?.signal ? { signal: context.signal } : {}),
+      screenshotEnabled: allowsModelScreenshot(
+        dependencies.preferences().screenshot_policy,
+      ),
       tabs: dependencies.chrome.tabs,
       capture: (id) => dependencies.vision(run.id, id),
       remember: (capture) => dependencies.rememberVision(run.id, capture),

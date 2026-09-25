@@ -47,6 +47,10 @@ export const defaultAgentPreferences = (): AgentPreferences => ({
   show_tool_debug_details: false,
 });
 
+export const allowsModelScreenshot = (
+  policy: AgentPreferences["screenshot_policy"],
+): boolean => policy === "manual_or_model";
+
 export const validateAgentPreferences = (value: unknown): AgentPreferences => {
   if (!isPlainObject(value)) return fail("INVALID_ARGUMENT");
   const keys = [

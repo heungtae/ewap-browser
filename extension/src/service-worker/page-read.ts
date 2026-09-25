@@ -137,6 +137,7 @@ export const findPage = (
   if (
     !scopes.has(scope) ||
     !query.trim() ||
+    query.length > 512 ||
     !Number.isInteger(limit) ||
     limit < 1 ||
     limit > 20

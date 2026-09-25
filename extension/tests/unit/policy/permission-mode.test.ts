@@ -1,12 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { PermissionManager } from "../../../src/policy/permission-manager.js";
 import {
+  allowsModelScreenshot,
   defaultAgentPreferences,
   gatePermission,
   validateAgentPreferences,
 } from "../../../src/policy/permission-mode.js";
 
 describe("permission modes", () => {
+  it("keeps manual-only screenshots unavailable to model tools", () => {
+    expect(allowsModelScreenshot("manual_or_model")).toBe(true);
+    expect(allowsModelScreenshot("manual_only")).toBe(false);
+    expect(allowsModelScreenshot("disabled")).toBe(false);
+  });
   it("skip mode omits only the prompt and preserves explicit deny", () => {
     const manager = new PermissionManager();
     const preferences = {

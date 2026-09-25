@@ -22,13 +22,24 @@ export const createAskVisionToolExecutor = (dependencies: Dependencies) => ({
     const tab = (
       await dependencies.tabs.query({ active: true, lastFocusedWindow: true })
     )[0];
-    if (!tab || tab.id !== dependencies.tabId) return fail("TARGET_STALE");
-    const capture = normalizeViewportCapture(
-      await dependencies.tabs.captureVisibleTab(tab.windowId, {
-        format: "jpeg",
-        quality: 75,
-      }),
-    );
+    if (
+      !tab ||
+      tab.id !== dependencies.tabId ||
+      typeof tab.windowId !== "number" ||
+      !Number.isInteger(tab.windowId) ||
+      tab.windowId < 0
+    )
+      return fail("TARGET_STALE");
+    const dataUrl = await dependencies.tabs
+      .captureVisibleTab(tab.windowId, { format: "jpeg", quality: 75 })
+      .catch(() => undefined);
+    if (!dataUrl) return fail("VISION_CAPTURE_UNAVAILABLE");
+    const current = (
+      await dependencies.tabs.query({ active: true, lastFocusedWindow: true })
+    )[0];
+    if (current?.id !== tab.id || current?.windowId !== tab.windowId)
+      return fail("TARGET_STALE");
+    const capture = normalizeViewportCapture(dataUrl);
     dependencies.remember(capture);
     return capture;
   },

@@ -22,7 +22,7 @@
     "managed_schema": "managed-storage-schema.json"
   },
   "host_permissions": ["https://*/*"],
-  "optional_host_permissions": ["http://*/*"],
+  "optional_host_permissions": ["http://*/*", "<all_urls>"],
   "background": {
     "service_worker": "src/service-worker/entry.js",
     "type": "module"

@@ -62,9 +62,9 @@ S10\~S15의 필수 추가 gate:
            duplicate/gap/resync, Stop race, safe debug,   suspend/recovery와
            a11y와 virtual-list 성능                       320px/keyboard smoke
 
-  S6       hidden reason, credential redaction, focused   실제 페이지 hidden DOM,
-           read, find, vision command allowlist, tab      screenshot/zoom, multi-tab과
-           ownership와 read-batch 제한                    prompt-injection Chrome smoke
+  S6       hidden reason, text value redaction, focused   실제 Side Panel read/find/batch,
+           read, find, active-tab capture와 read-batch    active-tab screenshot/zoom,
+           제한                                           단일 탭·권한 음성 검사
 
   S7       generic proposal/ref/value slot, DOM/CDP path, demo 외 일반 사이트 2개와
            verifier, no-retry, cleanup와 demo regression  staging-equivalent

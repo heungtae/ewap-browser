@@ -1,65 +1,54 @@
 import type { ModelSemanticSnapshot } from "../contracts/types.js";
-import { fail, isPlainObject } from "../security/validation.js";
+import { fail } from "../security/validation.js";
 import { findPage, getPageText, readPage } from "./page-read.js";
+import {
+  validateReadBatchItems,
+  type ReadBatchItem,
+} from "./read-batch-validation.js";
 
-export type ReadBatchItem =
-  | { tool: "read_page"; arguments: Record<string, unknown> }
-  | { tool: "get_page_text"; arguments: Record<string, unknown> }
-  | { tool: "find"; arguments: Record<string, unknown> };
+export type { ReadBatchItem } from "./read-batch-validation.js";
 
+type Options = { signal?: AbortSignal; now?: () => number };
+const maxBytes = 3_000_000;
+const maxDurationMs = 30_000;
+
+/** Snapshot-only reads: validate every item before computing any result. */
 export const executeReadBatch = (
   snapshot: ModelSemanticSnapshot,
-  items: readonly ReadBatchItem[],
+  items: unknown,
+  options: Options = {},
 ): Array<{ tool: ReadBatchItem["tool"]; result: unknown }> => {
-  if (items.length < 1 || items.length > 8) return fail("INVALID_ARGUMENT");
+  const validated = validateReadBatchItems(snapshot, items);
+  const now = options.now ?? Date.now;
+  const started = now();
+  const check = (): void => {
+    if (options.signal?.aborted) return fail("POLICY_DENIED");
+    if (now() - started > maxDurationMs) return fail("REQUEST_TIMEOUT");
+  };
   const results: Array<{ tool: ReadBatchItem["tool"]; result: unknown }> = [];
-  for (const item of items) {
-    if (!isPlainObject(item.arguments)) return fail("INVALID_ARGUMENT");
-    if (item.tool === "read_page") {
-      results.push({
-        tool: item.tool,
-        result: readPage(snapshot, item.arguments),
-      });
-      continue;
-    }
-    if (item.tool === "get_page_text") {
-      const max = item.arguments.max_chars;
-      if (
-        Object.keys(item.arguments).some((key) => key !== "max_chars") ||
-        (max !== undefined &&
-          (typeof max !== "number" || !Number.isInteger(max)))
-      )
-        return fail("INVALID_ARGUMENT");
-      results.push({
-        tool: item.tool,
-        result: getPageText(snapshot, typeof max === "number" ? max : 50_000),
-      });
-      continue;
-    }
-    if (item.tool === "find") {
-      const { query, scope, limit } = item.arguments;
-      if (
-        Object.keys(item.arguments).some(
-          (key) => !["query", "scope", "limit"].includes(key),
-        ) ||
-        typeof query !== "string" ||
-        (scope !== undefined &&
-          scope !== "all_dom" &&
-          scope !== "visible_only" &&
-          scope !== "interactive") ||
-        (limit !== undefined &&
-          (typeof limit !== "number" || !Number.isInteger(limit)))
-      )
-        return fail("INVALID_ARGUMENT");
-      results.push({
-        tool: item.tool,
-        result: findPage(snapshot, query, scope ?? "all_dom", limit ?? 20),
-      });
-      continue;
-    }
-    return fail("INVALID_ARGUMENT");
+  check();
+  for (const item of validated) {
+    check();
+    const args = item.arguments;
+    const result =
+      item.tool === "read_page"
+        ? readPage(snapshot, args)
+        : item.tool === "get_page_text"
+          ? getPageText(
+              snapshot,
+              typeof args.max_chars === "number" ? args.max_chars : 50_000,
+            )
+          : findPage(
+              snapshot,
+              args.query as string,
+              (args.scope as "all_dom" | "visible_only" | "interactive") ??
+                "all_dom",
+              typeof args.limit === "number" ? args.limit : 20,
+            );
+    results.push({ tool: item.tool, result });
+    if (new TextEncoder().encode(JSON.stringify(results)).byteLength > maxBytes)
+      return fail("PAYLOAD_LIMIT_EXCEEDED");
+    check();
   }
-  if (new TextEncoder().encode(JSON.stringify(results)).byteLength > 3_000_000)
-    return fail("PAYLOAD_LIMIT_EXCEEDED");
   return results;
 };

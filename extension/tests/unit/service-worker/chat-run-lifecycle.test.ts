@@ -44,4 +44,26 @@ describe("chat run lifecycle", () => {
       },
     ]);
   });
+  it("releases only the completed run's transient images", () => {
+    const captures = new Map();
+    const lifecycle = createChatRunLifecycle({
+      chrome: undefined,
+      events: new TabChatSessionStore(),
+      panels: new Map(),
+      unboundPanels: new Set(),
+      captures,
+      coordinator: {} as never,
+      bindings: new Map(),
+      localSessions: {} as never,
+    });
+    const image = {
+      capture_id: "capture-abcdefghijklmnop",
+      mime_type: "image/jpeg" as const,
+      data_url: "data:image/jpeg;base64,aGVsbG8=",
+    };
+    lifecycle.rememberVision("run-one", image);
+    lifecycle.rememberVision("run-two", image);
+    lifecycle.releaseVision("run-one");
+    expect([...captures.keys()]).toEqual(["run-two:capture-abcdefghijklmnop"]);
+  });
 });

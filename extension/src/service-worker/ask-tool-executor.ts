@@ -15,6 +15,7 @@ type Dependencies = {
   snapshot: ModelSemanticSnapshot;
   tabId: number;
   runId: string;
+  signal?: AbortSignal;
   screenshotEnabled: boolean;
   tabs: BrowserTabs;
   capture(id: string): VisionCapture | undefined;
@@ -122,13 +123,9 @@ export const createAskToolExecutor = (dependencies: Dependencies) => {
           )
         )
           return fail("INVALID_ARGUMENT");
-        return executeReadBatch(
-          snapshot,
-          args.items as Array<{
-            tool: "read_page" | "get_page_text" | "find";
-            arguments: Record<string, unknown>;
-          }>,
-        );
+        return executeReadBatch(snapshot, args.items, {
+          ...(dependencies.signal ? { signal: dependencies.signal } : {}),
+        });
       }
       if (call.name === "screenshot") {
         return vision.screenshot(call.arguments);

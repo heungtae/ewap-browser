@@ -98,6 +98,7 @@ export type BrowserOffscreen = {
   }): Promise<void>;
 };
 export type BrowserPermissions = {
+  getAll(): Promise<{ origins?: string[] }>;
   contains(query: {
     permissions?: string[];
     origins?: string[];

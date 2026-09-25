@@ -51,6 +51,9 @@ describe("page read", () => {
         visible: false,
       }),
     ]);
+    expect(() => findPage(snapshot, "x".repeat(513))).toThrow(
+      "INVALID_ARGUMENT",
+    );
   });
   it("prefers normalized article text and rejects pages without readable text", () => {
     expect(
@@ -92,5 +95,16 @@ describe("page read", () => {
       }).nodes.map((node) => node.model_ref),
     ).toEqual(["root-ref-abcdefghijklmnop", "child-ref-abcdefghijklmnop"]);
     expect(() => readPage(tree, { depth: 1 })).toThrow("INVALID_ARGUMENT");
+  });
+  it("limits deterministic find results to 20 and respects visible scope", () => {
+    const many = {
+      ...snapshot,
+      nodes: Array.from({ length: 25 }, (_, index) => ({
+        ...snapshot.nodes[0]!,
+        model_ref: `ref-${String(index).padStart(24, "0")}`,
+      })),
+    };
+    expect(findPage(many, "Save")).toHaveLength(20);
+    expect(findPage(snapshot, "Advanced", "visible_only")).toEqual([]);
   });
 });
