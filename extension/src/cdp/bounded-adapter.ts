@@ -3,6 +3,13 @@ import type { Capability } from "../policy/permission-manager.js";
 import { permissionHost } from "../policy/permission-manager.js";
 import { ContractError, fail } from "../security/validation.js";
 import { recoverCdpSessions } from "./cdp-recovery.js";
+import type { Debuggee, DebuggerApi, MarkerStore } from "./cdp-types.js";
+export type {
+  Debuggee,
+  DebuggerApi,
+  MarkerStore,
+  SessionMarker,
+} from "./cdp-types.js";
 
 export type BoundedCdpTool =
   | "click_by_ref"
@@ -33,30 +40,6 @@ export type PreparedTarget = {
   editable: boolean;
   viewportWidth: number;
   viewportHeight: number;
-};
-export type Debuggee = { tabId: number };
-export type DebuggerApi = {
-  attach(target: Debuggee, version: "1.3"): Promise<void>;
-  sendCommand(
-    target: Debuggee,
-    method: string,
-    params?: Record<string, unknown>,
-  ): Promise<Record<string, unknown>>;
-  detach(target: Debuggee): Promise<void>;
-  onDetach?: {
-    addListener(listener: (target: Debuggee, reason: string) => void): void;
-  };
-};
-export type SessionMarker = {
-  tabId: number;
-  runId: string;
-  actionId: string;
-  phase: "attaching" | "attached";
-};
-export type MarkerStore = {
-  set(marker: SessionMarker): Promise<void>;
-  clear(tabId: number): Promise<void>;
-  list?(): Promise<SessionMarker[]>;
 };
 export type TargetBridge = {
   prepare(action: BoundedCdpAction): Promise<PreparedTarget>;

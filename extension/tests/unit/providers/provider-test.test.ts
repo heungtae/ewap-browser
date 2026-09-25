@@ -95,7 +95,7 @@ describe("provider connection test", () => {
     );
   });
 
-  it("returns the provider error detail with diagnostics when testing fails", async () => {
+  it("returns only HTTP status when provider testing fails", async () => {
     const runtime = runtimeFor(
       new Response(JSON.stringify({ error: { message: "Bad model" } }), {
         status: 400,
@@ -109,9 +109,9 @@ describe("provider connection test", () => {
     ).resolves.toMatchObject({
       ok: false,
       code: "PROVIDER_UNAVAILABLE",
-      detail: "HTTP 400; Bad model",
+      detail: "HTTP 400",
       diagnostics: {
-        error: { code: "PROVIDER_UNAVAILABLE", detail: "HTTP 400; Bad model" },
+        error: { code: "PROVIDER_UNAVAILABLE", detail: "HTTP 400" },
       },
     });
   });

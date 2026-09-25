@@ -15,6 +15,7 @@
     "test:chrome-analysis-data": "node --experimental-websocket scripts/chrome-analysis-data-smoke.mjs",
     "test:chrome-s1": "node --experimental-websocket scripts/chrome-s1-smoke.mjs",
     "test:chrome-s2": "node --experimental-websocket scripts/chrome-s2-smoke.mjs",
+    "test:chrome-s3": "node --experimental-websocket scripts/chrome-s3-smoke.mjs",
     "test:chrome-page-api-discovery": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",

@@ -90,14 +90,14 @@ describe("core provider transport", () => {
     });
   });
 
-  it("given_structured_provider_error_when_sending_then_exposes_safe_code_and_message", async () => {
+  it("given_structured_provider_error_when_sending_then_drops_untrusted_detail", async () => {
     const transport = new CoreProviderTransport(
       async () =>
         new Response(
           JSON.stringify({
             error: {
-              code: "invalid_request_error",
-              message: "Unsupported tools payload for model.",
+              code: "secret-code-123",
+              message: "Authorization: Bearer secret-value-123",
             },
           }),
           { status: 400, headers: { "content-type": "application/json" } },
@@ -107,8 +107,7 @@ describe("core provider transport", () => {
       transport.send(config("none"), openAiCompatibleAdapter, request),
     ).rejects.toMatchObject({
       code: "PROVIDER_UNAVAILABLE",
-      detail:
-        "HTTP 400; invalid_request_error; Unsupported tools payload for model.",
+      detail: "HTTP 400",
     });
   });
 

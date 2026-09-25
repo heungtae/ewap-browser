@@ -1,7 +1,11 @@
-import { fail } from "../security/validation.js";
+import { fail, isPlainObject } from "../security/validation.js";
 import { validatePluginManifest } from "./manifest.js";
 import { openAiCompatibleAdapter } from "./openai-compatible.js";
-import type { ProviderAdapter, ProviderPluginManifest } from "./types.js";
+import type {
+  ProviderAdapter,
+  ProviderConfig,
+  ProviderPluginManifest,
+} from "./types.js";
 
 export const BUILTIN_OPENAI_COMPATIBLE: ProviderPluginManifest = {
   schema_version: 1,
@@ -35,15 +39,10 @@ export class ProviderRegistry {
     if (!this.adapters.has(manifest.adapter_id))
       return fail("PROVIDER_PLUGIN_NOT_FOUND");
     const current = this.plugins.get(manifest.plugin_id);
-    if (
-      current &&
-      Number(current.manifest.plugin_version.split(".")[0]) !==
-        Number(manifest.plugin_version.split(".")[0])
-    )
-      return fail("PROVIDER_PLUGIN_INCOMPATIBLE");
+    if (current) return fail("PROVIDER_PLUGIN_INCOMPATIBLE");
     const installed = { manifest, enabled: true, bundled };
     this.plugins.set(manifest.plugin_id, installed);
-    return installed;
+    return { ...installed, manifest: structuredClone(manifest) };
   }
 
   public setEnabled(pluginId: string, enabled: boolean): void {
@@ -78,12 +77,40 @@ export class ProviderRegistry {
     const adapter =
       this.adapters.get(plugin.manifest.adapter_id) ??
       fail("PROVIDER_PLUGIN_NOT_FOUND");
-    return { manifest: plugin.manifest, adapter };
+    return { manifest: structuredClone(plugin.manifest), adapter };
+  }
+
+  public resolveConfigured(value: unknown): ProviderAdapter {
+    const config = isPlainObject(value)
+      ? (value as ProviderConfig)
+      : fail("INVALID_ARGUMENT");
+    const required = [
+      "plugin_id",
+      "plugin_version",
+      "wire_api",
+      "api_key_header",
+    ];
+    if (
+      required.some(
+        (key) => typeof config[key as keyof ProviderConfig] !== "string",
+      )
+    )
+      fail("INVALID_ARGUMENT");
+    const { manifest, adapter } = this.resolve(
+      config.plugin_id,
+      config.plugin_version,
+    );
+    if (
+      !manifest.wire_apis.includes(config.wire_api) ||
+      !manifest.auth_schemes.includes(config.api_key_header)
+    )
+      return fail("PROVIDER_PLUGIN_INCOMPATIBLE");
+    return adapter;
   }
 
   public snapshot(): readonly InstalledPlugin[] {
     return [...this.plugins.values()].map((plugin) => ({
-      manifest: { ...plugin.manifest },
+      manifest: structuredClone(plugin.manifest),
       enabled: plugin.enabled,
       bundled: plugin.bundled,
     }));

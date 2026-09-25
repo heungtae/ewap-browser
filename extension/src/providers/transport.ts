@@ -48,7 +48,7 @@ const assertResponse = async (
       `HTTP ${response.status}; provider rejected credentials`,
     );
   if (!response.ok)
-    fail("PROVIDER_UNAVAILABLE", await safeProviderErrorDetail(response));
+    fail("PROVIDER_UNAVAILABLE", safeProviderErrorDetail(response));
   if (!contentType.test(response.headers.get("content-type") ?? ""))
     fail("PROVIDER_UNAVAILABLE", "invalid response content type");
 };

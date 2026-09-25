@@ -1,5 +1,5 @@
 import { fail } from "../security/validation.js";
-import type { ProviderConfig } from "./types.js";
+import { AUTH_SCHEMES, type ProviderConfig } from "./types.js";
 
 const reservedHeaders = new Set([
   "content-type",
@@ -31,7 +31,7 @@ export const validateProviderBaseUrl = (
 };
 
 const headerValue = (value: string): string =>
-  value.length > 0 &&
+  value.trim().length > 0 &&
   value.length <= 4096 &&
   ![...value].some((character) => {
     const code = character.charCodeAt(0);
@@ -45,7 +45,10 @@ export const providerHeaders = (config: ProviderConfig): Headers => {
   const seen = new Set<string>();
   for (const header of config.headers) {
     const name = header.name.trim().toLowerCase();
-    if (!/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name))
+    if (
+      header.name !== header.name.trim() ||
+      !/^[!#$%&'*+.^_`|~0-9a-z-]+$/.test(name)
+    )
       fail("INVALID_ARGUMENT", "custom header name is invalid");
     if (reservedHeaders.has(name))
       fail(
@@ -57,6 +60,7 @@ export const providerHeaders = (config: ProviderConfig): Headers => {
     seen.add(name);
     headers.set(header.name, headerValue(header.value));
   }
+  if (!AUTH_SCHEMES.includes(config.api_key_header)) fail("INVALID_ARGUMENT");
   if (config.api_key_header === "none") {
     if (config.api_key)
       fail(
@@ -77,29 +81,5 @@ export const providerHeaders = (config: ProviderConfig): Headers => {
   return headers;
 };
 
-export const safeProviderErrorDetail = async (
-  response: Response,
-): Promise<string> => {
-  const status = `HTTP ${response.status}`;
-  try {
-    const error = (JSON.parse(await response.text()) as { error?: unknown })
-      .error;
-    if (!error || typeof error !== "object") return status;
-    const code =
-      typeof (error as { code?: unknown }).code === "string"
-        ? (error as { code: string }).code
-        : undefined;
-    const message =
-      typeof (error as { message?: unknown }).message === "string"
-        ? (error as { message: string }).message
-            .replace(/(?:sk|sess)-[A-Za-z0-9_-]+/g, "[REDACTED]")
-            .replace(/[\r\n\t]+/g, " ")
-            .replace(/\s+/g, " ")
-            .trim()
-            .slice(0, 320)
-        : undefined;
-    return [status, code, message].filter(Boolean).join("; ");
-  } catch {
-    return status;
-  }
-};
+export const safeProviderErrorDetail = (response: Response): string =>
+  `HTTP ${response.status}`;

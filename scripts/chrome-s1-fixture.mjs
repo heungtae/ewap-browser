@@ -25,6 +25,7 @@ const page = `<!doctype html><main><h1>Case S1</h1>
 export const createS1Fixture = async (
   certificateDirectory,
   pageHtml = page,
+  providerHandler,
 ) => {
   await run("openssl", [
     "req",
@@ -72,7 +73,8 @@ export const createS1Fixture = async (
         response.writeHead(204, {
           "access-control-allow-origin": "*",
           "access-control-allow-methods": "POST, GET, OPTIONS",
-          "access-control-allow-headers": "content-type",
+          "access-control-allow-headers":
+            "content-type, authorization, api-key, x-goog-api-key, x-company-client",
         });
         response.end();
         return;
@@ -111,10 +113,18 @@ export const createS1Fixture = async (
         );
         return;
       }
-      if (request.url === "/v1/chat/completions" && request.method === "POST") {
+      if (
+        ["/v1/chat/completions", "/v1/responses"].includes(request.url) &&
+        request.method === "POST"
+      ) {
         if (request.headers.cookie || request.headers.authorization)
           credentialHeaderCount += 1;
-        providerRequests.push(await readBody(request));
+        const body = await readBody(request);
+        providerRequests.push(body);
+        if (providerHandler) {
+          await providerHandler(request, response, body);
+          return;
+        }
         response.writeHead(200, {
           "content-type": "application/json",
           "access-control-allow-origin": "*",

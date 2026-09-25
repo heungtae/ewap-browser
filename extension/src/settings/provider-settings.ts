@@ -4,7 +4,10 @@ import type {
   ProviderConfig,
   PublicProviderConfig,
 } from "../providers/types.js";
-import { validateProviderBaseUrl } from "../providers/transport.js";
+import {
+  providerHeaders,
+  validateProviderBaseUrl,
+} from "../providers/provider-request.js";
 
 export type ProviderSettingsState = {
   schema_version: 1;
@@ -186,5 +189,6 @@ export class ProviderSettings {
         typeof header.value !== "string"
       )
         fail("INVALID_ARGUMENT");
+    providerHeaders(config);
   }
 }

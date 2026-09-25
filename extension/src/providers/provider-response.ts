@@ -6,6 +6,27 @@ import {
 import type { ProviderChatResponse, ProviderToolCall } from "./types.js";
 import { fail } from "../security/validation.js";
 
+const browserAuthorityFields = new Set([
+  "cdp_method",
+  "selector",
+  "coordinates",
+  "execution_path",
+  "backend_node_id",
+]);
+export const rejectBrowserAuthority = (value: unknown, depth = 0): void => {
+  if (depth > 16) fail("PROVIDER_UNAVAILABLE");
+  if (Array.isArray(value)) {
+    for (const item of value) rejectBrowserAuthority(item, depth + 1);
+    return;
+  }
+  if (!isPlainObject(value)) return;
+  for (const [key, item] of Object.entries(value)) {
+    if (browserAuthorityFields.has(key.toLowerCase()))
+      fail("PROVIDER_PLUGIN_FAILED");
+    rejectBrowserAuthority(item, depth + 1);
+  }
+};
+
 const parseToolCalls = (value: unknown): ProviderToolCall[] => {
   if (!Array.isArray(value)) return [];
   return value.flatMap((candidate) => {
@@ -44,6 +65,7 @@ const responseOutputText = (output: unknown): string => {
 };
 
 export const parseChatResponse = (response: unknown): ProviderChatResponse => {
+  rejectBrowserAuthority(response);
   const object = isPlainObject(response)
     ? response
     : fail("PROVIDER_UNAVAILABLE");

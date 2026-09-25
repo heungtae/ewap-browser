@@ -25,7 +25,11 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
   R2 submit 확인, trusted click/key/text, Stop·navigation·tab close·worker
   restart cleanup을 확인했다. adapter/policy negative 단위 검증도 통과했다.
   [S2 증거](evidence/s2-closure-2026-09-25.md).
-- **S3~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
+- **S3: Completed** — 실제 Side Panel의 Ask와 통제 HTTPS Provider fixture에서
+  세 API key header, 두 wire API stream, Stop, plugin disable 뒤 전송 0건을
+  확인했다. manifest·secret·browser authority 음성 검사도 통과했다.
+  [S3 증거](evidence/s3-closure-2026-09-25.md).
+- **S4~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
   증거를 현재 빌드에서 확인한 뒤 순서대로 판정한다.
 - **S9: In Progress** — S0~S8 `Completed`가 선행 조건이다. 현재
   `scripts/release-smoke.mjs`는 manifest host coverage 기대값 불일치로
@@ -77,8 +81,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
     matrix는 별도이므로 S10 전체 상태는 Planned다.
 
-기준일: 2026-09-25. S3~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
-현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S2는 위 최신 증거를 따른다.
+기준일: 2026-09-25. S4~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
+현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S3은 위 최신 증거를 따른다.
 
   ----------------------------------------------------------------------------
   Sprint   상태       완료 조건
@@ -92,8 +96,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
   S2       Completed  permission/R0-R3, credential 거부, bounded CDP와
                      detach-leak E2E — 2026-09-25 증거 연결
 
-  S3       In         provider plugin, core-owned API key auth와 OAuth/token
-           Progress   거부
+  S3       Completed  provider plugin, core-owned API key auth와 OAuth/token
+                     거부 — 2026-09-25 증거 연결
 
   S4       In         plugin Settings/secret lifecycle, local network,
            Progress   diagnostics contract
@@ -161,7 +165,7 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
                                                 # CFT semantic preview + bounded mutation regression
 ```
 
-S3~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
+S4~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
 남아 있기 때문이다. S5는 통제된 provider SSE 1,000 delta/tool interleave와
 worker suspend·panel close/reopen 뒤 event-store 복구, modal Stop race,
 accessibility/performance gate를 실제 Chrome에서 실행해야 한다. S6는

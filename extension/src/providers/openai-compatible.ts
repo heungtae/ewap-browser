@@ -1,4 +1,4 @@
-import { fail } from "../security/validation.js";
+import { fail, isPlainObject } from "../security/validation.js";
 import type {
   NormalizedProviderRequest,
   ProviderAdapter,
@@ -18,8 +18,17 @@ const forbidden = new Set([
 ]);
 export const assertSafeRequestPlan = (plan: ProviderRequestPlan): void => {
   if (
+    !isPlainObject(plan) ||
+    Object.keys(plan).some((key) => key !== "path" && key !== "body") ||
     !["/chat/completions", "/responses"].includes(plan.path) ||
-    Object.keys(plan.body).some((key) => forbidden.has(key))
+    !isPlainObject(plan.body) ||
+    Object.keys(plan.body).some(
+      (key) =>
+        forbidden.has(key) ||
+        !(plan.path === "/responses"
+          ? ["model", "input", "tools", "stream"].includes(key)
+          : ["model", "messages", "tools", "stream"].includes(key)),
+    )
   )
     fail("PROVIDER_PLUGIN_FAILED");
 };

@@ -1,4 +1,5 @@
 import { fail, isPlainObject } from "../security/validation.js";
+import { validateProviderBaseUrl } from "./provider-request.js";
 import {
   AUTH_SCHEMES,
   WIRE_APIS,
@@ -68,9 +69,7 @@ export const validatePluginManifest = (
   let defaultBaseUrl: string | undefined;
   if (value.default_base_url !== undefined) {
     defaultBaseUrl = text(value.default_base_url, 2048);
-    const url = new URL(defaultBaseUrl);
-    if (url.username || url.password || url.search || url.hash)
-      return fail("INVALID_ARGUMENT");
+    validateProviderBaseUrl(defaultBaseUrl);
   }
   return {
     schema_version: 1,

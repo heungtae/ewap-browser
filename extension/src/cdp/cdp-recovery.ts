@@ -1,4 +1,4 @@
-import type { DebuggerApi, MarkerStore } from "./bounded-adapter.js";
+import type { DebuggerApi, MarkerStore } from "./cdp-types.js";
 
 const notAttached = (error: unknown): boolean =>
   error instanceof Error &&

@@ -46,13 +46,10 @@ export class ProviderRuntime {
     } = {},
   ): Promise<ProviderChatResponse> {
     const config = await this.settings.active();
-    const resolved = this.registry.resolve(
-      config.plugin_id,
-      config.plugin_version,
-    );
+    const adapter = this.registry.resolveConfigured(config);
     const result = await this.transport.send(
       config,
-      resolved.adapter,
+      adapter,
       {
         wire_api: config.wire_api,
         model: config.model,
@@ -149,9 +146,11 @@ export class ProviderRuntime {
   ): Promise<Record<string, unknown>> {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     const id = value.id;
-    const config = value.config;
+    const config = isPlainObject(value.config)
+      ? value.config
+      : fail("INVALID_ARGUMENT");
     if (typeof id !== "string") fail("INVALID_ARGUMENT");
-    if (!isPlainObject(config)) fail("INVALID_ARGUMENT");
+    this.registry.resolveConfigured(config);
     await this.settings.save(id as string, config as unknown as ProviderConfig);
     return { ok: true, providers: await this.settings.list() };
   }
@@ -161,8 +160,7 @@ export class ProviderRuntime {
   ): Promise<Record<string, unknown>> {
     return testProvider(payload, {
       resolveConfig: (id) => this.settings.resolve(id),
-      resolveAdapter: (config) =>
-        this.registry.resolve(config.plugin_id, config.plugin_version).adapter,
+      resolveAdapter: (config) => this.registry.resolveConfigured(config),
       send: (config, adapter, request) =>
         this.transport.send(config, adapter, request),
     });
@@ -172,10 +170,9 @@ export class ProviderRuntime {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     const id = value.id;
     if (typeof id !== "string") fail("INVALID_ARGUMENT");
-    const result = await this.transport.listModels(
-      await this.settings.resolve(id as string),
-      "/models",
-    );
+    const config = await this.settings.resolve(id as string);
+    this.registry.resolveConfigured(config);
+    const result = await this.transport.listModels(config, "/models");
     return { ok: true, status: result.status, models: result.models };
   }
 

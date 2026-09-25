@@ -1,4 +1,5 @@
 import { fail, isPlainObject } from "../security/validation.js";
+import { rejectBrowserAuthority } from "./provider-response.js";
 
 type StreamedCall = { id: string; name: string; arguments: string };
 
@@ -29,6 +30,7 @@ export const parseSseProviderBody = (
     } catch {
       return fail("PROVIDER_UNAVAILABLE");
     }
+    rejectBrowserAuthority(event);
     if (!isPlainObject(event)) continue;
     const choice = Array.isArray(event.choices) ? event.choices[0] : undefined;
     const delta =
