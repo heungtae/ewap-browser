@@ -125,6 +125,7 @@ export const createFixtureActStart =
           {
             refId: request.refId,
             role: target.role,
+            name: target.name,
             visible: target.visible,
             enabled: target.enabled,
             sensitive: false,

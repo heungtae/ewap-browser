@@ -20,19 +20,46 @@ const action: BoundedCdpAction = {
   capability: "click",
 };
 const fixture = (
-  options: { granted?: boolean; detachFails?: boolean } = {},
+  options: {
+    granted?: boolean;
+    detachFails?: boolean;
+    attachFails?: boolean;
+    duplicate?: boolean;
+    occluded?: boolean;
+    outsideViewport?: boolean;
+    failCommand?: string;
+    failSecondMouse?: boolean;
+  } = {},
 ) => {
   const calls: string[] = [];
+  let mouseCalls = 0;
   const api: DebuggerApi = {
     async attach() {
       calls.push("attach");
+      if (options.attachFails)
+        throw new Error("Another debugger is already attached");
     },
     async sendCommand(_target, method) {
       calls.push(method);
+      if (method === "Input.dispatchMouseEvent") mouseCalls += 1;
+      if (
+        options.failSecondMouse &&
+        method === "Input.dispatchMouseEvent" &&
+        mouseCalls === 2
+      )
+        throw new Error("mouse release failed");
+      if (options.failCommand === method) throw new Error("CDP failed");
       if (method === "DOM.getDocument") return { root: { nodeId: 1 } };
-      if (method === "DOM.querySelectorAll") return { nodeIds: [2] };
+      if (method === "DOM.querySelectorAll")
+        return { nodeIds: options.duplicate ? [2, 3] : [2] };
       if (method === "DOM.getBoxModel")
-        return { model: { content: [10, 10, 20, 10, 20, 20, 10, 20] } };
+        return {
+          model: {
+            content: options.outsideViewport
+              ? [110, 10, 120, 10, 120, 20, 110, 20]
+              : [10, 10, 20, 10, 20, 20, 10, 20],
+          },
+        };
       if (method === "DOM.getNodeForLocation") return { nodeId: 2 };
       if (method === "DOM.getAttributes")
         return {
@@ -64,7 +91,10 @@ const fixture = (
           stale: false,
           visible: true,
           enabled: true,
-          occluded: false,
+          occluded: options.occluded ?? false,
+          editable: true,
+          viewportWidth: 100,
+          viewportHeight: 100,
         };
       },
       async clear() {
@@ -105,14 +135,59 @@ describe("bounded CDP adapter", () => {
     ).rejects.toThrow("CDP_CLEANUP_FAILED");
   });
 
-  it("given_unknown_key_when_validating_then_rejected_before_prepare", async () => {
+  it("rejects unknown tool, injected action field and unconfirmed R2", async () => {
     const { adapter, calls } = fixture();
+    for (const invalid of [
+      { ...action, tool: "Runtime.evaluate" },
+      { ...action, selector: "#save" },
+      { ...action, risk: "R2" },
+    ])
+      await expect(
+        adapter.execute(invalid as BoundedCdpAction),
+      ).rejects.toThrow("CDP_COMMAND_NOT_ALLOWED");
     await expect(
-      adapter.execute(
-        { ...action, tool: "press_key_by_ref", capability: "type" },
-        { key: "F12" },
-      ),
+      adapter.execute({ ...action, tool: "press_key_by_ref" }, { key: "F12" }),
     ).rejects.toThrow("CDP_COMMAND_NOT_ALLOWED");
     expect(calls).toEqual([]);
+  });
+
+  it("rejects duplicate, occluded and out-of-viewport targets before input", async () => {
+    for (const options of [
+      { duplicate: true },
+      { occluded: true },
+      { outsideViewport: true },
+    ]) {
+      const { adapter, calls } = fixture(options);
+      await expect(adapter.execute(action)).rejects.toThrow(
+        "TARGET_NOT_ACTIONABLE",
+      );
+      expect(calls.some((method) => method.startsWith("Input."))).toBe(false);
+      if (!options.occluded) expect(calls).toContain("detach");
+    }
+  });
+
+  it("classifies debugger conflict and pre-input failure without dispatch", async () => {
+    const conflict = fixture({ attachFails: true });
+    await expect(conflict.adapter.execute(action)).rejects.toThrow(
+      "CDP_CONFLICT",
+    );
+    expect(conflict.calls).not.toContain("Input.dispatchMouseEvent");
+    const before = fixture({ failCommand: "DOM.getDocument" });
+    await expect(before.adapter.execute(action)).resolves.toEqual({
+      dispatched: false,
+      outcome: "FAILED",
+    });
+    expect(before.calls).toContain("detach");
+  });
+
+  it("classifies failure after mouse press as unknown without retry", async () => {
+    const { adapter, calls } = fixture({ failSecondMouse: true });
+    const result = await adapter.execute(action);
+    expect(result).toEqual({ dispatched: true, outcome: "UNKNOWN" });
+    const mouseCalls = calls.filter(
+      (method) => method === "Input.dispatchMouseEvent",
+    );
+    expect(mouseCalls).toHaveLength(2);
+    expect(calls).toContain("detach");
   });
 });

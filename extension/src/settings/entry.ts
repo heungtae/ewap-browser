@@ -656,6 +656,28 @@ void refreshWorkflowRecords();
 const agentPreferencesForm = document.querySelector<HTMLFormElement>(
   "#agent-preferences-form",
 );
+const revokePermissions = document.querySelector<HTMLButtonElement>(
+  "#permission-revoke-all",
+);
+const revokeStatus = document.querySelector<HTMLOutputElement>(
+  "#permission-revoke-status",
+);
+revokePermissions?.addEventListener("click", () => {
+  void runtime
+    ?.sendMessage({ kind: "PERMISSION_REVOKE_ALL" })
+    .then((response) => {
+      if (revokeStatus)
+        revokeStatus.value =
+          typeof response === "object" &&
+          response !== null &&
+          (response as { ok?: unknown }).ok === true
+            ? "Browser 권한을 철회했습니다."
+            : "권한 철회에 실패했습니다.";
+    })
+    .catch(() => {
+      if (revokeStatus) revokeStatus.value = "권한 철회에 실패했습니다.";
+    });
+});
 const agentPreferencesStatus = document.querySelector<HTMLOutputElement>(
   "#agent-preferences-status",
 );

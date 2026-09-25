@@ -514,11 +514,8 @@ const projectionNodes = (
       const role = roleFor(element);
       const name = nameFor(element);
       const sensitive =
-        element instanceof HTMLInputElement &&
-        (element.type === "password" ||
-          element.type === "hidden" ||
-          /password|secret|otp|mfa|인증|비밀번호/i.test(name) ||
-          /one-time-code/i.test(element.autocomplete));
+        isSensitiveElement(element) ||
+        (element instanceof HTMLInputElement && element.type === "hidden");
       if (role && !sensitive) {
         const hiddenReason = hiddenReasonFor(element);
         const visible = hiddenReason === undefined;
@@ -881,7 +878,18 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     }
     const element = boundedTarget(request);
     if (!element) {
-      respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
+      const record = refRecords.get(request.ref_id);
+      const stale =
+        request.document_epoch !== documentEpoch ||
+        (!!record &&
+          (record.stale ||
+            !record.element.isConnected ||
+            roleFor(record.element) !== record.role ||
+            nameFor(record.element) !== record.name));
+      respond({
+        ok: false,
+        code: stale ? "TARGET_STALE" : "TARGET_NOT_ACTIONABLE",
+      });
       return true;
     }
     if (boundedMarkers.has(markerKey)) {
@@ -901,6 +909,12 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       visible: true,
       enabled: true,
       occluded: false,
+      editable:
+        element.isContentEditable ||
+        (element instanceof HTMLInputElement && !element.readOnly) ||
+        (element instanceof HTMLTextAreaElement && !element.readOnly),
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
     });
     return true;
   }

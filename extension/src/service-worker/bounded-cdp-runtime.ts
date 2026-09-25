@@ -1,4 +1,5 @@
 import { BoundedCdpAdapter } from "../cdp/bounded-adapter.js";
+import type { SessionMarker } from "../cdp/bounded-adapter.js";
 import { fail } from "../security/validation.js";
 import type { BrowserChromeApi } from "./browser-api.js";
 
@@ -9,26 +10,31 @@ type Dependencies = {
 
 export const createBoundedCdpRuntime = (dependencies: Dependencies) => {
   const chrome = dependencies.chrome;
+  const markerKey = (tabId: number) => `contextpilot_cdp_marker_${tabId}`;
   const markerStore = {
-    async set(marker: {
-      tabId: number;
-      runId: string;
-      actionId: string;
-      phase: "attaching" | "attached";
-    }): Promise<void> {
-      await chrome?.storage.session.set?.({ contextpilot_cdp_marker: marker });
+    async set(marker: SessionMarker): Promise<void> {
+      await chrome?.storage.session.set?.({
+        [markerKey(marker.tabId)]: marker,
+      });
     },
     async clear(tabId: number): Promise<void> {
-      const stored = await chrome?.storage.session.get?.(
-        "contextpilot_cdp_marker",
-      );
-      const marker = stored?.contextpilot_cdp_marker;
-      if (
-        typeof marker !== "object" ||
-        marker === null ||
-        (marker as { tabId?: unknown }).tabId === tabId
-      )
-        await chrome?.storage.session.set?.({ contextpilot_cdp_marker: null });
+      await chrome?.storage.session.set?.({ [markerKey(tabId)]: null });
+    },
+    async list(): Promise<SessionMarker[]> {
+      const stored = await chrome?.storage.session.get?.(null);
+      return Object.entries(stored ?? {}).flatMap(([key, value]) => {
+        if (!key.startsWith("contextpilot_cdp_marker_")) return [];
+        if (typeof value !== "object" || value === null) return [];
+        const marker = value as Partial<SessionMarker>;
+        return Number.isInteger(marker.tabId) &&
+          marker.tabId! >= 0 &&
+          typeof marker.runId === "string" &&
+          typeof marker.actionId === "string" &&
+          (marker.phase === "attaching" || marker.phase === "attached") &&
+          key === markerKey(marker.tabId!)
+          ? [marker as SessionMarker]
+          : [];
+      });
     },
   };
   const boundedCdp = chrome?.debugger
@@ -53,7 +59,11 @@ export const createBoundedCdpRuntime = (dependencies: Dependencies) => {
               result === null ||
               !(result as { ok?: unknown }).ok
             )
-              return fail("TARGET_NOT_ACTIONABLE");
+              return fail(
+                (result as { code?: unknown })?.code === "TARGET_STALE"
+                  ? "TARGET_STALE"
+                  : "TARGET_NOT_ACTIONABLE",
+              );
             const prepared = result as Record<string, unknown>;
             const fields = [
               "unique",
@@ -62,8 +72,18 @@ export const createBoundedCdpRuntime = (dependencies: Dependencies) => {
               "visible",
               "enabled",
               "occluded",
+              "editable",
+              "viewportWidth",
+              "viewportHeight",
             ];
-            if (!fields.every((field) => typeof prepared[field] === "boolean"))
+            if (
+              !fields
+                .slice(0, 7)
+                .every((field) => typeof prepared[field] === "boolean") ||
+              !fields
+                .slice(7)
+                .every((field) => typeof prepared[field] === "number")
+            )
               return fail("TARGET_NOT_ACTIONABLE");
             return {
               unique: prepared.unique as boolean,
@@ -72,6 +92,9 @@ export const createBoundedCdpRuntime = (dependencies: Dependencies) => {
               visible: prepared.visible as boolean,
               enabled: prepared.enabled as boolean,
               occluded: prepared.occluded as boolean,
+              editable: prepared.editable as boolean,
+              viewportWidth: prepared.viewportWidth as number,
+              viewportHeight: prepared.viewportHeight as number,
             };
           },
           async clear(action) {
@@ -91,5 +114,9 @@ export const createBoundedCdpRuntime = (dependencies: Dependencies) => {
         (_capability, _origin, runId) => dependencies.authorized(runId),
       )
     : undefined;
+  boundedCdp?.startRecovery();
+  chrome?.debugger?.onDetach?.addListener((target) => {
+    if (Number.isInteger(target.tabId)) boundedCdp?.onDetach(target.tabId);
+  });
   return { boundedCdp };
 };

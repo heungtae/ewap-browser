@@ -32,8 +32,10 @@ export const fixtureProposal = (
   requiresConfirmation: boolean;
 } => {
   const requiresConfirmation =
-    request.tool === "set_checked_by_ref" &&
-    target.name === "Require confirmation";
+    (request.tool === "set_checked_by_ref" &&
+      target.name === "Require confirmation") ||
+    (request.tool === "click_by_ref" &&
+      target.name === "Submit with confirmation");
   const digest = digestCanonical(target.state);
   if (request.tool === "set_text_by_ref")
     return {
@@ -50,7 +52,11 @@ export const fixtureProposal = (
   if (request.tool === "click_by_ref")
     return {
       proposal: { tool: request.tool, target: "development-fixture-target" },
-      definition: localClickDefinition(digest),
+      definition: localClickDefinition(
+        target.ref_id,
+        digest,
+        requiresConfirmation,
+      ),
       requiresConfirmation,
     };
   if (request.tool === "press_key_by_ref")
@@ -60,7 +66,7 @@ export const fixtureProposal = (
         target: "development-fixture-target",
         argument: { key: request.key! },
       },
-      definition: localKeyDefinition(digest),
+      definition: localKeyDefinition(target.ref_id, digest),
       requiresConfirmation,
     };
   return {

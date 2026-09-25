@@ -15,6 +15,7 @@ type PermissionRequest = {
 };
 type Dependencies = {
   isPanelSender(sender: BrowserSender): boolean;
+  isPanelOrSettingsSender(sender: BrowserSender): boolean;
   cancelActiveRun(): Promise<boolean>;
   permissionRequest(id: string): PermissionRequest | undefined;
   decidePermission(
@@ -23,6 +24,7 @@ type Dependencies = {
     decision: PermissionDecision,
   ): void;
   persistPermissions(): Promise<void>;
+  revokePermissions(): Promise<void>;
   approvePlan(runId: string, origins: string[]): unknown;
   safeFailure(code: string): unknown;
 };
@@ -37,6 +39,23 @@ export const createRunControlMessageHandler = (dependencies: Dependencies) => ({
     respond: Respond,
   ): { handled: boolean; keepAlive?: boolean } {
     const kind = (message as { kind?: unknown }).kind;
+    if (kind === "PERMISSION_REVOKE_ALL") {
+      if (
+        !dependencies.isPanelOrSettingsSender(sender) ||
+        !exactKeys(message, ["kind"])
+      ) {
+        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+        return { handled: true };
+      }
+      void dependencies
+        .revokePermissions()
+        .then(() => dependencies.persistPermissions())
+        .then(() => respond({ ok: true }))
+        .catch(() =>
+          respond(dependencies.safeFailure("STORAGE_BOUNDARY_UNAVAILABLE")),
+        );
+      return { handled: true, keepAlive: true };
+    }
     if (kind === "CANCEL") {
       if (
         !dependencies.isPanelSender(sender) ||

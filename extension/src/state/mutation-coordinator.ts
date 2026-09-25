@@ -118,7 +118,10 @@ export class MutationCoordinator {
       },
       now,
     );
-    return this.execute(run, pending, now);
+    return {
+      ...this.execute(run, pending, now),
+      confirmationDigest: digestCanonical(pending.intent),
+    };
   }
 
   public executeR1(run: Run, now = Date.now()): ReadyExecution {

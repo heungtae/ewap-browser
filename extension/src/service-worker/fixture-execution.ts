@@ -55,32 +55,35 @@ export const localMutationDefinition = (
 });
 
 export const localClickDefinition = (
+  refId: string,
   preStateDigest: string,
+  requiresConfirmation = false,
 ): ActionDefinition => ({
   tool: "click_by_ref",
-  effect: "local-ui-only",
-  risk: "R1",
+  effect: requiresConfirmation ? "server-side" : "local-ui-only",
+  risk: requiresConfirmation ? "R2" : "R1",
   eligibleRoles: ["button"],
   verifier: {
     kind: "semantic-state-transition",
     declaration_id: "local-page-click-v1",
     pre_state_digest: preStateDigest,
-    required_changes: [],
+    required_changes: [{ ref_id: refId, field: "disabled", expected: true }],
   },
 });
 
 export const localKeyDefinition = (
+  refId: string,
   preStateDigest: string,
 ): ActionDefinition => ({
   tool: "press_key_by_ref",
   effect: "local-ui-only",
   risk: "R1",
-  eligibleRoles: ["button", "textbox", "combobox", "tab", "menuitem"],
+  eligibleRoles: ["button"],
   verifier: {
     kind: "semantic-state-transition",
     declaration_id: "local-page-key-v1",
     pre_state_digest: preStateDigest,
-    required_changes: [],
+    required_changes: [{ ref_id: refId, field: "disabled", expected: true }],
   },
 });
 
@@ -89,7 +92,8 @@ export const createFixtureExecutor =
   (run: Run, ready: ReadyExecution, respond: Respond, origin: string): void => {
     if (
       ready.intent.tool === "click_by_ref" ||
-      ready.intent.tool === "press_key_by_ref"
+      ready.intent.tool === "press_key_by_ref" ||
+      ready.intent.tool === "set_text_by_ref"
     ) {
       void dependencies
         .executeBounded(run, ready, origin)
@@ -130,8 +134,14 @@ export const createFixtureExecutor =
             ),
           );
         }
+        const postcondition = (result as { postcondition?: unknown })
+          .postcondition;
         if (
-          (result as { postcondition?: unknown }).postcondition !== "semantic"
+          postcondition !== "semantic" &&
+          !(
+            postcondition === "exact_option_value" &&
+            ready.intent.tool === "select_option_by_ref"
+          )
         ) {
           dependencies.terminal(run, "FAILED");
           respond(dependencies.safeFailure("TARGET_NOT_ACTIONABLE"));

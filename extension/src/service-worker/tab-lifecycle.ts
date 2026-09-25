@@ -11,11 +11,13 @@ type Dependencies = {
   publishCancelled(run: Run | undefined): void;
   removeChat(tabId: number): void;
   flushChat(): void;
+  abortCdp?(tabId: number): Promise<void>;
 };
 
 export const registerTabLifecycle = (dependencies: Dependencies): void => {
   dependencies.chrome?.tabs.onUpdated?.addListener((tabId, changeInfo) => {
     if (!changeInfo.url) return;
+    void dependencies.abortCdp?.(tabId);
     dependencies.stalePageTabs.add(tabId);
     const run = dependencies.activeRun(tabId);
     if (
@@ -26,6 +28,7 @@ export const registerTabLifecycle = (dependencies: Dependencies): void => {
     if (run) dependencies.cancelForPageChange(run);
   });
   dependencies.chrome?.tabs.onRemoved?.addListener((tabId) => {
+    void dependencies.abortCdp?.(tabId);
     const run = dependencies.activeRun(tabId);
     if (run) {
       dependencies.cancel(tabId);

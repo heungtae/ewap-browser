@@ -21,7 +21,7 @@
   항목            값
   --------------- ------------------------------
   설계 결정       Adopted
-  구현 상태       Planned, S2
+  구현 상태       Implemented, S2 Browser 범위
   권한            `debugger`, 사내 host 범위
   제품 CDP 수준   Level 2 bounded adapter
   Offscreen       provider localhost/PNA proxy
@@ -89,13 +89,16 @@ coordinate 또는 mutation authority를 만들지 않는다.
             `getBoxModel`                 
 
   `DOM`     `getNodeForLocation`,         hit test와 bound-token 재확인에만
-            `getAttributes`, `focus`      사용
+            `getAttributes`,              사용; `describeNode`는 최대 16단계
+            `describeNode`, `focus`       조상 확인만 허용
 
   `Input`   `dispatchMouseEvent`          left button, click count 1, 검증된
                                           box 내부 point만 허용
 
-  `Input`   `dispatchKeyEvent`            tool registry의 closed key enum만
-                                          허용
+  `Input`   `dispatchKeyEvent`            key tool은 closed key enum만 허용;
+                                          text tool은 현재 focus input의
+                                          기존 값 교체용 고정 Ctrl+A
+                                          keyDown/keyUp만 허용
 
   `Input`   `insertText`                  현재 action의 ephemeral
                                           user-supplied value만 허용

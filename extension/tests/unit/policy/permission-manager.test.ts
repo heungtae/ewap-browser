@@ -48,4 +48,17 @@ describe("permission manager", () => {
       "ALLOW",
     );
   });
+
+  it("given_once_and_always_grants_when_revoked_then_both_are_removed", () => {
+    const manager = new PermissionManager();
+    manager.decide("click", "https://fixture.company.test", "run", "once");
+    manager.decide("type", "https://fixture.company.test", "run", "always");
+    manager.revoke(undefined, "fixture.company.test");
+    expect(manager.check("click", "https://fixture.company.test", "run")).toBe(
+      "REQUIRE_PERMISSION",
+    );
+    expect(manager.check("type", "https://fixture.company.test", "run")).toBe(
+      "REQUIRE_PERMISSION",
+    );
+  });
 });

@@ -12,6 +12,7 @@ import {
 } from "./runtime-chat.js";
 import {
   chatRunLifecycle,
+  boundedCdp,
   chatRequests,
   executionDiagnostics,
   providerRuntime,
@@ -21,6 +22,7 @@ import {
   agentPreferences,
   chatEvents,
   coordinator,
+  cdpAuthorizedRuns,
   localBindings,
   localSessionBinding,
   permissionRequests,
@@ -138,6 +140,8 @@ export const coreMessageHandlers = createCoreMessageHandlers({
   publishCancelled: chatRunLifecycle.publishCancelled,
   isPanelSender: pageSenderContext.isPanelSender,
   isPanelOrSettingsSender: pageSenderContext.isPanelOrSettingsSender,
+  revokeCdpAll: () => cdpAuthorizedRuns.clear(),
+  abortCdp: (tabId) => boundedCdp?.abortTab(tabId) ?? Promise.resolve(),
   isSettingsSender: pageSenderContext.isSettingsSender,
   resolveActiveProfile,
   safeFailure,

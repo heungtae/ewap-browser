@@ -84,14 +84,14 @@ describe("mutation coordinator", () => {
     );
     if (awaiting.state !== "AWAITING_CONFIRMATION")
       throw new Error("expected confirmation state");
-    expect(
-      coordinator.confirm(
-        run,
-        awaiting.confirmationId,
-        awaiting.confirmationNonce,
-        1,
-      ).state,
-    ).toBe("READY_TO_EXECUTE");
+    const ready = coordinator.confirm(
+      run,
+      awaiting.confirmationId,
+      awaiting.confirmationNonce,
+      1,
+    );
+    expect(ready.state).toBe("READY_TO_EXECUTE");
+    expect(ready.confirmationDigest).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(() =>
       coordinator.confirm(
         run,

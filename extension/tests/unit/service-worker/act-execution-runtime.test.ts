@@ -73,6 +73,7 @@ describe("Act execution runtime", () => {
     const runtime = createActExecutionRuntime({
       boundedCdp: {
         execute: async () => ({ dispatched: true, outcome: "DISPATCHED" }),
+        isQuarantined: () => false,
       } as never,
       documentFor: () => ({ epoch: run.documentEpoch, documentId: "document" }),
       isRunActive: () => true,
@@ -108,6 +109,7 @@ describe("Act execution runtime", () => {
     const runtime = createActExecutionRuntime({
       boundedCdp: {
         execute: async () => ({ dispatched: true, outcome: "DISPATCHED" }),
+        isQuarantined: () => false,
       } as never,
       documentFor: () => ({ epoch: run.documentEpoch, documentId: "document" }),
       isRunActive: () => true,
@@ -146,6 +148,7 @@ describe("Act execution runtime", () => {
           order.push("dispatch");
           return { dispatched: true, outcome: "DISPATCHED" };
         },
+        isQuarantined: () => false,
       } as never,
       documentFor: () => ({ epoch: run.documentEpoch, documentId: "document" }),
       isRunActive: () => true,

@@ -40,7 +40,10 @@ export const providerRuntime =
     : undefined;
 export const { boundedCdp } = createBoundedCdpRuntime({
   chrome: chromeApi,
-  authorized: (runId) => cdpAuthorizedRuns.has(runId),
+  authorized: (runId) => {
+    const run = coordinator.runs.byId(runId);
+    return cdpAuthorizedRuns.has(runId) && !!run && run.phase !== "TERMINAL";
+  },
 });
 export const executionDiagnostics = new ExecutionDiagnostics(
   chromeApi?.storage,
@@ -69,6 +72,7 @@ export const chatRunLifecycle = createChatRunLifecycle({
 });
 registerTabLifecycle({
   chrome: chromeApi,
+  abortCdp: (tabId) => boundedCdp?.abortTab(tabId) ?? Promise.resolve(),
   stalePageTabs,
   pageScopes,
   activeRun: (tabId) => coordinator.runs.get(tabId),

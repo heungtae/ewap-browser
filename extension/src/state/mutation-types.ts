@@ -39,6 +39,7 @@ export type ReadyExecution = {
   state: "READY_TO_EXECUTE";
   intent: ActionIntent;
   value?: string;
+  confirmationDigest?: string;
 };
 export type PendingMutation = {
   intent: ActionIntent;

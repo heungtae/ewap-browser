@@ -22,7 +22,10 @@ const page = `<!doctype html><main><h1>Case S1</h1>
   <label for="recovery">Recovery code</label><input id="recovery" name="recovery_code" value="S1_SECRET_RECOVERY">
   </main>`;
 
-export const createS1Fixture = async (certificateDirectory) => {
+export const createS1Fixture = async (
+  certificateDirectory,
+  pageHtml = page,
+) => {
   await run("openssl", [
     "req",
     "-x509",
@@ -128,7 +131,7 @@ export const createS1Fixture = async (certificateDirectory) => {
         "set-cookie":
           "session=S1_SECRET_COOKIE; Secure; HttpOnly; SameSite=Lax",
       });
-      response.end(page);
+      response.end(pageHtml);
     },
   );
   const fixturePort = await new Promise((resolvePort, reject) => {

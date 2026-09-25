@@ -120,6 +120,9 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       refId: ready.intent.ref_id,
       tool,
       risk: ready.intent.risk,
+      ...(ready.confirmationDigest
+        ? { confirmationDigest: ready.confirmationDigest }
+        : {}),
       actionToken: dependencies.createId(),
       origin,
       capability,
@@ -154,18 +157,27 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       dependencies.milestone?.(run.tabId, "DISPATCH_STARTED");
       if (!dependencies.isRunActive(run.id))
         return dependencies.safeFailure("POLICY_DENIED");
-      dispatched = true;
       const execution = await dependencies.boundedCdp.execute(action, input);
+      dispatched = execution.dispatched;
       if (execution.outcome !== "DISPATCHED") {
         const outcome = execution.outcome === "UNKNOWN" ? "UNKNOWN" : "FAILED";
         dependencies.terminal(run, outcome);
         return {
           ...dependencies.safeFailure(
-            outcome === "UNKNOWN"
-              ? "POSTCONDITION_UNVERIFIED"
-              : "TARGET_NOT_ACTIONABLE",
+            dependencies.boundedCdp.isQuarantined(run.tabId)
+              ? "CDP_CLEANUP_FAILED"
+              : outcome === "UNKNOWN"
+                ? "POSTCONDITION_UNVERIFIED"
+                : "TARGET_NOT_ACTIONABLE",
           ),
           outcome,
+        };
+      }
+      if (dependencies.boundedCdp.isQuarantined(run.tabId)) {
+        dependencies.terminal(run, "UNKNOWN", "CDP_CLEANUP_FAILED");
+        return {
+          ...dependencies.safeFailure("CDP_CLEANUP_FAILED"),
+          outcome: "UNKNOWN",
         };
       }
       if (!dependencies.isRunActive(run.id))

@@ -79,7 +79,7 @@ export type BrowserTabs = {
 
 type BrowserStorageArea = {
   setAccessLevel(level: { accessLevel: "TRUSTED_CONTEXTS" }): Promise<void>;
-  get?(key: string): Promise<Record<string, unknown>>;
+  get?(key: string | null): Promise<Record<string, unknown>>;
   set?(value: Record<string, unknown>): Promise<void>;
 };
 

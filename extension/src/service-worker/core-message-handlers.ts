@@ -37,6 +37,8 @@ type Dependencies = {
   publishCancelled(run: ReturnType<ServiceCoordinator["runs"]["get"]>): void;
   isPanelSender(sender: BrowserSender): boolean;
   isPanelOrSettingsSender(sender: BrowserSender): boolean;
+  revokeCdpAll(): void;
+  abortCdp(tabId: number): Promise<void>;
   isSettingsSender(sender: BrowserSender): boolean;
   resolveActiveProfile(): Promise<{
     profile: {
@@ -57,6 +59,7 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
     });
     const tabId = tabs[0]?.id;
     if (tabId === undefined) return false;
+    await dependencies.abortCdp(tabId);
     const run = dependencies.coordinator.runs.get(tabId);
     if (run) {
       const binding = dependencies.bindings.get(run.id);
@@ -98,6 +101,7 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
   });
   const runControl = createRunControlMessageHandler({
     isPanelSender: dependencies.isPanelSender,
+    isPanelOrSettingsSender: dependencies.isPanelOrSettingsSender,
     cancelActiveRun,
     permissionRequest: (id) => dependencies.requests.get(id),
     decidePermission(request, requestId, decision) {
@@ -112,6 +116,19 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
       await dependencies.chrome.storage.local.set?.({
         contextpilot_permissions: dependencies.permissions.snapshot(),
       });
+    },
+    async revokePermissions() {
+      dependencies.permissions.revoke();
+      dependencies.revokeCdpAll();
+      const tabs = await dependencies.chrome.tabs.query({});
+      for (const tab of tabs) {
+        if (tab.id === undefined) continue;
+        await dependencies.abortCdp(tab.id);
+        const run = dependencies.coordinator.runs.get(tab.id);
+        if (!run || run.phase === "TERMINAL") continue;
+        dependencies.coordinator.cancel(tab.id);
+        dependencies.publishCancelled(run);
+      }
     },
     approvePlan: (runId, origins) =>
       dependencies.planScopes.approve(runId, origins),

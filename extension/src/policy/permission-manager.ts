@@ -117,6 +117,17 @@ export class PermissionManager {
         (host !== undefined && entry.host !== host),
     );
     if (capability === undefined && host === undefined) this.persistent = [];
+    for (const [runId, grants] of this.once) {
+      for (const key of grants) {
+        const [grantedCapability, grantedHost] = key.split("\n");
+        if (
+          (capability === undefined || capability === grantedCapability) &&
+          (host === undefined || host === grantedHost)
+        )
+          grants.delete(key);
+      }
+      if (grants.size === 0) this.once.delete(runId);
+    }
   }
 
   public snapshot(): readonly StoredPermission[] {
