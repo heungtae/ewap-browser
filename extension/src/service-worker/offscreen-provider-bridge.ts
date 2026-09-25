@@ -1,4 +1,5 @@
 import { ContractError } from "../security/validation.js";
+import { requireProviderHostPermission } from "./provider-host-permission.js";
 import type { BrowserChromeApi, BrowserPort } from "./browser-api.js";
 import { createOffscreenReadiness } from "./offscreen-readiness.js";
 
@@ -35,11 +36,10 @@ export const createOffscreenProviderBridge = (
       ? port.name.slice(providerPortPrefix.length)
       : "";
     if (!/^[A-Za-z0-9_-]{22,128}$/.test(streamId)) return false;
-    const api = chromeApi;
     if (
-      !api ||
-      port.sender?.id !== api.runtime.id ||
-      port.sender?.url !== api.runtime.getURL("offscreen/index.html")
+      !chromeApi ||
+      port.sender?.id !== chromeApi.runtime.id ||
+      port.sender?.url !== chromeApi.runtime.getURL("offscreen/index.html")
     )
       return true;
     const stream = streams.get(streamId);
@@ -98,6 +98,7 @@ export const createOffscreenProviderBridge = (
     signal?.addEventListener("abort", abort, { once: true });
     const request = async (): Promise<Response> => {
       const url = String(input);
+      await requireProviderHostPermission(chromeApi, new URL(url));
       const headers = Object.fromEntries(new Headers(init?.headers).entries());
       const method = init?.method === "GET" ? "GET" : "POST";
       const body = typeof init?.body === "string" ? init.body : undefined;

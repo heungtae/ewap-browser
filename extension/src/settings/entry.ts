@@ -6,11 +6,22 @@ type BrowserRuntime = {
   sendMessage(message: unknown): Promise<unknown>;
 };
 type BrowserPermissions = {
-  contains(query: { permissions: string[] }): Promise<boolean>;
-  request(query: { permissions: string[] }): Promise<boolean>;
+  contains(query: {
+    permissions?: string[];
+    origins?: string[];
+  }): Promise<boolean>;
+  request(query: {
+    permissions?: string[];
+    origins?: string[];
+  }): Promise<boolean>;
   remove(query: { permissions: string[] }): Promise<boolean>;
 };
 import { validateProfileResolverSettings } from "./profile-settings.js";
+import {
+  validateProviderBaseUrl,
+  providerHttpHostPattern,
+} from "../providers/provider-network-url.js";
+import { initializeProviderManagement } from "./provider-management.js";
 const storage = (
   globalThis as typeof globalThis & {
     chrome?: { runtime: BrowserRuntime; storage: { local: StorageArea } };
@@ -68,6 +79,7 @@ const workflowRecords =
 const workflowRecordsStatus = document.querySelector<HTMLOutputElement>(
   "#workflow-records-status",
 );
+let management: ReturnType<typeof initializeProviderManagement> | undefined;
 const field = (name: string): HTMLInputElement | HTMLSelectElement => {
   const element = form?.elements.namedItem(name);
   if (
@@ -144,7 +156,7 @@ const readHeaders = (): Array<{ name: string; value: string }> => {
     const name = inputs.item(0).value.trim();
     const value = inputs.item(1).value;
     if (!name && !value) continue;
-    if (!name || !value) throw new Error("header key/value missing");
+    if (!name) throw new Error("header name missing");
     result.push({ name, value });
   }
   return result;
@@ -187,37 +199,61 @@ providerModelSelectionConfirm?.addEventListener("click", () => {
   })();
 });
 
-void storage?.get("provider_settings").then((stored) => {
-  const state = stored.provider_settings as
-    | { providers?: Record<string, Record<string, unknown>> }
-    | undefined;
-  const current = state?.providers?.local;
-  if (!current) return;
-  field("base_url").value = String(current.base_url ?? "");
-  field("model").value = String(current.model ?? "");
-  field("api_key").value = String(current.api_key ?? "");
-  field("api_key_header").value = String(
-    current.api_key_header ?? "authorization_bearer",
-  );
-  if (headersContainer) {
-    headersContainer.replaceChildren();
-    const headers = Array.isArray(current.headers) ? current.headers : [];
-    for (const header of headers) {
-      if (
-        header &&
-        typeof header === "object" &&
-        typeof (header as { name?: unknown }).name === "string" &&
-        typeof (header as { value?: unknown }).value === "string"
-      )
-        appendHeaderRow(
-          (header as { name: string }).name,
-          (header as { value: string }).value,
-        );
+if (runtime)
+  management = initializeProviderManagement(runtime, (id, current) => {
+    field("provider_id").value = id;
+    field("plugin_id").value = current.plugin_id;
+    field("base_url").value = current.base_url;
+    field("model").value = current.model;
+    field("api_key_header").value = current.api_key_header;
+    const optIn = field("private_network_opt_in");
+    if (optIn instanceof HTMLInputElement)
+      optIn.checked = current.private_network_opt_in === true;
+    field("wire_api").value = current.wire_api;
+    field("api_key").value = "";
+    const keyState = document.querySelector<HTMLElement>("#api-key-state");
+    if (keyState)
+      keyState.textContent = current.has_api_key
+        ? "저장됨. 변경할 때만 새 값을 입력하세요."
+        : "새 API key만 입력하세요.";
+    headersContainer?.replaceChildren();
+    for (const name of current.header_names) appendHeaderRow(name);
+    if (!current.header_names.length) appendHeaderRow();
+    show(
+      "Provider 공개 설정을 불러왔습니다. 저장된 secret 값은 표시하지 않습니다.",
+    );
+  });
+
+document
+  .querySelector<HTMLButtonElement>("#provider-host-access")
+  ?.addEventListener("click", () => {
+    try {
+      const optIn = field("private_network_opt_in");
+      const url = validateProviderBaseUrl(
+        field("base_url").value.trim(),
+        optIn instanceof HTMLInputElement && optIn.checked,
+      );
+      if (url.protocol !== "http:")
+        throw new Error("HTTP endpoint를 입력하세요.");
+      const pattern = providerHttpHostPattern(url);
+      if (!browserPermissions)
+        throw new Error("Chrome 권한 API를 사용할 수 없습니다.");
+      void browserPermissions
+        .request({ origins: [pattern] })
+        .then((granted) => {
+          show(
+            granted
+              ? "HTTP host 권한을 허용했습니다."
+              : "HTTP host 권한이 거부되었습니다.",
+          );
+        })
+        .catch(() => show("HTTP host 권한 요청에 실패했습니다."));
+    } catch (error: unknown) {
+      show(
+        error instanceof Error ? error.message : "Endpoint를 확인해 주세요.",
+      );
     }
-    if (!headers.length) appendHeaderRow();
-  }
-  show("저장된 provider 설정을 불러왔습니다. API key는 기본 숨김 상태입니다.");
-});
+  });
 
 const saveProvider = async (): Promise<{
   wire_api: "chat_completions" | "responses";
@@ -234,15 +270,15 @@ const saveProvider = async (): Promise<{
     throw new Error("Endpoint URL 형식을 확인해 주세요.");
   }
   const ollamaEndpoint = parsed.port === "11434";
-  const openAiEndpoint = parsed.hostname.toLowerCase() === "api.openai.com";
-  if (parsed.protocol !== "https:")
-    throw new Error("HTTPS endpoint만 허용됩니다.");
+  const optIn = field("private_network_opt_in");
+  validateProviderBaseUrl(
+    baseUrl,
+    optIn instanceof HTMLInputElement && optIn.checked,
+  );
   const apiKey = field("api_key").value;
   const apiKeyHeader = field("api_key_header").value;
   const model = field("model").value.trim();
   if (!model) throw new Error("모델명을 입력해 주세요.");
-  if (apiKeyHeader !== "none" && !apiKey)
-    throw new Error("선택한 인증 방식에는 API key가 필요합니다.");
   let headers: Array<{ name: string; value: string }>;
   try {
     headers = readHeaders();
@@ -250,49 +286,52 @@ const saveProvider = async (): Promise<{
     throw new Error("HTTP header name과 value를 함께 입력해 주세요.");
   }
   const provider = {
-    plugin_id: "contextpilot.openai-compatible",
-    plugin_version: "1.0.0",
-    label: "Local OpenAI-compatible LLM",
+    plugin_id: field("plugin_id").value,
+    plugin_version: management?.pluginVersion() ?? "1.0.0",
+    label: field("provider_id").value,
     base_url: baseUrl,
-    wire_api: (ollamaEndpoint ? "chat_completions" : "responses") as
-      | "chat_completions"
-      | "responses",
+    wire_api: (field("wire_api").value === "auto"
+      ? ollamaEndpoint
+        ? "chat_completions"
+        : "responses"
+      : field("wire_api").value) as "chat_completions" | "responses",
     model,
     api_key: apiKey,
     api_key_header: apiKeyHeader,
     headers,
     timeout_ms: 120_000,
     enabled: true,
+    private_network_opt_in: optIn instanceof HTMLInputElement && optIn.checked,
   };
-  if (!storage) throw new Error("설정 저장소를 사용할 수 없습니다.");
-  const stored = await storage.get("provider_settings");
-  const previous = stored.provider_settings as
-    | { providers?: Record<string, Record<string, unknown>> }
-    | undefined;
-  if (apiKeyHeader !== "none" && !apiKey && previous?.providers?.local?.api_key)
-    provider.api_key = String(previous.providers.local.api_key);
-  if (apiKeyHeader === "none") provider.api_key = "";
-  const previousWireApi = previous?.providers?.local?.wire_api;
-  if (
-    !ollamaEndpoint &&
-    !openAiEndpoint &&
-    (previousWireApi === "chat_completions" || previousWireApi === "responses")
-  )
-    provider.wire_api = previousWireApi;
-  await storage.set({
-    provider_settings: {
-      schema_version: 1,
-      providers: { ...(previous?.providers ?? {}), local: provider },
-      active_provider: "local",
-    },
-  });
-  field("api_key").value = provider.api_key;
+  if (!runtime) throw new Error("확장 프로그램 런타임에 연결할 수 없습니다.");
+  const response = (await runtime.sendMessage({
+    kind: "PROVIDER_SAVE",
+    payload: { id: field("provider_id").value, config: provider },
+  })) as Record<string, unknown>;
+  if (response?.ok !== true)
+    throw new Error(
+      typeof response?.code === "string"
+        ? response.code
+        : "PROVIDER_UNAVAILABLE",
+    );
+  field("api_key").value = "";
+  headersContainer
+    ?.querySelectorAll<HTMLInputElement>('input[name="header_value"]')
+    .forEach((input) => {
+      input.value = "";
+    });
+  await management?.refresh();
   return {
     wire_api: provider.wire_api,
     model: provider.model,
     base_url: provider.base_url,
     api_key_header: provider.api_key_header,
-    api_key_configured: provider.api_key.length > 0,
+    api_key_configured:
+      (
+        response.providers as
+          | Record<string, { has_api_key?: boolean }>
+          | undefined
+      )?.[field("provider_id").value]?.has_api_key === true,
   };
 };
 

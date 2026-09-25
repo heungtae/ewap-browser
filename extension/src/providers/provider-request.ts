@@ -1,5 +1,6 @@
 import { fail } from "../security/validation.js";
 import { AUTH_SCHEMES, type ProviderConfig } from "./types.js";
+export { validateProviderBaseUrl } from "./provider-network-url.js";
 
 const reservedHeaders = new Set([
   "content-type",
@@ -7,28 +8,6 @@ const reservedHeaders = new Set([
   "api-key",
   "x-goog-api-key",
 ]);
-
-export const validateProviderBaseUrl = (
-  raw: string,
-  privateNetworkOptIn = false,
-): URL => {
-  void privateNetworkOptIn;
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    return fail("INVALID_ARGUMENT");
-  }
-  if (
-    url.username ||
-    url.password ||
-    url.search ||
-    url.hash ||
-    url.protocol !== "https:"
-  )
-    return fail("INVALID_ARGUMENT");
-  return url;
-};
 
 const headerValue = (value: string): string =>
   value.trim().length > 0 &&

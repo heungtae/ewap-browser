@@ -88,7 +88,7 @@ describe("provider runtime", () => {
         return stored;
       },
       async set(value) {
-        stored = value;
+        stored = { ...stored, ...value };
       },
     });
     await runtime.handle("PROVIDER_SAVE", { id: "local", config });

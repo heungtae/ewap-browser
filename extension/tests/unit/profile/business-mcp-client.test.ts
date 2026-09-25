@@ -21,8 +21,12 @@ const binding = {
 describe("business MCP client", () => {
   it("given_profile_bound_tool_when_calling_then_closed_result_is_returned", async () => {
     let request: Record<string, unknown> | undefined;
+    let credentials: RequestCredentials | undefined;
+    let redirect: RequestRedirect | undefined;
     const client = new BusinessMcpClient(async (_input, init) => {
       request = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      credentials = init?.credentials;
+      redirect = init?.redirect;
       return new Response(
         JSON.stringify({
           request_id: "request",
@@ -56,6 +60,8 @@ describe("business MCP client", () => {
       resolver_request_nonce: "nonce",
       page_context_digest: "digest",
     });
+    expect(credentials).toBe("omit");
+    expect(redirect).toBe("error");
   });
   it("given_http_mcp_endpoint_when_calling_then_rejected", async () => {
     const client = new BusinessMcpClient();
@@ -71,5 +77,34 @@ describe("business MCP client", () => {
         },
       ),
     ).rejects.toThrow("BUSINESS_MCP_UNAVAILABLE");
+  });
+  it("rejects a result with a different tool identity", async () => {
+    const client = new BusinessMcpClient(
+      async () =>
+        new Response(
+          JSON.stringify({
+            request_id: "request",
+            kind: "CALL_PAGE_BUSINESS_TOOL_RESULT",
+            status: "OK",
+            tool_id: "other",
+            result_key: "value",
+            value_kind: "text",
+            result: { value: "untrusted" },
+          }),
+          { headers: { "content-type": "application/json" } },
+        ),
+    );
+    await expect(
+      client.call(
+        binding,
+        {},
+        {
+          requestId: "request",
+          runId: "run",
+          nonce: "nonce",
+          digest: "digest",
+        },
+      ),
+    ).rejects.toThrow("BUSINESS_MCP_PROTOCOL_ERROR");
   });
 });

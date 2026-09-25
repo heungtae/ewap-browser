@@ -1,13 +1,17 @@
 import { fail, isPlainObject } from "../security/validation.js";
 import { ProviderSettings } from "../settings/provider-settings.js";
 import { parseProviderBody } from "./provider-body.js";
+import { ProviderPluginStore } from "./plugin-store.js";
+import {
+  handleProviderLifecycle,
+  lifecycleKinds,
+} from "./provider-lifecycle.js";
 import { parseChatResponse } from "./provider-response.js";
 import { ProviderRegistry } from "./registry.js";
 import { testProvider } from "./provider-test.js";
 import { CoreProviderTransport } from "./transport.js";
 import type {
   ProviderChatResponse,
-  ProviderConfig,
   ProviderMessage,
   ProviderToolDefinition,
 } from "./types.js";
@@ -25,6 +29,8 @@ export type ProviderRuntimeStorage = {
 export class ProviderRuntime {
   public readonly registry = new ProviderRegistry();
   private readonly settings: ProviderSettings;
+  private readonly pluginStore: ProviderPluginStore;
+  private ready?: Promise<void>;
 
   public constructor(
     storage: ProviderRuntimeStorage,
@@ -35,6 +41,12 @@ export class ProviderRuntime {
         (await storage.get("provider_settings")).provider_settings,
       write: async (state) => storage.set({ provider_settings: state }),
     });
+    this.pluginStore = new ProviderPluginStore(storage, this.registry);
+  }
+
+  private async ensureReady(): Promise<void> {
+    this.ready ??= this.pluginStore.load();
+    await this.ready;
   }
 
   public async chat(
@@ -45,6 +57,7 @@ export class ProviderRuntime {
       onProgress?: () => void;
     } = {},
   ): Promise<ProviderChatResponse> {
+    await this.ensureReady();
     const config = await this.settings.active();
     const adapter = this.registry.resolveConfigured(config);
     const result = await this.transport.send(
@@ -79,6 +92,7 @@ export class ProviderRuntime {
    */
   public async diagnostics(): Promise<Record<string, unknown>> {
     try {
+      await this.ensureReady();
       const config = await this.settings.active();
       const publicConfig = {
         plugin_id: config.plugin_id,
@@ -107,15 +121,21 @@ export class ProviderRuntime {
     kind: string,
     payload: unknown,
   ): Promise<Record<string, unknown>> {
+    await this.ensureReady();
     if (kind === "PROVIDER_LIST")
       return {
         ok: true,
         plugins: this.registry.snapshot(),
         providers: await this.settings.list(),
       };
-    if (kind === "PLUGIN_INSTALL")
-      return { ok: true, plugin: this.registry.install(payload) };
-    if (kind === "PLUGIN_SET_ENABLED") return this.setPluginEnabled(payload);
+    if (lifecycleKinds.has(kind))
+      return handleProviderLifecycle(
+        kind,
+        payload,
+        this.registry,
+        this.pluginStore,
+        this.settings,
+      );
     if (kind === "PROVIDER_SAVE") return this.saveProvider(payload);
     if (kind === "PROVIDER_EXPORT")
       return { ok: true, export: await this.settings.exportPublic() };
@@ -123,22 +143,6 @@ export class ProviderRuntime {
     if (kind === "PROVIDER_MODELS") return this.listModels(payload);
     if (kind === "CHAT_SEND") return this.sendChat(payload);
     return fail("INVALID_ARGUMENT");
-  }
-
-  private async setPluginEnabled(
-    payload: unknown,
-  ): Promise<Record<string, unknown>> {
-    const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
-    const pluginId = value.plugin_id;
-    const enabled = value.enabled;
-    if (typeof pluginId !== "string") fail("INVALID_ARGUMENT");
-    if (typeof enabled !== "boolean") fail("INVALID_ARGUMENT");
-    this.registry.setEnabled(pluginId as string, enabled as boolean);
-    await this.settings.setEnabledByPlugin(
-      pluginId as string,
-      enabled as boolean,
-    );
-    return { ok: true };
   }
 
   private async saveProvider(
@@ -151,7 +155,7 @@ export class ProviderRuntime {
       : fail("INVALID_ARGUMENT");
     if (typeof id !== "string") fail("INVALID_ARGUMENT");
     this.registry.resolveConfigured(config);
-    await this.settings.save(id as string, config as unknown as ProviderConfig);
+    await this.settings.saveWriteOnly(id as string, config);
     return { ok: true, providers: await this.settings.list() };
   }
 

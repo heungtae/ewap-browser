@@ -1,5 +1,5 @@
 import { fail, isPlainObject } from "../security/validation.js";
-import { validateProviderBaseUrl } from "./provider-request.js";
+import { validateProviderBaseUrl } from "./provider-network-url.js";
 import {
   AUTH_SCHEMES,
   WIRE_APIS,

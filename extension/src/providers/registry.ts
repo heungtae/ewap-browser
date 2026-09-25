@@ -40,6 +40,8 @@ export class ProviderRegistry {
       return fail("PROVIDER_PLUGIN_NOT_FOUND");
     const current = this.plugins.get(manifest.plugin_id);
     if (current) return fail("PROVIDER_PLUGIN_INCOMPATIBLE");
+    if (!bundled && this.plugins.size >= 33)
+      return fail("PROVIDER_PLUGIN_INCOMPATIBLE");
     const installed = { manifest, enabled: true, bundled };
     this.plugins.set(manifest.plugin_id, installed);
     return { ...installed, manifest: structuredClone(manifest) };

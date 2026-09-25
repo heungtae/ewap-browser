@@ -1,3 +1,5 @@
+import { validateProviderBaseUrl } from "../providers/provider-network-url.js";
+
 type FetchMessage = {
   kind: "OFFSCREEN_FETCH";
   stream_id: string;
@@ -9,6 +11,7 @@ type FetchMessage = {
 type ReadyCheckMessage = { kind: "OFFSCREEN_PROVIDER_READY_CHECK" };
 type Runtime = {
   id: string;
+  getURL(path: string): string;
   connect(info: { name: string }): {
     postMessage(message: unknown): void;
     disconnect(): void;
@@ -59,8 +62,19 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   )
     return;
   const value = message as Partial<FetchMessage>;
+  let destinationValid = false;
+  if (typeof value.url === "string") {
+    try {
+      validateProviderBaseUrl(value.url, true);
+      destinationValid = true;
+    } catch {
+      destinationValid = false;
+    }
+  }
   if (
     sender.id !== runtime.id ||
+    sender.url !== runtime.getURL("js/service-worker.js") ||
+    !destinationValid ||
     typeof value.url !== "string" ||
     typeof value.stream_id !== "string" ||
     !/^[A-Za-z0-9_-]{22,128}$/.test(value.stream_id) ||

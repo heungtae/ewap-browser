@@ -29,6 +29,11 @@ if (
   throw new Error("manifest permission snapshot differs from bounded design");
 if (manifest.permissions.includes("webNavigation"))
   throw new Error("manifest contains an unsupported permission");
+if (
+  JSON.stringify(manifest.optional_host_permissions) !==
+  JSON.stringify(["http://*/*"])
+)
+  throw new Error("optional HTTP provider host boundary differs");
 if (!manifest.options_ui?.page)
   throw new Error("provider Settings page is missing");
 if (manifest.storage?.managed_schema !== "managed-storage-schema.json")

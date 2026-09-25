@@ -32,6 +32,7 @@ export class BusinessMcpClient {
       return fail("BUSINESS_MCP_UNAVAILABLE");
     const response = await this.fetcher(endpoint, {
       method: "POST",
+      credentials: "omit",
       redirect: "error",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({

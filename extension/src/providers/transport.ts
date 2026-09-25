@@ -3,15 +3,15 @@ import { assertSafeRequestPlan } from "./openai-compatible.js";
 import {
   providerHeaders,
   safeProviderErrorDetail,
-  validateProviderBaseUrl,
 } from "./provider-request.js";
+import { validateProviderBaseUrl } from "./provider-network-url.js";
 import type {
   NormalizedProviderRequest,
   ProviderAdapter,
   ProviderConfig,
 } from "./types.js";
 
-export { validateProviderBaseUrl } from "./provider-request.js";
+export { validateProviderBaseUrl } from "./provider-network-url.js";
 
 export type TransportResult = {
   status: number;

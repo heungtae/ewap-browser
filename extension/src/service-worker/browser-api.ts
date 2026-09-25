@@ -98,7 +98,10 @@ export type BrowserOffscreen = {
   }): Promise<void>;
 };
 export type BrowserPermissions = {
-  contains(query: { permissions: string[] }): Promise<boolean>;
+  contains(query: {
+    permissions?: string[];
+    origins?: string[];
+  }): Promise<boolean>;
 };
 export type BrowserScripting = {
   executeScript(injection: {

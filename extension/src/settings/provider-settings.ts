@@ -1,13 +1,13 @@
 import { fail, isPlainObject } from "../security/validation.js";
-import { AUTH_SCHEMES, WIRE_APIS } from "../providers/types.js";
 import type {
   ProviderConfig,
   PublicProviderConfig,
 } from "../providers/types.js";
+import { mergeWriteOnlyProvider } from "./provider-secret-write.js";
 import {
-  providerHeaders,
-  validateProviderBaseUrl,
-} from "../providers/provider-request.js";
+  providerIdentifier,
+  validateProviderConfig,
+} from "./provider-config-validation.js";
 
 export type ProviderSettingsState = {
   schema_version: 1;
@@ -22,18 +22,24 @@ const initial = (): ProviderSettingsState => ({
   schema_version: 1,
   providers: {},
 });
-const identifier = (value: string): string =>
-  /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(value)
-    ? value
-    : fail("INVALID_ARGUMENT");
 
 export class ProviderSettings {
   public constructor(private readonly storage: SettingsStorage) {}
 
   public async save(id: string, config: ProviderConfig): Promise<void> {
-    identifier(id);
-    this.validateConfig(config);
+    providerIdentifier(id);
+    validateProviderConfig(config);
     const state = await this.loadPrivate();
+    state.providers[id] = structuredClone(config);
+    if (!state.active_provider) state.active_provider = id;
+    await this.storage.write(state);
+  }
+
+  public async saveWriteOnly(id: string, input: unknown): Promise<void> {
+    providerIdentifier(id);
+    const state = await this.loadPrivate();
+    const config = mergeWriteOnlyProvider(state.providers[id], input);
+    validateProviderConfig(config);
     state.providers[id] = structuredClone(config);
     if (!state.active_provider) state.active_provider = id;
     await this.storage.write(state);
@@ -62,7 +68,7 @@ export class ProviderSettings {
 
   public async setActive(id: string): Promise<void> {
     const state = await this.loadPrivate();
-    if (!state.providers[id]) fail("PROVIDER_NOT_CONFIGURED");
+    if (!state.providers[id]?.enabled) fail("PROVIDER_NOT_CONFIGURED");
     state.active_provider = id;
     await this.storage.write(state);
   }
@@ -90,6 +96,20 @@ export class ProviderSettings {
     if (deleteSecret) delete state.providers[id];
     else config.enabled = false;
     if (state.active_provider === id) delete state.active_provider;
+    await this.storage.write(state);
+  }
+
+  public async removeByPlugin(
+    pluginId: string,
+    deleteSecrets: boolean,
+  ): Promise<void> {
+    const state = await this.loadPrivate();
+    for (const [id, config] of Object.entries(state.providers)) {
+      if (config.plugin_id !== pluginId) continue;
+      if (deleteSecrets) delete state.providers[id];
+      else config.enabled = false;
+      if (state.active_provider === id) delete state.active_provider;
+    }
     await this.storage.write(state);
   }
 
@@ -132,8 +152,8 @@ export class ProviderSettings {
       return fail("INVALID_ARGUMENT");
     const state = structuredClone(value) as ProviderSettingsState;
     for (const [id, config] of Object.entries(state.providers)) {
-      identifier(id);
-      this.validateConfig(config);
+      providerIdentifier(id);
+      validateProviderConfig(config);
     }
     if (
       state.active_provider !== undefined &&
@@ -142,53 +162,5 @@ export class ProviderSettings {
     )
       fail("INVALID_ARGUMENT");
     return state;
-  }
-
-  private validateConfig(config: ProviderConfig): void {
-    if (
-      !isPlainObject(config) ||
-      Object.keys(config).some(
-        (key) =>
-          ![
-            "plugin_id",
-            "plugin_version",
-            "label",
-            "base_url",
-            "wire_api",
-            "model",
-            "api_key",
-            "api_key_header",
-            "headers",
-            "timeout_ms",
-            "enabled",
-            "private_network_opt_in",
-          ].includes(key),
-      ) ||
-      !/^\d+\.\d+\.\d+$/.test(config.plugin_version) ||
-      !WIRE_APIS.includes(config.wire_api) ||
-      !AUTH_SCHEMES.includes(config.api_key_header) ||
-      typeof config.label !== "string" ||
-      !config.label ||
-      typeof config.model !== "string" ||
-      !config.model ||
-      typeof config.api_key !== "string" ||
-      typeof config.enabled !== "boolean" ||
-      !Number.isInteger(config.timeout_ms) ||
-      config.timeout_ms < 100 ||
-      config.timeout_ms > 300_000 ||
-      !Array.isArray(config.headers)
-    )
-      fail("INVALID_ARGUMENT");
-    identifier(config.plugin_id);
-    validateProviderBaseUrl(config.base_url, config.private_network_opt_in);
-    for (const header of config.headers)
-      if (
-        !isPlainObject(header) ||
-        Object.keys(header).some((key) => !["name", "value"].includes(key)) ||
-        typeof header.name !== "string" ||
-        typeof header.value !== "string"
-      )
-        fail("INVALID_ARGUMENT");
-    providerHeaders(config);
   }
 }
