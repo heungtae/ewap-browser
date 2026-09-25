@@ -2,6 +2,7 @@ import type { Outcome } from "./core-types.js";
 import type {
   ActivityStage,
   ChatActionView,
+  ChatEvent,
   ChatMode,
 } from "./chat-event-types.js";
 import { fail, isPlainObject, opaque, string } from "../security/validation.js";
@@ -29,32 +30,45 @@ export const activityStages = new Set<ActivityStage>([
 ]);
 const positiveInteger = (value: unknown): value is number =>
   typeof value === "number" && Number.isInteger(value) && value >= 1;
-export const allowedEventKeys = [
+const envelope = [
   "type",
   "session_id",
   "thread_id",
   "tab_id",
   "run_id",
   "sequence",
-  "mode",
-  "permission_mode",
-  "stage",
-  "text",
-  "tool_use_id",
-  "tool",
-  "summary",
-  "target_name",
-  "result",
-  "action",
-  "request_id",
-  "capability",
-  "host",
-  "value_kind",
-  "confirmation_id",
-  "confirmation_nonce",
-  "outcome",
-  "code",
-] as const;
+];
+const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
+  user_message: ["text"],
+  page_scope_changed: [],
+  run_started: ["mode", "permission_mode"],
+  activity_started: ["stage"],
+  activity_progress: ["stage"],
+  activity_finished: ["stage"],
+  assistant_delta: ["text"],
+  tool_started: ["tool_use_id", "tool", "summary", "target_name"],
+  tool_progress: ["tool_use_id", "summary"],
+  tool_finished: ["tool_use_id", "result"],
+  action_review_required: ["action"],
+  permission_required: ["request_id", "action", "capability", "host"],
+  value_required: ["action", "value_kind"],
+  confirmation_required: ["action", "confirmation_id", "confirmation_nonce"],
+  run_terminal: ["outcome", "code"],
+};
+export const hasExactChatEventKeys = (
+  value: Record<string, unknown>,
+): boolean => {
+  if (
+    typeof value.type !== "string" ||
+    !Object.prototype.hasOwnProperty.call(payloadFields, value.type)
+  )
+    return false;
+  const allowed = new Set([
+    ...envelope,
+    ...payloadFields[value.type as ChatEvent["type"]],
+  ]);
+  return Object.keys(value).every((key) => allowed.has(key));
+};
 export const validateActionView = (value: unknown): ChatActionView => {
   if (
     !isPlainObject(value) ||

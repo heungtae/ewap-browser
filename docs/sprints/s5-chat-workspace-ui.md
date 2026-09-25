@@ -1,66 +1,57 @@
-# S5 — Chat Workspace UI 완성도
+# S5 — Chat Workspace UI
 
-## 목표
+## 목표와 종료 범위
 
-현재 단순 message list와 action review UI를 복구 가능한 Chat workspace로 교체한다. provider wire payload를 UI가 직접 해석하지 않고 service worker의 closed `ChatEvent` projection만 렌더링한다.
+[31번 Act](../31-act-request-execution-current-implementation.md)과
+[33번 Ask](../33-ask-request-execution-current-implementation.md)의 현재 Browser
+경로에서 Service Worker가 발행한 closed `ChatEvent`만 Side Panel에 표시한다.
+중복·누락·연결 끊김을 복구하고 Stop 뒤 늦게 도착한 결과가 화면이나 승인 권한을
+되살리지 않게 한다. S0~S9의 Linux 로컬 종료 범위는
+[Sprint 설계 인덱스](../sprint-design.md)를 따른다.
 
-## 선행 조건
+Screenshot payload·좌표 annotation, Claude artifact 동등성, 전체 번역 교체,
+외부 접근성 인증과 운영 Provider 결과는 현재 `ChatEvent`/31·33번 Browser
+경로의 종료 조건에서 제외한다. 안전한 schema 없이 이미지 카드나 좌표 입력을
+추가하지 않는다.
 
-- S1의 Ask request와 S3/S4 provider runtime이 현재 build에서 동작한다.
-- 기존 UI의 sender 검증, permission decision과 Stop message 계약을 inventory한다.
-- 사용자 변경과 겹치는 Side Panel 파일은 구현 시작 전에 diff와 소유 범위를 확정한다.
+## 선행 조건과 허용 파일군
 
-## 구현 범위
+- S1 Ask, S2 승인/결과 확인, S3 Provider stream/Stop, S4 Settings 경계가
+  현재 build에서 동작한다.
+- `extension/src/sidepanel/**`, `extension/src/contracts/chat-events*`,
+  해당 unit·Chrome fixture, build script만 S5에서 변경한다.
+- Provider wire format, mutation policy, CDP command allowlist는 유지한다.
 
-1. 기존 Side Panel component/store/message/permission UI inventory와 재사용·교체 결정표
-2. Claude artifact에서 관찰한 streaming/timeline/modal/recovery behavior parity fixture
-3. run별 sequence를 가진 Chat event schema와 resync snapshot
-4. virtualized conversation viewport와 scroll anchor
-5. assistant streaming delta batching
-6. read/action/error를 구분한 grouped tool timeline
-7. screenshot/zoom card와 display-only annotation surface
-8. tab context, plan, permission, value request와 R2 confirmation card/modal
-9. header의 Ask/Act, model, page context와 permission-mode badge
-10. 항상 접근 가능한 Stop과 terminal recovery action
-11. safe debug detail projection과 secret scrubber
-12. ko-KR/en-US locale, keyboard navigation, focus management와 responsive layout
+## 구현·검증 계약
 
-Claude bundle의 code, 문구와 asset은 복사하지 않는다. 관찰된 UI 상태 전이와 interaction만 fixture로 고정하고, ContextPilot의 license가 확인된 기존 component와 utility는 계약 test를 통과하는 범위에서 직접 재사용·정리한다.
+| 카드 | Browser 경계 | 종료 증거 |
+| --- | --- | --- |
+| S5-C0~C2 | 현재 Panel component 재사용, event variant별 closed field, tab/run sequence, `CHAT_RESYNC`/`CHAT_RECOVER` | extra/wrong-tab/wrong-run/duplicate/gap 음성 검사, 실제 worker 재시작 |
+| S5-C3~C5 | 1,000 DOM 항목 상한, 읽던 위치 보존, delta batch, 순서 있는 tool timeline | 실제 HTTPS Provider의 1글자 SSE delta 1,000개, Panel의 교차 tool event, 1,100 항목 상한·scroll anchor |
+| S5-C6 | review·permission·value·R2 confirmation 만료와 Stop | 즉시 Stop 상태, 카드 비활성화, raw value 제거, late delta/tool 무시 |
+| S5-C8 | 안전한 오류·진단 표시 | `UNKNOWN` 성공 문구 금지, stale target의 새 Ask 읽기 CTA, secret/raw value 비노출 |
+| S5-C9~C10 | permission badge, native dialog, keyboard, 좁은 폭, 복구 | 실제 Side Panel 320 CSS px·200% page scale, dialog focus/Escape, worker 재시작·실행 중 Panel 닫기/재열기 |
 
-## 허용 파일군
+S5-C7로 표기됐던 screenshot/annotation 카드는 이 Browser 경로에 해당하는
+안전한 event payload가 없으므로 이번 종료 카드에서 삭제한다. 현재 UI의
+ko-KR 문구와 기존 안전한 error mapping을 사용하며 전체 en-US 번역은
+후속 UI 범위다.
 
-- `extension/src/sidepanel/**`
-- `extension/src/contracts/chat-events*`
-- Chat event를 projection하는 `extension/src/service-worker/**`
-- 해당 unit/fixture/Chrome E2E와 build script
-
-provider transport, mutation policy와 CDP command allowlist 변경은 이 Sprint에 포함하지 않는다.
-
-## 구현 카드
-
-| 카드   | 산출물                           | 종료 조건                                       |
-| ------ | -------------------------------- | ----------------------------------------------- |
-| S5-C0  | 기존 UI inventory와 behavior map | 파일별 reuse/adapt/replace 결정 및 test ID 연결 |
-| S5-C1  | `ChatEvent` closed schema        | unknown/extra field와 wrong run 거부            |
-| S5-C2  | event store/resync               | duplicate/gap/reconnect test                    |
-| S5-C3  | virtual transcript               | 1,000 item 성능 budget                          |
-| S5-C4  | streaming renderer               | ordered delta와 Stop race test                  |
-| S5-C5  | tool timeline                    | read grouping, mutation/error non-collapse      |
-| S5-C6  | modal/value flows                | focus trap, expiry와 stale request 거부         |
-| S5-C7  | screenshot/tab/plan cards        | lazy image lifecycle와 safe URL                 |
-| S5-C8  | safe debug/diagnostics           | secret/raw ref/page content 부재                |
-| S5-C9  | a11y/i18n/responsive             | axe, keyboard, 320px/200% zoom                  |
-| S5-C10 | Chrome recovery E2E              | worker suspend와 panel reopen                   |
+[18번 검증계획](../18-claude-browser-capability-verification-plan.md)의
+UI-001~010은 아래와 같이 현재 경로에서 판정한다. UI-001은 실제 Provider,
+UI-003~004는 실제 Chrome worker/Panel, UI-002·005~010의 늦은·잘못된
+event는 실제 Panel 문서에 통제된 `ChatEvent`를 주입해 음성 검증한다.
+UI-007의 Provider 연결 취소는 S3 fixture로도 확인하고, UI-008의 실제
+permission·R2 dispatch 중단은 S2 증거와 함께 판정한다.
 
 ## 완료 조건
 
-- [18. 검증계획](../18-claude-browser-capability-verification-plan.md)의 UI-001~010, 접근성·성능 gate 통과
-- Stop 이후 provider delta/tool result가 transcript를 변경하지 않음
-- permission-less badge가 실제 run mode와 불일치하지 않음
-- UI 로그·debug detail·error에 provider/browser credential과 raw action value 없음
-- 실제 Chrome에서 service worker suspend와 panel close/reopen 증적
-- `docs/sprint-progress.md`에 commit, test와 Chrome evidence 연결
-
-## 비완료 조건
-
-React component snapshot만 있거나 source-based E2E만 통과한 경우, mock screenshot만 렌더링한 경우, 실제 worker recovery를 수행하지 않은 경우에는 `Completed`로 표시하지 않는다.
+- 위 카드와 UI-001~010에 대한 현재 build의 단위·fixture·실제 Chrome
+  증거를 `docs/evidence/s5-closure-2026-09-25.md`에 기록한다.
+- Stop 뒤 delta/tool event와 오래된 승인 카드가 transcript/권한을 바꾸지
+  않는다. permission badge는 실제 `run_started` mode를 따른다.
+- 진단·오류·UI에 credential, raw action value, provider wire object를
+  출력하지 않는다.
+- worker 재시작과 실행 중 Panel 닫기/재열기 뒤 기록 또는 명시적 실패가
+  보인다. source 기반 UI 확인만으로 `Completed`를 선언하지 않는다.
+- `docs/sprint-progress.md`에 완료 판정과 증거를 연결한다.

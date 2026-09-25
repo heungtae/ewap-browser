@@ -19,6 +19,16 @@ export const createS3Fixture = async (certificateDirectory) => {
         "cache-control": "no-cache",
         "access-control-allow-origin": "*",
       });
+      if (
+        (JSON.stringify(body?.messages?.at(-1)) ?? "").includes("S5 dense 1000")
+      ) {
+        for (let index = 0; index < 1_000; index += 1)
+          response.write(
+            `data: ${JSON.stringify({ choices: [{ delta: { content: "abcdefghij"[index % 10] } }] })}\n\n`,
+          );
+        response.end("data: [DONE]\n\n");
+        return;
+      }
       const text = hold ? "S3 partial stop" : `S3 fixture answer ${number}`;
       const event =
         request.url === "/v1/responses"

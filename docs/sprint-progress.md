@@ -32,7 +32,10 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
 - **S4: Completed** — Settings write-only secret, 선언형 plugin 재시작/제거,
   HTTP loopback·사설 IPv4 권한 경계와 Profile-bound MCP 음성 검사를
   확인했다. [S4 증거](evidence/s4-closure-2026-09-25.md).
-- **S5~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
+- **S5: Completed** — 실제 HTTPS Provider의 1,000 delta, worker 재시작,
+  실행 중 Panel 닫기·재열기, sequence/Stop/card/scroll 경계를 현재 빌드의
+  Chrome에서 확인했다. [S5 증거](evidence/s5-closure-2026-09-25.md).
+- **S6~S8: In Progress** — 각 Sprint의 Chrome/negative matrix와 상태
   증거를 현재 빌드에서 확인한 뒤 순서대로 판정한다.
 - **S9: In Progress** — S0~S8 `Completed`가 선행 조건이다. 현재
   `scripts/release-smoke.mjs`는 manifest host coverage 기대값 불일치로
@@ -84,8 +87,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
     matrix는 별도이므로 S10 전체 상태는 Planned다.
 
-기준일: 2026-09-25. S5~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
-현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S4는 위 최신 증거를 따른다.
+기준일: 2026-09-25. S6~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
+현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S5는 위 최신 증거를 따른다.
 
   ----------------------------------------------------------------------------
   Sprint   상태       완료 조건
@@ -105,8 +108,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
   S4       Completed  Settings secret write-only, plugin lifecycle, local network
                      권한 경계 — 2026-09-25 증거 연결
 
-  S5       In         Chat streaming/resync, tool timeline, modal, a11y와 실제
-           Progress   Chrome UI
+  S5       Completed  Chat streaming/resync, Stop/card, scroll·복구 Chrome UI
+                     — 2026-09-25 증거 연결
 
   S6       In         hidden DOM 기본 read, find, vision, tabs와 read batch
            Progress   Chrome E2E
@@ -168,11 +171,9 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
                                                 # CFT semantic preview + bounded mutation regression
 ```
 
-S5~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
-남아 있기 때문이다. S5는 통제된 provider SSE 1,000 delta/tool interleave와
-worker suspend·panel close/reopen 뒤 event-store 복구, modal Stop race,
-accessibility/performance gate를 실제 Chrome에서 실행해야 한다. S6는
-vision zoom/tab-group/batch cancellation, S7은 Profile R2 binding 및 두
+S6~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
+남아 있기 때문이다. S6는 vision zoom/tab-group/batch cancellation,
+S7은 Profile R2 binding 및 두
 일반 Profile fixture, S8은 전체 adversarial hard-policy matrix, S9는
 Linux clean profile과 upgrade/rollback을 각각 실제 환경에서 실행해야
 한다. 이 항목은 구현되거나 실행되지 않은 상태에서 pass로 대체하지

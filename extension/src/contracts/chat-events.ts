@@ -2,7 +2,7 @@ import { fail, isPlainObject, opaque, string } from "../security/validation.js";
 import type { Outcome } from "./core-types.js";
 import type { ActivityStage, ChatEvent, ChatMode } from "./chat-event-types.js";
 import {
-  allowedEventKeys,
+  hasExactChatEventKeys,
   activityStages,
   modes,
   outcomes,
@@ -18,10 +18,7 @@ export type {
 
 export const validateChatEvent = (value: unknown): ChatEvent => {
   if (!isPlainObject(value)) return fail("INVALID_ARGUMENT");
-  if (
-    Object.keys(value).some((key) => !allowedEventKeys.includes(key as never))
-  )
-    return fail("INVALID_ARGUMENT");
+  if (!hasExactChatEventKeys(value)) return fail("INVALID_ARGUMENT");
   if (
     typeof value.type !== "string" ||
     typeof value.session_id !== "string" ||

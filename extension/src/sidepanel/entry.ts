@@ -11,6 +11,7 @@ import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { connectPanel } from "./panel-connection.js";
 import { eventSequenceDecision } from "./event-sequence.js";
+import { shouldRenderChatEvent } from "./chat-event-gate.js";
 import { RequestClient } from "./request-client.js";
 import { createDiagnosticsView } from "./diagnostics-view.js";
 import { InputHistory } from "./input-history.js";
@@ -90,7 +91,11 @@ const pendingDeltas = new Map<string, string>();
 let assistantMessageText = new WeakMap<HTMLElement, string>();
 const tools = new Map<string, HTMLElement>();
 const reviewItems = new Map<string, HTMLElement>();
+const decisionCards = new Map<string, Set<HTMLElement>>();
 const displayedTerminalRuns = new Set<string>();
+const stoppedRuns = new Set<string>();
+let activeRunId: string | undefined;
+let stopRequested = false;
 const transcriptLimit = 1_000;
 const maxAttachmentBytes = 128 * 1024;
 const maxAttachmentChars = 6_000;
@@ -103,6 +108,7 @@ let lastTerminalFailureCode: string | undefined;
 // Keep following new transcript content until the reader deliberately scrolls
 // away from the end. Reaching the end again resumes automatic following.
 let followsTranscript = true;
+let anchorCorrectionRemainder = 0;
 let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
@@ -138,7 +144,7 @@ const requestClient = new RequestClient({
     lastRequest = request;
     void diagnosticsView.refresh(request);
     if (request.state === "TERMINAL") {
-      setRunActive(false);
+      if (!stopRequested) setRunActive(false);
       setActivityStatus();
       if (request.outcome === "FAILED" || request.outcome === "UNKNOWN")
         showFailure(
@@ -209,11 +215,42 @@ chatScroll?.addEventListener("scroll", () => {
 });
 const append = (element: HTMLElement): void => {
   if (!chatMessages) return;
+  const wasFollowing = followsTranscript;
+  const scrollTop = chatScroll?.getBoundingClientRect().top ?? 0;
+  const anchor =
+    !wasFollowing && chatMessages.children.length >= transcriptLimit
+      ? Array.from(chatMessages.children).find(
+          (child) => child.getBoundingClientRect().bottom > scrollTop,
+        )
+      : undefined;
+  const anchorTop = anchor?.getBoundingClientRect().top;
   emptyState?.setAttribute("hidden", "");
   chatMessages.append(element);
-  while (chatMessages.children.length > transcriptLimit)
-    chatMessages.firstElementChild?.remove();
-  if (followsTranscript) scrollToLatest();
+  while (chatMessages.children.length > transcriptLimit) {
+    const first = chatMessages.firstElementChild;
+    if (!first) break;
+    first.remove();
+    for (const [id, item] of tools) if (item === first) tools.delete(id);
+    for (const [id, item] of reviewItems)
+      if (item === first) reviewItems.delete(id);
+    for (const [id, items] of decisionCards) {
+      items.delete(first as HTMLElement);
+      if (!items.size) decisionCards.delete(id);
+    }
+  }
+  if (anchor?.isConnected && anchorTop !== undefined && chatScroll) {
+    const before = chatScroll.scrollTop;
+    const correction =
+      anchor.getBoundingClientRect().top -
+      anchorTop +
+      anchorCorrectionRemainder;
+    chatScroll.scrollTop = before + correction;
+    anchorCorrectionRemainder = correction - (chatScroll.scrollTop - before);
+  }
+  if (wasFollowing) {
+    anchorCorrectionRemainder = 0;
+    scrollToLatest();
+  }
 };
 const message = (role: "user" | "assistant", text: string): HTMLElement => {
   const item = document.createElement("article");
@@ -299,6 +336,26 @@ const lockReview = (runId: string, stateText: string): void => {
   const state = item.querySelector<HTMLElement>(".tool-state");
   if (state) state.textContent = stateText;
 };
+const trackDecisionCard = (runId: string, item: HTMLElement): void => {
+  const cards = decisionCards.get(runId) ?? new Set<HTMLElement>();
+  cards.add(item);
+  decisionCards.set(runId, cards);
+};
+const lockDecisionCards = (runId: string, stateText: string): void => {
+  for (const item of decisionCards.get(runId) ?? []) {
+    for (const control of item.querySelectorAll<
+      HTMLInputElement | HTMLButtonElement
+    >("input, button")) {
+      control.disabled = true;
+      if (control instanceof HTMLInputElement) control.value = "";
+    }
+    item.dataset.decision = "locked";
+    item.setAttribute("aria-busy", "false");
+    const state = item.querySelector<HTMLElement>(".tool-state");
+    if (state) state.textContent = stateText;
+  }
+  decisionCards.delete(runId);
+};
 const renderAttachment = (): void => {
   if (!attachmentName) return;
   attachmentName.hidden = !attachment;
@@ -326,10 +383,17 @@ const clearConversation = (focusInput = false): void => {
   diagnosticsView.reset();
   setActivityStatus();
   reviewItems.clear();
+  decisionCards.clear();
+  displayedTerminalRuns.clear();
+  stoppedRuns.clear();
+  activeRunId = undefined;
+  stopRequested = false;
+  latestRecoveryId += 1;
   skipNextLiveUserMessage = false;
   setRunActive(false);
   chatMessages?.replaceChildren();
   followsTranscript = true;
+  anchorCorrectionRemainder = 0;
   if (chatScroll) chatScroll.scrollTop = 0;
   emptyState?.removeAttribute("hidden");
   clearAttachment();
@@ -393,6 +457,18 @@ const showFailure = (code?: string): void => {
   );
   if (help.openSettings)
     actions.append(actionButton("AI 설정 열기", "primary", openSettings));
+  if (code === "TARGET_STALE")
+    actions.append(
+      actionButton("현재 페이지 다시 읽기", "primary", () => {
+        modeAsk?.click();
+        if (chatInput) {
+          chatInput.value =
+            "현재 페이지의 작업 대상과 상태를 다시 확인해 주세요.";
+          chatInput.focus();
+          chatForm?.requestSubmit();
+        }
+      }),
+    );
   append(item);
   setStatus(detail + " " + help.guidance);
 };
@@ -956,6 +1032,7 @@ const renderWorkflowCandidates = (
   setStatus("워크플로우 후보를 선택해 계획을 확인해 주세요.");
 };
 const renderPermission = (
+  runId: string,
   requestId: string,
   action: ChatActionView,
   capability: string,
@@ -1006,9 +1083,11 @@ const renderPermission = (
     actionButton("거부", "danger", () => decide("deny")),
   );
   append(item);
+  trackDecisionCard(runId, item);
   setStatus("실행 권한이 필요합니다.");
 };
 const renderValue = (
+  runId: string,
   action: ChatActionView,
   valueKind: "text" | "option",
 ): void => {
@@ -1043,15 +1122,17 @@ const renderValue = (
         showFailure(error instanceof Error ? error.message : undefined),
       )
       .finally(() => {
-        submit.disabled = false;
+        if (item.dataset.decision !== "locked") submit.disabled = false;
       });
   });
   item.append(form);
   append(item);
+  trackDecisionCard(runId, item);
   input.focus();
   setStatus("입력값을 확인한 뒤 적용해 주세요.");
 };
 const renderConfirmation = (
+  runId: string,
   action: ChatActionView,
   confirmationId: string,
   confirmationNonce: string,
@@ -1079,6 +1160,7 @@ const renderConfirmation = (
     actionButton("중단", "danger", () => rejectAction(action)),
   );
   append(item);
+  trackDecisionCard(runId, item);
   setStatus("중요 작업을 확인해 주세요.");
 };
 const flushDeltas = (): void => {
@@ -1129,6 +1211,8 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
   } catch {
     return;
   }
+  if (activeThreadTabId !== undefined && event.tab_id !== activeThreadTabId)
+    return;
   const previous = threadSequences.get(event.thread_id) ?? 0;
   const decision = eventSequenceDecision(previous, event.sequence, recovered);
   if (decision === "ignore") return;
@@ -1157,6 +1241,16 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   threadSequences.set(event.thread_id, event.sequence);
+  if (
+    !shouldRenderChatEvent(
+      event,
+      activeThreadTabId,
+      displayedTerminalRuns,
+      stoppedRuns,
+      activeRunId,
+    )
+  )
+    return;
   if (event.type === "user_message") {
     if (skipNextLiveUserMessage) {
       skipNextLiveUserMessage = false;
@@ -1179,6 +1273,11 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   if (event.type === "run_started") {
+    activeRunId = event.run_id;
+    if (stopRequested) {
+      stoppedRuns.add(event.run_id);
+      return;
+    }
     applyPermissionMode(event.permission_mode);
     setActivityStatus(runStartActivityLabel(event.mode));
     setRunActive(true);
@@ -1216,6 +1315,7 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
   if (event.type === "tool_started") {
     const hasActionReview = reviewItems.has(event.run_id);
     lockReview(event.run_id, "실행 중");
+    lockDecisionCards(event.run_id, "실행 중");
     flushDeltas();
     if (!shouldRenderToolTimelineCard(hasActionReview)) return;
     const existing = tools.get(event.tool_use_id);
@@ -1265,7 +1365,9 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return renderReview(event.action, event.run_id);
   if (event.type === "permission_required") {
     lockReview(event.run_id, "권한 대기");
+    lockDecisionCards(event.run_id, "처리됨");
     return renderPermission(
+      event.run_id,
       event.request_id,
       event.action,
       event.capability,
@@ -1274,18 +1376,21 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
   }
   if (event.type === "value_required") {
     lockReview(event.run_id, "입력 대기");
-    return renderValue(event.action, event.value_kind);
+    lockDecisionCards(event.run_id, "처리됨");
+    return renderValue(event.run_id, event.action, event.value_kind);
   }
   if (event.type === "confirmation_required") {
     lockReview(event.run_id, "추가 확인 대기");
+    lockDecisionCards(event.run_id, "처리됨");
     return renderConfirmation(
+      event.run_id,
       event.action,
       event.confirmation_id,
       event.confirmation_nonce,
     );
   }
-  if (displayedTerminalRuns.has(event.run_id)) return;
   displayedTerminalRuns.add(event.run_id);
+  if (stoppedRuns.has(event.run_id)) pendingDeltas.delete(event.run_id);
   flushDeltas();
   lockReview(
     event.run_id,
@@ -1295,7 +1400,14 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
         ? "중단됨"
         : "처리됨",
   );
+  lockDecisionCards(
+    event.run_id,
+    event.outcome === "CANCELLED" ? "중단됨" : "완료",
+  );
   streamingMessages.delete(event.run_id);
+  if (activeRunId === event.run_id) activeRunId = undefined;
+  if (activeRunId !== undefined) return;
+  stopRequested = false;
   setActivityStatus();
   setRunActive(false);
   if (event.outcome === "VERIFIED") setStatus("작업을 완료했습니다.");
@@ -1355,7 +1467,7 @@ const recoverChatEvents = async (attempt = 0): Promise<void> => {
       updatePageLabel((response as { page?: unknown }).page);
       for (const event of (response as { events: unknown[] }).events)
         applyChatEvent(event, true);
-      if (lastRequest?.state === "TERMINAL") {
+      if (lastRequest?.state === "TERMINAL" && !stopRequested) {
         setRunActive(false);
         setActivityStatus();
       }
@@ -1490,7 +1602,7 @@ attachmentInput?.addEventListener("change", () => {
 });
 chatForm?.addEventListener("submit", (event) => {
   event.preventDefault();
-  if (runActive) return;
+  if (runActive || stopRequested) return;
   const question = chatInput?.value.trim() ?? "";
   const prompt = attachmentPrompt(question);
   if (!prompt) {
@@ -1595,7 +1707,21 @@ collectionDiscoverButton?.addEventListener("click", () => {
     });
 });
 const cancelRun = (): void => {
-  if (!runActive) return;
+  if (!runActive || stopRequested) return;
+  stopRequested = true;
+  if (activeRunId) {
+    stoppedRuns.add(activeRunId);
+    pendingDeltas.delete(activeRunId);
+    lockReview(activeRunId, "중단 중");
+    lockDecisionCards(activeRunId, "중단 중");
+  }
+  setStatus("작업 중단을 요청했습니다.");
+  setActivityStatus("중단 결과를 확인하는 중입니다.");
+  if (send) {
+    send.disabled = true;
+    send.setAttribute("aria-label", "중단 중");
+    send.title = "중단 중";
+  }
   void requestClient
     .cancel()
     .then(async (tracked) => {
@@ -1606,9 +1732,16 @@ const cancelRun = (): void => {
       }
       if (runActive) setStatus("중단 결과를 확인하고 있습니다.");
     })
-    .catch((error: unknown) =>
-      showFailure(error instanceof Error ? error.message : undefined),
-    );
+    .catch((error: unknown) => {
+      stopRequested = false;
+      if (activeRunId) stoppedRuns.delete(activeRunId);
+      setRunActive(runActive);
+      showFailure(error instanceof Error ? error.message : undefined);
+      void recoverChatEvents();
+    })
+    .finally(() => {
+      if (send) send.disabled = false;
+    });
 };
 send?.addEventListener("click", (event) => {
   if (!runActive) return;
