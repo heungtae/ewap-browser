@@ -26,6 +26,7 @@ export const createS1Fixture = async (
   certificateDirectory,
   pageHtml = page,
   providerHandler,
+  profileTools = [],
 ) => {
   await run("openssl", [
     "req",
@@ -106,7 +107,7 @@ export const createS1Fixture = async (
               alg: "semantic-projection-fp-v1",
               value: input.page.fingerprint,
             },
-            tools: [],
+            tools: profileTools,
             business_mcp: [],
             authoritative_fields: [],
           }),

@@ -66,9 +66,9 @@ S10\~S15의 필수 추가 gate:
            read, find, active-tab capture와 read-batch    active-tab screenshot/zoom,
            제한                                           단일 탭·권한 음성 검사
 
-  S7       generic proposal/ref/value slot, DOM/CDP path, demo 외 일반 사이트 2개와
-           verifier, no-retry, cleanup와 demo regression  staging-equivalent
-                                                          trusted-input Act
+  S7       Profile action authority, generic proposal,    통제 HTTPS 일반 페이지
+           ref/value slot, bounded CDP, verifier,         2개 이상에서 실제 Side
+           fail-closed/no-retry, cleanup와 S2 regression   Panel·승인·trusted input
 
   S8       standard/follow-plan/skip-all matrix, mode     permission-less
            immutability,                                  warning/activation과

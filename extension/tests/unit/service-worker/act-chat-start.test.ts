@@ -29,7 +29,10 @@ describe("Act chat start", () => {
         },
       }),
       resolveProfile: async () => {
-        throw new ContractError("PROFILE_UNAVAILABLE");
+        throw new ContractError(
+          "PROFILE_UNAVAILABLE",
+          "resolver_not_configured",
+        );
       },
       candidates: async () => [],
       createId: () => "session-abcdefghijkl",
@@ -95,7 +98,10 @@ describe("Act chat start", () => {
         },
       }),
       resolveProfile: async () => {
-        throw new ContractError("PROFILE_UNAVAILABLE");
+        throw new ContractError(
+          "PROFILE_UNAVAILABLE",
+          "resolver_not_configured",
+        );
       },
       candidates: async () => {
         order.push("candidates");
@@ -125,5 +131,50 @@ describe("Act chat start", () => {
       undefined,
       true,
     );
+  });
+
+  it("does not derive R1 actions after a configured Profile fails verification", async () => {
+    const runStep = vi.fn();
+    const candidates = vi.fn();
+    const start = createActChatStart({
+      pageScope: (active) => ({
+        document_epoch: active.snapshot.document_epoch,
+        page_scope_epoch: "scope",
+        origin: active.origin,
+        path: active.path,
+      }),
+      readActive: async () => ({
+        tabId: 7,
+        origin: "https://reports.company.test",
+        path: "/daily",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "Daily report",
+          nodes: [],
+        },
+      }),
+      resolveProfile: async () => {
+        throw new ContractError("PROFILE_UNAVAILABLE");
+      },
+      candidates,
+      createId: () => "session-abcdefghijkl",
+      selections: new Map(),
+      persistSelections: async () => undefined,
+      sessions: new Map(),
+      startActivity: () => "activity-abcdefghijkl",
+      progressActivity: () => undefined,
+      finishActivity: () => undefined,
+      runStep,
+      route: async () => "ACTION_REQUIRED",
+      runReadOnly: async () => ({ ok: false }),
+    });
+
+    await expect(start({ mode: "act", prompt: "저장해" })).rejects.toThrow(
+      "PROFILE_UNAVAILABLE",
+    );
+    expect(candidates).not.toHaveBeenCalled();
+    expect(runStep).not.toHaveBeenCalled();
   });
 });

@@ -1,8 +1,24 @@
 # S7 — 범용 Browser Act와 기존 코드 완성
 
+상태: **Completed** (2026-09-26, Linux Browser 로컬 범위).
+[종료 증거](../evidence/s7-closure-2026-09-26.md).
+
 ## 목표
 
-반도체 demo에 한정된 Act chat을 signed/bundled Page Profile과 core tool registry가 허용한 일반 페이지 ref action으로 확장한다. 이미 구현된 mutation coordinator와 bounded CDP adapter를 정상 service-worker execution path에 연결하고 실제 verifier를 완성한다.
+현재 [31번 Act 경로](../31-act-request-execution-current-implementation.md)의
+generic proposal, 사용자 승인, bounded CDP/Content dispatch와 semantic
+verifier를 두 개의 통제 HTTPS 일반 페이지에서 검증한다. 서명된 Profile에
+action 정의가 있으면 그 정의를 action authority로 사용한다. 정의가
+없을 때만 현재 페이지의 visible/enabled control에서 좁은 R1 기본 도구를
+구성한다. Profile R2 선언은 페이지 기본 R1 도구로 낮춰지지 않는다.
+Resolver 설정 자체가 없는 일반 페이지는 기본 도구를 사용할 수 있다.
+설정된 Resolver의 서명·claim·네트워크 검증 실패는 action 경로를 닫는다.
+페이지 기본 도구는 제안만으로 실행되지 않는다. 실행 전에 확인 가능한
+postcondition이 없으면 dispatch 전 `FAILED`로 종료한다.
+
+S7 `Completed`는 Linux Chrome for Testing의 Browser 로컬 범위다.
+실제 회사 Provider·사이트, 배포 환경의 승인과 S6-R/S13 분석 수집은
+종료 조건에 포함하지 않는다.
 
 ## 선행 조건
 
@@ -40,15 +56,17 @@ Claude bundle에서 관찰한 ref-to-box, trusted input, tab lifecycle과 UI pro
 | S7-C7  | lifecycle recovery              | Stop/navigation/restart detach leak 0               |
 | S7-C8  | navigation tool                 | normalized URL, beforeunload와 redirect check       |
 | S7-C9  | action Chat UX                  | permission/value/confirmation/outcome timeline      |
-| S7-C10 | multi-fixture Chrome E2E        | demo 외 두 일반 fixture와 staging-equivalent UI     |
+| S7-C10 | multi-fixture Chrome E2E        | 서로 다른 두 일반 HTTPS fixture의 실제 Side Panel·Provider·승인·결과 |
 
 ## 완료 조건
 
-- ACT-NEG-001~014와 positive matrix 통과
+- 현재 [18번 ACT 검증계획](../18-claude-browser-capability-verification-plan.md)의
+  적용 가능한 positive/negative 항목을 unit과 Chrome로 판정하고 제외
+  범위를 증거에 명시
 - `BoundedCdpAdapter`가 실제 Act chat에서 호출된 trace
 - DOM/CDP dispatch 이후 fallback과 자동 retry 0
 - `VERIFIED`마다 실제 semantic/navigation postcondition evidence 존재
 - sensitive/hidden/stale/cross-tab target dispatch 0
 - 모든 terminal path에서 attached product session 0, detach failure quarantine
 - demo 경로도 generic registry 위에서 regression 통과
-- 상태 원장에 구현 commit과 실제 Chrome evidence 연결
+- 상태 원장에 실제 Chrome evidence 연결. commit은 별도 요청이 있을 때 기록

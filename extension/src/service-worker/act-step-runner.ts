@@ -5,8 +5,8 @@ import { actionReview, actionView } from "./act-review-presentation.js";
 import {
   parseActProposal,
   parsePageApiProposal,
-  workflowDefinitions,
 } from "./act-proposal-parser.js";
+import { workflowActionDefinitions } from "./act-workflow-authority.js";
 import { selectActActionTools } from "./page-derived-actions.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
@@ -66,13 +66,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       });
       let targetRefId: string | undefined;
       if (session.workflow) {
-        const candidate = workflowDefinitions(
+        const candidate = workflowActionDefinitions(
           active.snapshot,
           session.workflow.step,
+          session.profileDefinitions,
         );
         if (!candidate) return fail("WORKFLOW_STATE_MISMATCH");
         session.definitions = candidate.definitions;
-        session.discovery = "page-derived";
+        session.discovery = candidate.discovery;
         targetRefId = candidate.targetRefId;
       } else {
         const selected = selectActActionTools(

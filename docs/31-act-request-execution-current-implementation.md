@@ -1,7 +1,7 @@
 # 31. Act 요청 처리 현재 구현 경로
 
 - 작성일: 2026-09-21
-- 수정일: 2026-09-22
+- 수정일: 2026-09-26
 - 상태: AS-IS 구현 인벤토리
 - 범위: Side Panel에서 Act 모드 자연어 요청을 보낸 뒤, 사용자 검토·실행·결과 검증을 거쳐 종료하는 Browser 내부 경로
 - 비범위: 실제 회사 Provider 또는 특정 대상 사이트에서의 Chrome 재현 성공 판정. 이 문서는 현재 소스 코드의 호출 경로를 기록한다.
@@ -9,6 +9,14 @@
 ## 1. 요약
 
 Act는 모델이 곧바로 페이지를 조작하는 구조가 아니다. 현재 구현된 한 요청은 다음 단계를 따른다.
+
+S7 보정: 유효하게 서명된 Profile에 action 정의가 있으면 그 정의의
+capability·risk·eligible role이 우선한다. Profile action 정의가 없을 때만
+현재 페이지의 visible/enabled control에서 page-derived R1 기본 도구를
+구성한다. 따라서 Profile R2 action을 R1 기본 도구로 대체하지 않는다.
+Resolver가 설정돼 있는데 검증 또는 조회에 실패하면 action 경로는
+`PROFILE_UNAVAILABLE`로 닫는다. Resolver 설정이 전혀 없는 일반 페이지는
+page-derived 기본 도구를 사용할 수 있다.
 
 1. Side Panel과 `RequestClient`가 Act 요청 ID를 만들고 `CHAT_REQUEST_START`를 전송한다. Service Worker는 인증된 Panel, request schema, provider와 Panel에 결합된 active tab을 검사·고정하고 durable request 수명 상태를 시작한다(3절 단계 1.1~1.4).
 2. `createActChatStart()`가 초기 semantic snapshot을 준비하고, action tool·workflow 후보 없이 별도 Provider turn으로 닫힌 route를 판별한다(3절 단계 2.1~3.1). 정보성 Act 요청은 action tool 계산이나 workflow 후보 대기 없이 Act 모드의 읽기 전용 runner로 간다.

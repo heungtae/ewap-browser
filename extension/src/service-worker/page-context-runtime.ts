@@ -143,7 +143,7 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     const chrome = dependencies.chrome!;
     const stored = await chrome.storage.local.get?.("profile_resolver");
     if (!stored?.profile_resolver)
-      throw new ContractError("PROFILE_UNAVAILABLE");
+      throw new ContractError("PROFILE_UNAVAILABLE", "resolver_not_configured");
     const settings = validateProfileResolverSettings(stored.profile_resolver);
     const resolver = new ProfileResolver(
       {

@@ -116,6 +116,7 @@ export const prepareActProposal = (
     },
     session.profile,
     definition,
+    session.id,
   );
   if (next.state === "AWAITING_VALUE") {
     if (proposal.value) {

@@ -64,8 +64,7 @@ export const pageDerivedOptionValues = (
 
 /**
  * These definitions are a deliberately narrow, snapshot-derived fallback for
- * ordinary page controls. A signed Page Profile is considered only when this
- * current-page evidence cannot produce a safe candidate.
+ * ordinary page controls when no signed Profile action definitions exist.
  */
 export const pageDerivedActionTools = (
   snapshot: SemanticSnapshot,
@@ -160,8 +159,10 @@ export const selectActActionTools = (
   discovery: "page-derived" | "profile";
   definitions: ProfileActionTool[];
 } => {
-  const pageTools = pageDerivedActionTools(snapshot);
-  return pageTools.length > 0
-    ? { discovery: "page-derived", definitions: pageTools }
-    : { discovery: "profile", definitions: [...profileTools] };
+  if (profileTools.length > 0)
+    return { discovery: "profile", definitions: [...profileTools] };
+  return {
+    discovery: "page-derived",
+    definitions: pageDerivedActionTools(snapshot),
+  };
 };

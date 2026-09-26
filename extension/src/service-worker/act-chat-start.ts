@@ -104,7 +104,8 @@ export const createActChatStart =
         .catch((error: unknown) => {
           if (
             error instanceof ContractError &&
-            error.code === "PROFILE_UNAVAILABLE"
+            error.code === "PROFILE_UNAVAILABLE" &&
+            error.detail === "resolver_not_configured"
           )
             return undefined;
           throw error;

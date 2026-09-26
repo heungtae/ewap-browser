@@ -230,7 +230,7 @@ describe("page-derived Act discovery", () => {
     ]);
   });
 
-  it("keeps the current page as the action source of truth before a Profile", () => {
+  it("keeps signed Profile risk authoritative over page-derived R1 tools", () => {
     const profileTools = [
       {
         tool: "press_key_by_ref" as const,
@@ -245,17 +245,13 @@ describe("page-derived Act discovery", () => {
         },
       },
     ];
-    const pageFirst = selectActActionTools(snapshot, profileTools);
-    expect(pageFirst.discovery).toBe("page-derived");
-    expect(pageFirst.definitions.map((definition) => definition.tool)).toEqual([
-      "click_by_ref",
-      "select_option_by_ref",
-    ]);
+    const profileFirst = selectActActionTools(snapshot, profileTools);
+    expect(profileFirst.discovery).toBe("profile");
+    expect(profileFirst.definitions).toEqual(profileTools);
     expect(
-      selectActActionTools(
-        { ...snapshot, nodes: [snapshot.nodes[3]!] },
-        profileTools,
+      selectActActionTools(snapshot, []).definitions.map(
+        (definition) => definition.tool,
       ),
-    ).toMatchObject({ discovery: "profile", definitions: profileTools });
+    ).toEqual(["click_by_ref", "select_option_by_ref"]);
   });
 });
