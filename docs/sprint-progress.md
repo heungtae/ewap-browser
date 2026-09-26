@@ -42,8 +42,9 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
   일반 페이지의 서명 R1/R2 Act, Resolver 없는 페이지의 사용자 text 값,
   손상 JWS와 postcondition 없는 클릭 거부를 확인했다. S1/S2/S6 Chrome
   회귀도 통과했다. [S7 증거](evidence/s7-closure-2026-09-26.md).
-- **S8: In Progress** — permission mode의 현재 빌드 Chrome/negative
-  matrix와 상태 증거를 확인한 뒤 판정한다.
+- **S8: Completed** — 실제 Settings와 Side Panel에서 skip R1/R2,
+  standard 권한 질문 복귀, 저장된 deny와 follow-plan의 exact-origin·세션
+  종료 경계를 확인했다. [S8 증거](evidence/s8-closure-2026-09-26.md).
 - **S9: In Progress** — S0~S8 `Completed`가 선행 조건이다. 현재
   `scripts/release-smoke.mjs`는 manifest host coverage 기대값 불일치로
   실패했으며 Linux clean-profile upgrade/rollback은 아직 실행하지 않았다.
@@ -94,8 +95,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
     matrix는 별도이므로 S10 전체 상태는 Planned다.
 
-기준일: 2026-09-26. S8~S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
-현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S7은 위 최신 증거를 따른다.
+기준일: 2026-09-26. S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
+현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S8은 위 최신 증거를 따른다.
 
   ----------------------------------------------------------------------------
   Sprint   상태       완료 조건
@@ -124,8 +125,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
   S7       Completed  signed R1/R2와 page-derived text의 일반 Act,
                      bounded CDP·verifier·negative Chrome — 2026-09-26 증거
 
-  S8       In         standard/plan/skip permission mode와 hard-policy matrix
-           Progress   
+  S8       Completed  standard/plan/skip permission mode와 hard-policy
+                     Browser 로컬 matrix — 2026-09-26 증거
 
   S9       In         Linux package와 전체 인증·인가·upgrade·rollback
            Progress   로컬 release candidate 증적
@@ -178,8 +179,6 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
                                                 # CFT semantic preview + bounded mutation regression
 ```
 
-S8~S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 명시적 종료 증적이
-남아 있기 때문이다. S8은 adversarial hard-policy matrix, S9는
-Linux clean profile과 upgrade/rollback을 각각 실제 환경에서 실행해야
-한다. 이 항목은 구현되거나 실행되지 않은 상태에서 pass로 대체하지
-않는다.
+S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 Linux clean profile과
+upgrade/rollback 로컬 release candidate 증적이 남아 있기 때문이다.
+이 항목은 실행되지 않은 상태에서 pass로 대체하지 않는다.

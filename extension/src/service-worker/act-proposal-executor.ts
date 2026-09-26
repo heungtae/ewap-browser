@@ -127,8 +127,9 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
           dependencies.planScopes.origins(session.id),
         );
     if (permission !== "ALLOW") {
-      if (permission === "DENY" || permission === "PLAN_SCOPE_VIOLATION")
-        return fail("POLICY_DENIED");
+      if (permission === "DENY") return fail("POLICY_DENIED");
+      if (permission === "PLAN_SCOPE_VIOLATION")
+        return fail("PLAN_SCOPE_VIOLATION");
       const requestId = dependencies.requestPermission(
         capability,
         session.origin,

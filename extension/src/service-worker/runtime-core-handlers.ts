@@ -4,6 +4,7 @@ import { withDeadline } from "../security/deadline.js";
 import { createChatMessageHandler } from "./chat-message-handler.js";
 import { createCoreMessageHandlers } from "./core-message-handlers.js";
 import { createPageLifecycleMessageHandler } from "./page-lifecycle-message-handler.js";
+import { mayApprovePlan } from "./plan-approval-authority.js";
 import {
   runActChat,
   runAskChat,
@@ -59,6 +60,7 @@ chatRequests.onTerminal = (tabId, outcome, code) => {
   for (const [id, session] of actSessions)
     if (session.tabId === tabId) {
       permissions.endRun(id);
+      planScopes.clear(id);
       actSessions.delete(id);
     }
   for (const [id, selection] of workflowSelections.values)
@@ -133,6 +135,14 @@ export const coreMessageHandlers = createCoreMessageHandlers({
   permissions,
   requests: permissionRequests,
   planScopes,
+  cancelRequestTab: (tabId) => chatRequests.endTab(tabId, "CANCELLED"),
+  canApprovePlan: (sessionId, origins) =>
+    mayApprovePlan(
+      agentPreferences.permission_mode,
+      actSessions,
+      sessionId,
+      origins,
+    ),
   provider: providerRuntime,
   preferences: () => agentPreferences,
   setPreferences: setAgentPreferences,

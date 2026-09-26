@@ -39,4 +39,19 @@ describe("plan scope", () => {
       "ORIGIN_NOT_ALLOWED",
     );
   });
+  it("keeps subdomain, port, IDN and trailing-dot origins separate", () => {
+    const plans = new PlanScopeStore();
+    plans.approve("run-1", ["https://bücher.example/"]);
+    const approved = plans.origins("run-1");
+    expect(approved.has("https://xn--bcher-kva.example")).toBe(true);
+    expect(approved.has("https://xn--bcher-kva.example.")).toBe(false);
+    expect(approved.has("https://sub.xn--bcher-kva.example")).toBe(false);
+    expect(approved.has("https://xn--bcher-kva.example:8443")).toBe(false);
+    expect(() =>
+      plans.approve("run-1", ["https://user@bücher.example/"]),
+    ).toThrow("ORIGIN_NOT_ALLOWED");
+    expect(approved.has("https://xn--bcher-kva.example")).toBe(true);
+    plans.clearAll();
+    expect(plans.origins("run-1").size).toBe(0);
+  });
 });

@@ -20,6 +20,7 @@
     "test:chrome-s5": "node --experimental-websocket scripts/chrome-s5-smoke.mjs",
     "test:chrome-s6": "node --experimental-websocket scripts/chrome-s6-smoke.mjs",
     "test:chrome-s7": "node --experimental-websocket scripts/chrome-s7-smoke.mjs",
+    "test:chrome-s8": "node --experimental-websocket scripts/chrome-s8-smoke.mjs",
     "test:chrome-page-api-discovery": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",

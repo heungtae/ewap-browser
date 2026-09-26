@@ -10,7 +10,7 @@ type Dependencies = {
   preferences(): AgentPreferences;
   validatePreferences(value: unknown): AgentPreferences;
   savePreferences(preferences: AgentPreferences): Promise<void>;
-  cancelActiveRun(): Promise<void>;
+  cancelAllRuns(): Promise<void>;
   safeFailure(code: string): unknown;
 };
 
@@ -65,9 +65,10 @@ export const createPreferencesMessageHandler = (
         return { handled: true };
       }
       void dependencies
-        .savePreferences(next)
+        .cancelAllRuns()
+        .then(() => dependencies.savePreferences(next))
         .then(async () => {
-          await dependencies.cancelActiveRun();
+          await dependencies.cancelAllRuns();
           respond({ ok: true, preferences: structuredClone(next) });
         })
         .catch(() =>

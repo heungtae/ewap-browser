@@ -15,6 +15,7 @@ import { createPreferencesMessageHandler } from "./preferences-message-handler.j
 import { createProfileMessageHandler } from "./profile-message-handler.js";
 import { createProviderMessageHandler } from "./provider-message-handler.js";
 import { createRunControlMessageHandler } from "./run-control-message-handler.js";
+import { fail } from "../security/validation.js";
 
 type PermissionRequest = {
   capability: Capability;
@@ -30,6 +31,8 @@ type Dependencies = {
   permissions: PermissionManager;
   requests: Map<string, PermissionRequest>;
   planScopes: PlanScopeStore;
+  cancelRequestTab(tabId: number): void;
+  canApprovePlan(sessionId: string, origins: readonly string[]): boolean;
   provider: ProviderRuntime | undefined;
   preferences(): AgentPreferences;
   setPreferences(value: AgentPreferences): void;
@@ -70,6 +73,24 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
     dependencies.publishCancelled(run);
     return true;
   };
+  const cancelAllRuns = async (): Promise<void> => {
+    const tabs = await dependencies.chrome.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.id === undefined) continue;
+      await dependencies.abortCdp(tab.id);
+      const run = dependencies.coordinator.runs.get(tab.id);
+      if (run && run.phase !== "TERMINAL") {
+        const binding = dependencies.bindings.get(run.id);
+        if (binding) dependencies.localSessions.clear(binding.id);
+        dependencies.bindings.delete(run.id);
+        dependencies.coordinator.cancel(tab.id);
+        dependencies.publishCancelled(run);
+      }
+      dependencies.cancelRequestTab(tab.id);
+    }
+    dependencies.requests.clear();
+    dependencies.planScopes.clearAll();
+  };
   const profile = createProfileMessageHandler({
     isPanelSender: dependencies.isPanelSender,
     isPanelOrSettingsSender: dependencies.isPanelOrSettingsSender,
@@ -87,9 +108,7 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
       });
       dependencies.setPreferences(value);
     },
-    async cancelActiveRun() {
-      await cancelActiveRun();
-    },
+    cancelAllRuns,
     safeFailure: dependencies.safeFailure,
   });
   const provider = createProviderMessageHandler({
@@ -130,8 +149,11 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
         dependencies.publishCancelled(run);
       }
     },
-    approvePlan: (runId, origins) =>
-      dependencies.planScopes.approve(runId, origins),
+    approvePlan: (runId, origins) => {
+      if (!dependencies.canApprovePlan(runId, origins))
+        return fail("PLAN_SCOPE_VIOLATION");
+      return dependencies.planScopes.approve(runId, origins);
+    },
     safeFailure: dependencies.safeFailure,
   });
   return { preferences, profile, provider, runControl };

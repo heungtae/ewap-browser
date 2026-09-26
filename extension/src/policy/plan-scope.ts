@@ -12,7 +12,14 @@ export class PlanScopeStore {
       return fail("INVALID_ARGUMENT");
     const approved = new Set(
       origins.map((origin) => {
-        const url = new URL(origin);
+        let url: URL;
+        try {
+          url = new URL(origin);
+        } catch {
+          return fail("ORIGIN_NOT_ALLOWED");
+        }
+        if (url.username || url.password || url.search || url.hash)
+          return fail("ORIGIN_NOT_ALLOWED");
         const host = permissionHost(url.toString());
         if (host.includes("*")) return fail("ORIGIN_NOT_ALLOWED");
         return url.origin;
@@ -28,5 +35,9 @@ export class PlanScopeStore {
 
   public clear(runId: string): void {
     this.plans.delete(runId);
+  }
+
+  public clearAll(): void {
+    this.plans.clear();
   }
 }

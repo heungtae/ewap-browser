@@ -10,6 +10,7 @@ export const userMessage: Record<ErrorCode, string> = {
   DOCUMENT_NOT_REGISTERED:
     "페이지가 다시 준비되는 중입니다. 잠시 후 다시 확인해 주세요.",
   POLICY_DENIED: "회사 정책상 이 작업을 할 수 없습니다.",
+  PLAN_SCOPE_VIOLATION: "승인된 계획의 도메인 범위를 벗어났습니다.",
   ORIGIN_NOT_ALLOWED: "이 사이트에서는 사용할 수 없습니다.",
   PROFILE_UNAVAILABLE: "이 페이지의 업무 프로필을 확인할 수 없습니다.",
   ENTERPRISE_POLICY_UNAVAILABLE:

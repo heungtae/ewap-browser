@@ -152,6 +152,7 @@ const actStepRunner = createActStepRunner({
       : undefined;
     chatRequests.endTab(session.tabId, run?.outcome ?? "UNKNOWN", run?.code);
     permissions.endRun(session.id);
+    planScopes.clear(session.id);
     actSessions.delete(session.id);
   },
 });

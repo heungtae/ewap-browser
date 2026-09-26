@@ -70,10 +70,9 @@ S10\~S15의 필수 추가 gate:
            ref/value slot, bounded CDP, verifier,         2개 이상에서 실제 Side
            fail-closed/no-retry, cleanup와 S2 regression   Panel·승인·trusted input
 
-  S8       standard/follow-plan/skip-all matrix, mode     permission-less
-           immutability,                                  warning/activation과
-           denylist/R2/R3/credential/restricted hard      redirect/adversarial Chrome
-           policy                                         smoke
+  S8       standard/follow-plan/skip Browser matrix,      실제 Settings typed
+           exact origin, mode 전환 취소, 저장 deny와         activation, Side Panel
+           R2/credential/restricted hard guard            R1/R2와 계획 scope Chrome
 
   S9       package/plugin/Chat/read/Act/permission-mode   Linux clean profile
            compatibility, artifact exclusion,             설치·upgrade·rollback과
