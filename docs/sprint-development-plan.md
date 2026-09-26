@@ -3,10 +3,11 @@
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
 S0\~S9는 폐기하지 않고 Browser Runtime foundation으로 취급한다.
-Enterprise 구현은 S10\~S15에서 이어간다.
+S10은 Browser 로컬 Profile 수락만 완료한다. Enterprise Platform 연동은
+이 완료 범위에 포함되지 않으며 S11\~S15와 별도 계약 작업에서 이어간다.
 
-1.  S10: Page Profile schema/validator, signed resolve, current Semantic
-    Projection enrichment, semanticId→runtime ref resolution.
+1.  S10: 현행 Browser compact JWS Page Profile의 claim/path/version
+    검증과 Worker 재시작을 견디는 로컬 replay high-water.
 2.  S11: MCP Registry의 endpoint/transport/auth/trust/environment
     binding, tools/list discovery/cache, Profile
     capabilityPolicy/toolOverrides, final tool catalog filtering.

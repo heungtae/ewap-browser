@@ -35,6 +35,31 @@ describe("profile claims", () => {
         now: new Date("2026-08-15T00:10:00Z"),
       }),
     ).toBe(profile));
+  it("binds_path_prefix_to_segments_and_rejects_unsafe_versions", () => {
+    const context = {
+      deploymentId: "dev",
+      nonce: "nonce",
+      pageContextDigest: "digest",
+      origin: "https://fixture.company.test",
+      path: "/case/123",
+      fingerprint: "fp",
+      now: new Date("2026-08-15T00:10:00Z"),
+    };
+    const matched = {
+      ...profile,
+      matcher: { ...profile.matcher!, path_prefix: "/case" },
+    };
+    expect(verifyProfileClaims(matched, context)).toBe(matched);
+    expect(() =>
+      verifyProfileClaims(matched, { ...context, path: "/cases" }),
+    ).toThrow("PROFILE_UNAVAILABLE");
+    expect(() =>
+      verifyProfileClaims(
+        { ...matched, profile_version: Number.MAX_SAFE_INTEGER + 1 },
+        context,
+      ),
+    ).toThrow("PROFILE_UNAVAILABLE");
+  });
   it("given_same_version_different_definition_when_replaying_then_denied", () => {
     const store = new ProfileReplayStore();
     store.accept("dev", "p", 1, "a");

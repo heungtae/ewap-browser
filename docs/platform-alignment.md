@@ -1,5 +1,10 @@
 # EWAP Browser — Platform Alignment
 
+> 2026-09-26 S10 update: the Browser now persists local hashed Profile replay
+> high-water metadata across Service Worker restarts. The AS-IS inventory below
+> remains the 2026-09-06 reviewed baseline; current S10 scope and remaining
+> trust gaps are tracked in [S10 Profile Runtime](sprints/s10-profile-runtime.md).
+
 ## 1. Alignment scope
 
 Reviewed on 2026-09-06. This is a documentation-only assessment. “Implemented” means code and its call path were inspected; it does not mean tests were rerun or production qualification was obtained.
@@ -63,7 +68,7 @@ flowchart TD
   SW -. Act proposal only .-> PDP[Managed PDP client: Partial]
   PDP --> PE[External PDP: deployment Unknown]
   SW -. policy ALLOW event .-> AUD[Optional evidence POST: Partial]
-  SW --> ST[Local settings/workflows; session chat; memory replay]
+  SW --> ST[Local settings/workflows; session chat; hashed replay high-water]
 ```
 
 External endpoints are not evidence of implemented Platform services. Browser does not distinguish or enforce whether the configured business endpoint is a Gateway or a direct server.

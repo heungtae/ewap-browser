@@ -3,7 +3,15 @@ import { exactOrigin } from "../security/origin-matcher.js";
 import { fail } from "../security/validation.js";
 import { verifyProfileJws } from "./jws.js";
 import { verifyProfileClaims, type Profile } from "./profile.js";
-import { definitionDigest, ProfileReplayStore } from "./profile-replay.js";
+import { definitionDigest } from "./profile-replay.js";
+type ReplayPort = {
+  accept(
+    deploymentId: string,
+    profileId: string,
+    version: number,
+    digest: string,
+  ): unknown | Promise<unknown>;
+};
 export type ResolverConfig = {
   deploymentId: string;
   url?: string;
@@ -24,7 +32,7 @@ export class ProfileResolver {
   public constructor(
     private readonly config: ResolverConfig,
     private readonly fetcher: typeof fetch = fetch,
-    private readonly replay?: ProfileReplayStore,
+    private readonly replay?: ReplayPort,
   ) {}
   public async resolve(input: ResolveInput): Promise<Profile> {
     return (await this.resolveWithProof(input)).profile;
@@ -93,7 +101,7 @@ export class ProfileResolver {
       verified.profile_id &&
       verified.profile_version
     )
-      this.replay.accept(
+      await this.replay.accept(
         this.config.deploymentId,
         verified.profile_id,
         verified.profile_version,

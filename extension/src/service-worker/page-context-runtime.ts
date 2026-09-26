@@ -9,6 +9,7 @@ import { ContractError } from "../security/validation.js";
 import { semanticFingerprint } from "../profile/fingerprint.js";
 import { ProfileResolver, type ResolvedProfile } from "../profile/resolver.js";
 import { ProfileReplayStore } from "../profile/profile-replay.js";
+import { PersistentProfileReplayStore } from "../profile/persistent-profile-replay.js";
 import { validateProfileResolverSettings } from "../settings/profile-settings.js";
 import type { PageScope } from "../state/tab-chat-session-store.js";
 import type { BrowserChromeApi } from "./browser-api.js";
@@ -33,7 +34,14 @@ type Dependencies = {
 };
 
 export const createPageContextRuntime = (dependencies: Dependencies) => {
-  const replay = new ProfileReplayStore();
+  const local = dependencies.chrome?.storage?.local;
+  const replay =
+    local?.get && local.set
+      ? new PersistentProfileReplayStore({
+          get: local.get.bind(local),
+          set: local.set.bind(local),
+        })
+      : new ProfileReplayStore();
   const read = async (
     scope = dependencies.defaultScope(),
     fixedTabId?: number,

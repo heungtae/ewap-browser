@@ -7,10 +7,10 @@ S10\~S15의 필수 추가 gate:
   -----------------------------------------------------------------------
   Sprint                              필수 검증
   ----------------------------------- -----------------------------------
-  S10                                 tampered/expired/revoked Profile
-                                      거부, current projection 우선,
-                                      ambiguous/stale semantic resolution
-                                      거부
+  S10                                 현행 compact JWS의 손상 서명·path
+                                      segment·version 거부, 저장 기록 손상·
+                                      실패·rollback 거부, Worker 재시작
+                                      후 실제 Side Panel 검증
 
   S11                                 registry trust/auth, tools/list
                                       schema cache, capability

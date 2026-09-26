@@ -26,9 +26,10 @@ Studio를 계층적으로 결합한다.
 
 ## Work packages
 
-1.  **S10 Profile Runtime** --- `page-profile.schema.json`, validator,
-    signature verify/revoke, `ProfileResolverPort`, semanticId→current
-    runtime ref resolution, verifier binding.
+1.  **S10 Browser 로컬 Profile 수락** --- 현행 compact JWS의 claim/path/
+    version 검증과 Worker 재시작을 견디는 replay high-water. Workspace
+    schema, Platform release·철회, semanticId→현재 runtime ref는 이
+    완료 범위에 포함하지 않는다.
 2.  **S11 MCP Registry** --- `serverRef`
     registry(endpoint/transport/auth/trust/env), `tools/list`
     discovery/cache, capability/risk overlay, Profile
@@ -52,8 +53,10 @@ Studio를 계층적으로 결합한다.
 
 ## Definition of Done
 
-각 package는 contract/schema → unit/negative test → fixture/integration
-→ Chrome E2E → evidence 순서로 완료한다. 최소 negative set:
+각 package는 해당 범위의 contract/schema → unit/negative test →
+fixture/integration → Chrome E2E → evidence 순서로 완료한다. 아래
+negative set은 Enterprise 전체 작업의 목표이며 S10 Browser 로컬
+완료 판정에 소급하지 않는다:
 tampered/revoked Profile, ambiguous/stale/cross-tab ref, sensitive
 target, raw selector/coordinate/CDP injection, prompt injection, MCP
 capability bypass, PDP outage write, pre-confirmation dispatch,

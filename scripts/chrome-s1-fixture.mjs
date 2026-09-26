@@ -48,6 +48,7 @@ export const createS1Fixture = async (
   const publicKey = keys.publicKey.export({ type: "spki", format: "pem" });
   const providerRequests = [];
   let invalidSignature = false;
+  let profileVersion = 1;
   let resolveCount = 0;
   let credentialHeaderCount = 0;
   const signed = (payload) => {
@@ -101,7 +102,7 @@ export const createS1Fixture = async (
             issued_at: new Date(now).toISOString(),
             expires_at: new Date(now + 60_000).toISOString(),
             profile_id: "s1-profile",
-            profile_version: 1,
+            profile_version: profileVersion,
             matcher: { origin: input.page.origin, path_prefix: "/" },
             fingerprint: {
               alg: "semantic-projection-fp-v1",
@@ -160,6 +161,9 @@ export const createS1Fixture = async (
     providerRequests,
     setInvalidSignature: (value) => {
       invalidSignature = value;
+    },
+    setProfileVersion: (value) => {
+      profileVersion = value;
     },
     resolveCount: () => resolveCount,
     credentialHeaderCount: () => credentialHeaderCount,

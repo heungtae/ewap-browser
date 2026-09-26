@@ -118,6 +118,24 @@ export const checkS1 = async ({
   if (invalid?.code !== "PROFILE_UNAVAILABLE")
     throw new Error(`INVALID_JWS_NOT_REJECTED: ${invalid?.code}`);
   fixtureData.setInvalidSignature(false);
+  fixtureData.setProfileVersion(2);
+  const advanced = await evaluate(
+    panel,
+    "chrome.runtime.sendMessage({kind:'RESOLVE_PROFILE'})",
+  );
+  if (advanced?.ok !== true || advanced.profile_version !== 2)
+    throw new Error(`PROFILE_HIGH_WATER_ADVANCE_FAILED: ${advanced?.code}`);
+  const replayRecord = await evaluate(
+    panel,
+    "chrome.storage.local.get('profile_replay_v1').then(({profile_replay_v1}) => profile_replay_v1)",
+  );
+  if (
+    replayRecord?.schema_version !== 1 ||
+    replayRecord.entries?.length !== 1 ||
+    replayRecord.entries[0]?.version !== 2 ||
+    JSON.stringify(replayRecord).includes("s1-profile")
+  )
+    throw new Error("PROFILE_HIGH_WATER_RECORD_INVALID");
 
   await evaluate(
     panel,
@@ -167,6 +185,15 @@ export const checkS1 = async ({
     worker,
     cdpPort,
   });
+  fixtureData.setProfileVersion(1);
+  const rolledBack = await evaluate(
+    panel,
+    "chrome.runtime.sendMessage({kind:'RESOLVE_PROFILE'})",
+  );
+  if (rolledBack?.code !== "PROFILE_UNAVAILABLE")
+    throw new Error(
+      `PROFILE_ROLLBACK_AFTER_RESTART_NOT_REJECTED: ${rolledBack?.code}`,
+    );
   return {
     resolverRequests: fixtureData.resolveCount(),
     providerRequests: fixtureData.providerRequests.length,

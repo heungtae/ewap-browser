@@ -55,10 +55,17 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
 
 이 문서의 기존 상태는 2026-08-22 ContextPilot 구현 증적으로 보존한다.
 Enterprise Web AI Platform 관점에서 S0\~S9는 Browser Runtime
-foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 범위다.
-기존 Sprint를 Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
+foundation이다. S10은 Browser 로컬 Profile 수락 범위만 완료했고,
+S11\~S15 및 Platform 연동은 별도 구현·검증이 필요하다. 기존 Sprint를
+Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
 
--   S10 Profile Runtime: Planned
+-   S10 Browser 로컬 Profile 수락: Completed — 현행 compact JWS의
+    path segment·안전한 version 검증과 해시된 replay high-water 저장을
+    완료했다. 326개 unit test와 실제 Chrome Side Panel·Worker 재시작
+    후 rollback 거부를 확인했다. Workspace `ewap/v1`, Platform
+    release·철회, `semanticId` binding은 이 완료 범위에 포함되지
+    않는다. [S10 완료 범위](sprints/s10-profile-runtime.md),
+    [검증 증거](evidence/s10-progress-2026-09-26.md).
 -   S11 MCP Registry/Discovery: Planned
 -   S12 Enterprise Policy/Identity: Planned
 -   S13 Enterprise Audit/Evidence: Planned
@@ -91,11 +98,11 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     선택·시작 시 저장 기록과 현재 snapshot을 다시 대조한다. Platform의
     capture ingest, C06/C07 계약, Change/Impact 서비스, L0~L6 검증은
     미구현이므로 S14 전체 상태는 Planned다.
--   S10-C4 Browser 검토 화면: Page API 후보를 대화 기록과 분리한 일시적
+-   기존 Browser S10-C4 검토 화면: Page API 후보를 대화 기록과 분리한 일시적
     dialog에 표시한다. 닫기·탭 변경·페이지 변경 때 목록과 늦은 응답을
     폐기하고, `adapter 검토 필요`는 화면 상태로만 남긴다. 검토자 인증,
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
-    matrix는 별도이므로 S10 전체 상태는 Planned다.
+    matrix는 별도다. 이번 S10 Browser 로컬 Profile 수락과 구분한다.
 
 기준일: 2026-09-26. 아래 2026-08-22 구현 증적은 이력이며,
 S0~S9의 현재 종료 판정은 위 최신 증거를 따른다.

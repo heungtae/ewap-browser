@@ -29,7 +29,7 @@ Current page DOM/ARIA snapshot
  → application/jose compact JWS
  → ES256 signature verification
  → closed Profile claims + page binding + expiry checks
- → in-memory version/digest replay check
+ → persisted local version/digest replay high-water check
  → Ask context / read-only business bindings / Act workflow and action hints
 ```
 
@@ -39,7 +39,7 @@ The request contains schema_version, request_id, resolver_request_nonce, deploym
 
 MATCHED requires profile_id, a positive integer profile_version and matching origin/path_prefix. Optional tools/workflow/model_context/business_mcp use closed Browser validators. UNKNOWN cannot carry those action/context fields. Cryptographic validity does not establish Platform approval, current activation, revocation or enterprise user identity.
 
-[ProfileReplayStore](../extension/src/profile/profile-replay.ts) accepts a higher version, or the same version with the same definition digest, and rejects regressions/conflicts. It is wired into resolve but survives only the current Service Worker instance. It is not a persistent artifact cache or a cross-restart rollback defense.
+[ProfileReplayStore](../extension/src/profile/profile-replay.ts) accepts a higher version, or the same version with the same definition digest, and rejects regressions/conflicts. The S10 Browser change persists hashed deployment/Profile identity, version and definition digest in `profile_replay_v1` across Service Worker restarts. A malformed record or failed write rejects Profile acceptance. This is local high-water metadata, not a signed artifact cache or Platform trust/revocation/rollback authorization.
 
 Ask catches resolve failures and continues without Profile context/business tools. Act catches PROFILE_UNAVAILABLE and may use current page-derived candidates and local workflows. Invalid Profile data is not activated, but Profile failure does not globally stop generic Browser execution.
 
@@ -64,7 +64,7 @@ flowchart TD
 | Schema Validation | Partial | Closed proprietary claims and nested validators exist. Shared resource and release schemas are not consumed |
 | Signature Verification | Partial | Compact ES256 verifier is Implemented. Flattened SignedRelease verifier is **Planned / Required for Platform Alignment** |
 | Policy Validation | Partial | Local action guards and a partial Act PDP path exist. No release-level EnterprisePolicy/current-trust gate |
-| Local Cache | Not Implemented | No persistent signed artifact cache; replay high-water is memory only |
+| Local Cache | Not Implemented for signed artifacts | No persistent signed artifact cache; Browser-local replay high-water metadata is stored separately and does not prove current release trust |
 | Profile Runtime | Partial | Context, action hints, local workflow and business HTTP consumption exist; shared resources and atomic dependency bundles are planned |
 
 Target schema validation before signature verification checks untrusted shape and bounds only. Trust and activation require successful cryptography, payload/claims validation, current policy and release membership. Current code verifies signature before Profile claims; that existing order is not changed here.

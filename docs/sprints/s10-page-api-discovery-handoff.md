@@ -1,4 +1,8 @@
-# S10 — Page API 실행·Discovery 검증 및 Adapter Handoff
+# Page API 실행·Discovery 검증 및 Adapter Handoff — 기존 Browser 계획
+
+현재 Sprint 원장의 S10은 [Browser 로컬 Profile 수락](s10-profile-runtime.md)을
+뜻한다. 이 문서의 S10-C1~C5 표기는 이전 Browser 작업 카드 이름으로
+보존하며 현재 S10 완료 조건으로 해석하지 않는다.
 
 ## 목표
 

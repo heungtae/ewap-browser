@@ -13,6 +13,11 @@ export type {
 } from "./profile-types.js";
 export { definitionDigest, ProfileReplayStore } from "./profile-replay.js";
 
+const matchesPathPrefix = (path: string, prefix: string): boolean =>
+  prefix === "/" ||
+  path === prefix ||
+  path.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`);
+
 export const verifyProfileClaims = (
   profile: Profile,
   context: ProfileContext,
@@ -88,7 +93,7 @@ export const verifyProfileClaims = (
   const version = profile.profile_version;
   if (
     !profile.profile_id ||
-    !Number.isInteger(version) ||
+    !Number.isSafeInteger(version) ||
     version === undefined ||
     version < 1 ||
     !profile.matcher ||
@@ -102,7 +107,7 @@ export const verifyProfileClaims = (
     profile.matcher.path_prefix.includes("?") ||
     profile.matcher.path_prefix.includes("#") ||
     profile.matcher.origin !== context.origin ||
-    !context.path.startsWith(profile.matcher.path_prefix) ||
+    !matchesPathPrefix(context.path, profile.matcher.path_prefix) ||
     (profile.tools !== undefined && !Array.isArray(profile.tools)) ||
     (profile.workflow !== undefined && !isPlainObject(profile.workflow)) ||
     (profile.model_context !== undefined &&
