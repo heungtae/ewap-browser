@@ -1,7 +1,7 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.85",
+  "version": "0.1.86",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -21,6 +21,7 @@
     "test:chrome-s6": "node --experimental-websocket scripts/chrome-s6-smoke.mjs",
     "test:chrome-s7": "node --experimental-websocket scripts/chrome-s7-smoke.mjs",
     "test:chrome-s8": "node --experimental-websocket scripts/chrome-s8-smoke.mjs",
+    "test:chrome-s9": "node --experimental-websocket scripts/chrome-s9-upgrade-smoke.mjs",
     "test:chrome-page-api-discovery": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",
@@ -29,6 +30,7 @@
     "test": "pnpm typecheck && pnpm lint && pnpm build && pnpm validate:package && pnpm test:unit && pnpm test:fixture && pnpm test:e2e",
     "validate:package": "node scripts/validate-package.mjs",
     "test:release": "node scripts/release-smoke.mjs",
+    "package:local": "node scripts/package-local.mjs",
     "smoke": "node scripts/smoke.mjs"
   },
   "devDependencies": {

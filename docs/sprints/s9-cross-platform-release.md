@@ -19,8 +19,10 @@ S0~S8의 package, Chat UI, hidden-DOM read, Vision, generic Act, permission mode
 6. hidden DOM/screenshot disclosure와 privacy control
 7. Ask streaming, panel reopen과 worker recovery
 8. generic Act trusted input, R2/R3, Stop과 detach leak
-9. prior-version settings/transcript/permission migration
-10. upgrade, rollback과 uninstall cleanup
+9. prior-version settings/Provider/permission 데이터 호환성. Browser
+   수명의 transcript는 재시작 시 폐기하고 같은 session schema의 Panel
+   재연결은 S5 Chrome 회귀로 확인한다.
+10. 동일 격리 profile의 upgrade·rollback과 검증용 profile 제거
 
 ## 완료 조건
 
@@ -31,7 +33,8 @@ S0~S8의 package, Chat UI, hidden-DOM read, Vision, generic Act, permission mode
 - provider secret, page content, screenshot, action value 없는 export/diagnostics
 - attached product debugger session leak 0
 - package에 Claude artifact/symlink/license 미확인 asset 없음
-- update/rollback 뒤 settings와 permission mode schema 일관성
+- update/rollback 뒤 settings·Provider·permission mode schema 일관성과
+  저장된 deny의 실제 적용
 - 상태 원장의 `Completed`와 검증 증거 연결
 
 로컬 unit/fixture test만 통과하면 S9 완료가 아니다. Linux V4가 없으면 `Blocked`로 기록한다. Windows 검증과 별도 release reviewer 승인 없이 대외 출시 가능 또는 Windows 지원 완료를 선언하지 않는다.

@@ -45,9 +45,11 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
 - **S8: Completed** — 실제 Settings와 Side Panel에서 skip R1/R2,
   standard 권한 질문 복귀, 저장된 deny와 follow-plan의 exact-origin·세션
   종료 경계를 확인했다. [S8 증거](evidence/s8-closure-2026-09-26.md).
-- **S9: In Progress** — S0~S8 `Completed`가 선행 조건이다. 현재
-  `scripts/release-smoke.mjs`는 manifest host coverage 기대값 불일치로
-  실패했으며 Linux clean-profile upgrade/rollback은 아직 실행하지 않았다.
+- **S9: Completed** — 0.1.86 로컬 ZIP을 재현 가능하게 만들고 Linux
+  Chrome for Testing의 동일한 격리 profile에서 0.1.85 → 0.1.86 → 0.1.85
+  upgrade/rollback을 확인했다. Settings·Provider·저장된 deny가 유지되고
+  복구된 deny가 Act를 차단했다. S1~S8 Chrome 회귀와 324개 테스트가
+  통과했다. [S9 증거](evidence/s9-closure-2026-09-26.md).
 
 ## Enterprise Web AI Platform 전환 상태 (2026-08-31)
 
@@ -95,8 +97,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
     외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
     matrix는 별도이므로 S10 전체 상태는 Planned다.
 
-기준일: 2026-09-26. S9의 기존 근거는 아래 2026-08-22 구현 증적이며,
-현재 빌드의 종료 재검증은 아직 끝나지 않았다. S0~S8은 위 최신 증거를 따른다.
+기준일: 2026-09-26. 아래 2026-08-22 구현 증적은 이력이며,
+S0~S9의 현재 종료 판정은 위 최신 증거를 따른다.
 
   ----------------------------------------------------------------------------
   Sprint   상태       완료 조건
@@ -128,8 +130,8 @@ foundation이며, S10\~S15는 아직 별도 구현/검증이 필요한 신규 �
   S8       Completed  standard/plan/skip permission mode와 hard-policy
                      Browser 로컬 matrix — 2026-09-26 증거
 
-  S9       In         Linux package와 전체 인증·인가·upgrade·rollback
-           Progress   로컬 release candidate 증적
+  S9       Completed  Linux package와 전체 인증·인가·upgrade·rollback
+                     로컬 release candidate — 2026-09-26 증거
   ----------------------------------------------------------------------------
 
 ## 2026-08-22 구현 및 검증 증적
@@ -179,6 +181,5 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
                                                 # CFT semantic preview + bounded mutation regression
 ```
 
-S9 상태를 아직 `Completed`로 바꾸지 않은 이유는 Linux clean profile과
-upgrade/rollback 로컬 release candidate 증적이 남아 있기 때문이다.
-이 항목은 실행되지 않은 상태에서 pass로 대체하지 않는다.
+S9의 현재 Linux clean-profile·upgrade/rollback 결과는 위의
+[2026-09-26 증거](evidence/s9-closure-2026-09-26.md)를 따른다.
