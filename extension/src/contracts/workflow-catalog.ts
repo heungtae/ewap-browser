@@ -133,6 +133,13 @@ export const comparableWorkflowSnapshot = (
   snapshot.node_count === snapshot.nodes.length &&
   snapshot.nodes.length <= 500;
 
+export const workflowPathMatches = (path: string, prefix: string): boolean =>
+  path.startsWith("/") &&
+  prefix.startsWith("/") &&
+  (prefix === "/" ||
+    path === prefix ||
+    path.startsWith(prefix.endsWith("/") ? prefix : `${prefix}/`));
+
 export const recordComparison = (
   item: StoredWorkflow,
   origin: string,
@@ -142,10 +149,12 @@ export const recordComparison = (
   if (
     !item.enabled ||
     item.origin !== origin ||
-    !path.startsWith(item.path_prefix)
+    !workflowPathMatches(path, item.path_prefix)
   )
     return "stale";
   if (!comparableWorkflowSnapshot(snapshot)) return "incomparable";
+  if (!/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/.test(item.fingerprint))
+    return "incomparable";
   try {
     return item.fingerprint === semanticFingerprint(snapshot).fingerprint
       ? "verified"
@@ -177,6 +186,6 @@ export const recordCandidate = (
     status === "verified"
       ? `내가 기록함 · ${item.updated_at.slice(0, 10)}`
       : status === "incomparable"
-        ? "현재 페이지 관찰이 불완전하여 기록과 비교할 수 없습니다."
+        ? "기록과 현재 페이지를 안전하게 비교할 수 없습니다."
         : "현재 페이지 구조가 기록과 다릅니다.",
 });

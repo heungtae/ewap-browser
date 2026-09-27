@@ -3,6 +3,7 @@ import {
   emptyWorkflowCatalog,
   recordComparison,
   recordCandidate,
+  workflowPathMatches,
   validateWorkflowCatalogState,
   type WorkflowCandidate,
   type WorkflowCatalogState,
@@ -92,7 +93,7 @@ export const createWorkflowCatalogRuntime = (dependencies: Dependencies) => {
     for (const item of catalog.records) {
       if (
         item.origin !== active.origin ||
-        !active.path.startsWith(item.path_prefix)
+        !workflowPathMatches(active.path, item.path_prefix)
       )
         continue;
       const status = recordComparison(

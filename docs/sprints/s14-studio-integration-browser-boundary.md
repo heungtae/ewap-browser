@@ -1,19 +1,18 @@
-# S14 — Studio Integration: Browser 관찰 경계
+# S14 — Browser 로컬 기록 워크플로우 비교 (Completed)
 
 ## 목표와 소유권
 
 Studio Capture session/token, L0~L6 gate, baseline, Change Detector, dependency
-graph, Impact Analyzer, release 판정은 Platform 소유다. Browser는 현재 페이지의
-sanitized observation과 로컬 워크플로우 비교 결과를 제공한다. Browser의
+graph, Impact Analyzer, release 판정은 Platform 소유다. 이번 `Completed`는
+Browser가 기록된 워크플로우를 현재 페이지와 비교하고 실행 권한을 막는
+로컬 경계만 뜻한다. Browser의
 `semantic-projection-fp-v1`과 Platform의 `semantic-v1`은 직접 비교할 수 없다.
 
-## Browser 구현 카드
+## 완료 카드
 
-| 카드   | 범위                                     | 종료 조건                                                                                                                                                  |
-| ------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S14-B1 | 기록된 워크플로우의 현재 projection 비교 | complete top-frame `all_dom` 관찰에서만 `verified`/`stale`을 판정하고, 잘림·범위 불일치·fingerprint 계산 실패는 `incomparable`로 표시하여 선택/실행을 차단 |
-| S14-B2 | Studio Capture 관찰 handoff              | C06/C07의 versioned capture/telemetry schema와 별도 audience가 확정된 후, raw page/value/ref/token이 없는 bounded observation을 session에 결속             |
-| S14-B3 | L5 runner evidence                       | 실제 Chrome/Extension/환경/fixture/시나리오 digest가 결속된 외부 validation worker와 Platform ingest/receipt 연결                                          |
+| 카드 | 종료 조건 | 판정 |
+| --- | --- | --- |
+| S14-B1 | complete top-frame `all_dom`에서만 `verified`/`stale` 판정. 불완전 snapshot·잘못된 저장 fingerprint는 `incomparable`. exact path segment로 후보를 제한하고 선택·시작 시 재검사. 실제 Chrome Side Panel에서 세 상태와 재검사 차단 확인 | Completed |
 
 ## S14-B1 비교 계약
 
@@ -22,6 +21,8 @@ sanitized observation과 로컬 워크플로우 비교 결과를 제공한다. B
 `node_count=nodes.length`, 최대 500개 node 조건을 만족해야 비교 가능하다.
 scope/잘림/개수 표식이 누락된 snapshot도 비교 불가다. 기존 기록이 현재
 페이지와 같다고도, 변경되었다고도 주장하지 않는다.
+저장 fingerprint도 canonical 43자 base64url SHA-256 형식이어야 비교 가능하다.
+경로 prefix는 segment 경계로 비교해 `/trend`가 `/trending`을 포함하지 않는다.
 
 비교 가능하고 digest가 같으면 `verified`, 다르면 `stale`이다.
 `incomparable`과 `stale`은 Panel에 서로 다른 이유로 표시하지만 둘 다
@@ -38,14 +39,17 @@ scope/completeness 표식이 없으므로 같은 digest도 Browser 로컬 일치
 Platform evidence로 사용하려면 versioned 기록 migration과 C07 golden vector가
 별도로 필요하다.
 
-## 현재 구현 상태
+## 검증
 
-S14-B1의 Browser 비교, Panel 표시와 선택·시작 재검사는 소스에 연결했다.
-TypeScript/ESLint/변경 파일 포맷 검사를 통과했다. 실제 Chrome 동작과
-Platform 소비 경로는 아직 검증되지 않았다.
+[S14 종료 증거](../evidence/s14-closure-2026-09-27.md)의 단위 검증과
+Chrome for Testing 147의 실제 Side Panel에서 `verified`, `stale`,
+`incomparable` 후보 표시, 변경된 DOM의 선택·시작 차단을 확인했다.
+Platform 소비 경로는 검증하지 않았다.
 
-## 완료 기준
+## 범위 경계
 
-S14 전체 완료에는 Platform capture ingest, C06/C07 공유 계약, Change/Impact
-서비스, L0~L6 validation과 실제 L5 Chrome evidence가 필요하다. Browser
-로컬 비교만으로 S14를 `Done`으로 바꾸지 않는다.
+Studio Capture 관찰 handoff, C06/C07 공유 계약, Platform semantic-v1,
+L0~L6 validation, 외부 L5 runner/ingest/receipt, Change Detector와 Impact
+Analyzer는 현재 S14 완료 조건에서 삭제했다. 이 기능들의 구현·검증은
+별도 Platform 작업이다. `studio/validation.ts`와 `studio/semantic-impact.ts`는
+테스트용 함수이며 운영 Studio 서비스나 Browser 연동 완료 증거가 아니다.

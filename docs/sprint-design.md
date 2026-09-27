@@ -50,7 +50,7 @@ S0의 인증 경계는 Community 로컬 실행에 제품 로그인이 필수인�
   S11      Browser 로컬 Business MCP binding·호출 경계
   S12      Browser 로컬 managed policy/PDP fail-closed 경계
   S13      Browser 로컬 redacted Act policy·terminal evidence
-  S14      Enterprise Studio capture/validation/change-impact integration
+  S14      Browser 로컬 기록 워크플로우 fingerprint 비교
   S15      Managed Chrome/on-prem/air-gap release hardening
 
   ----------------------------------------------------------------------------------------------

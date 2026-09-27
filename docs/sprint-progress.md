@@ -55,9 +55,10 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
 
 이 문서의 기존 상태는 2026-08-22 ContextPilot 구현 증적으로 보존한다.
 Enterprise Web AI Platform 관점에서 S0\~S9는 Browser Runtime
-foundation이다. S10·S11·S12·S13은 각각 Browser 로컬 Profile 수락,
-Business MCP binding, managed policy fail-closed, Act evidence 경계만
-완료했고, S14\~S15 및 Platform 연동은 별도 구현·검증이 필요하다. 기존 Sprint를
+foundation이다. S10·S11·S12·S13·S14는 각각 Browser 로컬 Profile 수락,
+Business MCP binding, managed policy fail-closed, Act evidence,
+기록 워크플로우 비교 경계만 완료했고, S15 및 Platform 연동은 별도
+구현·검증이 필요하다. 기존 Sprint를
 Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
 
 -   S10 Browser 로컬 Profile 수락: Completed — 현행 compact JWS의
@@ -88,7 +89,13 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     행동 재실행을 하지 않는다. 중앙 Audit Service의 인증·receipt·보존은
     범위 밖이다. [완료 범위](sprints/s13-runtime-evidence-browser.md),
     [증거](evidence/s13-closure-2026-09-27.md).
--   S14 Studio Integration: Planned
+-   S14 Browser 로컬 기록 워크플로우 비교: Completed — complete top-frame
+    `all_dom`에서만 기록 fingerprint를 비교한다. 잘림·범위 불일치·형식이
+    잘못된 fingerprint는 `incomparable`, 구조 변경은 `stale`로 표시한다.
+    정확한 path segment 경계와 선택·시작 재검사를 실제 Chrome Side Panel에서
+    확인했다. Studio Capture·L0~L6·Change/Impact는 범위 밖이다.
+    [완료 범위](sprints/s14-studio-integration-browser-boundary.md),
+    [증거](evidence/s14-closure-2026-09-27.md).
 -   S15 Managed Enterprise Release: Planned
 -   S6-R Collection Reading: In Progress — Ask와 Act의 explicit unique
     collection read/reinjection, Act closed route gate는 구현·unit 검증됐다.
@@ -112,11 +119,6 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     각 Provider 호출 직전과 응답 직후 현재 page scope를 새 snapshot으로
     확인한다. 변경·조회 실패 시 `PAGE_SCOPE_STALE`로 종료하고 assistant
     delta도 확인 전에는 표시하지 않는다. 런타임/Chrome 검증은 별도다.
--   S14-B1 Browser 로컬 비교: 기록된 워크플로우의 현재 projection이 잘렸거나
-    비교 범위가 다르면 `incomparable`로 표시하고 선택·시작을 차단한다.
-    선택·시작 시 저장 기록과 현재 snapshot을 다시 대조한다. Platform의
-    capture ingest, C06/C07 계약, Change/Impact 서비스, L0~L6 검증은
-    미구현이므로 S14 전체 상태는 Planned다.
 -   기존 Browser S10-C4 검토 화면: Page API 후보를 대화 기록과 분리한 일시적
     dialog에 표시한다. 닫기·탭 변경·페이지 변경 때 목록과 늦은 응답을
     폐기하고, `adapter 검토 필요`는 화면 상태로만 남긴다. 검토자 인증,

@@ -28,9 +28,9 @@ S10\~S15의 필수 추가 gate:
                                       UNKNOWN·무재시도·중복 terminal 검사,
                                       해시된 Profile/workflow correlation
 
-  S14                                 L0\~L6 validation, semantic diff,
-                                      dependency impact, changed
-                                      page/workflow regression selection
+  S14                                 complete top-frame all_dom 비교,
+                                      stale/incomparable 구분, exact path,
+                                      선택·시작 재검사와 실제 Chrome Panel
 
   S15                                 managed Chrome policy, signed
                                       release/revoke/rollback,

@@ -1,5 +1,6 @@
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
+import { workflowPathMatches } from "../contracts/workflow-catalog.js";
 import type { ProfileActionTool } from "../profile/profile.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
 import { fail, isPlainObject, string } from "../security/validation.js";
@@ -74,7 +75,7 @@ const candidate = (
   };
   if (
     result.origin !== selection.origin ||
-    !selection.path.startsWith(result.path_prefix)
+    !workflowPathMatches(selection.path, result.path_prefix)
   )
     return fail("INVALID_ARGUMENT");
   return result;

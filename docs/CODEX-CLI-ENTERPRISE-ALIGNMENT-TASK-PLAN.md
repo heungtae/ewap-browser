@@ -42,10 +42,10 @@ Studio를 계층적으로 결합한다.
     Act terminal의 closed `AuditEvent`, 해시된 Profile/workflow ID,
     선택적 managed HTTPS sink의 전송 상태와 실패 격리. 조직/user 인증,
     MCP 전체 coverage, 중앙 Audit Service의 receipt·보존은 별도 계약이다.
-5.  **S14 Studio Integration** --- capture evidence(Semantic
-    Projection/DOM/network/user trace), L0\~L6 validation hooks,
-    semantic fingerprint export, dependency metadata, Change
-    Detector/Impact Analyzer regression selection.
+5.  **S14 Browser 로컬 기록 비교** --- complete top-frame `all_dom`
+    projection과 저장 fingerprint의 비교, 불완전·잘못된 저장 값의
+    `incomparable` 판정, exact path와 선택·시작 재검사. Studio Capture,
+    L0\~L6, Change/Impact 서비스·공유 fingerprint 계약은 별도 Platform 작업이다.
 6.  **S15 Enterprise Release** --- Managed Chrome config/force-install,
     KMS/HSM trust adapter, signed publish/revoke/rollback,
     on-prem/air-gap, Windows/Linux clean-profile evidence.

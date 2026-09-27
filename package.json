@@ -1,7 +1,7 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.86",
+  "version": "0.1.87",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -23,6 +23,7 @@
     "test:chrome-s8": "node --experimental-websocket scripts/chrome-s8-smoke.mjs",
     "test:chrome-s9": "node --experimental-websocket scripts/chrome-s9-upgrade-smoke.mjs",
     "test:chrome-s11": "node --experimental-websocket scripts/chrome-s11-mcp-smoke.mjs",
+    "test:chrome-s14": "node --experimental-websocket scripts/chrome-s14-workflow-smoke.mjs",
     "test:chrome-page-api-discovery": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-preview": "node scripts/chrome-preview-e2e.mjs",
     "test:native-host": "dotnet build native-host/ContextPilot.Host.csproj --nologo && node scripts/native-host-smoke.mjs",

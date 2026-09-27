@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { semanticFingerprint } from "../../../src/profile/fingerprint.js";
 import {
+  comparableWorkflowSnapshot,
+  recordComparison,
   recordCandidate,
   recordMatchesPage,
   validateWorkflowCatalogState,
+  workflowPathMatches,
 } from "../../../src/contracts/workflow-catalog.js";
 
 const snapshot = {
@@ -91,5 +94,46 @@ describe("saved workflow catalog", () => {
         records: [{ ...stored(), raw_html: "<input value=secret>" }],
       }),
     ).toThrow("INVALID_ARGUMENT");
+  });
+  it("requires exact path segments and complete, valid comparison inputs", () => {
+    const item = validateWorkflowCatalogState({
+      schema_version: 1,
+      records: [stored()],
+    }).records[0]!;
+    expect(workflowPathMatches("/trend/view", "/trend")).toBe(true);
+    expect(workflowPathMatches("/trending", "/trend")).toBe(false);
+    expect(workflowPathMatches("/trend", "")).toBe(false);
+    expect(recordComparison(item, item.origin, "/trending", snapshot)).toBe(
+      "stale",
+    );
+    expect(
+      recordComparison(
+        { ...item, fingerprint: "bad" },
+        item.origin,
+        "/trend",
+        snapshot,
+      ),
+    ).toBe("incomparable");
+    expect(
+      recordComparison(
+        { ...item, fingerprint: `${item.fingerprint.slice(0, -1)}B` },
+        item.origin,
+        "/trend",
+        snapshot,
+      ),
+    ).toBe("incomparable");
+    const { scope: _scope, ...missingScope } = snapshot;
+    for (const altered of [
+      { ...snapshot, scope: "visible_only" as const },
+      { ...snapshot, truncated: true },
+      { ...snapshot, node_count: 2 },
+      { ...snapshot, frame_id: 1 },
+      missingScope,
+    ]) {
+      expect(comparableWorkflowSnapshot(altered)).toBe(false);
+      expect(recordComparison(item, item.origin, "/trend", altered)).toBe(
+        "incomparable",
+      );
+    }
   });
 });
