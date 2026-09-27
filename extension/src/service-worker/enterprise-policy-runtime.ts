@@ -6,6 +6,7 @@ import {
   type EnterprisePolicyRequest,
 } from "../policy/enterprise-policy.js";
 import type { BrowserChromeApi } from "./browser-api.js";
+import { fail, isPlainObject } from "../security/validation.js";
 
 const identity = (value: unknown): EnterpriseIdentity | undefined => {
   if (
@@ -38,16 +39,23 @@ export const createManagedEnterprisePolicy = (
   async authorize(
     request: EnterprisePolicyRequest,
   ): Promise<EnterprisePolicyDecision> {
-    const stored = await chrome?.storage.managed.get?.("enterprise_policy");
-    const config = stored?.enterprise_policy
+    const managed = chrome?.storage.managed;
+    if (!managed?.get) return fail("ENTERPRISE_POLICY_UNAVAILABLE");
+    const getManaged = managed.get.bind(managed);
+    const stored = await getManaged("enterprise_policy").catch(() =>
+      fail("ENTERPRISE_POLICY_UNAVAILABLE"),
+    );
+    if (!isPlainObject(stored)) return fail("ENTERPRISE_POLICY_UNAVAILABLE");
+    const config = Object.prototype.hasOwnProperty.call(
+      stored,
+      "enterprise_policy",
+    )
       ? validateEnterprisePolicyConfig(stored.enterprise_policy)
       : { schema_version: 1 as const, mode: "community" as const };
     const client = new EnterprisePolicyClient(
       config,
       async () => {
-        const current = await chrome?.storage.managed.get?.(
-          "enterprise_identity",
-        );
+        const current = await getManaged("enterprise_identity");
         return identity(current?.enterprise_identity);
       },
       fetcher,

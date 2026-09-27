@@ -40,4 +40,33 @@ describe("Business MCP registry binding", () => {
       "INVALID_ARGUMENT",
     );
   });
+  it("rejects unsafe endpoints before a Profile can be accepted", () => {
+    for (const endpoint of [
+      "http://business-mcp.company.test/page-tools",
+      "https://user:secret@business-mcp.company.test/page-tools",
+      "https://business-mcp.company.test/page-tools?token=secret",
+      "https://business-mcp.company.test/page-tools#fragment",
+      "not-a-url",
+    ])
+      expect(() => businessMcpBindings([{ ...source[0], endpoint }])).toThrow(
+        "PROFILE_UNAVAILABLE",
+      );
+  });
+  it("requires declared own properties in argument schemas and calls", () => {
+    expect(() =>
+      businessMcpBindings([
+        {
+          ...source[0],
+          arguments: {
+            ...source[0]!.arguments,
+            required: ["undeclared"],
+          },
+        },
+      ]),
+    ).toThrow("PROFILE_UNAVAILABLE");
+    const [binding] = businessMcpBindings(source);
+    expect(() =>
+      businessMcpArguments(binding!, { toString: "bypass" }),
+    ).toThrow("INVALID_ARGUMENT");
+  });
 });

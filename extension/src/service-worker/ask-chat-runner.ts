@@ -1,6 +1,7 @@
 import { digestCanonical } from "../security/canonical.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import { BusinessMcpClient } from "../profile/business-mcp-client.js";
+import { assertFreshBusinessMcpCall } from "../profile/business-mcp-call-guard.js";
 import { businessMcpBindings } from "../profile/mcp-binding.js";
 import { profileModelContext } from "../profile/profile-model-context.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
@@ -130,6 +131,32 @@ export const createAskChatRunner =
           (candidate) => candidate.tool_id === toolId,
         );
         if (!binding || !profile) return fail("BUSINESS_MCP_NOT_CONFIGURED");
+        const current = await dependencies
+          .readActive(undefined, active.tabId)
+          .catch(() => undefined);
+        assertRequestActive(context);
+        const currentScope = current
+          ? dependencies.pageScope(current)
+          : undefined;
+        assertFreshBusinessMcpCall(
+          {
+            tabId: active.tabId,
+            origin: active.origin,
+            documentEpoch: active.snapshot.document_epoch,
+            pageScopeEpoch: analysisScope.page_scope_epoch,
+            pageDigest,
+          },
+          current && currentScope
+            ? {
+                tabId: current.tabId,
+                origin: current.origin,
+                documentEpoch: current.snapshot.document_epoch,
+                pageScopeEpoch: currentScope.page_scope_epoch,
+                pageDigest: digestCanonical(current.snapshot),
+              }
+            : undefined,
+          profile.profile.expires_at,
+        );
         return mcp.call(
           binding,
           {

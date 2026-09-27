@@ -8,9 +8,9 @@ Target은 `Platform Registry discovery/health → approved catalog/overlay → f
 
 공유 PageProfile.mcpServers의 id/name/url/transport/tools와 현재 server_id/endpoint/tool_id/arguments의 차이는 [22번](22-page-profile-provider-design.md)에 mapping을 기록한다. Platform logical serverRef-only source와 공유 inline endpoint schema의 충돌은 [C03](platform-alignment.md)이며 이번 문서로 해결하거나 API를 바꾸지 않는다.
 
-현재 executor는 tool_id membership과 해당 tool의 closed argument schema를 검사하고 결과 schema/크기를 검증한다. Target은 조직 policy의 allowedTools/allowedMcpServers, Profile 선택, approved catalog와 Browser 지원 집합의 교집합을 실행 allow-list로 삼고 explicit deny를 우선한다. endpoint/credential/JWS/nonces/digest는 model catalog에 포함하지 않는다. MCP result는 항상 untrusted data다.
+현재 executor는 tool_id membership과 해당 tool의 closed argument schema를 검사하고 결과 schema/크기를 검증한다. S11 Browser 로컬 경로는 HTTPS endpoint·own-property argument를 Profile 수락 시 확인하고, 응답 본문을 24 KiB로 제한한다. Target은 조직 policy의 allowedTools/allowedMcpServers, Profile 선택, approved catalog와 Browser 지원 집합의 교집합을 실행 allow-list로 삼고 explicit deny를 우선한다. endpoint/credential/JWS/nonces/digest는 model catalog에 포함하지 않는다. MCP result는 항상 untrusted data다.
 
-현재 Ask는 최초 Profile/JWS/page digest를 재사용하며 매 business call 직전 fresh snapshot/expiry/revoke/PDP 검사를 하지 않는다. catalog_checksum/server_release_id/environment는 현재 binding validator가 거부하는 field다. MCP_* Platform 오류 정규화, freshness와 governed auth는 Planned이며 현재 BUSINESS_MCP_* 코드와 구분한다.
+현재 Ask는 최초 Profile/JWS/page digest를 요청에 사용하지만, Business MCP dispatch 직전 현재 탭·origin·document·page scope·snapshot digest와 Profile 만료를 다시 확인한다. Platform release 철회/PDP 조회는 하지 않는다. catalog_checksum/server_release_id/environment는 현재 binding validator가 거부하는 field다. MCP_* Platform 오류 정규화와 governed auth는 Planned이며 현재 BUSINESS_MCP_* 코드와 구분한다.
 
 ## 1. 모델에 제공하는 도구
 

@@ -1,10 +1,10 @@
 # 02. 보안 및 행동 정책
 
-## Platform 정렬: 현재 구현과 목표 (2026-09-06)
+## Platform 정렬: 현재 구현과 목표 (2026-09-27)
 
 현재 local permission/confirmation/preflight/verifier는 구현되어 있다. Enterprise 통합은 **Partially Implemented**다. [policy client](../extension/src/policy/enterprise-policy.ts)는 managed configuration과 identity 문자열을 사용해 PDP에 ALLOW/DENY를 질의한다. 웹사이트 로그인, LLM credential, Platform identity, 행동 승인은 별도 경계다.
 
-[Act proposal executor](../extension/src/service-worker/act-proposal-executor.ts)는 proposal 실행 준비에서 PDP를 호출한다. managed_auto가 true이면 capability prompt를 생략하지만 mutation hard guard는 유지한다. [confirmation/value 재개](../extension/src/service-worker/act-proposal-followup.ts)는 이 authorize를 다시 호출하지 않으며 Ask/Business MCP 경로에도 PDP가 없다. approval_token은 응답에서 허용되지만 사용/소비하는 실행 경로가 없다. managed configuration은 manifest schema로 제한하지만 managed identity는 검증된 OAuth/OIDC principal이 아니므로 배포 계약은 여전히 미완성이다. 설정이 없으면 community로 처리하는 현재 동작을 enterprise fail-closed 보장으로 해석하지 않는다.
+[Act proposal executor](../extension/src/service-worker/act-proposal-executor.ts)는 proposal 실행 준비에서 PDP를 호출한 뒤 로컬 capability/host permission을 항상 검사한다. [confirmation/value 재개](../extension/src/service-worker/act-proposal-followup.ts)에서도 PDP를 재검사한다. PDP의 `managed_auto: true` 또는 `approval_token`은 인증·소비 계약이 없어 거부한다. Ask/Business MCP 경로에는 PDP가 없다. managed 설정이 **없을 때만** community로 처리하고, 설정 값이 손상됐거나 저장소 읽기에 실패하면 차단한다. managed identity 문자열은 검증된 OAuth/OIDC principal이 아니므로 이 경계를 완성된 Enterprise 인가로 해석하지 않는다. [S12 완료 범위](sprints/s12-managed-policy-boundary.md)를 따른다.
 
 | 책임                                  | Platform (Target)                                                  | Browser (현재 / Target)                                                                                      |
 | ------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
@@ -18,7 +18,7 @@ Target authority chain은 `Chrome capability → organizational restrictions + l
 
 Browser R0~R3를 유지한다. Platform의 READ/LOW_WRITE/BUSINESS_WRITE/PRIVILEGED_WRITE/CRITICAL와의 mapping은 effect와 action semantics를 포함한 [C04](platform-alignment.md) 결정 사항이다. 공유 EnterprisePolicy에 없는 새 field나 임의 risk alias를 이 문서로 추가하지 않는다.
 
-Target의 Profile 필수 route에서 invalid/revoked/expired Profile은 차단한다. 현재 optional community generic Act와 구분한다. enterprise identity 검증, managed config 필수화, policy expiry, 단회 approval, 재개 시 재인가는 모두 후속 P0/P1 task다.
+Target의 Profile 필수 route에서 invalid/revoked/expired Profile은 차단한다. 현재 optional community generic Act와 구분한다. enterprise identity 검증, managed config 필수화, policy expiry, 단회 approval은 후속 Platform 계약 작업이다. Act의 value/confirmation 재개에서는 현재 PDP를 재검사한다.
 
 ## 1. 신뢰 경계
 

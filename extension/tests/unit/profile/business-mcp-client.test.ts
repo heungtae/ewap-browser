@@ -107,4 +107,53 @@ describe("business MCP client", () => {
       ),
     ).rejects.toThrow("BUSINESS_MCP_PROTOCOL_ERROR");
   });
+  it("rejects an oversized response before parsing or forwarding it", async () => {
+    const client = new BusinessMcpClient(
+      async () =>
+        new Response("x".repeat(25 * 1_024), {
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    await expect(
+      client.call(
+        binding,
+        {},
+        {
+          requestId: "request",
+          runId: "run",
+          nonce: "nonce",
+          digest: "digest",
+        },
+      ),
+    ).rejects.toThrow("BUSINESS_MCP_PROTOCOL_ERROR");
+  });
+  it("never forwards a non-OK business result as tool data", async () => {
+    const client = new BusinessMcpClient(
+      async () =>
+        new Response(
+          JSON.stringify({
+            request_id: "request",
+            kind: "CALL_PAGE_BUSINESS_TOOL_RESULT",
+            status: "ERROR",
+            tool_id: "field",
+            result_key: "value",
+            value_kind: "text",
+            result: { value: "untrusted" },
+          }),
+          { headers: { "content-type": "application/json" } },
+        ),
+    );
+    await expect(
+      client.call(
+        binding,
+        {},
+        {
+          requestId: "request",
+          runId: "run",
+          nonce: "nonce",
+          digest: "digest",
+        },
+      ),
+    ).rejects.toThrow("BUSINESS_MCP_PROTOCOL_ERROR");
+  });
 });

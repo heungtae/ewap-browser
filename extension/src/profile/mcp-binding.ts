@@ -24,6 +24,22 @@ const identifier = (value: unknown, maximum = 128): value is string =>
 const text = (value: unknown, maximum: number): value is string =>
   typeof value === "string" && value.length > 0 && value.length <= maximum;
 
+const secureEndpoint = (value: unknown): value is string => {
+  if (!text(value, 1_024)) return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password &&
+      !url.search &&
+      !url.hash
+    );
+  } catch {
+    return false;
+  }
+};
+
 const argumentSchema = (value: unknown): BusinessMcpBinding["arguments"] => {
   if (
     !isPlainObject(value) ||
@@ -39,7 +55,11 @@ const argumentSchema = (value: unknown): BusinessMcpBinding["arguments"] => {
     !Array.isArray(value.required) ||
     Object.keys(value.properties).length > 32 ||
     value.required.length > Object.keys(value.properties).length ||
-    value.required.some((key) => !identifier(key, 65)) ||
+    value.required.some(
+      (key) =>
+        !identifier(key, 65) ||
+        !Object.prototype.hasOwnProperty.call(value.properties, key),
+    ) ||
     new Set(value.required).size !== value.required.length
   )
     return fail("PROFILE_UNAVAILABLE");
@@ -81,7 +101,7 @@ export const businessMcpBindings = (value: unknown): BusinessMcpBinding[] => {
           ].includes(key),
       ) ||
       !identifier(candidate.server_id) ||
-      !text(candidate.endpoint, 1_024) ||
+      !secureEndpoint(candidate.endpoint) ||
       !identifier(candidate.tool_id) ||
       !text(candidate.title, 160) ||
       !text(candidate.description, 1_000) ||
@@ -118,8 +138,16 @@ export const businessMcpArguments = (
 ): Record<string, string> => {
   if (
     !isPlainObject(value) ||
-    Object.keys(value).some((key) => !(key in binding.arguments.properties)) ||
-    binding.arguments.required.some((key) => !(key in value))
+    Object.keys(value).some(
+      (key) =>
+        !Object.prototype.hasOwnProperty.call(
+          binding.arguments.properties,
+          key,
+        ),
+    ) ||
+    binding.arguments.required.some(
+      (key) => !Object.prototype.hasOwnProperty.call(value, key),
+    )
   )
     return fail("INVALID_ARGUMENT");
   for (const [key, argument] of Object.entries(value)) {

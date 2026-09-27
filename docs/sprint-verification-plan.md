@@ -12,14 +12,16 @@ S10\~S15의 필수 추가 gate:
                                       실패·rollback 거부, Worker 재시작
                                       후 실제 Side Panel 검증
 
-  S11                                 registry trust/auth, tools/list
-                                      schema cache, capability
-                                      deny/maxRisk, removed/incompatible
-                                      tool detection
+  S11                                 Profile binding endpoint·argument
+                                      거부, stale/expired 호출 전 차단,
+                                      bounded result·non-OK 거부,
+                                      실제 Side Panel MCP 경로와
+                                      모델 catalog 비노출
 
-  S12                                 RBAC/PDP allow/deny/approval, PDP
-                                      outage write fail-closed, local
-                                      hard guard 우회 불가
+  S12                                 managed 설정 손상·읽기 실패 거부,
+                                      PDP allow/deny/outage·응답 제한,
+                                      자동 권한·미사용 approval 거부,
+                                      로컬 deny/plan scope 유지
 
   S13                                 audit allowlist/secret scan,
                                       UNKNOWN/no-retry evidence,

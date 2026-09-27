@@ -30,15 +30,14 @@ Studio를 계층적으로 결합한다.
     version 검증과 Worker 재시작을 견디는 replay high-water. Workspace
     schema, Platform release·철회, semanticId→현재 runtime ref는 이
     완료 범위에 포함하지 않는다.
-2.  **S11 MCP Registry** --- `serverRef`
-    registry(endpoint/transport/auth/trust/env), `tools/list`
-    discovery/cache, capability/risk overlay, Profile
-    `capabilityPolicy/toolOverrides`, final LLM-visible catalog. Tool
-    schema는 MCP Server가 authoritative.
-3.  **S12 Enterprise Policy/Identity** --- SSO auth context adapter,
-    RBAC/PDP client, READ/WRITE/PRIVILEGED/CRITICAL↔R0-R3 mapping,
-    approval token binding, policy-controlled `managed-auto`,
-    required-policy outage fail-closed.
+2.  **S11 Browser 로컬 Business MCP binding** --- 현행 signed Profile의
+    closed endpoint/tool/argument, 호출 직전 page/Profile 재검사,
+    bounded result와 모델 catalog 비노출. Registry `tools/list`,
+    Gateway, policy/release binding은 현재 완료 범위 밖의 Platform 계약이다.
+3.  **S12 Browser 로컬 managed policy 경계** --- 손상된 managed 설정과
+    PDP deny/outage·잘못된 응답은 fail-closed, Act의 로컬 permission은
+    PDP allow 뒤에도 유지. SSO/RBAC, 조직 risk mapping, 중앙 approval,
+    `managed-auto`는 인증된 Platform 계약이 없어 완료 범위에서 제외한다.
 4.  **S13 Runtime Evidence/Audit** --- redacted
     `AuditEvent`/RuntimeEvidence,
     organization/user/profile/workflow/policy/MCP correlation. raw

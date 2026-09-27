@@ -1,5 +1,9 @@
 # S12 — 진단 다운로드 ZIP
 
+> 이 문서는 과거 Browser 진단 ZIP의 S12-C1~C6 계획이다. 현재 Sprint 원장의
+> S12는 [Browser 로컬 managed policy 경계](s12-managed-policy-boundary.md)이며,
+> 이 카드의 미검증 항목을 S12 `Completed` 근거로 사용하지 않는다.
+
 ## 목표
 
 현재 구현된 진단 ZIP 경로를 문서 30의 계약과 대조해 남은 차이를 닫고, 오류

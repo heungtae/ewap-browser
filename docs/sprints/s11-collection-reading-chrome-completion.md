@@ -1,5 +1,9 @@
 # S11 — Collection Reading Chrome 완결
 
+현재 Sprint 원장의 S11은 [Browser 로컬 Business MCP binding](s11-business-mcp-binding.md)을
+뜻한다. 이 문서의 S11-C1~C6은 이전 Browser 작업 카드명이며 현재 S11
+완료 조건으로 해석하지 않는다.
+
 ## 목표
 
 문서 28의 object-specific collection reader를 실제 Chrome Side Panel 경로에서
@@ -9,7 +13,7 @@
 ## 선행 조건
 
 - CR-1~CR-5 reader, lifecycle, Side Panel discover/start/stop UX가 유지된다.
-- S10의 document/page scope binding과 read-only adapter 경계가 확정된다.
+- 별도 Browser document/page scope binding과 read-only adapter 경계가 확정된다.
 
 ## 구현 범위
 

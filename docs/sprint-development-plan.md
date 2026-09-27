@@ -3,16 +3,18 @@
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
 S0\~S9는 폐기하지 않고 Browser Runtime foundation으로 취급한다.
-S10은 Browser 로컬 Profile 수락만 완료한다. Enterprise Platform 연동은
-이 완료 범위에 포함되지 않으며 S11\~S15와 별도 계약 작업에서 이어간다.
+S10·S11·S12는 각각 Browser 로컬 Profile 수락, Business MCP binding,
+managed policy fail-closed 경계만 완료한다. Enterprise Platform 연동은
+이 완료 범위에 포함되지 않으며 S13\~S15와 별도 계약 작업에서 이어간다.
 
 1.  S10: 현행 Browser compact JWS Page Profile의 claim/path/version
     검증과 Worker 재시작을 견디는 로컬 replay high-water.
-2.  S11: MCP Registry의 endpoint/transport/auth/trust/environment
-    binding, tools/list discovery/cache, Profile
-    capabilityPolicy/toolOverrides, final tool catalog filtering.
-3.  S12: enterprise identity/RBAC/PDP, risk mapping, approval token
-    binding, `managed-auto` policy, fail-closed write path.
+2.  S11: 현행 signed Profile의 closed Business MCP binding, HTTPS
+    endpoint·argument 검증, 호출 직전 page/Profile 재검사, bounded result와
+    모델 catalog 비노출.
+3.  S12: Browser 로컬 managed 설정 손상/읽기 실패, PDP allow/deny/outage,
+    응답 크기·schema, Act의 로컬 권한 교집합을 fail-closed로 검증한다.
+    SSO/RBAC·중앙 approval·`managed-auto`는 현재 완료 범위에서 제외한다.
 4.  S13: Runtime Evidence/AuditEvent, redaction, central sink,
     retention/export contract.
 5.  S14: Studio Capture evidence, L0\~L6 validation hooks, semantic

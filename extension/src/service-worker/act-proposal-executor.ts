@@ -116,16 +116,14 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       summary: `${proposal.targetName} 작업을 준비하는 중입니다.`,
       target_name: proposal.targetName,
     });
-    const permission = enterprise.managed_auto
-      ? "ALLOW"
-      : gatePermission(
-          dependencies.permissions,
-          dependencies.preferences(),
-          capability,
-          session.origin,
-          session.id,
-          dependencies.planScopes.origins(session.id),
-        );
+    const permission = gatePermission(
+      dependencies.permissions,
+      dependencies.preferences(),
+      capability,
+      session.origin,
+      session.id,
+      dependencies.planScopes.origins(session.id),
+    );
     if (permission !== "ALLOW") {
       if (permission === "DENY") return fail("POLICY_DENIED");
       if (permission === "PLAN_SCOPE_VIOLATION")

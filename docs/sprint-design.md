@@ -47,8 +47,8 @@ S0의 인증 경계는 Community 로컬 실행에 제품 로그인이 필수인�
   Sprint   주제
   -------- ----------------------------------------------------------------
   S10      Browser 로컬 Signed Page Profile 수락·replay 보호
-  S11      MCP Server Registry/discovery + capability filtering
-  S12      Enterprise Identity/RBAC/PDP + managed permission mode
+  S11      Browser 로컬 Business MCP binding·호출 경계
+  S12      Browser 로컬 managed policy/PDP fail-closed 경계
   S13      Runtime Evidence + central audit
   S14      Enterprise Studio capture/validation/change-impact integration
   S15      Managed Chrome/on-prem/air-gap release hardening
@@ -83,4 +83,8 @@ S0의 인증 경계는 Community 로컬 실행에 제품 로그인이 필수인�
   S9       Linux 로컬 release candidate  [S9](sprints/s9-cross-platform-release.md)
 
   S10      Browser 로컬 Profile 수락    [S10](sprints/s10-profile-runtime.md)
+
+  S11      Browser 로컬 Business MCP    [S11](sprints/s11-business-mcp-binding.md)
+
+  S12      Browser 로컬 managed policy  [S12](sprints/s12-managed-policy-boundary.md)
   ----------------------------------------------------------------------------------------------

@@ -55,8 +55,9 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
 
 이 문서의 기존 상태는 2026-08-22 ContextPilot 구현 증적으로 보존한다.
 Enterprise Web AI Platform 관점에서 S0\~S9는 Browser Runtime
-foundation이다. S10은 Browser 로컬 Profile 수락 범위만 완료했고,
-S11\~S15 및 Platform 연동은 별도 구현·검증이 필요하다. 기존 Sprint를
+foundation이다. S10·S11·S12는 각각 Browser 로컬 Profile 수락,
+Business MCP binding, managed policy fail-closed 경계만 완료했고,
+S13\~S15 및 Platform 연동은 별도 구현·검증이 필요하다. 기존 Sprint를
 Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
 
 -   S10 Browser 로컬 Profile 수락: Completed — 현행 compact JWS의
@@ -66,8 +67,20 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     release·철회, `semanticId` binding은 이 완료 범위에 포함되지
     않는다. [S10 완료 범위](sprints/s10-profile-runtime.md),
     [검증 증거](evidence/s10-progress-2026-09-26.md).
--   S11 MCP Registry/Discovery: Planned
--   S12 Enterprise Policy/Identity: Planned
+-   S11 Browser 로컬 Business MCP binding: Completed — signed Profile의
+    HTTPS endpoint·closed argument를 수락 시 검증하고, 요청 직전
+    page scope/digest·Profile 만료를 재확인한다. 응답 본문은 24 KiB로
+    제한한다. 333개 unit test와 실제 Chrome Side Panel에서 허용된
+    HTTPS Business MCP 호출·모델 catalog 비노출을 확인했다. Platform
+    Registry discovery, Gateway, PDP, release/철회는 범위 밖이다.
+    [S11 완료 범위](sprints/s11-business-mcp-binding.md),
+    [검증 증거](evidence/s11-closure-2026-09-26.md).
+-   S12 Browser 로컬 managed policy 경계: Completed — managed 설정이
+    없을 때만 Community를 유지하고, 손상된 값·읽기 실패는 차단한다.
+    PDP allow/deny/outage와 제한된 응답을 검증하며 자동 권한·미사용
+    승인 토큰을 거부한다. PDP allow 뒤에도 Act의 로컬 권한과 hard guard를
+    유지한다. 검증 범위와 실행 결과는 [S12 완료 범위](sprints/s12-managed-policy-boundary.md),
+    [증거](evidence/s12-closure-2026-09-27.md)를 따른다.
 -   S13 Enterprise Audit/Evidence: Planned
 -   S14 Studio Integration: Planned
 -   S15 Managed Enterprise Release: Planned

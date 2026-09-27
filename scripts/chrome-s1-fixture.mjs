@@ -27,6 +27,7 @@ export const createS1Fixture = async (
   pageHtml = page,
   providerHandler,
   profileTools = [],
+  businessBindings = [],
 ) => {
   await run("openssl", [
     "req",
@@ -47,6 +48,7 @@ export const createS1Fixture = async (
   const privateKey = keys.privateKey.export({ type: "pkcs8", format: "pem" });
   const publicKey = keys.publicKey.export({ type: "spki", format: "pem" });
   const providerRequests = [];
+  const businessRequests = [];
   let invalidSignature = false;
   let profileVersion = 1;
   let resolveCount = 0;
@@ -109,8 +111,28 @@ export const createS1Fixture = async (
               value: input.page.fingerprint,
             },
             tools: profileTools,
-            business_mcp: [],
+            business_mcp: businessBindings,
             authoritative_fields: [],
+          }),
+        );
+        return;
+      }
+      if (request.url === "/v1/business" && request.method === "POST") {
+        const input = await readBody(request);
+        businessRequests.push(input);
+        response.writeHead(200, {
+          "content-type": "application/json",
+          "access-control-allow-origin": "*",
+        });
+        response.end(
+          JSON.stringify({
+            request_id: input.request_id,
+            kind: "CALL_PAGE_BUSINESS_TOOL_RESULT",
+            status: "OK",
+            tool_id: input.tool_id,
+            result_key: "value",
+            value_kind: "text",
+            result: { value: "S11 bounded business answer" },
           }),
         );
         return;
@@ -159,6 +181,7 @@ export const createS1Fixture = async (
     fixturePort,
     publicKey: publicKey.toString(),
     providerRequests,
+    businessRequests,
     setInvalidSignature: (value) => {
       invalidSignature = value;
     },
