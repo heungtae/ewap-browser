@@ -55,9 +55,9 @@ release candidate만 뜻한다. [31번](31-act-request-execution-current-impleme
 
 이 문서의 기존 상태는 2026-08-22 ContextPilot 구현 증적으로 보존한다.
 Enterprise Web AI Platform 관점에서 S0\~S9는 Browser Runtime
-foundation이다. S10·S11·S12는 각각 Browser 로컬 Profile 수락,
-Business MCP binding, managed policy fail-closed 경계만 완료했고,
-S13\~S15 및 Platform 연동은 별도 구현·검증이 필요하다. 기존 Sprint를
+foundation이다. S10·S11·S12·S13은 각각 Browser 로컬 Profile 수락,
+Business MCP binding, managed policy fail-closed, Act evidence 경계만
+완료했고, S14\~S15 및 Platform 연동은 별도 구현·검증이 필요하다. 기존 Sprint를
 Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
 
 -   S10 Browser 로컬 Profile 수락: Completed — 현행 compact JWS의
@@ -81,7 +81,13 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     승인 토큰을 거부한다. PDP allow 뒤에도 Act의 로컬 권한과 hard guard를
     유지한다. 검증 범위와 실행 결과는 [S12 완료 범위](sprints/s12-managed-policy-boundary.md),
     [증거](evidence/s12-closure-2026-09-27.md)를 따른다.
--   S13 Enterprise Audit/Evidence: Planned
+-   S13 Browser 로컬 Act evidence: Completed — policy ALLOW/DENY/장애와
+    Act terminal의 closed metadata만 선택적 managed HTTPS sink로 전송한다.
+    Profile/workflow ID는 해시로 상관관계를 남기고 raw 값·URL path·
+    알 수 없는 code를 제외한다. 전송 실패 상태를 구분하고 재시도나
+    행동 재실행을 하지 않는다. 중앙 Audit Service의 인증·receipt·보존은
+    범위 밖이다. [완료 범위](sprints/s13-runtime-evidence-browser.md),
+    [증거](evidence/s13-closure-2026-09-27.md).
 -   S14 Studio Integration: Planned
 -   S15 Managed Enterprise Release: Planned
 -   S6-R Collection Reading: In Progress — Ask와 Act의 explicit unique

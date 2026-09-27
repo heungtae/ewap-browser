@@ -38,10 +38,10 @@ Studio를 계층적으로 결합한다.
     PDP deny/outage·잘못된 응답은 fail-closed, Act의 로컬 permission은
     PDP allow 뒤에도 유지. SSO/RBAC, 조직 risk mapping, 중앙 approval,
     `managed-auto`는 인증된 Platform 계약이 없어 완료 범위에서 제외한다.
-4.  **S13 Runtime Evidence/Audit** --- redacted
-    `AuditEvent`/RuntimeEvidence,
-    organization/user/profile/workflow/policy/MCP correlation. raw
-    page/prompt/value/ref/node/coordinate/secret 저장 금지.
+4.  **S13 Browser 로컬 Act evidence** --- policy allow/deny/outage와
+    Act terminal의 closed `AuditEvent`, 해시된 Profile/workflow ID,
+    선택적 managed HTTPS sink의 전송 상태와 실패 격리. 조직/user 인증,
+    MCP 전체 coverage, 중앙 Audit Service의 receipt·보존은 별도 계약이다.
 5.  **S14 Studio Integration** --- capture evidence(Semantic
     Projection/DOM/network/user trace), L0\~L6 validation hooks,
     semantic fingerprint export, dependency metadata, Change

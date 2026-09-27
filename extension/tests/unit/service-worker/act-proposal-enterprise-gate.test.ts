@@ -5,6 +5,7 @@ import { PlanScopeStore } from "../../../src/policy/plan-scope.js";
 import { createActProposalExecutor } from "../../../src/service-worker/act-proposal-executor.js";
 import type { ActSession } from "../../../src/service-worker/act-session-types.js";
 import { ServiceCoordinator } from "../../../src/service-worker/coordinator.js";
+import { ContractError } from "../../../src/security/validation.js";
 
 const origin = "https://portal.company.test";
 
@@ -22,6 +23,8 @@ describe("Act Enterprise/local permission intersection", () => {
     permissions.decide("click", origin, run.id, "deny");
     const requestPermission = vi.fn();
     const readActive = vi.fn();
+    const evidence = vi.fn(async () => undefined);
+    const publish = vi.fn();
     const executor = createActProposalExecutor({
       coordinator,
       permissions,
@@ -30,12 +33,12 @@ describe("Act Enterprise/local permission intersection", () => {
         decision: "ALLOW",
         managed_auto: true,
       }),
-      evidence: async () => undefined,
+      evidence,
       planScopes: new PlanScopeStore(),
       readActive,
       getRun: (id: string) => coordinator.runs.byId(id),
       requestPermission,
-      publish: vi.fn(),
+      publish,
     } as unknown as Parameters<typeof createActProposalExecutor>[0]);
     const session = {
       id: "session-abcdefghijkl",
@@ -43,6 +46,7 @@ describe("Act Enterprise/local permission intersection", () => {
       origin,
       runId: run.id,
       profile: { id: "profile", version: 1 },
+      workflow: { declaration: { id: "private workflow title" } },
       proposal: {
         id: "proposal-abcdefghijkl",
         tool: "click_by_ref",
@@ -60,5 +64,45 @@ describe("Act Enterprise/local permission intersection", () => {
     );
     expect(requestPermission).not.toHaveBeenCalled();
     expect(readActive).not.toHaveBeenCalled();
+    expect(evidence).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "policy",
+        run_id: run.id,
+        decision: "ALLOW",
+        stage: "authorized",
+      }),
+    );
+    expect(JSON.stringify(evidence.mock.calls)).not.toContain(
+      "private workflow title",
+    );
+    expect(JSON.stringify(evidence.mock.calls)).not.toContain('"profile"');
+
+    const denying = createActProposalExecutor({
+      coordinator,
+      permissions,
+      preferences: defaultAgentPreferences,
+      authorizeEnterprise: async () => {
+        throw new ContractError("ENTERPRISE_POLICY_DENIED");
+      },
+      evidence,
+      planScopes: new PlanScopeStore(),
+      readActive,
+      getRun: (id: string) => coordinator.runs.byId(id),
+      requestPermission,
+      publish,
+    } as unknown as Parameters<typeof createActProposalExecutor>[0]);
+    await expect(denying.executeProposal(session)).rejects.toThrow(
+      "ENTERPRISE_POLICY_DENIED",
+    );
+    expect(evidence).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "policy",
+        run_id: run.id,
+        decision: "DENY",
+        code: "ENTERPRISE_POLICY_DENIED",
+        stage: "requested",
+      }),
+    );
+    expect(publish).toHaveBeenCalledTimes(1);
   });
 });

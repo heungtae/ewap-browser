@@ -95,9 +95,11 @@ describe("Act proposal follow-up", () => {
       decision: "DENY" as const,
       managed_auto: false,
     }));
+    const evidence = vi.fn(async () => undefined);
     const followup = createActProposalFollowup({
       coordinator,
       authorizeEnterprise,
+      evidence,
       getRun: (runId) => coordinator.runs.byId(runId),
       execute: async () => ({ ok: true }),
       complete: async () => ({ ok: true }),
@@ -105,6 +107,14 @@ describe("Act proposal follow-up", () => {
 
     await expect(followup.submitValue(session, "new value")).rejects.toThrow(
       "ENTERPRISE_POLICY_DENIED",
+    );
+    expect(evidence).toHaveBeenCalledWith(
+      expect.objectContaining({
+        event: "policy",
+        run_id: run.id,
+        decision: "DENY",
+        stage: "requested",
+      }),
     );
     expect(authorizeEnterprise).toHaveBeenCalledWith(
       expect.objectContaining({

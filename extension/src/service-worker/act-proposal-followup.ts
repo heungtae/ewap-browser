@@ -9,6 +9,8 @@ import type { Run } from "../state/run-coordinator.js";
 import type { ServiceCoordinator } from "./coordinator.js";
 import type { ActSession } from "./act-session-types.js";
 import type { ParsedActProposal } from "./act-proposal-parser.js";
+import type { AuditEvent } from "../security/audit.js";
+import { authorizeActWithEvidence } from "./act-policy-evidence.js";
 
 type Complete = (
   session: ActSession,
@@ -22,6 +24,7 @@ type Dependencies = {
   authorizeEnterprise(
     request: EnterprisePolicyRequest,
   ): Promise<EnterprisePolicyDecision>;
+  evidence?(event: AuditEvent): Promise<unknown>;
   getRun(runId: string): Run | undefined;
   execute(
     run: Run,
@@ -31,7 +34,9 @@ type Dependencies = {
   complete: Complete;
 };
 
-const capabilityFor = (proposal: ParsedActProposal): Capability =>
+const capabilityFor = (
+  proposal: ParsedActProposal,
+): Exclude<Capability, "collection_read"> =>
   proposal.tool === "navigate"
     ? "navigate"
     : proposal.tool === "set_checked_by_ref" ||
@@ -46,16 +51,14 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
     run: Run,
     proposal: ParsedActProposal,
   ): Promise<void> => {
-    const decision = await dependencies.authorizeEnterprise({
-      run_id: run.id,
-      tab_id: run.tabId,
-      document_epoch: run.documentEpoch,
-      origin: session.origin,
+    await authorizeActWithEvidence({
+      session,
+      run,
       capability: capabilityFor(proposal),
       risk: proposal.definition.risk,
-      profile: session.profile,
+      authorizeEnterprise: dependencies.authorizeEnterprise,
+      evidence: dependencies.evidence ?? (async () => undefined),
     });
-    if (decision.decision !== "ALLOW") fail("ENTERPRISE_POLICY_DENIED");
   };
   const submitValue = async (
     session: ActSession,

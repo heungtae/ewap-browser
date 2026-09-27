@@ -23,9 +23,10 @@ S10\~S15의 필수 추가 gate:
                                       자동 권한·미사용 approval 거부,
                                       로컬 deny/plan scope 유지
 
-  S13                                 audit allowlist/secret scan,
-                                      UNKNOWN/no-retry evidence,
-                                      workflow/profile/policy correlation
+  S13                                 Act policy/terminal closed allowlist,
+                                      raw 값·URL path·unknown code 거부,
+                                      UNKNOWN·무재시도·중복 terminal 검사,
+                                      해시된 Profile/workflow correlation
 
   S14                                 L0\~L6 validation, semantic diff,
                                       dependency impact, changed

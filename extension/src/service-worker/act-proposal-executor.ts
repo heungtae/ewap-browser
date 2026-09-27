@@ -28,6 +28,7 @@ import type {
 } from "../policy/enterprise-policy.js";
 import type { AuditEvent } from "../security/audit.js";
 import { isErrorCode } from "../contracts/error-codes.js";
+import { authorizeActWithEvidence } from "./act-policy-evidence.js";
 
 type Execution = Record<string, unknown>;
 type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
@@ -39,7 +40,7 @@ type Dependencies = {
   authorizeEnterprise(
     request: EnterprisePolicyRequest,
   ): Promise<EnterprisePolicyDecision>;
-  evidence(event: AuditEvent): Promise<void>;
+  evidence(event: AuditEvent): Promise<unknown>;
   planScopes: PlanScopeStore;
   readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
   getRun(runId: string): Run | undefined;
@@ -89,25 +90,13 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
     const capability = capabilityFor(proposal);
     const pageApi = proposal.tool === "call_page_api";
     const risk = pageApi ? "R1" : proposal.definition.risk;
-    const enterprise = await dependencies.authorizeEnterprise({
-      run_id: run.id,
-      tab_id: run.tabId,
-      document_epoch: run.documentEpoch,
-      origin: session.origin,
+    await authorizeActWithEvidence({
+      session,
+      run,
       capability,
       risk,
-      profile: session.profile,
-    });
-    void dependencies.evidence({
-      event: "policy",
-      run_id: run.id,
-      origin: session.origin,
-      profile_id: session.profile.id,
-      profile_version: session.profile.version,
-      capability,
-      risk,
-      decision: enterprise.decision,
-      stage: "authorized",
+      authorizeEnterprise: dependencies.authorizeEnterprise,
+      evidence: dependencies.evidence,
     });
     dependencies.publish(run.id, {
       type: "tool_started",
@@ -229,6 +218,7 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
   const followup = createActProposalFollowup({
     coordinator: dependencies.coordinator,
     authorizeEnterprise: dependencies.authorizeEnterprise,
+    evidence: dependencies.evidence,
     getRun: dependencies.getRun,
     execute: dependencies.execute,
     complete: (session, run, proposal, executed, summaries) =>

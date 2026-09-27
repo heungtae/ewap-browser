@@ -1,4 +1,5 @@
 import { actionView } from "./act-review-presentation.js";
+import { createActTerminalPublisher } from "./act-terminal-evidence.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { createActChatStart } from "./act-chat-start.js";
 import { createActProposalExecutor } from "./act-proposal-executor.js";
@@ -83,18 +84,12 @@ export const workflowSelections = createWorkflowSelectionStore({
   id: (selection) => selection.id,
   expired: (selection, now) => selection.expiresAt < now,
 });
-export const publishActTerminal = (
-  run: Parameters<typeof coordinator.mutations.terminal>[0],
-  outcome: "VERIFIED" | "FAILED" | "UNKNOWN" | "CANCELLED",
-  code?: string,
-): void => {
-  if (!chatEvents.has(run.id) || chatEvents.terminal(run.id)) return;
-  chatRunLifecycle.publish(run.id, {
-    type: "run_terminal",
-    outcome,
-    ...(code ? { code } : {}),
-  });
-};
+export const publishActTerminal = createActTerminalPublisher({
+  has: (runId) => chatEvents.has(runId),
+  terminal: (runId) => chatEvents.terminal(runId),
+  publish: chatRunLifecycle.publish,
+  evidence: runtimeEvidence.emit,
+});
 const analysisDataAcquisition = createAnalysisDataAcquisition({
   chrome: chromeApi!,
   permissions,

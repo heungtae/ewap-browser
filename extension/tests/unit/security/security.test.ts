@@ -22,7 +22,12 @@ describe("security boundaries", () => {
     ).toThrow("ORIGIN_NOT_ALLOWED"));
   it("given_raw_value_key_when_serializing_audit_then_denied", () =>
     expect(() =>
-      serializeAudit({ event: "policy", value: "secret" } as never),
+      serializeAudit({
+        event: "policy",
+        run_id: "run-1",
+        decision: "ALLOW",
+        value: "secret",
+      } as never),
     ).toThrow("INVALID_ARGUMENT"));
   it("given_redacted_enterprise_correlation_when_serializing_then_accepts_it", () =>
     expect(
@@ -38,4 +43,33 @@ describe("security boundaries", () => {
         stage: "authorized",
       }),
     ).toContain("portal.company.test"));
+  it("rejects_raw_or_unrecognized_audit_values_even_when_the_key_is_allowed", () => {
+    const base = { event: "terminal", run_id: "run-1", outcome: "UNKNOWN" };
+    for (const extra of [
+      { run_id: "https://secret.company.test/path?token=abc" },
+      { profile_id: "private page text" },
+      { origin: "https://portal.company.test/path?token=abc" },
+      { code: "password-from-page" },
+      { outcome: "SUCCESS" },
+      { tool: "click_by_ref" },
+    ]) {
+      expect(() => serializeAudit({ ...base, ...extra } as never)).toThrow(
+        "INVALID_ARGUMENT",
+      );
+    }
+  });
+  it("preserves_unknown_terminal_and_closed_error_code_without_raw_data", () => {
+    const body = serializeAudit({
+      event: "terminal",
+      run_id: "run-1",
+      outcome: "UNKNOWN",
+      code: "POSTCONDITION_UNVERIFIED",
+    });
+    expect(JSON.parse(body)).toEqual({
+      event: "terminal",
+      run_id: "run-1",
+      outcome: "UNKNOWN",
+      code: "POSTCONDITION_UNVERIFIED",
+    });
+  });
 });

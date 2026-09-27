@@ -1,5 +1,10 @@
 # S13 — Ask/Act 분석 데이터 수집 연결
 
+> 이 문서는 과거 Browser 분석 수집 S13-C1~C8 계획이며 별도 `In Progress`
+> 항목이다. 현재 Enterprise 전환 Sprint 원장의 S13은
+> [Browser 로컬 Act evidence](s13-runtime-evidence-browser.md)다.
+> 이 카드의 미완료 기능을 S13 `Completed` 근거로 사용하지 않는다.
+
 ## 목표
 
 문서 31~33과 목표 계약인 문서 32를 구현해 Ask/Act의 자연어 분석 요청이

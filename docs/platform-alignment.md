@@ -4,6 +4,11 @@
 > high-water metadata across Service Worker restarts. The AS-IS inventory below
 > remains the 2026-09-06 reviewed baseline; current S10 scope and remaining
 > trust gaps are tracked in [S10 Profile Runtime](sprints/s10-profile-runtime.md).
+>
+> 2026-09-27 S13 update: Browser-local Act policy/terminal metadata and
+> best-effort sink delivery are tracked in [S13 Browser evidence](sprints/s13-runtime-evidence-browser.md).
+> The baseline table below is historical; no central Audit Service deployment
+> or receipt is implied.
 
 ## 1. Alignment scope
 

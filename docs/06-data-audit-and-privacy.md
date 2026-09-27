@@ -1,14 +1,14 @@
 # 06. 데이터, 감사 및 개인정보 경계
 
-> 2026-09-06 문서 정렬. [Platform alignment](platform-alignment.md)의 revision을 기준으로 현재 저장/출력과 목표 감사 계약을 구분한다. 중앙 Audit Service 통합 완료를 주장하지 않는다.
+> 2026-09-27 Browser S13 경계 갱신. [Platform alignment](platform-alignment.md)의 기준선을 보존하면서 현재 저장/출력과 목표 감사 계약을 구분한다. 중앙 Audit Service 통합 완료를 주장하지 않는다.
 
 ## 1. 현재 저장 위치와 수명
 
 | 위치                               | 현재 용도                                                                                                                       | 경계                                                                                                                       |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| chrome.storage.local               | provider/plugin/API key/static headers, permissions, preferences, Profile Resolver URL/public key ring, 사용자 workflow catalog | 사용자 기기 저장소이며 secret vault가 아니다. Profile artifact persistent cache와 enterprise access-token 관리 기능은 없음 |
+| chrome.storage.local               | provider/plugin/API key/static headers, permissions, preferences, Profile Resolver URL/public key ring, 해시된 Profile replay high-water, 사용자 workflow catalog | 사용자 기기 저장소이며 secret vault가 아니다. Profile artifact persistent cache와 enterprise access-token 관리 기능은 없음 |
 | chrome.storage.session             | bounded/redacted 탭별 chat, CDP ownership metadata, 5분 workflow 선택 계획                                                      | 실행 ref/value/confirmation token을 복원하는 저장소가 아님                                                                 |
-| Service Worker memory              | run/model-ref mapping, action value/confirmation, resolved Profile proof, replay high-water                                     | worker 재시작을 넘는 Profile anti-replay 또는 audit queue가 아님                                                           |
+| Service Worker memory              | run/model-ref mapping, action value/confirmation, resolved Profile proof, 현재 replay 상태                                      | audit queue가 아니며 Profile replay high-water의 재시작 보존은 별도 local storage 기록에 의존                              |
 | Content script / CDP action memory | document refs, preflight, transient target/input                                                                                | 종료된 action 권한으로 재사용 금지                                                                                         |
 | Vision run memory                  | screenshot/zoom capture                                                                                                         | audit/cache/export 대상으로 삼지 않음                                                                                      |
 | chrome.storage.managed read ports  | enterprise_policy, enterprise_identity, runtime_evidence                                                                        | manifest schema가 현재 세 read port를 제한하지만 force-install, verified identity와 release/trust configuration은 미완성   |
@@ -19,9 +19,9 @@ Provider API key/static header는 모델·페이지·감사·export에 전달하
 
 ## 2. 현재 감사 전송과 로컬 이벤트
 
-[AuditEvent](../extension/src/security/audit.ts)의 event enum은 policy/terminal/mcp/workflow다. enum에 존재하는 것과 실제 emit은 다르다. 프로덕션 연결은 [Act proposal executor](../extension/src/service-worker/act-proposal-executor.ts)의 authorize 성공 후 `policy`, `decision=ALLOW`, `stage=authorized` 전송뿐이다. DENY는 client가 throw하므로 이 emit에 도달하지 않는다. Community ALLOW도 이 경로를 지나므로 수신 이벤트를 중앙 PDP의 검증된 결정으로 해석할 수 없다.
+[AuditEvent](../extension/src/security/audit.ts)는 현재 실제 emit이 있는 `policy`/`terminal`만 허용한다. [Act policy evidence](../extension/src/service-worker/act-policy-evidence.ts)는 최초 proposal과 value/confirmation 재개의 ALLOW·DENY·장애를, [Act terminal publisher](../extension/src/service-worker/act-terminal-evidence.ts)는 Act 종료의 `VERIFIED`·`FAILED`·`UNKNOWN`·`CANCELLED`를 기록한다. Profile/workflow 식별자는 해시로 상관관계를 남기며 원문 ID를 전송하지 않는다. Community ALLOW도 이 경로를 지나므로 수신 이벤트를 중앙 PDP의 검증된 결정으로 해석할 수 없다.
 
-[runtime evidence sink](../extension/src/service-worker/runtime-evidence.ts)는 managed endpoint가 유효할 때만 HTTPS POST한다. 인증 header, event ID/timestamp/receipt, durable queue, retry/deduplication이 없고 HTTP 성공 여부를 확인하지 않으며 network failure를 삼킨다. endpoint가 없으면 아무것도 보내지 않는다. 이는 **Partially Implemented / best-effort**이고 Platform Audit Service의 durable 수신 증거가 아니다.
+[runtime evidence sink](../extension/src/service-worker/runtime-evidence.ts)는 managed endpoint가 유효할 때만 쿠키 없는 HTTPS POST를 한다. 본문은 closed allowlist/enum/ID/origin 검증을 통과해야 한다. 미설정 `SKIPPED`, HTTP 성공 `SENT`, 설정·네트워크·HTTP 실패 `FAILED`를 호출자에게 반환한다. 현재 호출자는 이 상태를 영속화하지 않는다. 인증 header, event ID/timestamp/receipt, durable queue, retry/deduplication이 없다. 이는 **Partially Implemented / best-effort**이고 Platform Audit Service의 durable 수신 증거가 아니다.
 
 | Event              | Currently emitted to evidence sink | Currently logged locally / UI stream                              | Planned audit event / Platform integration required             |
 | ------------------ | ---------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
@@ -29,15 +29,15 @@ Provider API key/static header는 모델·페이지·감사·export에 전달하
 | Profile rejected   | 없음                               | 호출자 오류 처리 또는 generic fallback; 전용 rejection event 없음 | bounded reason/version/correlation의 rejected                   |
 | Agent started      | 없음                               | Ask/Act chat run_started                                          | authenticated agent/run started                                 |
 | Workflow started   | 없음                               | 후보/선택 UI와 단계별 run; 독립 중앙 workflow-start event 없음    | workflowRun/release/workflow version 시작                       |
-| Browser action     | 없음                               | tool_started/tool_finished, review/confirmation UI                | preflight/dispatch/verifier outcome                             |
+| Browser action     | Act terminal metadata             | tool_started/tool_finished, review/confirmation UI                | preflight/dispatch/verifier의 완전한 audit coverage             |
 | MCP tool call      | 없음                               | Ask generic tool_started/tool_finished                            | server/tool/release/policy + outcome, raw arguments/result 제외 |
 | Policy allowed     | optional policy ALLOW POST         | proposal 진행                                                     | 실제 decisionId/policyVersion/expiry와 authenticated actor 결속 |
-| Policy denied      | 없음                               | 오류 처리, denial 전용 중앙 event 없음                            | deny/error와 안정 reason code                                   |
+| Policy denied/outage | optional DENY/오류 code POST     | 오류 처리                                                        | 중앙 PDP의 인증된 deny/error 결속                               |
 | User approval      | 없음                               | permission/confirmation UI 메시지                                 | central approval ID/consumed outcome; token/nonce 제외          |
-| Workflow completed | 없음                               | step terminal/최종 UI 결과                                        | 별도 workflowRun terminal과 전체 결과                           |
-| Workflow failed    | 없음                               | step 실패/run terminal; 일부 UNKNOWN                              | workflow/step/result correlation과 failed/unknown               |
+| Workflow completed | 별도 workflow event 없음           | step terminal/최종 UI 결과                                        | 별도 workflowRun terminal과 전체 결과                           |
+| Workflow failed    | 별도 workflow event 없음           | step 실패/run terminal; UNKNOWN 유지                              | workflow/step/result correlation과 failed/unknown               |
 
-[Chat lifecycle](../extension/src/service-worker/chat-run-lifecycle.ts)의 UI event와 redacted session history는 중앙 audit가 아니다. 현재 `run_terminal`을 `AuditEvent.event=terminal`로 변환해 전송하는 호출 경로도 없다.
+[Chat lifecycle](../extension/src/service-worker/chat-run-lifecycle.ts)의 UI event와 redacted session history는 중앙 audit가 아니다. Act의 `run_terminal`은 같은 호출 경로에서 제한된 `AuditEvent.event=terminal`을 별도 생성하지만, 전체 Ask·workflow·MCP 이벤트 coverage나 중앙 수신을 보증하지 않는다.
 
 ## 3. 진단 출력의 AS-IS와 알려진 차이
 
@@ -65,4 +65,4 @@ Platform evidence/job retention은 서버 책임이며 Browser chat storage를 �
 
 ## 6. 검증 경계
 
-현재 소스의 emit call site와 storage 경로를 읽어 위 표를 작성했다. 이번 작업은 runtime/Chrome 테스트, 실제 sink receipt, SSO, 중앙 감사 보존·복구 검증을 수행하지 않는다. 후속 task는 event coverage, denial/approval, auth failure, duplicate delivery, quota/offline, expiry/revoke와 로그·전송·저장 privacy를 각각 검증해야 한다.
+현재 소스의 emit call site와 storage 경로를 읽고 S13의 단위·Chrome Act 회귀를 실행해 위 표를 작성했다. managed sink 설치 Chrome E2E, 실제 sink receipt, SSO, 중앙 감사 보존·복구 검증은 수행하지 않았다. 후속 task는 전체 event coverage, 중앙 approval, auth failure, duplicate delivery, quota/offline, expiry/revoke와 로그·전송·저장 privacy를 각각 검증해야 한다.
