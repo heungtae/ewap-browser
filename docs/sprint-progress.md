@@ -99,9 +99,12 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
 -   S15 Managed Enterprise Release: Planned
 -   S6-R Collection Reading: In Progress — Ask와 Act의 explicit unique
     collection read/reinjection, Act closed route gate는 구현·unit 검증됐다.
+    복수 collection에서 요청이 table/grid/list 한 종류를 명시하고 해당
+    종류가 유일할 때 Browser가 그 대상만 고르는 경로도 unit 검증됐다.
     실제 Side Panel과 HTTPS 제어 provider fixture로 Ask/Act의 bounded context
-    전달도 검증됐다. 복수 source 선택 및 승인 후 재개, reviewed API/export reader,
-    live provider 및 virtual-scroll completeness evidence는 별도다. 세부 계약과
+    전달도 검증됐다. 모호한 복수 source의 Panel 선택 및 승인 후 재개,
+    reviewed API/export reader, live provider 및 virtual-scroll completeness
+    evidence는 별도다. 세부 계약과
     CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
 -   S13 Ask/Act Analysis Data (Browser slice): In Progress — S13-C7에서 수집 종료
     뒤 page scope를 재검사하고 page change·Stop·timeout 결과의 수집 행을

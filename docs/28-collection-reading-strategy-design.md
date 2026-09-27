@@ -121,17 +121,23 @@ Ask/Act 모드의 상위 규칙은 [01번 아키텍처](01-architecture.md)의
 
 4.3~4.4의 collection read 결과는 bounded `SanitizedCollectionRecord` chunk, coverage, reason, evidence로 정규화한다. 이 결과만 같은 Ask/Act run의 다음 Provider turn에 ephemeral context로 전달한다. `complete|partial|viewport_only|unavailable` 표현 의무는 Provider 답변과 Act의 후속 계획 모두에 적용된다.
 
-#### 현재 구현
+현재 Browser 로컬 Ask/Act 경로는 table/grid/list 중 한 종류가 요청에
+명시되고 해당 종류의 descriptor가 정확히 하나인 경우, 다른 종류의
+descriptor가 함께 발견돼도 그 하나만 선택한다. 일반 데이터 요청,
+동종 복수 대상, 혼합 종류 요청은 여전히 `REQUIRES_SELECTION`으로 닫는다.
+Side Panel 선택 후 같은 요청 재개 계약은 아직 구현되지 않았다.
 
-`http://localhost:3000/virtual-scroll-grid`에서 Ask로 “데이터를 분석
-요약해”를 요청하면 Ask runner는 현재 semantic projection과 일반 read tool만
+#### 구현 전 결손 기록
+
+당시 `http://localhost:3000/virtual-scroll-grid`에서 Ask로 “데이터를 분석
+요약해”를 요청하면 Ask runner는 semantic projection과 일반 read tool만
 모델에 제공한다. virtual grid의 현재 mount window는 읽을 수 있지만,
 `COLLECTION_DISCOVER`, `COLLECTION_READ_START`, scroll, accumulator, collection
 permission, progress, 수집 chunk의 같은 Ask run 재투입은 호출하지 않는다.
 따라서 모델은 현재 DOM 범위만으로 답하거나 정보가 불충분하다고 답해야 하며,
 전체 grid를 읽었다고 주장해서는 안 된다.
 
-현재 `▤ 페이지 데이터 읽기`는 별도 수동 경로다. 사용자가 객체와 `전체 읽기`를
+당시 `▤ 페이지 데이터 읽기`는 별도 수동 경로였다. 사용자가 객체와 `전체 읽기`를
 선택하고 권한을 승인하면 collection reader가 실행되지만, 결과는 별도 Side Panel
 카드에 표시될 뿐 기존 Ask/Act provider turn에 전달되어 분석을 재개하지 않는다.
 
