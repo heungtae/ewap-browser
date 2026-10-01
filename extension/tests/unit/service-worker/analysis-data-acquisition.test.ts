@@ -121,6 +121,136 @@ describe("analysis data acquisition", () => {
     expect(sendMessage).toHaveBeenCalledTimes(1);
   });
 
+  it("reads the sole explicitly named kind among different collections", async () => {
+    const list = {
+      ...descriptor,
+      collection_ref: "list-ref",
+      object_kind: "list" as const,
+    };
+    const sendMessage = vi.fn(async (_tabId: number, message: unknown) => {
+      const kind = (message as { kind?: unknown }).kind;
+      if (kind === "CONTENT_COLLECTION_DISCOVER")
+        return {
+          collections: [list, descriptor],
+          document_epoch: "doc",
+          page_scope_epoch: "scope",
+        };
+      if (kind === "CONTENT_COLLECTION_CONTEXT")
+        return { ok: true, ...scope() };
+      if (kind === "CONTENT_COLLECTION_READ_STATIC")
+        return {
+          ok: true,
+          result: {
+            records: [{ index: 0, cells: ["table value"] }],
+            total_rows: 1,
+            truncated: false,
+          },
+        };
+      throw new Error(`unexpected ${String(kind)}`);
+    });
+    const check = vi.fn(() => "ALLOW" as const);
+    const collect = createAnalysisDataAcquisition({
+      chrome: { tabs: { sendMessage } } as never,
+      permissions: { check },
+      scopeFor: scope,
+    });
+
+    const result = await collect("표 데이터를 분석해", active(), "run");
+    expect(result).toMatchObject({
+      source: { kind: "collection", label: "table data" },
+      coverage: "complete",
+      records: [{ index: 0, cells: ["table value"] }],
+    });
+    expect(check).toHaveBeenCalledWith(
+      "collection_read",
+      "https://fixture.invalid",
+      "run",
+    );
+    expect(sendMessage).toHaveBeenCalledWith(9, {
+      kind: "CONTENT_COLLECTION_READ_STATIC",
+      collection_ref: "worker-only-ref",
+    });
+    expect(sendMessage).not.toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ collection_ref: "list-ref" }),
+    );
+  });
+
+  it("does not read a narrowed source before collection permission is granted", async () => {
+    const sendMessage = vi.fn(async () => ({
+      collections: [descriptor, { ...descriptor, object_kind: "list" }],
+      document_epoch: "doc",
+      page_scope_epoch: "scope",
+    }));
+    const check = vi.fn(() => "REQUIRE_PERMISSION" as const);
+    const collect = createAnalysisDataAcquisition({
+      chrome: { tabs: { sendMessage } } as never,
+      permissions: { check },
+      scopeFor: scope,
+    });
+
+    await expect(
+      collect("표 데이터를 분석해", active(), "run"),
+    ).resolves.toMatchObject({
+      coverage: "unavailable",
+      reason: "PERMISSION_REQUIRED",
+      records: [],
+    });
+    expect(check).toHaveBeenCalledOnce();
+    expect(sendMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [
+      "generic",
+      "데이터를 분석해",
+      [descriptor, { ...descriptor, object_kind: "list" }],
+    ],
+    [
+      "same kind",
+      "표 데이터를 분석해",
+      [descriptor, { ...descriptor, collection_ref: "second" }],
+    ],
+    [
+      "mixed intent",
+      "표와 목록 데이터를 분석해",
+      [descriptor, { ...descriptor, object_kind: "list" }],
+    ],
+    [
+      "chart and table intent",
+      "표와 차트 데이터를 분석해",
+      [descriptor, { ...descriptor, object_kind: "chart_svg" }],
+    ],
+    [
+      "graph and table intent",
+      "Analyze the table and graph data",
+      [descriptor, { ...descriptor, object_kind: "chart_svg" }],
+    ],
+  ])(
+    "requires selection for %s multi-source requests",
+    async (_case, prompt, collections) => {
+      const sendMessage = vi.fn(async () => ({
+        collections,
+        document_epoch: "doc",
+        page_scope_epoch: "scope",
+      }));
+      const check = vi.fn(() => "ALLOW" as const);
+      const collect = createAnalysisDataAcquisition({
+        chrome: { tabs: { sendMessage } } as never,
+        permissions: { check },
+        scopeFor: scope,
+      });
+
+      await expect(collect(prompt, active(), "run")).resolves.toMatchObject({
+        coverage: "unavailable",
+        reason: "REQUIRES_SELECTION",
+        records: [],
+      });
+      expect(check).not.toHaveBeenCalled();
+      expect(sendMessage).toHaveBeenCalledTimes(1);
+    },
+  );
+
   it("reports no collection as unavailable without asking the user to select one", async () => {
     const sendMessage = vi.fn(async () => ({
       ok: true,

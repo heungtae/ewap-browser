@@ -112,6 +112,30 @@ const isDiscovery = (
 const labelFor = (descriptor: CollectionReadDescriptor): string =>
   `${descriptor.object_kind.replace("_", " ")} data`;
 
+/** Only an explicit, single object kind can disambiguate multiple sources. */
+const requestedCollectionKind = (
+  prompt: string,
+): CollectionReadDescriptor["object_kind"] | undefined => {
+  const kinds = [
+    {
+      kind: "table",
+      pattern:
+        /\btable\b|테이블|(?:^|[^\p{L}\p{N}])표(?=$|[^\p{L}\p{N}]|[은는이가을를의와과도])/iu,
+    },
+    { kind: "grid", pattern: /\bgrid\b|그리드/iu },
+    { kind: "list", pattern: /\blist\b|목록/iu },
+    // Charts and pagination have no safe single-kind mapping here. Their
+    // mention also prevents a table/grid/list from winning a mixed request.
+    { kind: "chart", pattern: /\bchart\b|\bgraph\b|차트|그래프/iu },
+    { kind: "pagination", pattern: /\bpagination\b|페이지네이션/iu },
+  ] as const;
+  const matches = kinds.filter(({ pattern }) => pattern.test(prompt));
+  const kind = matches.length === 1 ? matches[0]?.kind : undefined;
+  return kind === "table" || kind === "grid" || kind === "list"
+    ? kind
+    : undefined;
+};
+
 const unavailable = (reason: AnalysisReason): AnalysisDataContext => ({
   source: { kind: "collection", label: "page collection" },
   coverage: "unavailable",
@@ -235,8 +259,16 @@ export const createAnalysisDataAcquisition =
       return unavailable("UNAVAILABLE");
     const collections = discovery.collections.filter(isDescriptor);
     if (collections.length === 0) return unavailable("UNAVAILABLE");
-    if (collections.length > 1) return unavailable("REQUIRES_SELECTION");
-    const descriptor = collections[0];
+    // A generic or mixed-kind request cannot choose between page objects.
+    const requestedKind = requestedCollectionKind(prompt);
+    const candidates =
+      collections.length > 1 && requestedKind
+        ? collections.filter(
+            (candidate) => candidate.object_kind === requestedKind,
+          )
+        : collections;
+    if (candidates.length !== 1) return unavailable("REQUIRES_SELECTION");
+    const descriptor = candidates[0];
     if (!descriptor) return unavailable("UNAVAILABLE");
     const permission = dependencies.permissions.check(
       "collection_read",
