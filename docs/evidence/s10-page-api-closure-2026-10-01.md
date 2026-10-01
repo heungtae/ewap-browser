@@ -8,6 +8,15 @@
 
 ## Closed cards
 
+### Review follow-up (2026-10-01)
+
+Review of commit `825aa4cd0` reproduced a P1 with the production runner and
+request lifecycle plus delayed scripting responses: Stop during the MAIN probe
+still permits one mutation injection; starting a new request on the same tab
+lets the old operation mark the new request as dispatched. API-10/11 below
+cover post-dispatch Stop, not cancellation while preparing. Remediation and
+additional Chrome evidence are completed separately in [S10-R](../sprints/s10-r-page-api-request-cancellation.md).
+
 | Card | Implementation and evidence |
 | --- | --- |
 | S10-C1 | Real Side Panel Act proposal → explicit approval → separate page_api permission → document-pinned MAIN invocation → isolated native option selection → VERIFIED. True return without UI change remains UNKNOWN. |

@@ -155,7 +155,14 @@ const actStepRunner = createActStepRunner({
     const run = session.runId
       ? coordinator.runs.byId(session.runId)
       : undefined;
-    chatRequests.endTab(session.tabId, run?.outcome ?? "UNKNOWN", run?.code);
+    const context = session.requestContext;
+    if (context?.requestId && context.generation !== undefined)
+      chatRequests.finish(
+        context.requestId,
+        context.generation,
+        run?.outcome ?? "UNKNOWN",
+        run?.code,
+      );
     permissions.endRun(session.id);
     planScopes.clear(session.id);
     actSessions.delete(session.id);
@@ -199,7 +206,12 @@ const proposalExecutor = createActProposalExecutor({
   },
   execute: executeActContent,
   executePageApi: async (run, session, proposal) => {
+    const context = session.requestContext;
+    if (!context)
+      return { ok: false, outcome: "FAILED", code: "POLICY_DENIED" };
+    context.check();
     const active = await readActiveSnapshot("all_dom", run.tabId);
+    context.check();
     const document = registered.get(registrationKey(run.tabId, 0));
     const scope = pageScopes.get(run.tabId);
     if (
@@ -230,7 +242,7 @@ const proposalExecutor = createActProposalExecutor({
       capability: "page_api",
       approval_digest: proposal.approvalDigest,
     };
-    return dispatchPageApi(intent, active.path);
+    return dispatchPageApi(intent, active.path, context);
   },
   publish: chatRunLifecycle.publish,
   publishTerminal: publishActTerminal,
@@ -240,7 +252,14 @@ const proposalExecutor = createActProposalExecutor({
     const run = session.runId
       ? coordinator.runs.byId(session.runId)
       : undefined;
-    chatRequests.endTab(session.tabId, run?.outcome ?? "UNKNOWN", run?.code);
+    const context = session.requestContext;
+    if (context?.requestId && context.generation !== undefined)
+      chatRequests.finish(
+        context.requestId,
+        context.generation,
+        run?.outcome ?? "UNKNOWN",
+        run?.code,
+      );
     permissions.endRun(session.id);
     actSessions.delete(session.id);
   },

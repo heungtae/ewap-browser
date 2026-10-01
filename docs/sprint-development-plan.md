@@ -1,5 +1,12 @@
 # Sprint 개발 계획서
 
+## Browser 리뷰 후속 우선순위 (2026-10-01)
+
+[S10-R](sprints/s10-r-page-api-request-cancellation.md)은 Completed 상태의 P1
+수정 스프린트다. 원래 요청에 결속된 dispatch hook, runner의 비동기 단계별
+취소 검사, 실제 lifecycle 결합 테스트, Chrome Stop/새 요청 검증까지 완료했다.
+S13 분석 연결과 S15 배포를 선행 조건으로 요구하지 않는다.
+
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
 S0\~S9는 폐기하지 않고 Browser Runtime foundation으로 취급한다.

@@ -31,7 +31,11 @@ export const {
   executeBounded: executeBoundedCdp,
   executeContent: executeActContent,
 } = createActExecutionRuntime({
-  beforeDispatch: (tabId) => chatRequests.beforeDispatch(tabId),
+  // Legacy START_ACT has no ChatRequestLifecycle request.
+  beforeDispatch: (tabId) =>
+    chatRequests.activeContext(tabId)
+      ? chatRequests.beforeDispatch(tabId)
+      : Promise.resolve(),
   verificationStarted: (run) =>
     chatRunLifecycle.publish(run.id, {
       type: "activity_progress",
@@ -67,7 +71,10 @@ const pageApiObserver = createPageApiObserver((tabId, remainingMs) =>
 );
 export const { execute: executePageApi } = createPageApiRunner({
   ...(chromeApi?.scripting ? { scripting: chromeApi.scripting } : {}),
-  beforeDispatch: (tabId) => chatRequests.beforeDispatch(tabId),
+  beforeDispatch: (tabId, context) => {
+    if (!context) throw new Error("POLICY_DENIED");
+    return chatRequests.beforeDispatch(tabId, context);
+  },
   documentFor: (tabId, frameId) =>
     registered.get(registrationKey(tabId, frameId)),
   scope: (tabId) => pageScopes.get(tabId),

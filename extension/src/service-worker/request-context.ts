@@ -1,6 +1,7 @@
 import { ContractError } from "../security/validation.js";
 export type RequestContext = {
   requestId?: string;
+  generation?: number;
   documentEpoch?: string;
   progress?(stage: "PROVIDER_BODY"): void;
   tabId: number;

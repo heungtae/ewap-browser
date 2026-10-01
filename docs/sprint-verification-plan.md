@@ -1,5 +1,13 @@
 # Sprint 검증 계획서
 
+## Browser 리뷰 후속 gate (2026-10-01)
+
+[S10-R](sprints/s10-r-page-api-request-cancellation.md)의 R-01~R-07을 따른다.
+probe/observation/marker 대기 중 Stop 이후 변경 호출 0건과 같은 탭의 새 요청에
+이전 작업의 marker/progress/terminal이 기록되지 않음을 결합 단위 테스트로 검증한다.
+dispatch 전 Stop·새 요청 시작 및 dispatch 이후 UNKNOWN 보존을 실제 Chrome에서
+확인했다. [검증 증거](evidence/s10-r-request-cancellation-2026-10-01.md). 기존 S10의 dispatch 이후 Stop 증거만으로 이 gate를 통과한 것으로 판정하지 않는다.
+
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
 S10\~S15의 필수 추가 gate:

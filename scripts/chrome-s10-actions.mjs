@@ -126,6 +126,69 @@ export const checkS10Actions = async ({
     calls: baseline.calls + 1,
     value: "high",
   });
+  // Delay the production probe response inside this isolated Chrome worker.
+  // No test runtime messages or model tools are added to the product.
+  for (const replacement of [false, true]) {
+    baseline = await submit();
+    await evaluate(
+      worker,
+      `(() => {
+      const original=chrome.scripting.executeScript.bind(chrome.scripting);
+      globalThis.s10ProbeWaiting=false;
+      chrome.scripting.executeScript=async injection=>{
+        const result=await original(injection);
+        if(injection.world==='MAIN' && injection.args?.length===0){
+          chrome.scripting.executeScript=original;
+          globalThis.s10ProbeWaiting=true;
+          await new Promise(resolve=>globalThis.s10ReleaseProbe=resolve);
+        }
+        return result;
+      }; return true;
+    })()`,
+    );
+    await button("이번 단계 실행");
+    if (
+      await waitFor(
+        () => hasButton("이번만 허용"),
+        1500,
+        "permission absent",
+      ).catch(() => false)
+    )
+      await button("이번만 허용");
+    await waitFor(
+      () => evaluate(worker, "s10ProbeWaiting"),
+      10000,
+      "probe gate absent",
+    );
+    const originalId = await evaluate(panel, "s10RequestId");
+    await evaluate(panel, "document.querySelector('#chat-send').click()");
+    const cancelled = await terminal();
+    assert.equal(cancelled.outcome, "CANCELLED");
+    let replacementStatus;
+    if (replacement) {
+      await submit();
+      replacementStatus = await status();
+      assert.equal(replacementStatus.state, "WAITING_USER");
+    }
+    await evaluate(worker, "s10ReleaseProbe();true");
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    assert.equal((await counts()).calls, baseline.calls);
+    const old = await send({
+      schema_version: 1,
+      kind: "CHAT_REQUEST_STATUS",
+      request_id: originalId,
+    });
+    assert.equal(old.request.outcome, "CANCELLED");
+    if (replacement) {
+      assert.deepEqual(await status(), replacementStatus);
+      await send({
+        schema_version: 1,
+        kind: "CHAT_REQUEST_CANCEL",
+        request_id: await evaluate(panel, "s10RequestId"),
+      });
+      await terminal();
+    }
+  }
   baseline = await submit("normal", "high");
   // A new request needs its own explicit review and permission grant.
   await button("이번 단계 실행");
@@ -253,7 +316,7 @@ export const checkS10Actions = async ({
   );
   await evaluate(panel, "document.querySelector('#chat-send').click()");
   const stopped = await terminal();
-  assert.notEqual(stopped.outcome, "VERIFIED");
+  assert.equal(stopped.outcome, "UNKNOWN");
   // The page may finish a delayed local change; the request must stay terminal.
   await new Promise((resolve) => setTimeout(resolve, 1200));
   assert.equal((await status()).outcome, stopped.outcome);

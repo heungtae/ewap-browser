@@ -1,3 +1,5 @@
+import { assertRequestActive, type RequestContext } from "./request-context.js";
+import { ContractError } from "../security/validation.js";
 import { withDeadline } from "../security/deadline.js";
 import type {
   PageApiDispatchResult,
@@ -24,7 +26,7 @@ type Dependencies = {
       args: unknown[];
     }): Promise<Injection[]>;
   };
-  beforeDispatch(tabId: number): Promise<void>;
+  beforeDispatch(tabId: number, context: RequestContext): Promise<void>;
   documentFor(
     tabId: number,
     frameId: number,
@@ -74,6 +76,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
   const execute = async (
     intent: PageApiIntent,
     path: string,
+    context: RequestContext,
   ): Promise<PageApiDispatchResult> => {
     if (
       intent.kind !== "page_api" ||
@@ -145,6 +148,22 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
     inFlight.add(key);
     let dispatched = false;
     try {
+      const check = () => {
+        if (!context) throw new ContractError("POLICY_DENIED");
+        assertRequestActive(context);
+        if (context && context.tabId !== intent.tab_id)
+          throw new ContractError("POLICY_DENIED");
+        const document = dependencies.documentFor(intent.tab_id, 0);
+        const scope = dependencies.scope(intent.tab_id);
+        if (
+          document?.documentId !== intent.document_id ||
+          document.epoch !== intent.document_epoch ||
+          scope?.document_epoch !== intent.document_epoch ||
+          scope.page_scope_epoch !== intent.page_scope_epoch
+        )
+          throw new ContractError("PAGE_SCOPE_STALE");
+      };
+      check();
       mark(intent, "PAGE_API_PREPARING");
       const probe = await withDeadline(
         dependencies.scripting.executeScript({
@@ -156,6 +175,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         Math.min(5_000, remaining()),
         "PAGE_API_TIMEOUT",
       );
+      check();
       if (
         probe.length !== 1 ||
         probe[0]?.frameId !== 0 ||
@@ -173,6 +193,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         remaining(),
         "PAGE_API_TIMEOUT",
       );
+      check();
       const observedDocument = dependencies.documentFor(intent.tab_id, 0);
       const observedScope = dependencies.scope(intent.tab_id);
       if (
@@ -186,7 +207,8 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         return { ok: true, outcome: "ALREADY_SATISFIED" };
       if (before !== "pending" || remaining() === 0)
         return { ok: false, outcome: "FAILED", code: "PAGE_API_UNAVAILABLE" };
-      await dependencies.beforeDispatch(intent.tab_id);
+      await dependencies.beforeDispatch(intent.tab_id, context);
+      check();
       const current = dependencies.documentFor(intent.tab_id, 0);
       const currentScope = dependencies.scope(intent.tab_id);
       if (
@@ -210,6 +232,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         Math.min(5_000, remaining()),
         "PAGE_API_TIMEOUT",
       );
+      check();
       mark(intent, "PAGE_API_RETURNED");
       const only = injected.length === 1 && injected[0];
       if (!only || only.frameId !== 0 || only.documentId !== intent.document_id)
@@ -239,6 +262,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         remaining(),
         "PAGE_API_TIMEOUT",
       );
+      check();
       const finalDocument = dependencies.documentFor(intent.tab_id, 0);
       const finalScope = dependencies.scope(intent.tab_id);
       if (
@@ -253,9 +277,11 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         : { ok: false, outcome: "UNKNOWN", code: "POSTCONDITION_UNVERIFIED" };
     } catch (error) {
       const code =
-        error instanceof Error && error.message === "PAGE_API_TIMEOUT"
-          ? "PAGE_API_TIMEOUT"
-          : "PAGE_API_CALL_FAILED";
+        error instanceof ContractError
+          ? error.code
+          : error instanceof Error && error.message === "PAGE_API_TIMEOUT"
+            ? "PAGE_API_TIMEOUT"
+            : "PAGE_API_CALL_FAILED";
       return { ok: false, outcome: dispatched ? "UNKNOWN" : "FAILED", code };
     } finally {
       inFlight.delete(key);

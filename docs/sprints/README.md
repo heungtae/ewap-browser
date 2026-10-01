@@ -12,6 +12,7 @@
 - [S9](s9-cross-platform-release.md)
 - [S10 Browser 로컬 Page Profile 수락](s10-profile-runtime.md)
 - [Browser S10-C1~C5 Page API/Discovery 완료 범위](s10-page-api-discovery-handoff.md)
+- [S10-R Browser Page API 취소·요청 바인딩 보강 — Completed](s10-r-page-api-request-cancellation.md)
 - [S11 Browser 로컬 Business MCP binding](s11-business-mcp-binding.md)
 - [기존 Browser Collection Reading S11-C1~C6 계획](s11-collection-reading-chrome-completion.md)
 - [S12 Browser 로컬 managed policy 경계](s12-managed-policy-boundary.md)

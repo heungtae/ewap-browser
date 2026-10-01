@@ -1,5 +1,11 @@
 # Sprint 설계 인덱스
 
+## Browser 리뷰 후속 스프린트 (2026-10-01)
+
+- [S10-R — Page API 취소·요청 바인딩 보강](sprints/s10-r-page-api-request-cancellation.md):
+  Completed — 2026-10-01. dispatch 전 Stop의 호출 차단과 같은 탭 새 요청의
+  상태 격리를 검증한다. 기존 Browser S10-C1~C5의 후속이며 Enterprise S10과 별도다.
+
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
 기존 S0\~S9는 **Community Browser Runtime foundation**으로 유지한다.

@@ -1,3 +1,4 @@
+import { ChatRequestLifecycle } from "../../../src/service-worker/chat-request-lifecycle.js";
 import { afterEach, expect, it, vi } from "vitest";
 import type { PageApiIntent } from "../../../src/contracts/page-api-types.js";
 import {
@@ -53,7 +54,18 @@ const setup = () => {
       ? ("satisfied" as const)
       : ("pending" as const),
   );
-  const beforeDispatch = vi.fn(async () => undefined);
+  const lifecycle = new ChatRequestLifecycle();
+  lifecycle.start({
+    request_id: "original",
+    tab_id: 1,
+    mode: "act",
+    prompt: "change",
+  });
+  const generation = lifecycle.startRun("original")!;
+  const context = lifecycle.context("original");
+  const beforeDispatch = vi.fn(async () =>
+    lifecycle.beforeDispatch(1, context),
+  );
   const runner = createPageApiRunner({
     scripting: { executeScript },
     beforeDispatch,
@@ -68,7 +80,13 @@ const setup = () => {
     executeScript,
     observe,
     beforeDispatch,
-    runner,
+    runner: {
+      execute: (value: PageApiIntent, path: string) =>
+        runner.execute(value, path, context),
+    },
+    lifecycle,
+    context,
+    generation,
   };
 };
 afterEach(() => vi.useRealTimers());
@@ -244,4 +262,105 @@ it("already-satisfied observation still requires the approved scope", async () =
     code: "PAGE_SCOPE_STALE",
   });
   expect(s.beforeDispatch).not.toHaveBeenCalled();
+});
+
+const deferred = <T>() => {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+};
+it.each(["probe", "pending", "satisfied", "marker", "dispatch"])(
+  "S10-R cancellation during %s preserves original and replacement requests",
+  async (stage) => {
+    const s = setup();
+    const gate = deferred<never>();
+    const entered = deferred<void>();
+    if (stage === "probe" || stage === "dispatch") {
+      const original = s.executeScript.getMockImplementation()!;
+      s.executeScript.mockImplementation(async (call) => {
+        if ((stage === "probe") === (call.args.length === 0)) {
+          entered.resolve();
+          await gate.promise;
+        }
+        return original(call);
+      });
+    } else if (stage === "marker") {
+      const flush = s.lifecycle.flush.bind(s.lifecycle);
+      vi.spyOn(s.lifecycle, "flush").mockImplementation(async () => {
+        entered.resolve();
+        await gate.promise;
+        await flush();
+      });
+    } else {
+      s.observe.mockImplementationOnce(async () => {
+        entered.resolve();
+        await gate.promise;
+        return stage as "pending" | "satisfied";
+      });
+    }
+    const execution = s.runner.execute(s.intent, "/variant");
+    await entered.promise;
+    const cancelled = s.lifecycle.cancel("original", 1)!;
+    s.lifecycle.start({
+      request_id: "replacement",
+      tab_id: 1,
+      mode: "ask",
+      prompt: "read",
+    });
+    s.lifecycle.startRun("replacement");
+    const replacement = s.lifecycle.status("replacement", 1);
+    gate.resolve(undefined as never);
+    expect(await execution).toMatchObject({
+      outcome: stage === "dispatch" ? "UNKNOWN" : "FAILED",
+      code: "POLICY_DENIED",
+    });
+    expect(
+      s.executeScript.mock.calls.filter(([call]) => call.args.length),
+    ).toHaveLength(stage === "dispatch" ? 1 : 0);
+    expect(s.lifecycle.status("original", 1)).toEqual(cancelled);
+    expect(s.lifecycle.status("replacement", 1)).toEqual(replacement);
+    expect(cancelled.outcome).toBe(
+      stage === "dispatch" || stage === "marker" ? "UNKNOWN" : "CANCELLED",
+    );
+    s.lifecycle.finish("replacement", 0, "VERIFIED");
+  },
+);
+it("S10-R rejects absent, foreign-tab and terminal dispatch ownership", async () => {
+  const s = setup();
+  await expect(s.lifecycle.beforeDispatch(2, s.context)).rejects.toThrow();
+  s.lifecycle.cancel("original", 1);
+  await expect(s.lifecycle.beforeDispatch(1, s.context)).rejects.toThrow();
+  await expect(s.lifecycle.beforeDispatch(1)).rejects.toThrow();
+});
+
+it("S10-R old generation and replaced store objects cannot dispatch", async () => {
+  class ControlledLifecycle extends ChatRequestLifecycle {
+    advance() {
+      this.requests.get("original")!.generation += 1;
+    }
+    replace() {
+      const request = this.requests.get("original")!;
+      this.requests.set("original", { ...request });
+    }
+  }
+  for (const change of ["advance", "replace"] as const) {
+    const lifecycle = new ControlledLifecycle();
+    lifecycle.start({
+      request_id: "original",
+      tab_id: 1,
+      mode: "act",
+      prompt: "change",
+    });
+    lifecycle.startRun("original");
+    const context = lifecycle.context("original");
+    lifecycle[change]();
+    const snapshot = lifecycle.status("original", 1);
+    await expect(lifecycle.beforeDispatch(1, context)).rejects.toThrow(
+      "POLICY_DENIED",
+    );
+    expect(lifecycle.status("original", 1)).toEqual(snapshot);
+    lifecycle.endTab(1, "FAILED");
+  }
 });

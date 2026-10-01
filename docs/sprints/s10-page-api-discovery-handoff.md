@@ -10,6 +10,11 @@
 검증과 내부 read-only fixture adapter 계약을 완료했다.
 [API-01~14 / D-01~09 및 카드별 증거](../evidence/s10-page-api-closure-2026-10-01.md)를 따른다.
 
+2026-10-01 리뷰에서 MAIN probe 대기 중 Stop 이후에도 변경 호출이 실행되고,
+같은 탭의 새 요청에 이전 작업의 dispatch marker가 기록되는 P1 결함을 재현했다.
+기존 완료 증거의 Stop은 dispatch 이후 검증이며 이 경로를 포함하지 않는다.
+수정과 추가 종료 조건은 [S10-R — Completed](s10-r-page-api-request-cancellation.md)로 추적한다.
+
 S10-C5는 exact origin/path/version에 결속된 내부 `page_api_read` 계약과
 통제 Chrome fixture의 종료다. Ask/Act 자연어 요청에서 source를 자동 선택하고
 Provider에 재투입하는 연결은 S13에 남는다. 검토자 인증·외부 작업 항목,

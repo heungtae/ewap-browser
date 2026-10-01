@@ -49,11 +49,18 @@ export abstract class RequestExecution extends RequestStore {
       );
     }
   }
-  public async beforeDispatch(tabId: number): Promise<void> {
+  public async beforeDispatch(
+    tabId: number,
+    bound?: RequestContext,
+  ): Promise<void> {
+    bound?.check();
     const request = [...this.requests.values()].find(
       (r) => r.tab_id === tabId && r.state !== "TERMINAL",
     );
-    if (!request) return;
+    if (!request || (bound && request.request_id !== bound.requestId))
+      throw new ContractError("POLICY_DENIED");
+    const context = bound ?? this.context(request.request_id);
+    context.check();
     request.dispatch_started = true;
     this.progress(tabId, "DISPATCH");
     try {
@@ -68,7 +75,7 @@ export abstract class RequestExecution extends RequestStore {
       );
       throw new ContractError("STORAGE_BOUNDARY_UNAVAILABLE");
     }
-    this.context(request.request_id).check();
+    context.check();
     this.diagnostics?.stage(request.request_id, "act", "DISPATCH");
   }
   public context(id: string): RequestContext {
@@ -79,18 +86,32 @@ export abstract class RequestExecution extends RequestStore {
       controller = new AbortController();
       this.controllers.set(id, controller);
     }
+    const generation = request.generation;
+    const owner = request.owner;
     return {
       requestId: id,
+      generation,
       tabId: request.tab_id,
       ...(request.owner.includes(":")
         ? { documentEpoch: request.owner.split(":").slice(1).join(":") }
         : {}),
       signal: controller.signal,
       progress: (stage) => {
-        if (request.state !== "TERMINAL") this.progress(request.tab_id, stage);
+        if (
+          request.state !== "TERMINAL" &&
+          request.generation === generation &&
+          this.requests.get(id) === request
+        )
+          this.progress(request.tab_id, stage);
       },
       check: () => {
-        if (request.state === "TERMINAL")
+        if (
+          controller.signal.aborted ||
+          this.requests.get(id) !== request ||
+          request.generation !== generation ||
+          request.owner !== owner ||
+          request.state === "TERMINAL"
+        )
           throw new ContractError("POLICY_DENIED");
         const epoch = request.owner.split(":").slice(1).join(":");
         if (

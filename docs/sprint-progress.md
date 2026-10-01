@@ -137,6 +137,15 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     작업 항목과 실제 사이트/Platform 연동은 별도다.
     [완료 카드](sprints/s10-page-api-discovery-handoff.md),
     [API/Discovery 검증 증거](evidence/s10-page-api-closure-2026-10-01.md).
+    2026-10-01 리뷰에서 dispatch 전 Stop과 같은 탭 새 요청의 바인딩에 P1
+    결함을 재현했다. 위 완료 증거의 Stop 검증은 dispatch 이후 범위이며,
+    이 결함은 S10-R에서 수정하고 별도 증거로 검증했다.
+-   **S10-R Browser Page API 취소·요청 바인딩 보강: Completed — 2026-10-01.**
+    원래 요청 ID/generation에 dispatch를 결속하고, probe/observation/marker
+    대기 중 취소 이후 변경 호출 0건과 새 요청 상태 격리를 검증한다.
+    dispatch 이후 UNKNOWN·무재시도를 유지한다. 결합 단위와 실제 Chrome 검증이 통과했다.
+    [S10-R 검증 증거](evidence/s10-r-request-cancellation-2026-10-01.md).
+    [수정 계획과 R-01~R-07](sprints/s10-r-page-api-request-cancellation.md).
 
 기준일: 2026-09-26. 아래 2026-08-22 구현 증적은 이력이며,
 S0~S9의 현재 종료 판정은 위 최신 증거를 따른다.
