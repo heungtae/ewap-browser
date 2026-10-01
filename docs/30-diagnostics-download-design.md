@@ -99,6 +99,8 @@ LLM 진단은 탭 스레드의 lifecycle 메타데이터만 기록한다. user/a
       external_count: number;
       total_bytes: number;
       digests: string[];
+      type_counts: Partial<Record<"classic" | "module" | "json" | "other", number>>; // 실제 출현한 키만 포함
+      truncated: boolean;
     }
   },
   page: {
@@ -113,8 +115,19 @@ LLM 진단은 탭 스레드의 lifecycle 메타데이터만 기록한다. user/a
 }
 ```
 
+Worker는 digest를 43자 base64url SHA-256 형태로 검증하고, role/input/script
+통계 키를 Content의 고정 목록으로 제한한다. URL 형태는 허용된 세 필드만
+재구성한다. HTML/문서/script digest는 현재 Content의 canonical 값 해시이며,
+원문 파일의 바이트 해시로 해석하지 않는다. ZIP manifest의 파일 해시는 실제
+ZIP entry UTF-8 바이트의 SHA-256이다.
+
+request ID가 있으면 execution trace와 provider 단계는 그 요청으로 제한한다.
+ID가 없으면 바운드 탭의 보존 trace를 내보낸다. LLM memory는 같은 탭의
+thread metadata이며, dropped count는 trace 저장소의 누락 수다.
+
 ## 크기와 보존 한도
 
+- 페이지 table shape/script digest 목록은 각각 100개로 제한한다. 한도를 넘으면 page 섹션과 manifest의 page 항목을 `truncated`로 표시하고 전체 수량은 유지한다.
 - ZIP은 허용된 마스킹 후 메타데이터 전체를 저장한다. 브라우저가 ZIP 생성 또는 메모리 할당에 실패하면 해당 섹션을 `failed`로 표시하며 원문으로 대체하지 않는다.
 - 실행 trace와 LLM memory의 보존 한도는 해당 저장소가 실제로 보유한 기록의 한도이며, ZIP export에서 추가로 잘라내지 않는다.
 

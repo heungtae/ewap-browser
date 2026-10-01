@@ -4,6 +4,13 @@
 > S12는 [Browser 로컬 managed policy 경계](s12-managed-policy-boundary.md)이며,
 > 이 카드의 미검증 항목을 S12 `Completed` 근거로 사용하지 않는다.
 
+## 완료 상태 (2026-10-01)
+
+**Completed — Browser S12-C1~C6.** 계약·보안 보완과 실제 Chrome ZIP 증거는
+[완료 증거](../evidence/diagnostics-zip-closure-2026-10-01.md)를 따른다.
+Enterprise S12 managed policy와 별도 항목이다. 실제 OS 다운로드 디렉터리,
+Windows 및 live provider 검증은 이 종료 범위에 포함하지 않는다.
+
 ## 목표
 
 현재 구현된 진단 ZIP 경로를 문서 30의 계약과 대조해 남은 차이를 닫고, 오류

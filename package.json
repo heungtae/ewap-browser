@@ -12,6 +12,7 @@
     "test:e2e": "vitest run extension/tests/e2e",
     "test:chrome-extension": "node scripts/chrome-extension-smoke.mjs",
     "test:chrome-collection": "node --experimental-websocket scripts/chrome-collection-read-smoke.mjs",
+    "test:chrome-diagnostics-zip": "node --experimental-websocket scripts/chrome-diagnostics-zip-smoke.mjs",
     "test:chrome-analysis-data": "node --experimental-websocket scripts/chrome-analysis-data-smoke.mjs",
     "test:chrome-s1": "node --experimental-websocket scripts/chrome-s1-smoke.mjs",
     "test:chrome-s2": "node --experimental-websocket scripts/chrome-s2-smoke.mjs",

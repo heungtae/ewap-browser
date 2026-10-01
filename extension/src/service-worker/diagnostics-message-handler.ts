@@ -136,7 +136,16 @@ export const createDiagnosticsMessageHandler = (
         }
         const tabId = active.id;
         const diagnostics = dependencies.diagnostics;
-        const trace = diagnostics.listForTab(tabId);
+        const tabTrace = diagnostics.listForTab(tabId);
+        const trace = {
+          ...tabTrace,
+          records:
+            requestIdOpt === undefined
+              ? tabTrace.records
+              : tabTrace.records.filter(
+                  (record) => record.request_id === requestIdOpt,
+                ),
+        };
         const request =
           requestIdOpt === undefined
             ? undefined
@@ -217,7 +226,13 @@ export const createDiagnosticsMessageHandler = (
           });
           const summary = safeContentDiagnosticsSummary(page);
           if (!summary) throw new Error("INVALID_ARGUMENT");
-          sections.page = { status: "collected", data: summary };
+          sections.page = {
+            status: (summary.artifacts as { scripts: { truncated: boolean } })
+              .scripts.truncated
+              ? "truncated"
+              : "collected",
+            data: summary,
+          };
         } catch (error) {
           sections.page = {
             status: "unavailable",
@@ -250,9 +265,14 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 const finiteCount = (value: unknown): value is number =>
   typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
-const stringMap = (value: unknown): value is Record<string, number> =>
+const digest = (value: unknown): value is string =>
+  typeof value === "string" && /^[A-Za-z0-9_-]{43}$/.test(value);
+const stringMap = (
+  value: unknown,
+  keys: readonly string[],
+): value is Record<string, number> =>
   isObject(value) &&
-  Object.keys(value).length <= 100 &&
+  Object.keys(value).every((key) => keys.includes(key)) &&
   Object.values(value).every(finiteCount);
 /** Defense in depth: a provider runtime must not be able to widen bundle data. */
 const safeProviderDiagnostics = (value: unknown): Record<string, unknown> => {
@@ -323,8 +343,8 @@ const safeContentDiagnosticsSummary = (
   const scripts = artifacts.scripts;
   if (
     !(
-      typeof value.document_epoch_digest === "string" &&
-      typeof value.page_scope_epoch_digest === "string" &&
+      digest(value.document_epoch_digest) &&
+      digest(value.page_scope_epoch_digest) &&
       ["loading", "interactive", "complete"].includes(
         String(document.ready_state),
       ) &&
@@ -332,8 +352,29 @@ const safeContentDiagnosticsSummary = (
       finiteCount(document.table_count) &&
       finiteCount(document.list_count) &&
       finiteCount(document.form_count) &&
-      stringMap(document.role_counts) &&
-      stringMap(document.input_counts) &&
+      stringMap(document.role_counts, [
+        "button",
+        "checkbox",
+        "combobox",
+        "dialog",
+        "grid",
+        "heading",
+        "link",
+        "list",
+        "listitem",
+        "menu",
+        "option",
+        "row",
+        "table",
+        "tab",
+        "textbox",
+      ]) &&
+      stringMap(document.input_counts, [
+        "input",
+        "textarea",
+        "select",
+        "button",
+      ]) &&
       Array.isArray(tables) &&
       tables.length <= 100 &&
       tables.every(
@@ -343,15 +384,15 @@ const safeContentDiagnosticsSummary = (
           finiteCount(table.columns),
       ) &&
       finiteCount(artifacts.html.bytes) &&
-      typeof artifacts.html.sha256 === "string" &&
+      digest(artifacts.html.sha256) &&
       finiteCount(scripts.total) &&
       finiteCount(scripts.inline_count) &&
       finiteCount(scripts.external_count) &&
       finiteCount(scripts.total_bytes) &&
       Array.isArray(scripts.digests) &&
       scripts.digests.length <= 100 &&
-      scripts.digests.every((digest) => typeof digest === "string") &&
-      stringMap(scripts.type_counts) &&
+      scripts.digests.every(digest) &&
+      stringMap(scripts.type_counts, ["module", "json", "other", "classic"]) &&
       typeof scripts.truncated === "boolean" &&
       isObject(page.url_shape) &&
       typeof page.url_shape.has_query === "boolean" &&
@@ -392,7 +433,11 @@ const safeContentDiagnosticsSummary = (
       },
     },
     page: {
-      url_shape: page.url_shape,
+      url_shape: {
+        has_query: page.url_shape.has_query,
+        has_fragment: page.url_shape.has_fragment,
+        path_segment_count: page.url_shape.path_segment_count,
+      },
       title_length: page.title_length,
       referrer_present: page.referrer_present,
     },

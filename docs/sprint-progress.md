@@ -106,6 +106,13 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     전체 unit 및 extension build도 통과했다. 외부 live provider 동작은 완료
     범위에 포함하지 않는다. [완료 증거](evidence/s6-r-closure-2026-10-01.md),
     세부 계약과 CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
+-   Browser Diagnostics ZIP (기존 S12-C1~C6): Completed — 요청별 trace,
+    closed page metadata와 truncation 표시를 보완했다. 실제 Chrome Side Panel의
+    오류 카드/하단 버튼, 25×6 표, Provider 실패, navigation, Worker 재시작,
+    요청 ID 누락과 섹션 실패에서 ZIP 생성·CRC·manifest SHA-256·원문 비노출을
+    확인했다. OS 다운로드 경로와 live provider는 완료 범위 밖이다.
+    [완료 증거](evidence/diagnostics-zip-closure-2026-10-01.md),
+    [완료 카드](sprints/s12-diagnostics-download-bundle.md).
 -   S13 Ask/Act Analysis Data (Browser slice): In Progress — collection selection /
     permission resume와 selected-source context reinjection은 S6-R 증거에 포함한다.
     S13의 나머지 Browser/browser-provider 범위는 이 S6-R 종료 판정과 분리한다.
