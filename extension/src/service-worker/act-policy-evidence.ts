@@ -13,7 +13,7 @@ import type { ActSession } from "./act-session-types.js";
 type Dependencies = {
   session: ActSession;
   run: Run;
-  capability: Exclude<Capability, "collection_read">;
+  capability: Exclude<Capability, "collection_read" | "page_api_read">;
   risk: Risk;
   authorizeEnterprise(
     request: EnterprisePolicyRequest,

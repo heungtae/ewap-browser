@@ -6,6 +6,7 @@ import { createServer } from "node:https";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
+import { checkS10Discovery } from "./chrome-s10-discovery-check.mjs";
 import { openAnalysisPanel } from "./chrome-analysis-panel.mjs";
 import { cdp, evaluate, reservePort, waitFor } from "./chrome-cdp-utils.mjs";
 
@@ -20,8 +21,10 @@ const certificateDirectory = await mkdtemp(
 const profile = await mkdtemp(
   join(tmpdir(), "contextpilot-discovery-profile-"),
 );
+const fixtureRequests = [];
 let fixture;
 let child;
+let chromeError = "";
 try {
   await run("openssl", [
     "req",
@@ -47,6 +50,7 @@ try {
       cert: await readFile(join(certificateDirectory, "cert.pem")),
     },
     (request, response) => {
+      fixtureRequests.push(request.url);
       const body = request.url === "/external-fixture.js" ? external : html;
       response.writeHead(200, {
         "content-type":
@@ -69,8 +73,14 @@ try {
   child = spawn(
     executable,
     [
-      "--headless=new",
+      "--disable-dev-shm-usage",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
       "--no-sandbox",
+      "--ozone-platform=x11",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
       "--disable-gpu",
       "--ignore-certificate-errors",
       "--host-resolver-rules=MAP page-api-discovery.fixture.test 127.0.0.1",
@@ -80,22 +90,37 @@ try {
       `--remote-debugging-port=${cdpPort}`,
       "about:blank",
     ],
-    { stdio: "ignore" },
+    { stdio: ["ignore", "ignore", "pipe"] },
   );
+  child.stderr.on("data", (chunk) => {
+    chromeError = (chromeError + chunk.toString()).slice(-2000);
+  });
   const version = await waitFor(
     () =>
       fetch(`http://127.0.0.1:${cdpPort}/json/version`)
         .then((r) => r.json())
         .catch(() => undefined),
-    10_000,
+    90_000,
     "Chrome for Testing did not open CDP",
-  );
+  ).catch((error) => {
+    throw new Error(error.message + chromeError);
+  });
   const fixtureTarget = await cdp(
     version.webSocketDebuggerUrl,
     "Target.createTarget",
     {
       url: `https://page-api-discovery.fixture.test:${fixturePort}/`,
     },
+  );
+  const page = await waitFor(
+    async () => {
+      const targets = await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then(
+        (r) => r.json(),
+      );
+      return targets.find((target) => target.id === fixtureTarget.targetId);
+    },
+    10000,
+    "Discovery page target absent",
   );
   const worker = await waitFor(
     async () => {
@@ -166,7 +191,7 @@ try {
   )
     throw new Error(`Discovery labels were not redacted: ${serialized}`);
   await evaluate(
-    fixtureTarget,
+    page,
     "document.querySelector('#add-oversized-script').click()",
   );
   const second = await discover();
@@ -177,6 +202,15 @@ try {
     throw new Error(
       `Discovery truncation was not preserved: ${JSON.stringify(second)}`,
     );
+  await checkS10Discovery({
+    panel,
+    panelWindowId,
+    page,
+    worker,
+    version,
+    cdpPort,
+    fixtureRequests,
+  });
   console.log(
     "Chrome Page API Discovery passed: real Side Panel, redacted hints, no invocation, truncation",
   );

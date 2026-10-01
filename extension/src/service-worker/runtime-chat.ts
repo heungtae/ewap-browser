@@ -206,7 +206,11 @@ const proposalExecutor = createActProposalExecutor({
       !document ||
       !scope ||
       active.origin !== session.origin ||
-      active.snapshot.document_epoch !== run.documentEpoch
+      active.snapshot.document_epoch !== run.documentEpoch ||
+      session.pageApiScope?.origin !== active.origin ||
+      session.pageApiScope.path !== active.path ||
+      session.pageApiScope.document_epoch !== run.documentEpoch ||
+      session.pageApiScope.page_scope_epoch !== scope.page_scope_epoch
     )
       return { ok: false, outcome: "FAILED", code: "PAGE_SCOPE_STALE" };
     const intent: PageApiIntent = {

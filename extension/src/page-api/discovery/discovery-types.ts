@@ -61,7 +61,11 @@ export const isMainDiscoveryResult = (
 ): value is MainDiscoveryResult => {
   if (typeof value !== "object" || value === null) return false;
   const record = value as { hints?: unknown; truncated?: unknown };
-  if (!Array.isArray(record.hints) || typeof record.truncated !== "boolean")
+  if (
+    !Array.isArray(record.hints) ||
+    record.hints.length > 96 ||
+    typeof record.truncated !== "boolean"
+  )
     return false;
   return record.hints.every((hint) => {
     if (typeof hint !== "object" || hint === null) return false;

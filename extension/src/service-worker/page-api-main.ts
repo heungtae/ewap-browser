@@ -10,7 +10,11 @@ export const invokeFixturePageApi = async (
   optionId: string,
 ): Promise<MainPageApiResult> => {
   try {
-    if (adapterId !== "fixture_variant" || actionId !== "select_variant")
+    if (
+      adapterId !== "fixture_variant" ||
+      actionId !== "select_variant" ||
+      !["low", "medium", "high"].includes(optionId)
+    )
       return "invalid";
     const page = globalThis as {
       location?: Location;
@@ -28,6 +32,29 @@ export const invokeFixturePageApi = async (
     return "called";
   } catch {
     return "failed";
+  }
+};
+
+/** Read-only existence/version probe. Accessors are not a public API contract. */
+export const probeFixturePageApi = (): boolean => {
+  try {
+    if (
+      location.origin !== "https://page-api-fixture.invalid" ||
+      location.pathname !== "/variant"
+    )
+      return false;
+    const api = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "demoControls",
+    )?.value;
+    return (
+      !!api &&
+      Object.getOwnPropertyDescriptor(api, "apiVersion")?.value === 1 &&
+      typeof Object.getOwnPropertyDescriptor(api, "selectVariant")?.value ===
+        "function"
+    );
+  } catch {
+    return false;
   }
 };
 

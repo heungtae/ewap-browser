@@ -6,6 +6,7 @@ import type {
 import { pageApiRegistry, type PageApiRegistry } from "../page-api/registry.js";
 import {
   invokeFixturePageApi,
+  probeFixturePageApi,
   mainPageApiResult,
   pageApiApprovalDigest,
   pageApiCompletionDigest,
@@ -74,6 +75,18 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
     intent: PageApiIntent,
     path: string,
   ): Promise<PageApiDispatchResult> => {
+    if (
+      intent.kind !== "page_api" ||
+      intent.capability !== "page_api" ||
+      intent.frame_id !== 0 ||
+      !Number.isSafeInteger(intent.tab_id) ||
+      intent.tab_id < 0
+    )
+      return {
+        ok: false,
+        outcome: "FAILED",
+        code: "PAGE_API_CONTRACT_INVALID",
+      };
     const key = `${intent.run_id}:${intent.adapter_id}:${intent.action_id}`;
     if (inFlight.has(key) || consumed.has(key))
       return { ok: false, outcome: "FAILED", code: "POLICY_DENIED" };
@@ -98,7 +111,11 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
       completion_digest: pageApiCompletionDigest(found.action.completion),
       capability: "page_api",
     });
-    if (intent.approval_digest !== expectedDigest)
+    if (
+      intent.approval_digest !== expectedDigest ||
+      intent.completion_digest !==
+        pageApiCompletionDigest(found.action.completion)
+    )
       return {
         ok: false,
         outcome: "FAILED",
@@ -125,17 +142,50 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
       };
     const started = now();
     const remaining = () => Math.max(0, 15_000 - (now() - started));
-    mark(intent, "PAGE_API_PREPARING");
-    const before = await dependencies
-      .observe(intent, optionName, found.action.completion, remaining())
-      .catch(() => "invalid" as const);
-    if (before === "satisfied")
-      return { ok: true, outcome: "ALREADY_SATISFIED" };
-    if (before !== "pending" || remaining() === 0)
-      return { ok: false, outcome: "FAILED", code: "PAGE_API_UNAVAILABLE" };
     inFlight.add(key);
     let dispatched = false;
     try {
+      mark(intent, "PAGE_API_PREPARING");
+      const probe = await withDeadline(
+        dependencies.scripting.executeScript({
+          target: { tabId: intent.tab_id, documentIds: [intent.document_id] },
+          world: "MAIN",
+          func: probeFixturePageApi as never,
+          args: [],
+        }),
+        Math.min(5_000, remaining()),
+        "PAGE_API_TIMEOUT",
+      );
+      if (
+        probe.length !== 1 ||
+        probe[0]?.frameId !== 0 ||
+        probe[0].documentId !== intent.document_id ||
+        probe[0].result !== true
+      )
+        return { ok: false, outcome: "FAILED", code: "PAGE_API_UNAVAILABLE" };
+      const before = await withDeadline(
+        dependencies.observe(
+          intent,
+          optionName,
+          found.action.completion,
+          remaining(),
+        ),
+        remaining(),
+        "PAGE_API_TIMEOUT",
+      );
+      const observedDocument = dependencies.documentFor(intent.tab_id, 0);
+      const observedScope = dependencies.scope(intent.tab_id);
+      if (
+        observedDocument?.documentId !== intent.document_id ||
+        observedDocument.epoch !== intent.document_epoch ||
+        observedScope?.document_epoch !== intent.document_epoch ||
+        observedScope.page_scope_epoch !== intent.page_scope_epoch
+      )
+        return { ok: false, outcome: "FAILED", code: "PAGE_SCOPE_STALE" };
+      if (before === "satisfied")
+        return { ok: true, outcome: "ALREADY_SATISFIED" };
+      if (before !== "pending" || remaining() === 0)
+        return { ok: false, outcome: "FAILED", code: "PAGE_API_UNAVAILABLE" };
       await dependencies.beforeDispatch(intent.tab_id);
       const current = dependencies.documentFor(intent.tab_id, 0);
       const currentScope = dependencies.scope(intent.tab_id);
@@ -144,6 +194,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         current.epoch !== intent.document_epoch ||
         current.documentId !== intent.document_id ||
         !currentScope ||
+        currentScope.document_epoch !== intent.document_epoch ||
         currentScope.page_scope_epoch !== intent.page_scope_epoch
       )
         return { ok: false, outcome: "FAILED", code: "PAGE_SCOPE_STALE" };
@@ -171,16 +222,32 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
       if (returned !== "called")
         return {
           ok: false,
-          outcome: returned === "unavailable" ? "UNKNOWN" : "UNKNOWN",
+          outcome: "UNKNOWN",
           code:
-            returned === "invalid"
+            returned === "invalid" || returned === undefined
               ? "PAGE_API_CONTRACT_INVALID"
               : "PAGE_API_CALL_FAILED",
         };
       mark(intent, "VERIFYING_RESULT");
-      const after = await dependencies
-        .observe(intent, optionName, found.action.completion, remaining())
-        .catch(() => "invalid" as const);
+      const after = await withDeadline(
+        dependencies.observe(
+          intent,
+          optionName,
+          found.action.completion,
+          remaining(),
+        ),
+        remaining(),
+        "PAGE_API_TIMEOUT",
+      );
+      const finalDocument = dependencies.documentFor(intent.tab_id, 0);
+      const finalScope = dependencies.scope(intent.tab_id);
+      if (
+        finalDocument?.documentId !== intent.document_id ||
+        finalDocument.epoch !== intent.document_epoch ||
+        finalScope?.document_epoch !== intent.document_epoch ||
+        finalScope.page_scope_epoch !== intent.page_scope_epoch
+      )
+        return { ok: false, outcome: "UNKNOWN", code: "PAGE_SCOPE_STALE" };
       return after === "satisfied"
         ? { ok: true, outcome: "VERIFIED" }
         : { ok: false, outcome: "UNKNOWN", code: "POSTCONDITION_UNVERIFIED" };

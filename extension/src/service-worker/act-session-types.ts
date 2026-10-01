@@ -48,6 +48,7 @@ export type ActSession = {
   definitions: readonly ProfileActionTool[];
   profileDefinitions: readonly ProfileActionTool[];
   pageApiActions?: readonly PageApiActionRef[];
+  pageApiScope?: PageScope;
   workflow?: {
     declaration: WorkflowDeclaration;
     step: WorkflowStep;

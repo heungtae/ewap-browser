@@ -544,9 +544,11 @@ const projectionNodes = (
             ...(element instanceof HTMLSelectElement
               ? { selected: element.selectedIndex >= 0 }
               : {}),
-            ...(element.hasAttribute("aria-selected")
-              ? { selected: element.getAttribute("aria-selected") === "true" }
-              : {}),
+            ...(element instanceof HTMLOptionElement
+              ? { selected: element.selected }
+              : element.hasAttribute("aria-selected")
+                ? { selected: element.getAttribute("aria-selected") === "true" }
+                : {}),
             ...(element.hasAttribute("aria-expanded")
               ? { expanded: element.getAttribute("aria-expanded") === "true" }
               : {}),
@@ -749,9 +751,11 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       ...(element instanceof HTMLSelectElement
         ? { selected: element.selectedIndex >= 0 }
         : {}),
-      ...(element.hasAttribute("aria-selected")
-        ? { selected: element.getAttribute("aria-selected") === "true" }
-        : {}),
+      ...(element instanceof HTMLOptionElement
+        ? { selected: element.selected }
+        : element.hasAttribute("aria-selected")
+          ? { selected: element.getAttribute("aria-selected") === "true" }
+          : {}),
       ...(element.hasAttribute("aria-expanded")
         ? { expanded: element.getAttribute("aria-expanded") === "true" }
         : {}),

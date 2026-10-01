@@ -1,8 +1,19 @@
-# Page API 실행·Discovery 검증 및 Adapter Handoff — 기존 Browser 계획
+# Browser S10 — Page API 실행·Discovery 검증 및 Adapter Handoff
 
 현재 Sprint 원장의 S10은 [Browser 로컬 Profile 수락](s10-profile-runtime.md)을
 뜻한다. 이 문서의 S10-C1~C5 표기는 이전 Browser 작업 카드 이름으로
 보존하며 현재 S10 완료 조건으로 해석하지 않는다.
+
+## 완료 상태 (2026-10-01)
+
+**Completed — Browser S10-C1~C5.** 실제 Side Panel의 Page API 실행·Discovery
+검증과 내부 read-only fixture adapter 계약을 완료했다.
+[API-01~14 / D-01~09 및 카드별 증거](../evidence/s10-page-api-closure-2026-10-01.md)를 따른다.
+
+S10-C5는 exact origin/path/version에 결속된 내부 `page_api_read` 계약과
+통제 Chrome fixture의 종료다. Ask/Act 자연어 요청에서 source를 자동 선택하고
+Provider에 재투입하는 연결은 S13에 남는다. 검토자 인증·외부 작업 항목,
+실제 사이트 adapter 및 live provider/Platform 배포는 이 완료 범위 밖이다.
 
 ## 목표
 
@@ -36,7 +47,7 @@ adapter로 인계할 수 있는 상태를 완성한다.
 | S10-C4 | Profile Builder handoff    | 후보는 review-needed로만 표시되고 실행 경로에 유입되지 않음 |
 | S10-C5 | read-only adapter contract | `page_api_read`의 binding, cap, schema, no-retry 검증       |
 
-## 구현 상태 (2026-09-23)
+## 이전 구현 상태 (2026-09-23, 이력)
 
 - S10-C3의 통제 Chrome runner를 추가했다. 실제 Side Panel에서 fixed MAIN
   scanner를 실행해 public-function/inline-endpoint hint가 redacted label로만

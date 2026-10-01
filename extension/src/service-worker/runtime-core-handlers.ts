@@ -1,3 +1,4 @@
+import { isErrorCode } from "../contracts/error-codes.js";
 import { validateAgentPreferences } from "../policy/permission-mode.js";
 import { ContractError } from "../security/validation.js";
 import { withDeadline } from "../security/deadline.js";
@@ -67,8 +68,8 @@ chatRequests.onTerminal = (tabId, outcome, code, requestId) => {
   for (const [id, selection] of workflowSelections.values)
     if (selection.tabId === tabId) workflowSelections.values.delete(id);
 };
-chatRunLifecycle.setTerminalObserver((tabId, outcome) =>
-  chatRequests.endTab(tabId, outcome),
+chatRunLifecycle.setTerminalObserver((tabId, outcome, code) =>
+  chatRequests.endTab(tabId, outcome, isErrorCode(code) ? code : undefined),
 );
 chatRunLifecycle.setActivityObserver((tabId, stage) => {
   if (

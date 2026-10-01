@@ -1,9 +1,9 @@
 # 27. 페이지 내부 함수·공개 API 실행 설계
 
 - 작성일: 2026-09-16
-- 상태: Action path implemented (자동 검증 완료) / 실제 Chrome fixture 증거 대기; read-only analysis adapter는 Proposed
+- 상태: Browser S10 action/Discovery 및 내부 read-only fixture adapter 계약 Completed — [2026-10-01 증거](evidence/s10-page-api-closure-2026-10-01.md). Ask/Act의 자동 Page API 분석 source 선택·재투입은 S13 후속 범위다.
 - 구현 인계 대상: GPT-5.6 Terra
-- 범위: Browser 로컬 구현. 이번 변경은 설계 문서만 추가한다.
+- 범위: Browser 로컬 실행·Discovery 및 내부 read-only fixture adapter 계약. 현재 완료 범위와 검증 한계는 2026-10-01 증거를 따른다.
 - 관련: [완료 조건](25-act-completion-conditions.md), [결과 관측](26-act-result-observation-design.md), [Profile 계약](22-page-profile-provider-design.md), [bounded CDP](15-bounded-cdp-adapter.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask/Act 분석 데이터 수집](32-ask-act-analysis-data-acquisition-design.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
 ## 1. 목표와 현재 상태
@@ -51,7 +51,7 @@ registry가 exact origin과 경로를 확인한 다음에만 probe한다. 지원
 
 invoke는 고정 property 접근으로 receiver를 보존해 호출한다. 예: `const api = window.demoControls; api.selectVariant(args.option_id)`. dot-path 문자열을 순회하지 않는다. 페이지 getter나 함수가 임의 코드일 수 있다는 점은 MAIN trust boundary로 취급한다.
 
-### 3.1 Read-only Page API data adapter — Proposed
+### 3.1 Read-only Page API data adapter — 내부 fixture 계약 구현 / 분석 source 연결 Proposed
 
 [29번 Discovery](29-page-api-discovery-design.md)가 발견한 source hint는 호출 가능한 adapter가 아니다. Ask/Act의 페이지 데이터 분석에서 Page API를 사용하려면, 별도 코드리뷰와 bundle 배포를 거친 read-only adapter가 [32번 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)의 4.3 `page_api_read` source로 등록돼야 한다. 현재 31번 Act와 33번 Ask에는 이 분석 source 연결이 없으므로, 이 절은 목표 계약이다.
 
@@ -68,6 +68,22 @@ invoke는 고정 property 접근으로 receiver를 보존해 호출한다. 예: 
 read-only adapter 결과는 같은 Ask/Act request의 4.4 정규화 이후 5.x ephemeral analysis context로만 전달된다. Ask는 coverage를 밝힌 분석 답변으로 끝내고, Act는 그 분석 뒤에도 별도 action proposal·approval·preflight·completion verification을 거쳐야 한다. read 성공은 action approval, Page API action dispatch 또는 server-side 완료의 근거가 아니다.
 
 현재 구현 경계는 다음과 같다. Page API action은 Act의 별도 action proposal·승인·dispatch·postcondition 경로에만 연결되어 있다. Ask의 일반 read tool과 현재 Act action 경로는 `page_api_read`를 자동 발견·호출하지 않으며, 29번 discovery candidate도 callable source가 아니다. 자연어 분석 요청에서 이 adapter를 사용하려면 32번 4.1~4.4와 Act의 `QUESTION`/`ANALYSIS_READ_REQUIRED`/`ACTION_REQUIRED` route 연결이 먼저 구현되어야 한다.
+
+#### 3.2 Browser S10 내부 read 계약 (2026-10-01)
+
+`page-api/read-adapter.ts`의 `fixture_summary` v1은
+`https://page-api-fixture.invalid/variant`와 `summary` enum만 수락한다.
+`page-api-read-runner.ts`는 별도 `page_api_read` R0 권한, 실제 Chrome
+문서와 page scope, 5초 총 deadline 및 consumed binding을 검증한다.
+MAIN/Worker의 closed result는 `{records:[{category,count}],total,eof}`이며
+최대 200행·category 160자·32 KiB UTF-8로 제한한다. 분석 context는 100행
+이하이며 절단 시 `partial/truncated`로 낮춘다. cursor·credential·임의
+추가 필드·Discovery ref는 수락하지 않는다.
+
+`runtime-page-api-read.ts`의 내부 진입점은 RequestContext와 로컬/enterprise
+권한을 교차 검증한다. 현재 Ask/Act의 source 선택·승인 재개에서 이 진입점을
+호출하는 연결은 S13 후속이며, S10 검증은 별도 통제 Chrome test module로
+실제 scripting/document binding과 read runner/schema를 실행했다.
 
 ## 4. 모델·승인·정책 계약
 
@@ -155,6 +171,17 @@ v1 fixture는 접근 가능한 선택 컨트롤에서 `option_id`에 대응하�
 - dispatch 전 marker 저장, 동일 run/action의 in-flight·consumed 억제, 15초 총 예산/5초 MAIN 응답 예산, ISOLATED semantic snapshot 기반의 independent completion observer를 연결했다.
 - `pnpm typecheck`, 68개 unit test file/231 tests, `pnpm test:fixture`, `pnpm test:e2e`, package validation과 build (`0.1.61`)를 통과했다. 전체 `pnpm lint`의 Prettier 단계는 이번 변경과 무관한 기존 3개 파일 형식 문제로 실패했으며 ESLint 자체는 통과했다. `check:module-boundaries`는 통과했고 `check:source-size`는 기존 전역 초과 목록 때문에 실패하지 않도록 새 page-api source는 모두 200줄 이하로 유지했다.
 - 실제 Chrome에서 로드한 fixture의 승인→UI 증거는 아직 수행하지 않았다. 따라서 API-01~14 전체 완료 및 Chrome-ready 주장에는 이 증거가 추가로 필요하다.
+
+### 9.2 Browser S10 종료 증거 (2026-10-01)
+
+[완료 증거](evidence/s10-page-api-closure-2026-10-01.md)에 API-01~14와
+D-01~09의 unit/실제 Chrome matrix 및 기존 DOM/CDP·Act 회귀를 연결했다.
+API 사전 probe, 승인 시점 scope 고정, in-flight 중복 억제와 최종 scope
+재검사를 보완했다. native option의 실제 선택 상태를 projection과 state
+읽기에 반영하고, 완료 관측은 owning control의 해당 option만 인정한다.
+terminal 오류 코드는 Chat request/diagnostics까지 보존한다.
+
+아래 시작 프롬프트와 9.1의 Chrome 대기 문구는 이전 구현 이력이다.
 
 Terra 시작 프롬프트:
 

@@ -36,7 +36,7 @@ type Dependencies = {
 
 const capabilityFor = (
   proposal: ParsedActProposal,
-): Exclude<Capability, "collection_read"> =>
+): Exclude<Capability, "collection_read" | "page_api_read"> =>
   proposal.tool === "navigate"
     ? "navigate"
     : proposal.tool === "set_checked_by_ref" ||

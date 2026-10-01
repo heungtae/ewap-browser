@@ -63,3 +63,72 @@ describe("page API discovery controller", () => {
     });
   });
 });
+
+it.each([
+  "cancel",
+  "scope",
+  "wrong-frame",
+  "wrong-document",
+  "oversized",
+  "error",
+  "timeout",
+])("Discovery drops candidates at %s boundary", async (scenario) => {
+  vi.useFakeTimers();
+  try {
+    const scope = { document_epoch: "epoch", page_scope_epoch: "scope" };
+    let release!: (
+      value: { frameId: number; documentId: string; result: unknown }[],
+    ) => void;
+    const script = vi.fn(
+      () =>
+        new Promise<{ frameId: number; documentId: string; result: unknown }[]>(
+          (resolve) => {
+            release = resolve;
+          },
+        ),
+    );
+    const controller = createDiscoveryController({
+      scripting: { executeScript: script },
+      documentFor: () => ({ epoch: "epoch", documentId: "document-id" }),
+      scopeFor: () => scope,
+    });
+    const pending = controller.start(context);
+    if (scenario === "cancel") controller.cancel(context.tabId);
+    if (scenario === "scope") scope.page_scope_epoch = "changed";
+    if (scenario === "timeout") await vi.advanceTimersByTimeAsync(301);
+    release([
+      {
+        frameId: scenario === "wrong-frame" ? 1 : 0,
+        documentId: scenario === "wrong-document" ? "other" : "document-id",
+        result:
+          scenario === "error"
+            ? { error: "raw secret" }
+            : {
+                hints:
+                  scenario === "oversized"
+                    ? Array.from({ length: 97 }, () => ({
+                        kind: "script_endpoint_hint",
+                        confidence: "low",
+                        evidence: [],
+                        limitations: [],
+                      }))
+                    : [],
+                truncated: false,
+              },
+      },
+    ]);
+    const result = await pending;
+    expect(result.candidates).toEqual([]);
+    expect(result.terminal).toBe(
+      scenario === "cancel"
+        ? "CANCELLED"
+        : scenario === "scope"
+          ? "STALE"
+          : "MAIN_UNRESPONSIVE",
+    );
+    expect(JSON.stringify(result)).not.toContain("raw secret");
+    expect(script).toHaveBeenCalledOnce();
+  } finally {
+    vi.useRealTimers();
+  }
+});

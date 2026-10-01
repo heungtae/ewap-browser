@@ -1,7 +1,7 @@
 # 29. Page API Discovery 설계
 
 - 작성일: 2026-09-19
-- 상태: Partial implementation — fixed scanner, document-bound controller, ephemeral candidate result와 별도 Browser 검토 dialog가 구현됐다. Ask/Act 분석 데이터 source discovery 연결과 reviewed read-only adapter를 통한 data read는 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed다. 실제 검토자 인증/외부 작업 항목 생성 및 전체 unpacked Chrome fixture 검증은 별도다.
+- 상태: Browser S10 fixed scanner·document-bound controller·ephemeral review surface의 자동/Chrome 검증 Completed — [종료 증거](evidence/s10-page-api-closure-2026-10-01.md). 내부 read-only fixture 계약도 검증했으며, Ask/Act 분석 source 연결은 S13 후속이다. 실제 검토자 인증·외부 작업 항목·실제 사이트 지원은 별도다.
 - 구현 인계 대상: Browser extension
 - 범위: Browser 로컬 구현. `page-api/` 번들 레지스트리에 추가할 후보를 사람이 검토하기 위한 **발견 증거**만 정의한다.
 - 관련: [페이지 내부 함수·공개 API 실행 설계](27-page-api-execution-design.md), [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md), [객체 특성별 Collection Reading 설계](28-collection-reading-strategy-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md)

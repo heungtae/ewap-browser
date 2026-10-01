@@ -19,16 +19,22 @@ export const createPageApiObserver =
     const snapshot = await read(intent.tab_id, remainingMs);
     if (
       snapshot.document_epoch !== intent.document_epoch ||
-      snapshot.frame_id !== 0
+      snapshot.frame_id !== 0 ||
+      snapshot.truncated === true
     )
       return "invalid";
     const controls = snapshot.nodes.filter(
       (node) =>
         (node.role === "combobox" || node.role === "listbox") &&
-        node.name === completion.control_name,
+        node.name === completion.control_name &&
+        node.visible &&
+        node.enabled,
     );
     const options = snapshot.nodes.filter(
-      (node) => node.role === "option" && node.name === optionName,
+      (node) =>
+        node.role === "option" &&
+        node.name === optionName &&
+        node.parent_ref_id === controls[0]?.ref_id,
     );
     if (controls.length !== 1 || options.length !== 1) return "invalid";
     return options[0]?.state.selected === true ? "satisfied" : "pending";

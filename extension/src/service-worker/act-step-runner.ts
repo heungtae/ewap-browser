@@ -109,6 +109,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       });
       if (!session.pageApiActions) {
         const adapter = pageApiRegistry.find(active.origin, active.path);
+        session.pageApiScope = dependencies.pageScope(active);
         session.pageApiActions = adapter
           ? adapter.actions.map(
               (action): PageApiActionRef => ({

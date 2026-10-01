@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import type { PageApiIntent } from "../../../src/contracts/page-api-types.js";
 import {
   createPageApiRunner,
@@ -31,109 +31,217 @@ const base = (): PageApiIntent => {
     approval_digest: pageApiApprovalDigest(unsigned),
   };
 };
-
-describe("page API runner", () => {
-  it("uses one document-pinned MAIN dispatch then independent UI observation", async () => {
-    const calls: unknown[] = [];
-    const runner = createPageApiRunner({
-      scripting: {
-        executeScript: async (call) => {
-          calls.push(call);
-          return [
-            {
-              frameId: 0,
-              documentId: "document-abcdefghijkl",
-              result: "called",
-            },
-          ];
-        },
-      },
-      beforeDispatch: async () => undefined,
-      documentFor: () => ({
-        epoch: "epoch-abcdefghijklmnop",
-        documentId: "document-abcdefghijkl",
-      }),
-      scope: () => ({
-        document_epoch: "epoch-abcdefghijklmnop",
-        page_scope_epoch: "scope-abcdefghijklmnop",
-      }),
-      observe: async () => (calls.length === 0 ? "pending" : "satisfied"),
-    });
-    await expect(runner.execute(base(), "/variant")).resolves.toEqual({
-      ok: true,
-      outcome: "VERIFIED",
-    });
-    expect(calls).toHaveLength(1);
-    expect(calls[0]).toMatchObject({
-      world: "MAIN",
-      target: { tabId: 1, documentIds: ["document-abcdefghijkl"] },
-      args: ["fixture_variant", "select_variant", "high"],
-    });
+const setup = () => {
+  const intent = base();
+  const scope = {
+    document_epoch: intent.document_epoch,
+    page_scope_epoch: intent.page_scope_epoch,
+  };
+  const document = {
+    epoch: intent.document_epoch,
+    documentId: intent.document_id,
+  };
+  const executeScript = vi.fn(async (call: { args: unknown[] }) => [
+    {
+      frameId: 0,
+      documentId: document.documentId,
+      result: call.args.length ? "called" : true,
+    },
+  ]);
+  const observe = vi.fn(async () =>
+    executeScript.mock.calls.length > 1
+      ? ("satisfied" as const)
+      : ("pending" as const),
+  );
+  const beforeDispatch = vi.fn(async () => undefined);
+  const runner = createPageApiRunner({
+    scripting: { executeScript },
+    beforeDispatch,
+    documentFor: () => document,
+    scope: () => scope,
+    observe,
   });
+  return {
+    intent,
+    scope,
+    document,
+    executeScript,
+    observe,
+    beforeDispatch,
+    runner,
+  };
+};
+afterEach(() => vi.useRealTimers());
 
-  it("does_not_call_the_page_when_the_control_is_already_satisfied", async () => {
-    let calls = 0;
-    const runner = createPageApiRunner({
-      scripting: {
-        executeScript: async () => {
-          calls += 1;
-          return [];
-        },
-      },
-      beforeDispatch: async () => undefined,
-      documentFor: () => ({
-        epoch: "epoch-abcdefghijklmnop",
-        documentId: "document-abcdefghijkl",
-      }),
-      scope: () => ({
-        document_epoch: "epoch-abcdefghijklmnop",
-        page_scope_epoch: "scope-abcdefghijklmnop",
-      }),
-      observe: async () => "satisfied",
-    });
-    await expect(runner.execute(base(), "/variant")).resolves.toEqual({
-      ok: true,
-      outcome: "ALREADY_SATISFIED",
-    });
-    expect(calls).toBe(0);
+it("API-01 pins probe and dispatch to MAIN document then verifies independently", async () => {
+  const s = setup();
+  expect(await s.runner.execute(s.intent, "/variant")).toEqual({
+    ok: true,
+    outcome: "VERIFIED",
   });
-
-  it("treats an unverified dispatched call as unknown and never redispatches it", async () => {
-    let calls = 0;
-    const runner = createPageApiRunner({
-      scripting: {
-        executeScript: async () => {
-          calls += 1;
-          return [
-            {
-              frameId: 0,
-              documentId: "document-abcdefghijkl",
-              result: "called",
-            },
-          ];
-        },
-      },
-      beforeDispatch: async () => undefined,
-      documentFor: () => ({
-        epoch: "epoch-abcdefghijklmnop",
-        documentId: "document-abcdefghijkl",
-      }),
-      scope: () => ({
-        document_epoch: "epoch-abcdefghijklmnop",
-        page_scope_epoch: "scope-abcdefghijklmnop",
-      }),
-      observe: async () => "pending",
-    });
-    await expect(runner.execute(base(), "/variant")).resolves.toEqual({
-      ok: false,
-      outcome: "UNKNOWN",
-      code: "POSTCONDITION_UNVERIFIED",
-    });
-    await expect(runner.execute(base(), "/variant")).resolves.toEqual({
-      ok: false,
+  expect(s.executeScript).toHaveBeenCalledTimes(2);
+  expect(s.beforeDispatch).toHaveBeenCalledOnce();
+  expect(s.executeScript.mock.calls[1]![0]).toMatchObject({
+    world: "MAIN",
+    target: { tabId: 1, documentIds: [s.intent.document_id] },
+    args: ["fixture_variant", "select_variant", "high"],
+  });
+});
+it("API-02 already satisfied never invokes or writes a dispatch marker", async () => {
+  const s = setup();
+  s.observe.mockResolvedValue("satisfied");
+  expect(await s.runner.execute(s.intent, "/variant")).toEqual({
+    ok: true,
+    outcome: "ALREADY_SATISFIED",
+  });
+  expect(s.executeScript).toHaveBeenCalledOnce();
+  expect(s.beforeDispatch).not.toHaveBeenCalled();
+});
+it.each([false, "page secret", { ok: true }])(
+  "API-03 missing/invalid probe does not dispatch: %j",
+  async (result) => {
+    const s = setup();
+    s.executeScript.mockResolvedValue([
+      { frameId: 0, documentId: s.intent.document_id, result: result as never },
+    ]);
+    expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
       outcome: "FAILED",
-      code: "POLICY_DENIED",
+      code: "PAGE_API_UNAVAILABLE",
     });
-    expect(calls).toBe(1);
+    expect(s.beforeDispatch).not.toHaveBeenCalled();
+  },
+);
+it.each([
+  { option_id: "eval(secret)" },
+  { adapter_version: 2 },
+  { origin: "https://evil.invalid" },
+])("API-04/07 rejects enum, version, origin: %j", async (change) => {
+  const s = setup();
+  expect(
+    await s.runner.execute({ ...s.intent, ...change }, "/variant"),
+  ).toMatchObject({ outcome: "FAILED" });
+  expect(s.executeScript).not.toHaveBeenCalled();
+});
+it.each([
+  { option_id: "medium" },
+  { approval_digest: "forged" },
+  { completion_digest: "forged" },
+])("API-05 rejects changed approved input: %j", async (change) => {
+  const s = setup();
+  expect(
+    await s.runner.execute({ ...s.intent, ...change }, "/variant"),
+  ).toMatchObject({ code: "PAGE_API_CONTRACT_INVALID" });
+  expect(s.executeScript).not.toHaveBeenCalled();
+});
+it("API-06 scope change while writing dispatch marker prevents invocation", async () => {
+  const s = setup();
+  s.beforeDispatch.mockImplementation(async () => {
+    s.scope.page_scope_epoch = "new-scope";
   });
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    outcome: "FAILED",
+    code: "PAGE_SCOPE_STALE",
+  });
+  expect(s.executeScript).toHaveBeenCalledOnce();
+});
+it("API-08 wrong UI remains UNKNOWN and is consumed", async () => {
+  const s = setup();
+  s.observe.mockResolvedValue("pending");
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    outcome: "UNKNOWN",
+    code: "POSTCONDITION_UNVERIFIED",
+  });
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    code: "POLICY_DENIED",
+  });
+  expect(s.executeScript).toHaveBeenCalledTimes(2);
+});
+it("API-09 hung invocation ends at five seconds and never redispatches", async () => {
+  vi.useFakeTimers();
+  const s = setup();
+  s.executeScript.mockImplementation(async (call) =>
+    call.args.length
+      ? new Promise(() => undefined)
+      : [{ frameId: 0, documentId: s.intent.document_id, result: true }],
+  );
+  const result = s.runner.execute(s.intent, "/variant");
+  await vi.advanceTimersByTimeAsync(5001);
+  expect(await result).toMatchObject({
+    outcome: "UNKNOWN",
+    code: "PAGE_API_TIMEOUT",
+  });
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    code: "POLICY_DENIED",
+  });
+});
+it("API-09 invocation errors expose no page error", async () => {
+  const s = setup();
+  s.executeScript.mockImplementation(async (call) => {
+    if (call.args.length) throw new Error("raw page secret");
+    return [{ frameId: 0, documentId: s.intent.document_id, result: true }];
+  });
+  expect(await s.runner.execute(s.intent, "/variant")).toEqual({
+    ok: false,
+    outcome: "UNKNOWN",
+    code: "PAGE_API_CALL_FAILED",
+  });
+});
+it("API-10 concurrent approvals cannot pass the asynchronous probe twice", async () => {
+  const s = setup();
+  let finish!: (
+    value: { frameId: number; documentId: string; result: boolean }[],
+  ) => void;
+  s.executeScript.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const first = s.runner.execute(s.intent, "/variant");
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    code: "POLICY_DENIED",
+  });
+  finish([{ frameId: 0, documentId: s.intent.document_id, result: true }]);
+  expect(await first).toMatchObject({ outcome: "VERIFIED" });
+  expect(s.beforeDispatch).toHaveBeenCalledOnce();
+});
+it("API-11 final scope change cannot become VERIFIED even if UI matches", async () => {
+  const s = setup();
+  s.observe.mockImplementation(async () => {
+    if (s.executeScript.mock.calls.length > 1) {
+      s.scope.page_scope_epoch = "new";
+      return "satisfied";
+    }
+    return "pending";
+  });
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    outcome: "UNKNOWN",
+    code: "PAGE_SCOPE_STALE",
+  });
+});
+
+it.each([{ frame_id: 1 }, { document_id: "other-document" }])(
+  "API-07 rejects foreign frame/document binding %j",
+  async (change) => {
+    const s = setup();
+    expect(
+      await s.runner.execute(
+        { ...s.intent, ...change } as PageApiIntent,
+        "/variant",
+      ),
+    ).toMatchObject({ outcome: "FAILED" });
+    expect(s.executeScript).not.toHaveBeenCalled();
+  },
+);
+it("already-satisfied observation still requires the approved scope", async () => {
+  const s = setup();
+  s.observe.mockImplementation(async () => {
+    s.scope.page_scope_epoch = "changed";
+    return "satisfied";
+  });
+  expect(await s.runner.execute(s.intent, "/variant")).toMatchObject({
+    outcome: "FAILED",
+    code: "PAGE_SCOPE_STALE",
+  });
+  expect(s.beforeDispatch).not.toHaveBeenCalled();
 });

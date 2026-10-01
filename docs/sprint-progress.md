@@ -128,11 +128,15 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     각 Provider 호출 직전과 응답 직후 현재 page scope를 새 snapshot으로
     확인한다. 변경·조회 실패 시 `PAGE_SCOPE_STALE`로 종료하고 assistant
     delta도 확인 전에는 표시하지 않는다. 런타임/Chrome 검증은 별도다.
--   기존 Browser S10-C4 검토 화면: Page API 후보를 대화 기록과 분리한 일시적
-    dialog에 표시한다. 닫기·탭 변경·페이지 변경 때 목록과 늦은 응답을
-    폐기하고, `adapter 검토 필요`는 화면 상태로만 남긴다. 검토자 인증,
-    외부 작업 항목 생성, reviewed `page_api_read` adapter 및 전체 Chrome
-    matrix는 별도다. 이번 S10 Browser 로컬 Profile 수락과 구분한다.
+-   Browser S10 Page API·Discovery (기존 S10-C1~C5): Completed — 실제
+    Side Panel의 승인·R1 권한·MAIN 호출·독립 UI 검증과 실패/취소/재시작
+    경계를 확인했다. Discovery 검토 화면의 redaction·Stop·timeout·닫기·
+    탭/페이지 변경 및 저장 비노출을 확인했고, exact scope에 결속된 내부
+    `page_api_read` fixture 계약과 별도 R0 권한·closed result·cap·no-retry를
+    검증했다. Ask/Act source 선택·재투입은 S13에 남으며 검토자 인증·외부
+    작업 항목과 실제 사이트/Platform 연동은 별도다.
+    [완료 카드](sprints/s10-page-api-discovery-handoff.md),
+    [API/Discovery 검증 증거](evidence/s10-page-api-closure-2026-10-01.md).
 
 기준일: 2026-09-26. 아래 2026-08-22 구현 증적은 이력이며,
 S0~S9의 현재 종료 판정은 위 최신 증거를 따른다.
