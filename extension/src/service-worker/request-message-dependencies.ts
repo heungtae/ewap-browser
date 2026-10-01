@@ -8,6 +8,10 @@ import { exactKeys, type RuntimeSender } from "./runtime-message-router.js";
 
 type Payload = { mode: Mode; prompt: string };
 type Result = { ok?: boolean; state?: string };
+export type AnalysisResumeOptions = {
+  analysisSelection?: { selection_id: string; candidate_id: string };
+  resumeRunId?: string;
+};
 export type Dependencies = {
   activeTab(sender: RuntimeSender): Promise<{ id: number; epoch?: string }>;
   cancel(tabId: number): void;
@@ -18,8 +22,16 @@ export type Dependencies = {
   chatEvents: TabChatSessionStore;
   providerDiagnostics?(): Promise<unknown>;
   sendToContentScript(tabId: number, message: unknown): Promise<unknown>;
-  runAct(payload: unknown, context?: RequestContext): Promise<Result>;
-  runAsk(payload: unknown, context?: RequestContext): Promise<Result>;
+  runAct(
+    payload: unknown,
+    context?: RequestContext,
+    options?: AnalysisResumeOptions,
+  ): Promise<Result>;
+  runAsk(
+    payload: unknown,
+    context?: RequestContext,
+    options?: AnalysisResumeOptions,
+  ): Promise<Result>;
   safeFailure(code: string): unknown;
 };
 

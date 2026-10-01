@@ -12,7 +12,11 @@ import {
 } from "./act-session-types.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
 import { withDeadline } from "../security/deadline.js";
-import type { AnalysisDataContext } from "./analysis-data-acquisition.js";
+import type {
+  AnalysisCollectionSelection,
+  AnalysisCollectionWait,
+  AnalysisDataAcquisitionResult,
+} from "./analysis-data-acquisition.js";
 import { requestsCollectionAnalysis } from "./analysis-data-acquisition.js";
 import type { ActIntentRoute } from "./ask-act-intent-router.js";
 import type { PageScope } from "../state/tab-chat-session-store.js";
@@ -58,7 +62,11 @@ type Dependencies = {
   runReadOnly(
     payload: unknown,
     context?: RequestContext,
-    options?: { analysisRequested?: boolean },
+    options?: {
+      analysisRequested?: boolean;
+      analysisSelection?: AnalysisCollectionSelection;
+      resumeRunId?: string;
+    },
   ): Promise<Record<string, unknown>>;
   collectAnalysisData?(
     prompt: string,
@@ -66,7 +74,8 @@ type Dependencies = {
     runId: string,
     context?: RequestContext,
     force?: boolean,
-  ): Promise<AnalysisDataContext | undefined>;
+    selection?: AnalysisCollectionSelection,
+  ): Promise<AnalysisDataAcquisitionResult>;
 };
 
 export const createActChatStart =
@@ -74,6 +83,10 @@ export const createActChatStart =
   async (
     payload: unknown,
     context?: RequestContext,
+    options?: {
+      analysisSelection?: AnalysisCollectionSelection;
+      resumeRunId?: string;
+    },
   ): Promise<Record<string, unknown>> => {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     if (
@@ -95,6 +108,10 @@ export const createActChatStart =
     if (route !== "ACTION_REQUIRED")
       return dependencies.runReadOnly(value, context, {
         analysisRequested: route === "ANALYSIS_READ_REQUIRED",
+        ...(options?.analysisSelection
+          ? { analysisSelection: options.analysisSelection }
+          : {}),
+        ...(options?.resumeRunId ? { resumeRunId: options.resumeRunId } : {}),
       });
     const activityId = dependencies.startActivity(active);
     try {
@@ -164,7 +181,12 @@ export const createActChatStart =
           session.id,
           context,
           true,
+          options?.analysisSelection,
         );
+        if (isAnalysisWait(analysisData)) {
+          dependencies.finishActivity(activityId, "SELECTION_REQUIRED");
+          return analysisData;
+        }
         if (analysisData) {
           session.analysisData = analysisData;
           session.analysisScope = analysisScope;
@@ -211,3 +233,11 @@ export const createActChatStart =
       throw error;
     }
   };
+
+const isAnalysisWait = (value: unknown): value is AnalysisCollectionWait =>
+  typeof value === "object" &&
+  value !== null &&
+  ((value as { state?: unknown }).state ===
+    "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+    (value as { state?: unknown }).state ===
+      "ANALYSIS_COLLECTION_PERMISSION_REQUIRED");

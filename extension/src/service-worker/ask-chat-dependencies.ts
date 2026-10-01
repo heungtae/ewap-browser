@@ -11,7 +11,10 @@ import type { VisionCapture } from "./vision-capture.js";
 import type { BrowserChromeApi } from "./browser-api.js";
 import type { ServiceCoordinator } from "./coordinator.js";
 import type { ActivePage } from "./page-context-runtime.js";
-import type { AnalysisDataContext } from "./analysis-data-acquisition.js";
+import type {
+  AnalysisCollectionSelection,
+  AnalysisDataAcquisitionResult,
+} from "./analysis-data-acquisition.js";
 import type { RequestContext } from "./request-context.js";
 
 export type AskChatDependencies = {
@@ -44,5 +47,6 @@ export type AskChatDependencies = {
     runId: string,
     context?: RequestContext,
     force?: boolean,
-  ): Promise<AnalysisDataContext | undefined>;
+    selection?: AnalysisCollectionSelection,
+  ): Promise<AnalysisDataAcquisitionResult>;
 };

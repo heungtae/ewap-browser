@@ -29,7 +29,12 @@ export abstract class RequestExecution extends RequestStore {
   protected readonly controllers = new Map<string, AbortController>();
   protected readonly budget = new RequestBudget();
   public onTerminal:
-    | ((tabId: number, outcome: Outcome, code?: ErrorCode) => void)
+    | ((
+        tabId: number,
+        outcome: Outcome,
+        code?: ErrorCode,
+        requestId?: string,
+      ) => void)
     | undefined;
   protected expire(id: string): void {
     const request = this.requests.get(id);
@@ -75,6 +80,7 @@ export abstract class RequestExecution extends RequestStore {
       this.controllers.set(id, controller);
     }
     return {
+      requestId: id,
       tabId: request.tab_id,
       ...(request.owner.includes(":")
         ? { documentEpoch: request.owner.split(":").slice(1).join(":") }

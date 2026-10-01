@@ -46,7 +46,8 @@ const resolveActiveProfile = async () => {
 };
 chatRequests.validateDocument = (tabId, epoch) =>
   registered.get(registrationKey(tabId, 0))?.epoch === epoch;
-chatRequests.onTerminal = (tabId, outcome, code) => {
+chatRequests.onTerminal = (tabId, outcome, code, requestId) => {
+  if (requestId) permissions.endRun(requestId);
   const run = coordinator.runs.get(tabId);
   if (run && run.phase !== "TERMINAL") {
     coordinator.runs.terminal(run.id, outcome, code);

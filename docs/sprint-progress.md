@@ -97,19 +97,21 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     [완료 범위](sprints/s14-studio-integration-browser-boundary.md),
     [증거](evidence/s14-closure-2026-09-27.md).
 -   S15 Managed Enterprise Release: Planned
--   S6-R Collection Reading: In Progress — Ask와 Act의 explicit unique
-    collection read/reinjection, Act closed route gate는 구현·unit 검증됐다.
-    복수 collection에서 요청이 table/grid/list 한 종류를 명시하고 해당
-    종류가 유일할 때 Browser가 그 대상만 고르는 경로도 unit 검증됐다.
-    실제 Side Panel과 HTTPS 제어 provider fixture로 Ask/Act의 bounded context
-    전달도 검증됐다. 모호한 복수 source의 Panel 선택 및 승인 후 재개,
-    reviewed API/export reader, live provider 및 virtual-scroll completeness
-    evidence는 별도다. 세부 계약과
-    CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
+-   S6-R Collection Reading: In Progress — Ask/Act collection context 재투입과
+    Act closed route gate, 복수 source 선택 및 collection 권한 승인 후 같은
+    요청 재개를 구현했다. 선택 ID는 요청·탭·페이지 scope에 결속되고 재개 때
+    discovery를 다시 수행한다. exact origin/path와 closed schema를 쓰는
+    reviewed API fixture reader도 service-worker registry에 연결했다. 타입,
+    lint/format, 전체 unit 검증은 통과했다. 남은 종료 증거는 headed Chrome for
+    Testing의 virtual-grid full-read/EOF/restore와 Side Panel 재개 E2E다. 설치된
+    일반 Chrome 실행은 service-worker target을 열지 못해 증거로 인정하지 않았다.
+    외부 live provider 검증은 이 Browser slice의 fixture 검증과 분리한다. 세부
+    계약과 CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
 -   S13 Ask/Act Analysis Data (Browser slice): In Progress — S13-C7에서 수집 종료
     뒤 page scope를 재검사하고 page change·Stop·timeout 결과의 수집 행을
-    Provider context에서 버리는 경계를 unit 검증했다. Chrome 실사용 검증과
-    복수 source 선택·권한 승인 후 같은 요청 재개는 미완료다.
+    Provider context에서 버리는 경계를 unit 검증했다. 복수 source 선택 및 권한
+    승인 후 같은 요청 재개 경로도 구현·unit 검증했다. Chrome 실사용 검증은
+    headed Chrome for Testing 실행이 남아 있다.
 -   S13-C7 Provider 투입 경계: Ask의 Profile resolve와 Act의 action-planning
     turn 사이에 page scope가 달라지면 수집 행을 `PAGE_CHANGED`·0건으로
     대체한다. scope 표식은 worker 메모리에만 보관한다. TypeScript, ESLint,

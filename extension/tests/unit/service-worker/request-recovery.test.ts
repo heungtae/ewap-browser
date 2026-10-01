@@ -78,6 +78,55 @@ describe("request recovery and cancellation", () => {
       code: "REQUEST_TIMEOUT",
     });
   });
+  it("resumes a pending analysis only for a displayed candidate and same owner", () => {
+    const requests = new ChatRequestLifecycle();
+    requests.start(input);
+    const generation = requests.startRun(input.request_id)!;
+    requests.settled(input.request_id, generation, {
+      ok: true,
+      state: "ANALYSIS_COLLECTION_SELECTION_REQUIRED",
+      selection_id: "selection-id",
+      resume_run_id: "collection-run-id",
+      candidates: [{ candidate_id: "candidate-a" }],
+    });
+
+    expect(
+      requests.resumeAnalysis(
+        input.request_id,
+        7,
+        input.owner,
+        "selection-id",
+        "not-displayed",
+      ),
+    ).toBeUndefined();
+    expect(
+      requests.resumeAnalysis(
+        input.request_id,
+        7,
+        "other:document",
+        "selection-id",
+        "candidate-a",
+      ),
+    ).toBeUndefined();
+    expect(
+      requests.resumeAnalysis(
+        input.request_id,
+        7,
+        input.owner,
+        "selection-id",
+        "candidate-a",
+      ),
+    ).toMatchObject({
+      generation: generation + 1,
+      mode: "act",
+      prompt: input.prompt,
+      selection: { selection_id: "selection-id", candidate_id: "candidate-a" },
+      resumeRunId: "collection-run-id",
+    });
+    expect(requests.status(input.request_id, 7, input.owner)?.state).toBe(
+      "RUNNING",
+    );
+  });
   it("denies other panel instances and document epochs", () => {
     const diagnostics = new ExecutionDiagnostics();
     const requests = new ChatRequestLifecycle(diagnostics);

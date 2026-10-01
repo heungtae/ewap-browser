@@ -11,6 +11,10 @@ import { businessMcpTool } from "./business-mcp-tools.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
 import { analysisDataForScope } from "./analysis-data-scope.js";
+import type {
+  AnalysisCollectionSelection,
+  AnalysisCollectionWait,
+} from "./analysis-data-acquisition.js";
 import { allowsModelScreenshot } from "../policy/permission-mode.js";
 
 const readSummary = (tool: string): string =>
@@ -32,7 +36,11 @@ export const createAskChatRunner =
   async (
     payload: unknown,
     context?: RequestContext,
-    options?: { analysisRequested?: boolean },
+    options?: {
+      analysisRequested?: boolean;
+      analysisSelection?: AnalysisCollectionSelection;
+      resumeRunId?: string;
+    },
   ): Promise<Record<string, unknown>> => {
     const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
     if (
@@ -50,26 +58,47 @@ export const createAskChatRunner =
       active.snapshot.document_epoch !== context.documentEpoch
     )
       return fail("PAGE_SCOPE_STALE");
-    const run = dependencies.coordinator.runs.start(
-      active.tabId,
-      active.snapshot.frame_id,
-      active.snapshot.document_epoch,
-      dependencies.mode ?? "ask",
-    );
-    dependencies.bindRun(run.id, active.tabId, dependencies.pageScope(active));
-    dependencies.publish(run.id, {
-      type: "user_message",
-      text: safeChatText(value.prompt),
-    });
-    dependencies.publish(run.id, {
-      type: "run_started",
-      mode: dependencies.mode ?? "ask",
-      permission_mode: dependencies.preferences().permission_mode,
-    });
-    dependencies.publish(run.id, {
-      type: "activity_started",
-      stage: "PREPARING_PAGE",
-    });
+    const resumed = options?.resumeRunId !== undefined;
+    const run = resumed
+      ? dependencies.coordinator.runs.byId(options.resumeRunId!)
+      : dependencies.coordinator.runs.start(
+          active.tabId,
+          active.snapshot.frame_id,
+          active.snapshot.document_epoch,
+          dependencies.mode ?? "ask",
+        );
+    if (
+      !run ||
+      run.phase === "TERMINAL" ||
+      run.tabId !== active.tabId ||
+      run.documentEpoch !== active.snapshot.document_epoch
+    )
+      return fail("PAGE_SCOPE_STALE");
+    if (!resumed) {
+      dependencies.bindRun(
+        run.id,
+        active.tabId,
+        dependencies.pageScope(active),
+      );
+      dependencies.publish(run.id, {
+        type: "user_message",
+        text: safeChatText(value.prompt),
+      });
+      dependencies.publish(run.id, {
+        type: "run_started",
+        mode: dependencies.mode ?? "ask",
+        permission_mode: dependencies.preferences().permission_mode,
+      });
+      dependencies.publish(run.id, {
+        type: "activity_started",
+        stage: "PREPARING_PAGE",
+      });
+    } else {
+      dependencies.publish(run.id, {
+        type: "activity_progress",
+        stage: "PREPARING_PAGE",
+      });
+    }
     const modelSnapshot = dependencies.coordinator.modelSnapshot(
       run.id,
       active.snapshot,
@@ -81,13 +110,17 @@ export const createAskChatRunner =
       run.id,
       context,
       options?.analysisRequested === true,
+      options?.analysisSelection,
     );
     assertRequestActive(context);
+    if (isAnalysisWait(collectedAnalysisData)) {
+      dependencies.publish(run.id, {
+        type: "activity_finished",
+        stage: "SELECTION_REQUIRED",
+      });
+      return { ...collectedAnalysisData, resume_run_id: run.id };
+    }
     const pageDigest = digestCanonical(active.snapshot);
-    dependencies.publish(run.id, {
-      type: "activity_progress",
-      stage: "RESOLVING_PROFILE",
-    });
     const profile = await dependencies
       .resolveProfile(active)
       .catch(() => undefined);
@@ -104,6 +137,10 @@ export const createAskChatRunner =
           dependencies.pageScope(active),
         )
       : undefined;
+    dependencies.publish(run.id, {
+      type: "activity_progress",
+      stage: "RESOLVING_PROFILE",
+    });
     const tool = businessMcpTool(bindings);
     const tools = [...dependencies.askTools, ...(tool ? [tool] : [])];
     const messages: ProviderMessage[] = [
@@ -192,8 +229,9 @@ export const createAskChatRunner =
         ).reason !== "PAGE_CHANGED"
       );
     };
+
     const failStaleAnalysis = (): Record<string, unknown> => {
-      if (run.phase !== "TERMINAL") {
+      if (dependencies.coordinator.runs.byId(run.id)?.phase !== "TERMINAL") {
         dependencies.coordinator.runs.terminal(
           run.id,
           "FAILED",
@@ -263,7 +301,7 @@ export const createAskChatRunner =
       })();
       assertRequestActive(context);
       if (!(await analysisPageCurrent())) return failStaleAnalysis();
-      if (run.phase === "TERMINAL")
+      if (dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL")
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
@@ -318,3 +356,14 @@ export const createAskChatRunner =
     }
     return fail("PROVIDER_UNAVAILABLE");
   };
+
+function isAnalysisWait(value: unknown): value is AnalysisCollectionWait {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ((value as { state?: unknown }).state ===
+      "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+      (value as { state?: unknown }).state ===
+        "ANALYSIS_COLLECTION_PERMISSION_REQUIRED")
+  );
+}

@@ -94,6 +94,16 @@ const analysisDataAcquisition = createAnalysisDataAcquisition({
   chrome: chromeApi!,
   permissions,
   scopeFor: (tabId) => pageScopes.get(tabId),
+  permissionRequest: (origin, requestRunId) => {
+    const requestId = opaqueId();
+    permissionRequests.set(requestId, {
+      capability: "collection_read",
+      origin,
+      expiresAt: Date.now() + 5 * 60_000,
+      act_session_id: requestRunId,
+    });
+    return requestId;
+  },
 });
 const askChatDependencies: AskChatDependencies = {
   chrome: chromeApi!,

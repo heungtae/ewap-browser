@@ -53,6 +53,19 @@ export class RequestClient {
     if (epoch === this.epoch) await this.poll();
     return true;
   }
+  public async resumeAnalysis(
+    selectionId: string,
+    candidateId: string,
+  ): Promise<void> {
+    if (!this.id) return;
+    const epoch = this.epoch;
+    this.delivered = false;
+    await this.send("CHAT_REQUEST_RESUME", {
+      selection_id: selectionId,
+      candidate_id: candidateId,
+    });
+    if (epoch === this.epoch) await this.poll();
+  }
   public async poll(): Promise<void> {
     if (!this.id || this.polling) return;
     this.polling = true;

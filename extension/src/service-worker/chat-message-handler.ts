@@ -10,6 +10,7 @@ import {
   type RuntimeSender,
 } from "./runtime-message-router.js";
 import { createChatRequestMessageHandler } from "./chat-request-message-handler.js";
+import type { AnalysisResumeOptions } from "./request-message-dependencies.js";
 import { ChatRequestLifecycle } from "./chat-request-lifecycle.js";
 import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 import type { RequestContext } from "./request-context.js";
@@ -34,8 +35,16 @@ export type ChatMessageHandlerDependencies = {
   isPanelSender(sender: Sender): boolean;
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
-  runActChat(payload: unknown, context?: RequestContext): Promise<ChatResult>;
-  runAskChat(payload: unknown, context?: RequestContext): Promise<ChatResult>;
+  runActChat(
+    payload: unknown,
+    context?: RequestContext,
+    options?: AnalysisResumeOptions,
+  ): Promise<ChatResult>;
+  runAskChat(
+    payload: unknown,
+    context?: RequestContext,
+    options?: AnalysisResumeOptions,
+  ): Promise<ChatResult>;
   safeFailure(code: string, detail?: string): unknown;
 };
 

@@ -33,6 +33,32 @@ export type AnalysisDataContext = {
   truncated: boolean;
 };
 
+export type AnalysisCollectionCandidate = {
+  candidate_id: string;
+  object_kind: string;
+  label: string;
+  estimated_total?: number;
+  has_virtual_scroll: boolean;
+};
+export type AnalysisCollectionWait = {
+  ok: true;
+  state:
+    | "ANALYSIS_COLLECTION_SELECTION_REQUIRED"
+    | "ANALYSIS_COLLECTION_PERMISSION_REQUIRED";
+  selection_id: string;
+  candidates: readonly AnalysisCollectionCandidate[];
+  selected_candidate_id?: string;
+  permission_request_id?: string;
+};
+export type AnalysisCollectionSelection = {
+  selection_id: string;
+  candidate_id: string;
+};
+export type AnalysisDataAcquisitionResult =
+  | AnalysisDataContext
+  | AnalysisCollectionWait
+  | undefined;
+
 type Dependencies = {
   chrome: BrowserChromeApi;
   permissions: {
@@ -45,6 +71,7 @@ type Dependencies = {
   scopeFor(
     tabId: number,
   ): { document_epoch: string; page_scope_epoch: string } | undefined;
+  permissionRequest?(origin: string, runId: string): string;
 };
 
 const objectKinds = new Set([
@@ -221,8 +248,11 @@ export const createAnalysisDataAcquisition =
     runId: string,
     context?: RequestContext,
     force = false,
-  ): Promise<AnalysisDataContext | undefined> => {
+    selection?: AnalysisCollectionSelection,
+  ): Promise<AnalysisDataAcquisitionResult> => {
     if (!force && !requestsCollectionAnalysis(prompt)) return undefined;
+    for (const [id, selection] of pendingSelections)
+      if (selection.expiresAt <= Date.now()) pendingSelections.delete(id);
     assertRequestActive(context);
     const initialScope = dependencies.scopeFor(active.tabId);
     if (
@@ -261,26 +291,100 @@ export const createAnalysisDataAcquisition =
     if (collections.length === 0) return unavailable("UNAVAILABLE");
     // A generic or mixed-kind request cannot choose between page objects.
     const requestedKind = requestedCollectionKind(prompt);
-    const candidates =
+    const narrowed =
       collections.length > 1 && requestedKind
         ? collections.filter(
             (candidate) => candidate.object_kind === requestedKind,
           )
         : collections;
-    if (candidates.length !== 1) return unavailable("REQUIRES_SELECTION");
-    const descriptor = candidates[0];
+    const candidates = narrowed.length > 0 ? narrowed : collections;
+    let descriptor: CollectionReadDescriptor | undefined;
+    if (selection) {
+      const stored = pendingSelections.get(selection.selection_id);
+      if (
+        !stored ||
+        stored.expiresAt < Date.now() ||
+        stored.runId !== (context?.requestId ?? runId) ||
+        stored.tabId !== active.tabId ||
+        stored.origin !== active.origin ||
+        stored.path !== active.path ||
+        stored.documentEpoch !== discovery.document_epoch ||
+        stored.pageScopeEpoch !== discovery.page_scope_epoch
+      )
+        return unavailable("PAGE_CHANGED");
+      const selected = stored.candidates.get(selection.candidate_id);
+      descriptor = candidates.find(
+        (candidate) => candidate.collection_ref === selected?.collection_ref,
+      );
+      if (!descriptor) return unavailable("PAGE_CHANGED");
+    } else if (candidates.length === 1) {
+      descriptor = candidates[0];
+    } else {
+      const selectionId = crypto.randomUUID();
+      const requestId = context?.requestId ?? runId;
+      pendingSelections.set(selectionId, {
+        runId: requestId,
+        tabId: active.tabId,
+        origin: active.origin,
+        path: active.path,
+        documentEpoch: discovery.document_epoch,
+        pageScopeEpoch: discovery.page_scope_epoch,
+        expiresAt: Date.now() + 5 * 60_000,
+        candidates: new Map(
+          candidates.map((candidate) => [
+            crypto.randomUUID(),
+            { collection_ref: candidate.collection_ref, descriptor: candidate },
+          ]),
+        ),
+      });
+      return selectionResult(selectionId, pendingSelections.get(selectionId)!);
+    }
     if (!descriptor) return unavailable("UNAVAILABLE");
     const permission = dependencies.permissions.check(
       "collection_read",
       active.origin,
-      runId,
+      context?.requestId ?? runId,
     );
-    if (permission !== "ALLOW")
-      return unavailable(
-        permission === "REQUIRE_PERMISSION"
-          ? "PERMISSION_REQUIRED"
-          : "UNAVAILABLE",
+    let selectionId = selection?.selection_id;
+    if (permission === "DENY") return unavailable("PERMISSION_REQUIRED");
+    if (permission === "REQUIRE_PERMISSION") {
+      selectionId ??= crypto.randomUUID();
+      const pending = pendingSelections.get(selectionId) ?? {
+        runId: context?.requestId ?? runId,
+        tabId: active.tabId,
+        origin: active.origin,
+        path: active.path,
+        documentEpoch: discovery.document_epoch,
+        pageScopeEpoch: discovery.page_scope_epoch,
+        expiresAt: Date.now() + 5 * 60_000,
+        candidates: new Map<
+          string,
+          { collection_ref: string; descriptor: CollectionReadDescriptor }
+        >(),
+      };
+      let candidateId = selection?.candidate_id;
+      if (!candidateId) {
+        candidateId = crypto.randomUUID();
+        pending.candidates.set(candidateId, {
+          collection_ref: descriptor.collection_ref,
+          descriptor,
+        });
+      }
+      pendingSelections.set(selectionId, pending);
+      const permissionRequestId = dependencies.permissionRequest?.(
+        active.origin,
+        context?.requestId ?? runId,
       );
+      if (!permissionRequestId) return unavailable("PERMISSION_REQUIRED");
+      return {
+        ok: true,
+        state: "ANALYSIS_COLLECTION_PERMISSION_REQUIRED",
+        selection_id: selectionId,
+        candidates: displayCandidates(pending),
+        selected_candidate_id: candidateId,
+        permission_request_id: permissionRequestId,
+      };
+    }
 
     const cancel = (): void => CollectionReadOrchestrator.cancel();
     context?.signal.addEventListener("abort", cancel, { once: true });
@@ -290,7 +394,7 @@ export const createAnalysisDataAcquisition =
           collection_ref: descriptor.collection_ref,
           object_kind: descriptor.object_kind,
           mode: "full",
-          run_id: runId,
+          run_id: context?.requestId ?? runId,
           tab_id: active.tabId,
           frame_id: 0,
           document_epoch: discovery.document_epoch,
@@ -318,8 +422,46 @@ export const createAnalysisDataAcquisition =
         invalidatedReadReasons.has(response.result.reason)
       )
         return unavailable(response.result.reason);
+      if (selectionId) pendingSelections.delete(selectionId);
       return contextFromResult(descriptor, response.result);
     } finally {
       context?.signal.removeEventListener("abort", cancel);
     }
   };
+
+type PendingSelection = {
+  runId: string;
+  tabId: number;
+  origin: string;
+  path: string;
+  documentEpoch: string;
+  pageScopeEpoch: string;
+  expiresAt: number;
+  candidates: Map<
+    string,
+    { collection_ref: string; descriptor: CollectionReadDescriptor }
+  >;
+};
+
+const pendingSelections = new Map<string, PendingSelection>();
+const displayCandidates = (
+  selection: PendingSelection,
+): AnalysisCollectionCandidate[] =>
+  [...selection.candidates].map(([candidate_id, item], index) => ({
+    candidate_id,
+    object_kind: item.descriptor.object_kind,
+    label: `${item.descriptor.object_kind.replace("_", " ")} data ${index + 1}`,
+    ...(item.descriptor.estimated_total === undefined
+      ? {}
+      : { estimated_total: item.descriptor.estimated_total }),
+    has_virtual_scroll: item.descriptor.has_virtual_scroll,
+  }));
+const selectionResult = (
+  selectionId: string,
+  selection: PendingSelection,
+): AnalysisCollectionWait => ({
+  ok: true,
+  state: "ANALYSIS_COLLECTION_SELECTION_REQUIRED",
+  selection_id: selectionId,
+  candidates: displayCandidates(selection),
+});

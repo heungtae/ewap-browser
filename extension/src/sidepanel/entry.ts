@@ -171,6 +171,13 @@ const requestClient = new RequestClient({
       if (candidates.length)
         renderWorkflowCandidates(response.selection_id, candidates);
     }
+    if (
+      (response.state === "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+        response.state === "ANALYSIS_COLLECTION_PERMISSION_REQUIRED") &&
+      typeof response.selection_id === "string" &&
+      Array.isArray(response.candidates)
+    )
+      renderAnalysisCollectionWait(response);
     void recoverChatEvents();
   },
   failure: (code) => {
@@ -1030,6 +1037,113 @@ const renderWorkflowCandidates = (
   skipNextLiveUserMessage = false;
   setRunActive(false);
   setStatus("워크플로우 후보를 선택해 계획을 확인해 주세요.");
+};
+const renderAnalysisCollectionWait = (
+  response: Record<string, unknown>,
+): void => {
+  const selectionId = response.selection_id as string;
+  const permission =
+    response.state === "ANALYSIS_COLLECTION_PERMISSION_REQUIRED";
+  const candidates = (
+    Array.isArray(response.candidates) ? response.candidates : []
+  ).filter(
+    (candidate): candidate is Record<string, unknown> =>
+      typeof candidate === "object" && candidate !== null,
+  );
+  const item = card(
+    "collection",
+    permission ? "데이터 읽기 권한" : "분석할 데이터 선택",
+    permission
+      ? "선택한 데이터 객체를 읽으려면 이 사이트에서 이번 요청의 읽기 권한이 필요합니다."
+      : "여러 데이터 객체가 있습니다. 분석할 객체 하나를 선택하세요.",
+  );
+  const row = actionRow(item);
+  let pending = false;
+  const lock = (): void => {
+    if (pending) return;
+    pending = true;
+    for (const button of item.querySelectorAll<HTMLButtonElement>("button"))
+      button.disabled = true;
+    row.setAttribute("aria-busy", "true");
+  };
+  const candidateId = permission ? response.selected_candidate_id : undefined;
+  if (permission && typeof candidateId === "string") {
+    const permissionRequestId = response.permission_request_id;
+    const allow = actionButton("이번 요청에서 허용", "primary", async () => {
+      lock();
+      try {
+        if (typeof permissionRequestId !== "string")
+          throw new Error("INVALID_ARGUMENT");
+        await sendRuntime({
+          kind: "PERMISSION_DECISION",
+          permission_request_id: permissionRequestId,
+          decision: "once",
+        });
+        await requestClient.resumeAnalysis(selectionId, candidateId);
+      } catch (error) {
+        pending = false;
+        row.removeAttribute("aria-busy");
+        showFailure(error instanceof Error ? error.message : undefined);
+      }
+    });
+    const deny = actionButton("거부", "danger", async () => {
+      lock();
+      try {
+        if (typeof permissionRequestId !== "string")
+          throw new Error("INVALID_ARGUMENT");
+        await sendRuntime({
+          kind: "PERMISSION_DECISION",
+          permission_request_id: permissionRequestId,
+          decision: "deny",
+        });
+        await requestClient.cancel();
+      } catch (error) {
+        pending = false;
+        row.removeAttribute("aria-busy");
+        showFailure(error instanceof Error ? error.message : undefined);
+      }
+    });
+    row.append(allow, deny);
+  } else {
+    for (const candidate of candidates) {
+      if (
+        typeof candidate.candidate_id !== "string" ||
+        typeof candidate.object_kind !== "string" ||
+        typeof candidate.label !== "string"
+      )
+        continue;
+      const detail = [
+        candidate.label,
+        typeof candidate.estimated_total === "number"
+          ? `예상 ${candidate.estimated_total}개`
+          : undefined,
+        candidate.has_virtual_scroll === true ? "가상 스크롤" : undefined,
+      ]
+        .filter((part): part is string => !!part)
+        .join(" · ");
+      row.append(
+        actionButton(detail, "primary", async () => {
+          lock();
+          try {
+            await requestClient.resumeAnalysis(
+              selectionId,
+              candidate.candidate_id as string,
+            );
+          } catch (error) {
+            pending = false;
+            row.removeAttribute("aria-busy");
+            showFailure(error instanceof Error ? error.message : undefined);
+          }
+        }),
+      );
+    }
+  }
+  append(item);
+  setStatus(
+    permission
+      ? "데이터 읽기 권한을 선택해 주세요."
+      : "분석할 데이터 객체를 선택해 주세요.",
+  );
 };
 const renderPermission = (
   runId: string,

@@ -94,7 +94,7 @@ describe("analysis data acquisition", () => {
     });
   });
 
-  it("does not select among multiple collections or bypass R0 permission", async () => {
+  it("pauses for source selection instead of choosing among multiple collections", async () => {
     const sendMessage = vi.fn(async () => ({
       ok: true,
       collections: [descriptor, { ...descriptor, collection_ref: "second" }],
@@ -108,17 +108,126 @@ describe("analysis data acquisition", () => {
       scopeFor: scope,
     });
 
-    await expect(
-      collect("데이터를 분석 요약해", active(), "run"),
-    ).resolves.toEqual(
-      expect.objectContaining({
-        coverage: "unavailable",
-        reason: "REQUIRES_SELECTION",
-        records: [],
-      }),
-    );
+    const result = await collect("데이터를 분석 요약해", active(), "run");
+    expect(result).toMatchObject({
+      ok: true,
+      state: "ANALYSIS_COLLECTION_SELECTION_REQUIRED",
+      candidates: [
+        { object_kind: "table", label: "table data 1" },
+        { object_kind: "table", label: "table data 2" },
+      ],
+    });
     expect(check).not.toHaveBeenCalled();
     expect(sendMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it("rechecks a selected source and resumes after a run-scoped permission grant", async () => {
+    const table = descriptor;
+    const list = {
+      ...descriptor,
+      collection_ref: "list-ref",
+      object_kind: "list" as const,
+    };
+    let allowed = false;
+    const sendMessage = vi.fn(async (_tabId: number, message: unknown) => {
+      const input = message as { kind?: string; collection_ref?: string };
+      if (input.kind === "CONTENT_COLLECTION_DISCOVER")
+        return {
+          collections: [table, list],
+          document_epoch: "doc",
+          page_scope_epoch: "scope",
+        };
+      if (input.kind === "CONTENT_COLLECTION_CONTEXT")
+        return { ok: true, document_epoch: "doc", page_scope_epoch: "scope" };
+      if (input.kind === "CONTENT_COLLECTION_READ_STATIC")
+        return {
+          ok: true,
+          result: {
+            records: [{ index: 0, cells: [input.collection_ref ?? "missing"] }],
+            total_rows: 1,
+            truncated: false,
+          },
+        };
+      throw new Error(`unexpected ${String(input.kind)}`);
+    });
+    const permissionRequest = vi.fn(() => "permission-id");
+    const collect = createAnalysisDataAcquisition({
+      chrome: { tabs: { sendMessage } } as never,
+      permissions: { check: () => (allowed ? "ALLOW" : "REQUIRE_PERMISSION") },
+      scopeFor: scope,
+      permissionRequest,
+    });
+    const context = {
+      requestId: "chat-request-id",
+      tabId: 9,
+      signal: new AbortController().signal,
+      check: () => undefined,
+    };
+
+    const wait = await collect(
+      "데이터를 분석 요약해",
+      active(),
+      "worker-run",
+      context,
+    );
+    expect(wait).toMatchObject({
+      state: "ANALYSIS_COLLECTION_SELECTION_REQUIRED",
+      candidates: [
+        { object_kind: "table", label: "table data 1" },
+        { object_kind: "list", label: "list data 2" },
+      ],
+    });
+    const selection = wait as unknown as {
+      selection_id: string;
+      candidates: { candidate_id: string; object_kind: string }[];
+    };
+    expect(JSON.stringify(wait)).not.toContain("worker-only-ref");
+    const chosen = selection.candidates[1]!;
+    const selected = {
+      selection_id: selection.selection_id,
+      candidate_id: chosen.candidate_id,
+    };
+
+    const permissionWait = await collect(
+      "데이터를 분석 요약해",
+      active(),
+      "worker-run",
+      context,
+      false,
+      selected,
+    );
+    expect(permissionWait).toMatchObject({
+      state: "ANALYSIS_COLLECTION_PERMISSION_REQUIRED",
+      selected_candidate_id: chosen.candidate_id,
+      permission_request_id: "permission-id",
+    });
+    expect(permissionRequest).toHaveBeenCalledWith(
+      "https://fixture.invalid",
+      "chat-request-id",
+    );
+    expect(sendMessage).not.toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ kind: "CONTENT_COLLECTION_READ_STATIC" }),
+    );
+
+    allowed = true;
+    const resumed = await collect(
+      "데이터를 분석 요약해",
+      active(),
+      "worker-run",
+      context,
+      false,
+      selected,
+    );
+    expect(resumed).toMatchObject({
+      source: { kind: "collection", label: "list data" },
+      coverage: "complete",
+      records: [{ cells: ["list-ref"] }],
+    });
+    expect(sendMessage).toHaveBeenCalledWith(9, {
+      kind: "CONTENT_COLLECTION_READ_STATIC",
+      collection_ref: "list-ref",
+    });
   });
 
   it("reads the sole explicitly named kind among different collections", async () => {
@@ -242,9 +351,9 @@ describe("analysis data acquisition", () => {
       });
 
       await expect(collect(prompt, active(), "run")).resolves.toMatchObject({
-        coverage: "unavailable",
-        reason: "REQUIRES_SELECTION",
-        records: [],
+        ok: true,
+        state: "ANALYSIS_COLLECTION_SELECTION_REQUIRED",
+        candidates: expect.any(Array),
       });
       expect(check).not.toHaveBeenCalled();
       expect(sendMessage).toHaveBeenCalledTimes(1);

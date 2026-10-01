@@ -65,6 +65,7 @@ const profile = await mkdtemp(
 );
 let fixture;
 let child;
+let chromeStderr = "";
 try {
   await run("openssl", [
     "req",
@@ -118,8 +119,12 @@ try {
       `--remote-debugging-port=${cdpPort}`,
       "about:blank",
     ],
-    { stdio: "ignore" },
+    { stdio: ["ignore", "ignore", "pipe"] },
   );
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", (chunk) => {
+    chromeStderr = `${chromeStderr}${chunk}`.slice(-4000);
+  });
   const version = await waitFor(
     async () =>
       fetch(`http://127.0.0.1:${cdpPort}/json/version`)
@@ -133,11 +138,17 @@ try {
     "Target.createTarget",
     { url: `https://collection.fixture.test:${fixturePort}/` },
   );
+  let observedTargets = [];
   const worker = await waitFor(
     async () => {
       const targets = await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then(
         (r) => r.json(),
       );
+      observedTargets = targets.map(({ type, url, title }) => ({
+        type,
+        url,
+        title,
+      }));
       return targets.find(
         (target) =>
           target.type === "service_worker" &&
@@ -145,7 +156,7 @@ try {
       );
     },
     10_000,
-    "ContextPilot worker was not loaded",
+    `ContextPilot worker was not loaded; targets=${JSON.stringify(observedTargets)}${chromeStderr ? `; stderr=${chromeStderr}` : ""}`,
   );
   const extensionId = new URL(worker.url).host;
   await cdp(version.webSocketDebuggerUrl, "Target.createTarget", {

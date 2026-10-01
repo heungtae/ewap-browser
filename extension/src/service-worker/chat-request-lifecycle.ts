@@ -21,6 +21,63 @@ export class ChatRequestLifecycle extends RequestExecution {
     return request.generation;
   }
 
+  public resumeAnalysis(
+    requestId: string,
+    tabId: number,
+    owner: string,
+    selectionId: string,
+    candidateId: string,
+  ):
+    | {
+        generation: number;
+        mode: Request["mode"];
+        prompt: string;
+        selection: { selection_id: string; candidate_id: string };
+        resumeRunId?: string;
+      }
+    | undefined {
+    const request = this.requests.get(requestId);
+    const result = request?.result;
+    if (
+      !request ||
+      request.tab_id !== tabId ||
+      request.owner !== owner ||
+      request.state !== "WAITING_USER" ||
+      !result ||
+      (result.state !== "ANALYSIS_COLLECTION_SELECTION_REQUIRED" &&
+        result.state !== "ANALYSIS_COLLECTION_PERMISSION_REQUIRED") ||
+      result.selection_id !== selectionId ||
+      (result.state === "ANALYSIS_COLLECTION_SELECTION_REQUIRED" &&
+        (!Array.isArray(result.candidates) ||
+          !result.candidates.some(
+            (candidate) =>
+              typeof candidate === "object" &&
+              candidate !== null &&
+              (candidate as { candidate_id?: unknown }).candidate_id ===
+                candidateId,
+          ))) ||
+      (result.state === "ANALYSIS_COLLECTION_PERMISSION_REQUIRED" &&
+        result.selected_candidate_id !== candidateId)
+    )
+      return;
+    request.generation += 1;
+    delete request.result;
+    this.transition(request, "RUNNING", "PREPARING_PAGE");
+    this.diagnostics?.stage(requestId, "router", "PREPARING_PAGE");
+    return {
+      generation: request.generation,
+      mode: request.mode,
+      prompt: request.prompt,
+      selection: {
+        selection_id: result.selection_id,
+        candidate_id: candidateId,
+      },
+      ...(typeof result.resume_run_id === "string"
+        ? { resumeRunId: result.resume_run_id }
+        : {}),
+    };
+  }
+
   public finish(
     requestId: string,
     generation: number,
@@ -47,7 +104,7 @@ export class ChatRequestLifecycle extends RequestExecution {
     this.controllers.get(requestId)?.abort();
     this.controllers.delete(requestId);
     this.budget.stop(requestId);
-    this.onTerminal?.(request.tab_id, outcome, code);
+    this.onTerminal?.(request.tab_id, outcome, code, requestId);
     void this.flush().catch(() => undefined);
     return copy(request);
   }
@@ -85,13 +142,17 @@ export class ChatRequestLifecycle extends RequestExecution {
     if (
       result.ok &&
       (result.state === "WORKFLOW_CANDIDATES" ||
+        result.state === "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+        result.state === "ANALYSIS_COLLECTION_PERMISSION_REQUIRED" ||
         request.state === "WAITING_USER")
     ) {
       request.result = result;
       this.transition(
         request,
         "WAITING_USER",
-        result.state === "WORKFLOW_CANDIDATES"
+        result.state === "WORKFLOW_CANDIDATES" ||
+          result.state === "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+          result.state === "ANALYSIS_COLLECTION_PERMISSION_REQUIRED"
           ? "SELECTION_REQUIRED"
           : "AWAITING_REVIEW",
       );
@@ -162,7 +223,7 @@ export class ChatRequestLifecycle extends RequestExecution {
     this.controllers.get(requestId)?.abort();
     this.controllers.delete(requestId);
     this.budget.stop(requestId);
-    this.onTerminal?.(request.tab_id, request.outcome, code);
+    this.onTerminal?.(request.tab_id, request.outcome, code, requestId);
     this.diagnostics?.terminal(requestId, request.outcome, code, reason);
     void this.flush().catch(() => undefined);
     return copy(request);

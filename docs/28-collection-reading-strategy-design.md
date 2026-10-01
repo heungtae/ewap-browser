@@ -1,7 +1,7 @@
 # 28. 객체 특성별 Collection Reading 설계
 
 - 작성일: 2026-09-17
-- 상태: Partial implementation — CR-1의 bounded static DOM read와 CR-2의 content-script virtual-scroll lifecycle, 수동 Side Panel 시작 UX가 구현됐다. Ask는 명시적 분석 요청의 unique collection과 기존 `collection_read` 허용에 한해 결과를 같은 Provider turn에 재투입한다. Act, 복수 대상 선택/승인 후 재개, Page API adapter 연결은 [32번 통합 설계](32-ask-act-analysis-data-acquisition-design.md) 기준 Proposed이며, CR-2는 실제 Chrome fixture 검증 전에는 지원 완료로 선언하지 않는다.
+- 상태: Partial implementation — CR-1~CR-5 reader 및 Side Panel 흐름, Ask/Act collection context 재투입, 모호한 복수 source 선택/권한 승인 후 같은 요청 재개, exact origin/path reviewed fixture adapter 경로를 구현했다. 타입, lint/format, unit 검증을 통과했다. Chrome virtual-grid full-read/EOF/restore 및 Side Panel resume E2E 증거가 없어 완료 선언은 보류한다. 외부 live provider 검증은 Browser runtime fixture 검증과 별도다.
 - 범위: grid/table/list/chart/pagination처럼 화면에 일부만 렌더링되는 데이터 객체의 **읽기와 처리용 관측**. DOM/ARIA 일반 읽기, Act mutation, Page API action과 별도 capability로 설계한다.
 - 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [Page API Discovery](29-page-api-discovery-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md), [S6](sprints/s6-advanced-page-reading.md)
 
@@ -124,8 +124,10 @@ Ask/Act 모드의 상위 규칙은 [01번 아키텍처](01-architecture.md)의
 현재 Browser 로컬 Ask/Act 경로는 table/grid/list 중 한 종류가 요청에
 명시되고 해당 종류의 descriptor가 정확히 하나인 경우, 다른 종류의
 descriptor가 함께 발견돼도 그 하나만 선택한다. 일반 데이터 요청,
-동종 복수 대상, 혼합 종류 요청은 여전히 `REQUIRES_SELECTION`으로 닫는다.
-Side Panel 선택 후 같은 요청 재개 계약은 아직 구현되지 않았다.
+동종 복수 대상, 혼합 종류 요청은 `REQUIRES_SELECTION`을 반환해 Side Panel에서
+후보를 고르게 한다. 후보 선택과 `collection_read` 권한 승인 뒤에는 같은
+요청을 재개하며, 매 재개마다 page scope와 후보를 다시 검사한다. 이 resume
+흐름은 unit 검증됐고 Chrome Side Panel E2E 증거는 남아 있다.
 
 #### 구현 전 결손 기록
 

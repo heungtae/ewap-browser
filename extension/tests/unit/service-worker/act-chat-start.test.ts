@@ -130,6 +130,7 @@ describe("Act chat start", () => {
       "session-abcdefghijkl",
       undefined,
       true,
+      undefined,
     );
   });
 

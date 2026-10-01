@@ -40,6 +40,8 @@ export const createChatRequestMessageHandler = (dependencies: Dependencies) => {
       }
       if (kind === "CHAT_REQUEST_START")
         return this.start(message, sender, respond);
+      if (kind === "CHAT_REQUEST_RESUME")
+        return this.resumeAnalysis(message, sender, respond);
       if (kind === "CHAT_REQUEST_STATUS" || kind === "CHAT_REQUEST_CANCEL")
         return this.statusOrCancel(message, sender, respond, kind);
       if (kind === "DIAGNOSTICS_LIST" || kind === "DIAGNOSTICS_CLEAR")
@@ -138,6 +140,87 @@ export const createChatRequestMessageHandler = (dependencies: Dependencies) => {
                   ),
                 );
             });
+        })
+        .catch((error) =>
+          respond(
+            dependencies.safeFailure(
+              failureCode(error, "PANEL_CONTEXT_UNAVAILABLE"),
+            ),
+          ),
+        );
+      return { handled: true, keepAlive: true };
+    },
+    resumeAnalysis(
+      message: object,
+      sender: RuntimeSender,
+      respond: Respond,
+    ): RoutedMessage {
+      const id = (message as { request_id?: unknown }).request_id;
+      const selectionId = (message as { selection_id?: unknown }).selection_id;
+      const candidateId = (message as { candidate_id?: unknown }).candidate_id;
+      if (
+        !dependencies.isPanelSender(sender) ||
+        !exactKeys(message, [
+          "schema_version",
+          "kind",
+          "request_id",
+          "selection_id",
+          "candidate_id",
+        ]) ||
+        (message as { schema_version?: unknown }).schema_version !== 1 ||
+        !requestId(id) ||
+        typeof selectionId !== "string" ||
+        typeof candidateId !== "string"
+      ) {
+        respond(dependencies.safeFailure("INVALID_ARGUMENT"));
+        return { handled: true };
+      }
+      void dependencies
+        .activeTab(sender)
+        .then((active) => {
+          const resumed = dependencies.requests.resumeAnalysis(
+            id,
+            active.id,
+            sender.documentId ?? "",
+            selectionId,
+            candidateId,
+          );
+          if (!resumed) {
+            respond(dependencies.safeFailure("REQUEST_NOT_FOUND"));
+            return;
+          }
+          respond({ ok: true, accepted: true, request_id: id });
+          const input = { mode: resumed.mode, prompt: resumed.prompt };
+          const options = {
+            analysisSelection: resumed.selection,
+            ...(resumed.resumeRunId
+              ? { resumeRunId: resumed.resumeRunId }
+              : {}),
+          };
+          const execute =
+            resumed.mode === "act"
+              ? dependencies.runAct(
+                  input,
+                  dependencies.requests.context(id),
+                  options,
+                )
+              : dependencies.runAsk(
+                  input,
+                  dependencies.requests.context(id),
+                  options,
+                );
+          void execute
+            .then((result) =>
+              dependencies.requests.settled(id, resumed.generation, result),
+            )
+            .catch((error) =>
+              dependencies.requests.finish(
+                id,
+                resumed.generation,
+                "FAILED",
+                failureCode(error, "PROVIDER_PLUGIN_FAILED") as ErrorCode,
+              ),
+            );
         })
         .catch((error) =>
           respond(
