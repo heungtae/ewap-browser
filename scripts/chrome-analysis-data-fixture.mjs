@@ -49,10 +49,19 @@ export const createAnalysisFixture = async (
         return;
       }
       response.writeHead(200, { "content-type": "text/html" });
-      response.end(`<!doctype html><main><h1>Quarterly data</h1>
-        <table aria-label="Quarterly sales"><thead><tr><th>Region</th><th>Sales</th></tr></thead>
-        <tbody><tr><td>North</td><td>12</td></tr><tr><td>South</td><td>9</td></tr><tr><td>West</td><td>15</td></tr></tbody></table>
-        <button>Save report</button><input type="password" value="not-for-provider"></main>`);
+      response.end(
+        request.url === "/multi"
+          ? `<!doctype html><main><h1>Multiple data sources</h1>
+            <table aria-label="First dataset"><thead><tr><th>Source</th><th>Value</th></tr></thead>
+            <tbody><tr><td>UNSELECTED_ALPHA</td><td>11</td></tr><tr><td>Alpha detail</td><td>12</td></tr></tbody></table>
+            <table aria-label="Second dataset"><thead><tr><th>Source</th><th>Value</th></tr></thead>
+            <tbody><tr><td>SELECTED_BETA</td><td>21</td></tr><tr><td>Beta detail</td><td>22</td></tr></tbody></table>
+            <button>Save report</button></main>`
+          : `<!doctype html><main><h1>Quarterly data</h1>
+            <table aria-label="Quarterly sales"><thead><tr><th>Region</th><th>Sales</th></tr></thead>
+            <tbody><tr><td>North</td><td>12</td></tr><tr><td>South</td><td>9</td></tr><tr><td>West</td><td>15</td></tr></tbody></table>
+            <button>Save report</button><input type="password" value="not-for-provider"></main>`,
+      );
     },
   );
   const fixturePort = await new Promise((resolvePort, reject) => {

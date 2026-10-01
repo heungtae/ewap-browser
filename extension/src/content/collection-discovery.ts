@@ -24,7 +24,7 @@ function getXPath(element: Element): string {
   let current: Element | null = element;
   let depth = 0;
 
-  while (current && current !== document.body && depth < XPATH_MAX_DEPTH) {
+  while (current && depth < XPATH_MAX_DEPTH) {
     const tagName = current.tagName.toLowerCase();
     let part = tagName;
     const parent: Element | null = current.parentElement;
@@ -41,6 +41,7 @@ function getXPath(element: Element): string {
       part += `[@id="${current.id}"]`;
     }
     parts.unshift(part);
+    if (current === document.documentElement) break;
     current = parent;
     depth++;
   }

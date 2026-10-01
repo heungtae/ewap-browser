@@ -129,14 +129,20 @@ describe("analysis data acquisition", () => {
       object_kind: "list" as const,
     };
     let allowed = false;
+    let discoveryCount = 0;
     const sendMessage = vi.fn(async (_tabId: number, message: unknown) => {
       const input = message as { kind?: string; collection_ref?: string };
-      if (input.kind === "CONTENT_COLLECTION_DISCOVER")
+      if (input.kind === "CONTENT_COLLECTION_DISCOVER") {
+        discoveryCount += 1;
         return {
-          collections: [table, list],
+          collections: [
+            { ...table, collection_ref: `table-ref-${discoveryCount}` },
+            { ...list, collection_ref: `list-ref-${discoveryCount}` },
+          ],
           document_epoch: "doc",
           page_scope_epoch: "scope",
         };
+      }
       if (input.kind === "CONTENT_COLLECTION_CONTEXT")
         return { ok: true, document_epoch: "doc", page_scope_epoch: "scope" };
       if (input.kind === "CONTENT_COLLECTION_READ_STATIC")
@@ -222,11 +228,11 @@ describe("analysis data acquisition", () => {
     expect(resumed).toMatchObject({
       source: { kind: "collection", label: "list data" },
       coverage: "complete",
-      records: [{ cells: ["list-ref"] }],
+      records: [{ cells: ["list-ref-3"] }],
     });
     expect(sendMessage).toHaveBeenCalledWith(9, {
       kind: "CONTENT_COLLECTION_READ_STATIC",
-      collection_ref: "list-ref",
+      collection_ref: "list-ref-3",
     });
   });
 

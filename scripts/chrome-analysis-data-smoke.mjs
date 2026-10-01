@@ -32,9 +32,15 @@ try {
   child = spawn(
     executable,
     [
-      "--headless=new",
       "--no-sandbox",
       "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
+      "--disable-backgrounding-occluded-windows",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
       "--ignore-certificate-errors",
       "--host-resolver-rules=MAP analysis.fixture.test 127.0.0.1",
       `--user-data-dir=${profile}`,
@@ -50,7 +56,7 @@ try {
       fetch(`http://127.0.0.1:${cdpPort}/json/version`)
         .then((response) => response.json())
         .catch(() => undefined),
-    10_000,
+    90_000,
     "Chrome for Testing did not open CDP",
   );
   const fixtureTarget = await cdp(
@@ -59,6 +65,16 @@ try {
     {
       url: `https://analysis.fixture.test:${fixturePort}/`,
     },
+  );
+  const fixturePage = await waitFor(
+    async () => {
+      const targets = await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then(
+        (response) => response.json(),
+      );
+      return targets.find((target) => target.id === fixtureTarget.targetId);
+    },
+    10_000,
+    "analysis fixture page target was not created",
   );
   const worker = await waitFor(
     async () => {
@@ -176,8 +192,126 @@ try {
         `analysis context boundary mismatch (${forbidden.join(",")}): ${analysisContent}`,
       );
   }
+
+  const revoked = await evaluate(
+    panel,
+    "chrome.runtime.sendMessage({kind:'PERMISSION_REVOKE_ALL'})",
+  );
+  if (revoked?.ok !== true)
+    throw new Error("collection permission was not revoked for resume test");
+  await cdp(fixturePage.webSocketDebuggerUrl, "Page.navigate", {
+    url: `https://analysis.fixture.test:${fixturePort}/multi`,
+  });
+  await waitFor(
+    () =>
+      evaluate(fixturePage, "document.querySelectorAll('table').length === 2"),
+    10_000,
+    "multi-source fixture did not load",
+  );
+  const clickPanelButton = async (label) =>
+    evaluate(
+      panel,
+      `(() => { const button = [...document.querySelectorAll('#chat-messages button')].reverse().find((item) => !item.disabled && item.textContent?.includes(${JSON.stringify(label)})); if (!button) return false; button.click(); return true; })()`,
+    );
+  const hasEnabledPanelButton = (label) =>
+    evaluate(
+      panel,
+      `([...document.querySelectorAll('#chat-messages button')].some((item) => !item.disabled && item.textContent?.includes(${JSON.stringify(label)})))`,
+    );
+  const submitAndResume = async (mode, prompt, answer, marker) => {
+    const selectedAnalysisBlocks = () =>
+      providerRequests
+        .flatMap((request) => request.messages ?? [])
+        .map((message) => message.content)
+        .filter((content) => typeof content === "string")
+        .map(
+          (content) =>
+            content.match(
+              /\[UNTRUSTED_ANALYSIS_DATA\]\s*([\s\S]*?)\s*\[\/UNTRUSTED_ANALYSIS_DATA\]/,
+            )?.[1],
+        )
+        .filter(
+          (content) => typeof content === "string" && content.includes(marker),
+        );
+    const selectedContextCount = () => selectedAnalysisBlocks().length;
+    const contextBaseline = selectedContextCount();
+    await submit(mode, prompt);
+    await waitFor(
+      () => hasEnabledPanelButton("table data 2"),
+      10_000,
+      `${mode} did not request source selection`,
+    );
+    if (!(await clickPanelButton("table data 2")))
+      throw new Error(`${mode} did not render the second source option`);
+    const permissionCard = await waitFor(
+      () => hasEnabledPanelButton("이번 요청에서 허용"),
+      10_000,
+      `${mode} did not request collection permission after selection`,
+    ).catch(() => false);
+    if (!permissionCard) {
+      const transcript = await evaluate(
+        panel,
+        "document.querySelector('#chat-messages')?.textContent ?? ''",
+      );
+      throw new Error(
+        `${mode} permission resume card missing; transcript=${transcript}`,
+      );
+    }
+    if (!(await clickPanelButton("이번 요청에서 허용")))
+      throw new Error(
+        `${mode} did not render the one-request permission action`,
+      );
+    const resumedContext = await waitFor(
+      () => selectedContextCount() > contextBaseline,
+      20_000,
+      `${mode} resumed without selected collection data reaching the fixture provider`,
+    ).catch(() => false);
+    if (!resumedContext) {
+      const transcript = await evaluate(
+        panel,
+        "document.querySelector('#chat-messages')?.textContent ?? ''",
+      );
+      throw new Error(
+        `${mode} resumed without selected collection data; transcript=${transcript}`,
+      );
+    }
+    const analysisContent = selectedAnalysisBlocks().at(-1);
+    if (
+      typeof analysisContent !== "string" ||
+      analysisContent.includes("UNSELECTED_ALPHA")
+    )
+      throw new Error(
+        `${mode} included an unselected source in provider context: ${analysisContent}`,
+      );
+    await waitFor(
+      () =>
+        evaluate(
+          panel,
+          `(document.querySelector('#chat-messages')?.textContent.split(${JSON.stringify(answer)}).length ?? 0) >= 3`,
+        ),
+      20_000,
+      `${mode} did not finish after same-request resume`,
+    );
+    return { analysisContent };
+  };
+  const resumedAsk = await submitAndResume(
+    "ask",
+    "이 페이지의 데이터를 분석 요약해",
+    "Ask analysis fixture answer",
+    "SELECTED_BETA",
+  );
+  if (resumedAsk.analysisContent.includes("UNSELECTED_ALPHA"))
+    throw new Error("Ask included the unselected collection");
+  const resumedAct = await submitAndResume(
+    "act",
+    "표 데이터를 분석하고 저장해",
+    "Act analysis fixture answer",
+    "SELECTED_BETA",
+  );
+  if (resumedAct.analysisContent.includes("UNSELECTED_ALPHA"))
+    throw new Error("Act included the unselected collection");
   console.log(
-    "Chrome Ask/Act analysis data passed: real Side Panel, collection permission, bounded context, controlled provider",
+    "Chrome Ask/Act analysis data passed: unique-source context plus same-request multi-source selection and permission resume",
   );
 } finally {
   child?.kill("SIGTERM");

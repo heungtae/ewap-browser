@@ -1,7 +1,7 @@
 # 28. 객체 특성별 Collection Reading 설계
 
 - 작성일: 2026-09-17
-- 상태: Partial implementation — CR-1~CR-5 reader 및 Side Panel 흐름, Ask/Act collection context 재투입, 모호한 복수 source 선택/권한 승인 후 같은 요청 재개, exact origin/path reviewed fixture adapter 경로를 구현했다. 타입, lint/format, unit 검증을 통과했다. Chrome virtual-grid full-read/EOF/restore 및 Side Panel resume E2E 증거가 없어 완료 선언은 보류한다. 외부 live provider 검증은 Browser runtime fixture 검증과 별도다.
+- 상태: Completed for the S6-R Browser slice — CR-1~CR-5 reader 및 Side Panel 흐름, Ask/Act collection context 재투입, 복수 source 선택/권한 승인 후 같은 요청 재개, exact origin/path reviewed fixture adapter 경로를 구현·검증했다. headed Chrome for Testing virtual-grid full-read/EOF/restore와 Ask/Act Side Panel resume E2E를 통과했다. 외부 live provider 검증은 별도 범위다. [S6-R 증거](evidence/s6-r-closure-2026-10-01.md).
 - 범위: grid/table/list/chart/pagination처럼 화면에 일부만 렌더링되는 데이터 객체의 **읽기와 처리용 관측**. DOM/ARIA 일반 읽기, Act mutation, Page API action과 별도 capability로 설계한다.
 - 관련: [아키텍처](01-architecture.md), [사이트 도구 계약](13-site-tool-contract.md), [Semantic Projection](14-semantic-projection-fingerprint.md), [보안 정책](02-security-policy.md), [Page API Discovery](29-page-api-discovery-design.md), [Ask/Act 분석 데이터 수집 통합 설계](32-ask-act-analysis-data-acquisition-design.md), [S6](sprints/s6-advanced-page-reading.md)
 
@@ -127,7 +127,7 @@ descriptor가 함께 발견돼도 그 하나만 선택한다. 일반 데이터 �
 동종 복수 대상, 혼합 종류 요청은 `REQUIRES_SELECTION`을 반환해 Side Panel에서
 후보를 고르게 한다. 후보 선택과 `collection_read` 권한 승인 뒤에는 같은
 요청을 재개하며, 매 재개마다 page scope와 후보를 다시 검사한다. 이 resume
-흐름은 unit 검증됐고 Chrome Side Panel E2E 증거는 남아 있다.
+흐름은 unit 및 실제 Chrome Side Panel E2E로 검증됐다.
 
 #### 구현 전 결손 기록
 
@@ -214,9 +214,10 @@ fixture E2E는 별도 증거를 남긴다.
 - [x] **CR-5**: reviewed pagination transition contract. generic next-click은
       계속 금지한다.
 - [x] **UX**: Side Panel의 discover/start/stop/status UI
-- [ ] **E2E evidence**: 통제된 Chrome virtual-grid fixture의 full-read/restore
-      evidence. runner는 구현됐으나 headless Chromium은 실제 Side Panel context를
-      열지 못하므로, headed Chrome for Testing에서 실행해 증거를 기록해야 한다.
+- [x] **E2E evidence**: headed Chrome for Testing의 실제 Side Panel context에서
+      virtual-grid 1,000행 full-read/EOF/restore 및 Ask/Act source selection/permission
+      resume를 제어 fixture로 확인했다. 결과는
+      [S6-R 증거](evidence/s6-r-closure-2026-10-01.md)에 기록했다.
 
 | 단계 | 범위                                                     | 종료 조건                                                                                          |
 | ---- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
@@ -235,7 +236,7 @@ fixture E2E는 별도 증거를 남긴다.
 - canvas screenshot/OCR만으로 전체 series 또는 정확한 수치를 반환하지 않는다.
 - adapter가 없거나 origin/path/version/schema가 다르면 private page state/network를 읽지 않고 `ADAPTER_UNAVAILABLE` 또는 `UNSUPPORTED_OBJECT`을 반환한다.
 
-CR-2 구현은 content script가 현재 mounted window를 읽고, worker가 bounded scroll/EOF/total evidence를 조정한 뒤 위치를 복구하는 방식이다. 통제된 virtual grid fixture에서 Side Panel의 전체 읽기 시작→진행→Stop과 원위치 복구→`complete/partial` evidence를 실제 Chrome으로 확인하기 전에는 지원 완료로 선언하지 않는다.
+CR-2 구현은 content script가 현재 mounted window를 읽고, worker가 bounded scroll/EOF/total evidence를 조정한 뒤 위치를 복구하는 방식이다. 통제된 virtual grid fixture의 실제 Chrome Side Panel에서 전체 읽기/EOF와 Stop/`partial` 종료, 두 흐름의 원위치 복구를 확인했다. 세부 결과는 [S6-R 증거](evidence/s6-r-closure-2026-10-01.md)에 기록했다.
 
 ## 7. 리뷰 tracker
 
@@ -243,9 +244,9 @@ CR-2 구현은 content script가 현재 mounted window를 읽고, worker가 boun
 | ---------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------- |
 | 객체별 reader 분리와 generic collector 비확장  | Decided               | 이 문서의 registry/interface 및 code review                                                                   |
 | `collection_read` capability/permission schema | Implemented           | panel-bound short-lived `collection_ref`, host grant, scope/deadline/chunk unit test와 Side Panel UX          |
-| virtual scroll 정확성/복구                     | Partial verification  | content-owned bounded scroll/read/restore unit test; CR-2 실제 Chrome fixture evidence                        |
+| virtual scroll 정확성/복구                     | Verified              | headed Chrome for Testing 1,000-row fixture, EOF/total, bounded chunk, restored scroll position              |
 | pagination의 read-only transition contract     | Implemented           | exact reviewed adapter route만 실행하며 generic next-click은 unavailable                                      |
-| API/export/Business MCP data contract          | Implemented framework | exact origin/path/version/closed-schema registry; 승인된 site adapter 등록과 fixture evidence는 사이트별 작업 |
+| API/export/Business MCP data contract          | Verified fixture      | exact origin/path/version/closed-schema registry와 bounded cursor/total/EOF fixture adapter                    |
 | canvas 전체 데이터 지원                        | Deliberately limited  | export/public API/approved adapter 없이는 viewport-only 유지                                                  |
 
 이 설계는 구현을 시작하라는 지시가 아니다. Browser 로컬 collection reader와 Platform/Workspace의 API·MCP release contract는 독립적으로 검토·배포한다.

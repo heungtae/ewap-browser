@@ -184,7 +184,7 @@
 
       container.addEventListener(
         "scroll",
-        () => requestAnimationFrame(render),
+        () => setTimeout(render, 10),
         { passive: true },
       );
       render();

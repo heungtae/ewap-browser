@@ -138,6 +138,13 @@ const isDiscovery = (
 
 const labelFor = (descriptor: CollectionReadDescriptor): string =>
   `${descriptor.object_kind.replace("_", " ")} data`;
+const candidateBinding = (descriptor: CollectionReadDescriptor): string =>
+  JSON.stringify({
+    object_kind: descriptor.object_kind,
+    container_xpath: descriptor.container_xpath,
+    aria_attributes: descriptor.aria_attributes,
+    roles: descriptor.roles,
+  });
 
 /** Only an explicit, single object kind can disambiguate multiple sources. */
 const requestedCollectionKind = (
@@ -314,7 +321,9 @@ export const createAnalysisDataAcquisition =
         return unavailable("PAGE_CHANGED");
       const selected = stored.candidates.get(selection.candidate_id);
       descriptor = candidates.find(
-        (candidate) => candidate.collection_ref === selected?.collection_ref,
+        (candidate) =>
+          selected !== undefined &&
+          candidateBinding(candidate) === candidateBinding(selected.descriptor),
       );
       if (!descriptor) return unavailable("PAGE_CHANGED");
     } else if (candidates.length === 1) {

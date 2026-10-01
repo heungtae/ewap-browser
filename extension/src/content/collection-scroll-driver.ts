@@ -145,6 +145,10 @@ export async function scrollStep(): Promise<ScrollStepResult> {
   );
 
   scrollableContainer.scrollTop = targetScrollTop;
+  // Some browser automation/headless display configurations update scrollTop
+  // without delivering the usual scroll event. Notify page-owned virtualizers
+  // explicitly, then wait for their bounded DOM window to settle.
+  scrollableContainer.dispatchEvent(new Event("scroll", { bubbles: true }));
 
   await waitForMutations(scrollableContainer, SCROLL_STABILIZE_MS);
 

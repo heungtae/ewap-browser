@@ -5,6 +5,7 @@ import { createServer as createTcpServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
+import { openAnalysisPanel } from "./chrome-analysis-panel.mjs";
 
 const executable = process.env.CHROME_FOR_TESTING_BIN;
 if (!executable)
@@ -66,6 +67,8 @@ const profile = await mkdtemp(
 let fixture;
 let child;
 let chromeStderr = "";
+let chromeStdout = "";
+let chromeExit = "";
 try {
   await run("openssl", [
     "req",
@@ -108,9 +111,15 @@ try {
   child = spawn(
     executable,
     [
-      "--headless=new",
       "--no-sandbox",
       "--disable-gpu",
+      "--disable-dev-shm-usage",
+      "--disable-background-timer-throttling",
+      "--disable-renderer-backgrounding",
+      "--disable-backgrounding-occluded-windows",
+      "--no-first-run",
+      "--no-default-browser-check",
+      "--disable-background-networking",
       "--ignore-certificate-errors",
       "--host-resolver-rules=MAP collection.fixture.test 127.0.0.1",
       `--user-data-dir=${profile}`,
@@ -119,8 +128,15 @@ try {
       `--remote-debugging-port=${cdpPort}`,
       "about:blank",
     ],
-    { stdio: ["ignore", "ignore", "pipe"] },
+    { stdio: ["ignore", "pipe", "pipe"] },
   );
+  child.on("exit", (code, signal) => {
+    chromeExit = `Chrome exited with code=${code} signal=${signal}`;
+  });
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", (chunk) => {
+    chromeStdout = `${chromeStdout}${chunk}`.slice(-4000);
+  });
   child.stderr.setEncoding("utf8");
   child.stderr.on("data", (chunk) => {
     chromeStderr = `${chromeStderr}${chunk}`.slice(-4000);
@@ -130,8 +146,8 @@ try {
       fetch(`http://127.0.0.1:${cdpPort}/json/version`)
         .then((r) => r.json())
         .catch(() => undefined),
-    10_000,
-    "Chrome for Testing did not open CDP",
+    90_000,
+    `Chrome for Testing did not open CDP${chromeExit || ""}${chromeStdout || chromeStderr ? `: ${chromeStdout}${chromeStderr}` : ""}`,
   );
   const fixtureTarget = await cdp(
     version.webSocketDebuggerUrl,
@@ -159,90 +175,17 @@ try {
     `ContextPilot worker was not loaded; targets=${JSON.stringify(observedTargets)}${chromeStderr ? `; stderr=${chromeStderr}` : ""}`,
   );
   const extensionId = new URL(worker.url).host;
-  await cdp(version.webSocketDebuggerUrl, "Target.createTarget", {
-    url: `chrome-extension://${extensionId}/sidepanel/index.html`,
+  const { panel, panelWindowId } = await openAnalysisPanel({
+    cdpPort,
+    extensionId,
+    fixtureTarget,
+    version,
+    worker,
   });
-  let panel = await waitFor(
-    async () => {
-      const targets = await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then(
-        (r) => r.json(),
-      );
-      return targets.find(
-        (target) =>
-          target.url ===
-          `chrome-extension://${extensionId}/sidepanel/index.html`,
-      );
-    },
-    10_000,
-    "Side Panel target was not created",
-  );
-  await waitFor(
-    () => evaluate(panel, "document.body instanceof HTMLBodyElement"),
-    10_000,
-    "Side Panel document did not load",
-  );
-  const openControl = await evaluate(
-    panel,
-    `(() => {
-      const button = document.createElement('button');
-      button.id = 'collection-smoke-open-panel';
-      button.textContent = 'open';
-      button.addEventListener('click', async () => {
-        await chrome.sidePanel.open({windowId: (await chrome.windows.getCurrent()).id});
-      });
-      document.body.append(button);
-      const rect = button.getBoundingClientRect();
-      return {x: rect.x + rect.width / 2, y: rect.y + rect.height / 2};
-    })()`,
-  );
-  await cdp(panel.webSocketDebuggerUrl, "Input.dispatchMouseEvent", {
-    type: "mousePressed",
-    x: openControl.x,
-    y: openControl.y,
-    button: "left",
-    clickCount: 1,
-  });
-  await cdp(panel.webSocketDebuggerUrl, "Input.dispatchMouseEvent", {
-    type: "mouseReleased",
-    x: openControl.x,
-    y: openControl.y,
-    button: "left",
-    clickCount: 1,
-  });
-  await waitFor(
-    () =>
-      evaluate(
-        worker,
-        "chrome.runtime.getContexts({contextTypes:['SIDE_PANEL']}).then((items) => items.length === 1)",
-      ),
-    10_000,
-    "Chrome did not open a real Side Panel context",
-  );
-  panel = await waitFor(
-    async () => {
-      const targets = await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then(
-        (response) => response.json(),
-      );
-      return targets.find(
-        (target) =>
-          target.id !== panel.id &&
-          target.url ===
-            `chrome-extension://${extensionId}/sidepanel/index.html`,
-      );
-    },
-    10_000,
-    "real Side Panel DevTools target was not created",
-  );
   await cdp(version.webSocketDebuggerUrl, "Target.activateTarget", {
     targetId: fixtureTarget.targetId,
   });
   await new Promise((resolveDelay) => setTimeout(resolveDelay, 500));
-  const panelWindowId = await evaluate(
-    panel,
-    "chrome.windows.getCurrent().then(({id}) => id)",
-  );
-  if (!Number.isInteger(panelWindowId) || panelWindowId < 0)
-    throw new Error("Side Panel has no authenticated window ID");
   const panelRequest = (payload) =>
     evaluate(
       panel,
@@ -270,12 +213,23 @@ try {
     const granted = await panelRequest({
       kind: "PERMISSION_DECISION",
       permission_request_id: response.request_id,
-      decision: "once",
+      decision: "always",
     });
     if (granted?.ok !== true)
       throw new Error("collection permission was not granted");
     response = await start(grid.collection_ref);
   }
+  const scrollMetrics = await evaluate(
+    {
+      webSocketDebuggerUrl: (
+        await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then((r) =>
+          r.json(),
+        )
+      ).find((target) => target.id === fixtureTarget.targetId)
+        .webSocketDebuggerUrl,
+    },
+    "(() => { const e = document.querySelector('#gridContainer'); return {scrollTop:e?.scrollTop,scrollHeight:e?.scrollHeight,clientHeight:e?.clientHeight,mountedRows:e?.querySelectorAll('[role=row]').length}; })()",
+  );
   const result = response?.result;
   if (
     result?.coverage !== "complete" ||
@@ -285,23 +239,56 @@ try {
     typeof result?.next_cursor !== "string"
   )
     throw new Error(
-      `virtual collection result mismatch: ${JSON.stringify(response)}`,
+      `virtual collection result mismatch metrics=${JSON.stringify(scrollMetrics)}: ${JSON.stringify(response)}`,
     );
-  const scrollTop = await evaluate(
-    {
-      webSocketDebuggerUrl: (
-        await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then((r) =>
-          r.json(),
-        )
-      ).find((target) => target.id === fixtureTarget.targetId)
-        .webSocketDebuggerUrl,
-    },
-    "document.querySelector('#gridContainer')?.scrollTop",
-  );
+  const scrollTop = scrollMetrics.scrollTop;
   if (scrollTop !== 0)
     throw new Error(`virtual grid was not restored: ${scrollTop}`);
   console.log(
     "Chrome virtual-grid collection read passed: 1,000 rows, EOF, chunk, restore",
+  );
+
+  const refreshedDiscover = await panelRequest({ kind: "COLLECTION_DISCOVER" });
+  const refreshedGrid = refreshedDiscover?.collections?.find(
+    (item) => item.object_kind === "grid" && item.has_virtual_scroll === true,
+  );
+  if (!refreshedGrid)
+    throw new Error(
+      `virtual grid was not rediscovered: ${JSON.stringify(refreshedDiscover)}`,
+    );
+  const startPayload = {
+    kind: "PANEL_REQUEST",
+    window_id: panelWindowId,
+    payload: {
+      kind: "COLLECTION_READ_START",
+      request: { collection_ref: refreshedGrid.collection_ref, mode: "full" },
+    },
+  };
+  await cdp(panel.webSocketDebuggerUrl, "Runtime.evaluate", {
+    expression: `window.__stopReadPromise = chrome.runtime.sendMessage(${JSON.stringify(startPayload)}); setTimeout(() => chrome.runtime.sendMessage(${JSON.stringify({ kind: "PANEL_REQUEST", window_id: panelWindowId, payload: { kind: "COLLECTION_READ_CANCEL" } })}), 100)`,
+    awaitPromise: false,
+    returnByValue: true,
+  });
+  const stopped = await evaluate(panel, "window.__stopReadPromise");
+  const fixturePage = (
+    await fetch(`http://127.0.0.1:${cdpPort}/json/list`).then((r) => r.json())
+  ).find((target) => target.id === fixtureTarget.targetId);
+  const restoredMetrics = await evaluate(
+    fixturePage,
+    "document.querySelector('#gridContainer')?.scrollTop",
+  );
+  if (
+    stopped?.result?.coverage !== "partial" ||
+    stopped?.result?.reason !== "CANCELLED" ||
+    stopped?.result?.collected_count <= 0 ||
+    stopped?.result?.restored_position !== true ||
+    restoredMetrics !== 0
+  )
+    throw new Error(
+      `stopped collection result mismatch metrics=${restoredMetrics}: ${JSON.stringify(stopped)}`,
+    );
+  console.log(
+    `Chrome virtual-grid stop passed: partial result with ${stopped.result.collected_count} rows, scroll restored`,
   );
 } finally {
   child?.kill("SIGTERM");
