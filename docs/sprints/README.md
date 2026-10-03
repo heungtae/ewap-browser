@@ -18,5 +18,5 @@
 - [S12 Browser 로컬 managed policy 경계](s12-managed-policy-boundary.md)
 - [기존 Browser 진단 ZIP S12-C1~C6 계획](s12-diagnostics-download-bundle.md)
 - [S13 Browser 로컬 Act evidence](s13-runtime-evidence-browser.md)
-- [기존 Browser Ask/Act 분석 수집 S13-C1~C8 계획](s13-ask-act-analysis-data-acquisition.md)
+- [Browser Ask/Act 분석 수집 S13-C1~C8 — Completed](s13-ask-act-analysis-data-acquisition.md)
 - [S14 Browser 로컬 기록 비교](s14-studio-integration-browser-boundary.md)

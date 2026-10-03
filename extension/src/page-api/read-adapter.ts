@@ -11,6 +11,7 @@ export const fixturePageApiReadAdapter = {
 export type PageApiReadContext = {
   source: { kind: "page_api_read"; label: "reviewed page summary" };
   coverage: "complete" | "partial";
+  reason?: "CONTEXT_TRUNCATED" | "NO_EOF_EVIDENCE";
   collected_count: number;
   records: { index: number; cells: string[] }[];
   truncated: boolean;
@@ -125,6 +126,13 @@ export const validatePageApiReadResult = (
   return {
     source: { kind: "page_api_read", label: "reviewed page summary" },
     coverage: value.eof && !truncated ? "complete" : "partial",
+    ...(!truncated && value.eof
+      ? {}
+      : {
+          reason: truncated
+            ? ("CONTEXT_TRUNCATED" as const)
+            : ("NO_EOF_EVIDENCE" as const),
+        }),
     collected_count: value.records.length,
     records,
     truncated,

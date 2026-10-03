@@ -7,6 +7,11 @@ import type { ActSession } from "./act-session-types.js";
 import { createActStepRunner } from "./act-step-runner.js";
 import { createAskChatRunner } from "./ask-chat-runner.js";
 import type { AskChatDependencies } from "./ask-chat-dependencies.js";
+import {
+  pageApiAnalysisSource,
+  readPageApiSource,
+  requiresAnalysisAdapterReview,
+} from "./runtime-page-api-read.js";
 import { createAnalysisDataAcquisition } from "./analysis-data-acquisition.js";
 import { createAskActIntentRouter } from "./ask-act-intent-router.js";
 import {
@@ -94,10 +99,13 @@ const analysisDataAcquisition = createAnalysisDataAcquisition({
   chrome: chromeApi!,
   permissions,
   scopeFor: (tabId) => pageScopes.get(tabId),
-  permissionRequest: (origin, requestRunId) => {
+  pageApiSource: pageApiAnalysisSource,
+  requiresAdapterReview: requiresAnalysisAdapterReview,
+  readPageApi: readPageApiSource,
+  permissionRequest: (origin, requestRunId, capability = "collection_read") => {
     const requestId = opaqueId();
     permissionRequests.set(requestId, {
-      capability: "collection_read",
+      capability,
       origin,
       expiresAt: Date.now() + 5 * 60_000,
       act_session_id: requestRunId,

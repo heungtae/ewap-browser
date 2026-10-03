@@ -1,15 +1,11 @@
 # 32. Ask/Act 분석 데이터 수집 통합 설계
 
 - 작성일: 2026-09-21
-- 수정일: 2026-09-22
-- 상태: In progress — Ask의 explicit unique-collection 경로와 Act의 closed
-  route gate/read-only 재투입, 명시적 분석이 선행된 action route의 bounded
-  collection context를 구현했다. 실제 Side Panel과 HTTPS 제어 provider fixture는
-  Ask/Act의 unique-source context 전달을 검증했다. 수집 중 page scope 변경·
-  취소·시간 초과 시 이미 수집한 행의 Provider 재투입을 차단한다. 복수 source
-  selection UI/승인 뒤 같은 request 재개와 Page API read adapter는 Proposed다.
-  복수 collection 중 명시한 객체 종류에 해당하는 대상이 정확히 하나면
-  Browser가 그 대상만 선택하는 경로는 unit 검증했다.
+- 수정일: 2026-10-04
+- 상태: Implemented — Browser 공통 collection/reviewed Page API source 선택,
+  별도 R0 권한 승인 후 같은 요청 재개, bounded context 재투입을 구현했다.
+  검토되지 않은 API 후보는 호출 없이 `REQUIRES_ADAPTER_REVIEW`로 종료한다.
+  실제 사이트 adapter와 외부 live provider 검증은 별도 범위다.
 - 범위: Ask/Act 요청에서 페이지의 분석 대상을 발견·선택·권한 확인·수집하고, bounded 결과만 같은 요청의 Provider 분석에 전달하는 공통 경로
 - 관련: [아키텍처](01-architecture.md), [Page API 실행](27-page-api-execution-design.md), [Collection Reading](28-collection-reading-strategy-design.md), [Page API Discovery](29-page-api-discovery-design.md), [Act 현재 구현 경로](31-act-request-execution-current-implementation.md), [Ask 현재 구현 경로](33-ask-request-execution-current-implementation.md)
 
@@ -17,14 +13,15 @@
 
 Collection Reading과 Page API Discovery를 독립 Side Panel 도구로만 끝내지 않는다. Ask/Act의 page-data 분석 의도가 확인되면, Provider 실행계획 turn 전에 Browser가 두 경로를 공통 분석 데이터 수집 단계로 사용한다.
 
-현재 `createAnalysisDataAcquisition()`은 Ask의 명시적 분석 문구에 한해
-collection descriptor를 발견한다. 대상이 정확히 하나이고 기존
-`collection_read` R0 허용이 있으며 document/page scope가 일치할 때만
-`full` read를 시작해 같은 Ask Provider turn에 bounded context를 넣는다.
-복수 대상 중 요청에 명시한 table/grid/list 종류에 해당하는 대상이
-정확히 하나인 경우에도 선택한다. 일반 데이터 요청, 같은 종류의 복수 대상,
-여러 종류를 함께 요청한 경우와 permission 미허용은 fail-closed
-`unavailable` context로 남긴다. Page API candidate는 호출하지 않는다.
+현재 `createAnalysisDataAcquisition()`은 명시적 분석 요청 또는 Act의
+`ANALYSIS_READ_REQUIRED` route에서 collection descriptor와 reviewed adapter의
+exact origin/path/version availability를 합친다. source가 하나면 자동 선택하고,
+복수 source는 Panel에서 하나를 선택한다. table/grid/list를 명시한 요청은 해당
+collection으로 좁힐 수 있다. `collection_read`와 `page_api_read` 권한을 분리하며
+선택·권한 승인은 같은 request ID에 결속된 재발견과 scope 검사 뒤에만 재개한다.
+선택이 대기 중인 동안 Stop·페이지 변경·다른 요청으로 재결속되지 않는다.
+사용 가능한 source가 없으면 redacted discovery로 검토 필요 여부만 확인하고,
+검토되지 않은 candidate는 데이터 수집이나 Provider 입력으로 승격하지 않는다.
 
 단, 두 경로의 권한은 다르다.
 
@@ -160,56 +157,34 @@ cap에 걸렸다면 `truncated=true`로 표시한다. `collected_count`는 reade
 - navigation/scope 변경, Stop, timeout, schema 실패 뒤에는 이전 source/chunk를 다음 Provider turn에 전달하지 않는다.
 - partial/viewport-only/unavailable은 coverage/reason을 보존하며, diagnostics/export에는 record 원문과 수집 식별자를 남기지 않는다.
 
-## 7. 현재 구현과 분리
+## 7. 현재 구현과 완료 범위
 
-`extension/src/service-worker/analysis-data-acquisition.ts`와
-`ask-chat-runner.ts`는 Ask의 단일 collection 경로를 구현한다. provider
-context에는 `source kind/label`, coverage, closed reason, collected count,
-bounded cells만 전달하며 raw row ID, ARIA row position, collection ref,
-locator, cursor, page URL은 전달하지 않는다. request Stop signal은 active
-collection orchestration을 취소한다.
+- `analysis-data-acquisition.ts`는 collection reader와 내부 Page API read runner를
+  공통 획득 단계로 연결한다. `analysis-source-selection.ts`는 request/tab/origin/
+  path/document/page scope에 결속된 임시 선택과 capability별 권한을 관리한다.
+- reviewed API는 번들에 포함된 `fixture_summary` v1의 exact HTTPS origin과
+  `/variant`에서만 호출된다. 고정 read 함수·closed argument/result·100행 Provider
+  cap·32 KiB result cap·5초 deadline·no retry를 유지한다. 일반 사이트의 임의
+  함수·endpoint 또는 Discovery ref를 실행 권한으로 쓰지 않는다.
+- Ask는 획득 후 Profile resolve와 각 Provider 호출 전후에 현재 페이지 범위를
+  확인한다. 분석 데이터를 받은 turn의 streaming delta는 범위 검사 전에
+  표시하지 않는다. 페이지 변경 시 실패/취소 terminal이며 이전 행을 재사용하지 않는다.
+- Act는 분석 후 별도 action proposal·review·permission·preflight·verification을
+  유지한다. Provider 응답 이후에도 범위를 다시 검사한다. workflow 후보를
+  선택하는 동안 분석 context와 request identity는 메모리에만 보관한다.
+  저장된 metadata의 `requires_analysis` 선택은 Worker 재시작 후 복원하지 않는다.
+- reader가 complete여도 Provider cap 때문에 누락된 행·셀이 있으면 partial /
+  `CONTEXT_TRUNCATED`로 표시한다. API의 EOF 근거가 없으면 partial /
+  `NO_EOF_EVIDENCE`, schema 실패·timeout은 unavailable·0행이다.
+- SVG/canvas는 viewport evidence만 사용한다. reviewed adapter가 없는 pagination은
+  unavailable이며 페이지를 무단 전환하지 않는다. virtual collection의 전체성은
+  S6-R의 EOF/total/stable identity 증거를 따르며, Provider chunk의 전체성과 구분한다.
+- adapter 없는 후보는 Panel의 검토 필요 카드로 정상 종료한다. candidate ref,
+  함수 경로, endpoint, raw result는 Provider/chat history/diagnostics/export/storage에
+  전달하지 않는다. API에서 획득한 sanitized record도 현재 요청 메모리와
+  표시된 untrusted Provider context 외의 영구 저장소에는 넣지 않는다.
 
-이번 slice에서 Act route gate는 Provider의 closed route 응답만 받아
-`QUESTION`, `ANALYSIS_READ_REQUIRED`, `ACTION_REQUIRED`로 분기한다. 앞의
-두 route는 Act request identity를 유지한 읽기 전용 runner로 재투입하며
-workflow/action tool을 계산하지 않는다. `ACTION_REQUIRED` 중 명시적
-collection-analysis 요청은 action tool/workflow discovery 전에 같은
-bounded collection read를 수행하고, 결과가 있을 때만 untrusted analysis
-context로 action-planning turn에 전달한다. 수집 성공은 action 승인이나
-dispatch 권한이 아니다.
-
-복수 source의 Panel 선택과 permission 승인 뒤 같은 request 재개, reviewed
-`page_api_read` adapter는 여전히 구현하지 않았다. `test:chrome-analysis-data`
-는 실제 Chrome Side Panel, service worker, content script, HTTPS 제어 provider를
-사용해 Ask의 read-only answer와 Act의 action-planning turn에 unique collection의
-bounded context가 전달됨을 검증한다. 이 fixture는 live provider 또는 복수 source
-선택의 증거가 아니며, 해당 범위를 구현 완료로 해석하지 않는다.
-
-수집 결과를 Provider에 넣기 직전 worker의 document/page scope를 다시 확인한다.
-reader가 `PAGE_CHANGED`, `CANCELLED`, `TIMEOUT`을 반환하거나 최종 scope가
-달라졌다면 해당 run의 수집 행을 버리고 `unavailable`·0건만 전달한다.
-대상이 0개면 `UNAVAILABLE`, 복수 중 객체 종류로 안전하게 하나를 고를 수
-없으면 `REQUIRES_SELECTION`으로 구분한다.
-이 경계는 unit 회귀 검증을 마쳤으며 Chrome 실사용 검증을 대체하지 않는다.
-
-수집을 마친 뒤 Provider 호출까지 다른 비동기 단계가 이어질 수 있다. Ask는
-Profile resolve 뒤 메시지를 만들 때, Act는 각 action-planning turn의 메시지를
-만들 때 수집 시작 시점의 document/page scope와 현재 scope를 다시 비교한다.
-달라졌다면 기존 행을 메시지에 재사용하지 않고 `PAGE_CHANGED`·`unavailable`·
-0건으로 대체한다. 이 scope 표식은 worker 메모리에만 두고 Provider context,
-chat history, diagnostics, storage에 싣지 않는다.
-
-Ask의 read-only tool loop는 최대 세 번 Provider를 호출할 수 있다. 분석 수집
-결과가 있는 요청은 **매 Provider 호출 직전** 현재 tab의 page snapshot을 새로
-읽어 수집 당시 document/page scope·origin·path와 비교한다. 현재 페이지를
-확인할 수 없거나 scope가 다르면 `PAGE_SCOPE_STALE`로 요청을 중단하고
-실행 run을 실패 terminal로 닫는다. 기존 수집 행은 뒤따르는 Provider turn에
-재전송하지 않는다. 이 검사는
-첫 turn 전에 수행한 in-memory scope 비교를 보강한다. Provider 응답을 받은
-뒤에도 scope를 다시 확인한 후 tool 호출 또는 최종 답변을 처리한다. 분석
-데이터가 있는 turn의 assistant delta는 이 확인 전에는 Panel에 표시하지 않는다.
-
-S13-C4 Provider context cap은 행 수뿐 아니라 셀 수와 셀 길이도 절단으로
-계산한다. reader `complete` 결과 중 한 셀이라도 잘린 경우 Provider context는
-`partial`/`CONTEXT_TRUNCATED`가 된다. 이 판정은 reader의 원본 완료 근거를
-바꾸지 않는다.
+실제 Chrome의 Side Panel·Worker·MAIN/content script와 HTTPS 제어 provider를
+사용한 증거는 [S13 완료 증거](evidence/s13-analysis-closure-2026-10-04.md)를
+따른다. 외부 live provider의 답변 정확성이나 실제 회사 사이트의 adapter 배포를
+이 Browser 완료 범위로 재해석하지 않는다.

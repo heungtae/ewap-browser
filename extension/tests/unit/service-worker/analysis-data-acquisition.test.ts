@@ -210,6 +210,7 @@ describe("analysis data acquisition", () => {
     expect(permissionRequest).toHaveBeenCalledWith(
       "https://fixture.invalid",
       "chat-request-id",
+      "collection_read",
     );
     expect(sendMessage).not.toHaveBeenCalledWith(
       9,

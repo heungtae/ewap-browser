@@ -28,4 +28,6 @@ Community ALLOW도 policy 이벤트를 만들 수 있으므로 이를 중앙 PDP
 공유 계약과 Platform 서비스가 필요하다.
 
 과거 [Ask/Act 분석 수집 S13-C1~C8](s13-ask-act-analysis-data-acquisition.md)은
-별도 `In Progress` Browser 작업으로 이 판정에 포함되지 않는다.
+별도 Browser 작업이며 2026-10-04 통제 Chrome/Provider 범위에서
+Completed다. [분석 수집 완료 증거](../evidence/s13-analysis-closure-2026-10-04.md)를
+따르며 이 Act evidence 판정과 합치지 않는다.

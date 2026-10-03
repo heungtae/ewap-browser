@@ -1,3 +1,4 @@
+import type { ActSession } from "./act-session-types.js";
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
 import { workflowPathMatches } from "../contracts/workflow-catalog.js";
@@ -18,6 +19,9 @@ export type WorkflowSelection = {
   profileDefinitions: readonly ProfileActionTool[];
   candidates: Map<string, CandidateDefinition>;
   selectedId?: string;
+  analysisData?: NonNullable<ActSession["analysisData"]>;
+  analysisScope?: NonNullable<ActSession["analysisScope"]>;
+  requestContext?: NonNullable<ActSession["requestContext"]>;
 };
 
 const candidate = (
@@ -91,6 +95,7 @@ export const serialiseWorkflowSelection = (selection: WorkflowSelection) => ({
   prompt: safeChatText(selection.prompt),
   profile: selection.profile,
   candidates: [...selection.candidates.values()],
+  ...(selection.analysisData ? { requires_analysis: true } : {}),
   ...(selection.selectedId === undefined
     ? {}
     : { selected_id: selection.selectedId }),
@@ -110,9 +115,13 @@ export const persistedWorkflowSelection = (
     "profile",
     "candidates",
     "selected_id",
+    "requires_analysis",
   ];
   if (
     !isPlainObject(value) ||
+    // Analysis rows and request identity are memory-only. Such a selection
+    // cannot be resumed from metadata after a worker restart.
+    value.requires_analysis !== undefined ||
     Object.keys(value).some((key) => !keys.includes(key)) ||
     typeof value.id !== "string" ||
     typeof value.expires_at !== "number" ||

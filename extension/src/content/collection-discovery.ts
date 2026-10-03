@@ -165,9 +165,8 @@ function detectObjectKind(element: Element): CollectionObjectKind | null {
   const hasPagination = element.querySelector(PAGINATION_SELECTOR);
   if (hasPagination) return "pagination";
 
-  if (tag === "svg" || element.querySelector("svg")) return "chart_svg";
-  if (tag === "canvas" || element.querySelector("canvas"))
-    return "chart_canvas";
+  if (tag === "svg") return "chart_svg";
+  if (tag === "canvas") return "chart_canvas";
 
   return null;
 }
@@ -257,7 +256,12 @@ export function discoverCollections(
       }
     }
 
-    if (sampleRows.length === 0) continue;
+    if (
+      sampleRows.length === 0 &&
+      objectKind !== "chart_svg" &&
+      objectKind !== "chart_canvas"
+    )
+      continue;
 
     const estimatedTotal = getEstimatedTotal(element);
     const descriptor: CollectionReadDescriptor = {

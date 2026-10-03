@@ -14,6 +14,7 @@ import { analysisDataForScope } from "./analysis-data-scope.js";
 import type {
   AnalysisCollectionSelection,
   AnalysisCollectionWait,
+  AnalysisAdapterReview,
 } from "./analysis-data-acquisition.js";
 import { allowsModelScreenshot } from "../policy/permission-mode.js";
 
@@ -114,6 +115,19 @@ export const createAskChatRunner =
     );
     assertRequestActive(context);
     if (isAnalysisWait(collectedAnalysisData)) {
+      if (collectedAnalysisData.state === "ANALYSIS_ADAPTER_REVIEW_REQUIRED") {
+        dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
+        dependencies.publish(run.id, {
+          type: "activity_finished",
+          stage: "COMPLETED",
+        });
+        dependencies.publish(run.id, {
+          type: "run_terminal",
+          outcome: "VERIFIED",
+        });
+        dependencies.releaseVision(run.id);
+        return collectedAnalysisData;
+      }
       dependencies.publish(run.id, {
         type: "activity_finished",
         stage: "SELECTION_REQUIRED",
@@ -357,12 +371,16 @@ export const createAskChatRunner =
     return fail("PROVIDER_UNAVAILABLE");
   };
 
-function isAnalysisWait(value: unknown): value is AnalysisCollectionWait {
+function isAnalysisWait(
+  value: unknown,
+): value is AnalysisCollectionWait | AnalysisAdapterReview {
   return (
     typeof value === "object" &&
     value !== null &&
     ((value as { state?: unknown }).state ===
-      "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+      "ANALYSIS_ADAPTER_REVIEW_REQUIRED" ||
+      (value as { state?: unknown }).state ===
+        "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
       (value as { state?: unknown }).state ===
         "ANALYSIS_COLLECTION_PERMISSION_REQUIRED")
   );

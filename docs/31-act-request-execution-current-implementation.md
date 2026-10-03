@@ -1,7 +1,7 @@
 # 31. Act 요청 처리 현재 구현 경로
 
 - 작성일: 2026-09-21
-- 수정일: 2026-09-26
+- 수정일: 2026-10-04
 - 상태: AS-IS 구현 인벤토리
 - 범위: Side Panel에서 Act 모드 자연어 요청을 보낸 뒤, 사용자 검토·실행·결과 검증을 거쳐 종료하는 Browser 내부 경로
 - 비범위: 실제 회사 Provider 또는 특정 대상 사이트에서의 Chrome 재현 성공 판정. 이 문서는 현재 소스 코드의 호출 경로를 기록한다.
@@ -20,11 +20,11 @@ page-derived 기본 도구를 사용할 수 있다.
 
 1. Side Panel과 `RequestClient`가 Act 요청 ID를 만들고 `CHAT_REQUEST_START`를 전송한다. Service Worker는 인증된 Panel, request schema, provider와 Panel에 결합된 active tab을 검사·고정하고 durable request 수명 상태를 시작한다(3절 단계 1.1~1.4).
 2. `createActChatStart()`가 초기 semantic snapshot을 준비하고, action tool·workflow 후보 없이 별도 Provider turn으로 닫힌 route를 판별한다(3절 단계 2.1~3.1). 정보성 Act 요청은 action tool 계산이나 workflow 후보 대기 없이 Act 모드의 읽기 전용 runner로 간다.
-3. 단계 3.1은 `QUESTION`, `ANALYSIS_READ_REQUIRED`, `ACTION_REQUIRED`를 결정한다. `QUESTION`은 Act 모드를 유지한 채 33번과 동일한 단계 5.1~5.7 읽기 전용 답변 흐름을 사용한다. `ANALYSIS_READ_REQUIRED`는 bounded collection 수집 뒤 단계 5.1~5.7로 간다. `ACTION_REQUIRED`만 선택적 explicit collection read와 단계 6.1~7.5.1을 사용한다.
+3. 단계 3.1은 `QUESTION`, `ANALYSIS_READ_REQUIRED`, `ACTION_REQUIRED`를 결정한다. `QUESTION`은 Act 모드를 유지한 채 33번과 동일한 단계 5.1~5.7 읽기 전용 답변 흐름을 사용한다. `ANALYSIS_READ_REQUIRED`는 bounded collection/API 수집 뒤 단계 5.1~5.7로 간다. `ACTION_REQUIRED`만 선택적 explicit analysis read와 단계 6.1~7.5.1을 사용한다.
 4. 현재 action 경로에서는 workflow를 선택·시작하는 경우에만 scope snapshot을 다시 확인한다. 그 뒤 `runStep()`은 fresh model projection과 opaque `model_ref` tool을 만들어 Provider에 전달하고, Provider는 tool 없는 정보성 답변 또는 유효한 **한 개의 실행 제안**을 반환할 수 있다(단계 6.1~6.5).
 5. 실행 제안은 Panel의 검토, 승인·거절, 값 입력 또는 추가 확인을 거친다. 승인 뒤에만 enterprise policy·local permission·page scope·target freshness를 재검사하고 bounded CDP 또는 Content Script로 dispatch한 뒤 semantic evidence로 결과를 판정한다(단계 7.1~7.5.1).
 
-단계 3.1과 Act용 단계 5.1~5.7은 구현됐다. 현재 단계 4는 explicit analysis request의 unique collection만 다룬다. 복수 source Panel 선택·승인 뒤 재개, reviewed `page_api_read` adapter와 실제 Chrome Side Panel 증적은 아직 없다.
+단계 3.1과 Act용 단계 5.1~5.7은 구현됐다. 현재 단계 4는 collection/reviewed `page_api_read` source 선택과 capability별 R0 승인 뒤 같은 요청 재개를 구현했다. 실제 Chrome Side Panel과 HTTPS 제어 provider 증적은 [S13 완료 증거](evidence/s13-analysis-closure-2026-10-04.md)를 따른다.
 
 ## 2. 전체 시퀀스
 
@@ -53,7 +53,7 @@ sequenceDiagram
         SW->>Provider: 단계 5.1~5.7 읽기 전용 answer flow
         Provider-->>Panel: answer text and VERIFIED terminal
     else ANALYSIS_READ_REQUIRED
-        SW->>SW: 4.1~4.4 unique collection discover·read·정규화
+        SW->>SW: 4.1~4.4 collection/API source 선택·read·정규화
         SW->>Provider: 단계 5.1~5.7 projection + bounded analysis context
         Provider-->>Panel: analysis answer and VERIFIED terminal
     else ACTION_REQUIRED
@@ -111,8 +111,8 @@ sequenceDiagram
 | 2.1 Act 준비                              | `extension/src/service-worker/act-chat-start.ts`의 `createActChatStart`                                                                                            | snapshot을 읽고 request 취소 및 document epoch를 검사한다. Profile resolve 실패 중 `PROFILE_UNAVAILABLE`은 일반 페이지 Act 후보를 위한 즉시 실패 사유가 아니다.                                                                                                   | Implemented                      |
 | 2.2 초기 semantic projection 수집         | `act-chat-start.ts`의 `createActChatStart` → `page-context-runtime.ts`의 `read` → `content/entry.ts`의 `CONTENT_SNAPSHOT`                                          | `default_read_scope`의 현재 semantic snapshot을 수집한다. document epoch 확인, Profile resolve, workflow 후보 수집의 입력이며 이 snapshot 전체를 Provider에 직접 보내지는 않는다.                                                                                 | Implemented                      |
 | 3.1 요청 처리 route 결정                  | `ask-act-intent-router.ts`의 `createAskActIntentRouter`, `validateActIntentRoute`                                                                                  | Browser가 prompt와 bounded visible text만 별도 LLM turn에 보낸다. 한 field의 closed JSON route와 tool-call 없음이 모두 맞을 때만 route를 수용하며, 그 밖에는 `QUESTION`으로 fail closed 한다.                                                                     | Implemented                      |
-| 4.1~4.3 분석 source·R0 read               | `analysis-data-acquisition.ts`의 `createAnalysisDataAcquisition`                                                                                                   | `ANALYSIS_READ_REQUIRED`와 explicit collection-analysis action은 unique collection만 discover·R0 검사·bounded read한다. 복수 source, scope 변경, permission 미허용은 unavailable context로 끝나며 Page API candidate는 호출하지 않는다.                           | Partial                          |
-| 4.4 결과 정규화·Provider 재투입           | `analysis-data-acquisition.ts`, `ask-chat-runner.ts`, `act-step-runner.ts`                                                                                         | bounded sanitized cells, coverage, reason, count, truncated만 현재 request turn에 전달한다. raw row ID/cursor/selector/function path/endpoint는 전달·저장하지 않는다.                                                                                             | Implemented for collection       |
+| 4.1~4.3 분석 source·R0 read               | `analysis-data-acquisition.ts`의 `createAnalysisDataAcquisition`                                                                                                   | collection과 reviewed API를 공통 선택하며 capability별 R0 승인 뒤 같은 요청을 재개한다. request/tab/document/page scope를 재검사하며 arbitrary Discovery candidate는 호출하지 않는다. | Implemented, Browser-local |
+| 4.4 결과 정규화·Provider 재투입           | `analysis-data-acquisition.ts`, `ask-chat-runner.ts`, `act-step-runner.ts`                                                                                         | bounded sanitized cells, coverage, reason, count, truncated만 현재 request turn에 전달한다. raw row ID/cursor/selector/function path/endpoint는 전달·저장하지 않는다.                                                                                             | Implemented, collection/API       |
 | 5.1~5.7 Act 읽기 전용 runner              | `ask-chat-runner.ts`의 mode-bound runner                                                                                                                           | `QUESTION`/`ANALYSIS_READ_REQUIRED`는 `mode=act`와 request owner를 유지해 Ask read tools만 제공하고 action proposal, workflow, dispatch 없이 답변 또는 실패로 종료한다.                                                                                           | Implemented                      |
 | 6.1 action 도구 발견                      | `page-derived-actions.ts`, `selectActActionTools`                                                                                                                  | `ACTION_REQUIRED`일 때만 visible/enabled control에서 action tool을 구성한다.                                                                                                                                                                                      | Implemented                      |
 | 6.2 workflow 분기                         | `act-chat-start.ts` 및 workflow handlers                                                                                                                           | `ACTION_REQUIRED`일 때만 후보를 표시·선택·계획 확인한다.                                                                                                                                                                                                          | Implemented                      |
@@ -166,8 +166,8 @@ type ActIntentRoute = "QUESTION" | "ANALYSIS_READ_REQUIRED" | "ACTION_REQUIRED";
 
 ## 5. 현재 지원 한계와 미연결 항목
 
-- Ask와 Act는 explicit request의 unique collection을 자동 discover·R0 검사·bounded 수집 뒤 같은 request의 answer/action Provider turn에 재투입한다. 복수 source 선택, permission 승인 뒤 재개, reviewed Page API read adapter는 아직 없다.
-- 29번 Page API Discovery도 수동 redacted hint scan이며, 현재 Ask/Act Provider run의 분석 source 또는 data read로 연결되지 않는다. 28번 collection과 reviewed read-only Page API adapter를 단계 4.1~4.4의 공통 분석 수집 단계로 연결하는 목표 계약은 [32번](32-ask-act-analysis-data-acquisition-design.md)에 정의한다.
+- Ask와 Act는 explicit request의 collection/reviewed API를 discover·선택·별도 R0 검사·bounded 수집 뒤 같은 request의 answer/action Provider turn에 재투입한다. 복수 source 선택과 권한 승인 뒤 재개를 지원한다.
+- 29번 Page API Discovery는 수동 scan 또는 사용 가능한 분석 source가 없을 때의 redacted availability 검사다. adapter 없는 후보는 호출 없이 검토 필요 카드로 종료한다. 28번 collection과 reviewed read-only Page API adapter를 단계 4.1~4.4의 공통 분석 수집 단계로 연결하는 목표 계약은 [32번](32-ask-act-analysis-data-acquisition-design.md)에 정의한다.
 - route classifier가 invalid JSON 또는 tool call을 반환하면 `QUESTION`으로 fail closed 한다. Provider 오류, 복수 source 선택, permission 승인 뒤 재개는 action route로 승격하거나 자동 재시도하지 않는다.
 - 범용 Act target은 현재 semantic snapshot에서 visible·enabled로 관측되고 도구 schema가 허용한 control에 한정된다. 임의 DOM selector, 좌표, page script 실행은 지원하지 않는다.
 - 결과 검증은 semantic state, UI relation, navigation scope/snapshot evidence에 의존한다. 사이트별 WebSocket·비동기 결과 세대와 `render_result` 계약은 일반화돼 있지 않다.
@@ -209,7 +209,7 @@ sequenceDiagram
 
 | 읽기 시점             | 호출 위치                                                                                                    | 용도                                                                    | Provider 전달 여부                                                |
 | --------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| 1차 준비 읽기         | `extension/src/service-worker/act-chat-start.ts`의 `createActChatStart`                                      | 현재 document epoch 확인, Profile resolve, workflow 후보 수집           | 현재 action 경로에는 직접 전달하지 않음. Proposed 단계 5에는 전달 |
+| 1차 준비 읽기         | `extension/src/service-worker/act-chat-start.ts`의 `createActChatStart`                                      | 현재 document epoch 확인, Profile resolve, workflow 후보 수집           | action 경로에는 직접 전달하지 않음. read-only 단계 5에는 전달 |
 | 2차 실행계획 읽기     | `extension/src/service-worker/act-step-runner.ts`의 `runStep`                                                | fresh run 생성, 현재 action tool 후보 생성, 모델 turn의 projection 생성 | 전달함                                                            |
 | 승인 직전 읽기        | `extension/src/service-worker/act-proposal-executor.ts`의 `executeProposal`                                  | tab/origin/document epoch/target enabled freshness 재검증               | 전달하지 않음                                                     |
 | dispatch 뒤 검증 읽기 | `extension/src/service-worker/act-postcondition-verifier.ts`의 `evaluate`, `verify`, `waitForPageTransition` | semantic postcondition, 새 page scope 및 fresh navigation snapshot 확인 | 전달하지 않음                                                     |

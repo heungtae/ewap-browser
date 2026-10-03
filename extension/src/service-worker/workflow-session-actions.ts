@@ -74,6 +74,17 @@ export const createWorkflowSessionActions = (dependencies: Dependencies) => {
         discovery: selected.discovery,
         definitions: selected.definitions,
         profileDefinitions: current.profileDefinitions,
+        ...(current.analysisData
+          ? {
+              analysisData: current.analysisData,
+              ...(current.analysisScope
+                ? { analysisScope: current.analysisScope }
+                : {}),
+              ...(current.requestContext
+                ? { requestContext: current.requestContext }
+                : {}),
+            }
+          : {}),
       },
       respond,
     );
@@ -105,6 +116,17 @@ export const createWorkflowSessionActions = (dependencies: Dependencies) => {
         discovery: "page-derived",
         definitions: [],
         profileDefinitions: current.profileDefinitions,
+        ...(current.analysisData
+          ? {
+              analysisData: current.analysisData,
+              ...(current.analysisScope
+                ? { analysisScope: current.analysisScope }
+                : {}),
+              ...(current.requestContext
+                ? { requestContext: current.requestContext }
+                : {}),
+            }
+          : {}),
         workflow: { declaration: candidate.declaration, step: first, count: 0 },
       },
       respond,

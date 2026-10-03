@@ -1,9 +1,11 @@
-# S13 — Ask/Act 분석 데이터 수집 연결
+# S13 — Ask/Act 분석 데이터 수집 연결 (Completed)
 
-> 이 문서는 과거 Browser 분석 수집 S13-C1~C8 계획이며 별도 `In Progress`
-> 항목이다. 현재 Enterprise 전환 Sprint 원장의 S13은
-> [Browser 로컬 Act evidence](s13-runtime-evidence-browser.md)다.
-> 이 카드의 미완료 기능을 S13 `Completed` 근거로 사용하지 않는다.
+> Browser 분석 수집 S13-C1~C8은 2026-10-04 실제 Chrome과 통제 HTTPS
+> Provider fixture 범위에서 Completed다. Enterprise 전환 원장의
+> [Browser 로컬 Act evidence](s13-runtime-evidence-browser.md)와 별도 판정이다.
+> [완료 증거](../evidence/s13-analysis-closure-2026-10-04.md)에 카드별 구현,
+> 실행 명령, 결과와 검증 범위를 기록한다. 실제 사이트 adapter와 외부 live
+> provider는 별도 범위다.
 
 ## 목표
 
@@ -31,7 +33,9 @@ Collection Reading 또는 reviewed read-only Page API adapter를 안전하게 �
    endpoint/page object 비전달 검증
 10. `partial|viewport_only|unavailable`의 과장 답변 방지 및 navigation/Stop 재사용 금지
 
-## 구현 카드
+## 완료 카드 (2026-10-04)
+
+S13-C1~C8 모두 Completed이며 아래 종료 조건의 증거는 위 완료 문서를 따른다.
 
 | 카드   | 산출물                     | 종료 조건                                                                                                                                                |
 | ------ | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,23 +57,27 @@ reader의 `complete` 결과도 Provider 전달 단계의 record/byte/cell cap에
 `collected_count`는 reader 수집 행 수이고 `records.length`는 Provider에
 실제로 전달된 행 수다. Ask·Act의 Provider 지시에도 이 차이를 명시한다.
 
-이 변경은 S13-C4의 Provider 범위 표시 구현이며, 복수 source 선택과
-승인 후 재개, Page API read adapter, live provider 및 virtual-scroll
-완전성 증거를 완료 처리하지 않는다.
+2026-10-04 Chrome 검증에서 table과 reviewed API의 context cap을 확인했다.
+복수 source 선택·승인 후 재개와 reviewed fixture adapter는 이번 완료
+증거에 포함하며, virtual grid는 S6-R 증거와 최신 회귀를 따른다. 외부
+live provider는 별도 범위다.
 
 ## S13-C7 Ask tool loop의 scope 재검사 (2026-09-23)
 
-Ask가 collection 분석 데이터를 받은 경우 각 Provider 호출 직전과 응답 직후
+Ask가 collection 또는 reviewed API 분석 데이터를 받은 경우 각 Provider 호출 직전과 응답 직후
 현재 tab의 snapshot을 다시 읽는다. 수집 당시 document/page scope와 다르거나
 페이지를 확인할 수 없으면 `PAGE_SCOPE_STALE`로 종료한다. 검사가 끝나기 전에는
 해당 Provider turn의 assistant delta를 Panel에 표시하지 않는다. 이 경계는
 첫 답변과 read-only tool 호출 뒤 이어지는 Provider turn에 모두 적용된다.
 
-런타임/Chrome 증거와 복수 source 선택·권한 승인 뒤 재개는 별도 완료 조건이다.
+2026-10-04 단위·Chrome 검증으로 Provider 전후 scope 변경 차단,
+Stop·Worker 재시작, 복수 source 선택·권한 승인 뒤 같은 요청 재개를
+확인했다. Act도 Provider 응답 직후 scope를 재검사해 stale 답변과
+proposal을 표시하거나 실행하지 않는다.
 
 ## 완료 조건
 
-- Ask의 페이지 데이터 분석이 safe unique source를 통해서만 bounded context를 받는다.
+- Ask의 페이지 데이터 분석은 안전한 단일 source 또는 사용자가 명시적으로 선택하고 승인한 source의 bounded context만 받는다.
 - Act의 저장/변경은 분석 read 성공만으로 실행되지 않고 기존 승인·검증을 통과한다.
 - collection 전체/virtual/pagination/chart 및 Page API read의 coverage를 정확히 표시한다.
 - 실제 Provider 검증과 fixture 검증을 구분하고, Chrome evidence 없이는 완료 처리하지 않는다.

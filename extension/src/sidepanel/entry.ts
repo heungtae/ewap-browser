@@ -160,6 +160,16 @@ const requestClient = new RequestClient({
     }
   },
   result: (response) => {
+    if (response.state === "ANALYSIS_ADAPTER_REVIEW_REQUIRED") {
+      append(
+        card(
+          "collection",
+          "분석 데이터 연결 검토 필요",
+          "REQUIRES_ADAPTER_REVIEW: 페이지 API 후보를 사용하려면 검토된 읽기 전용 adapter가 필요합니다. 데이터 읽기나 API 호출은 실행하지 않았습니다.",
+        ),
+      );
+      setStatus("분석 데이터 연결을 먼저 검토해 주세요.");
+    }
     if (
       response.state === "WORKFLOW_CANDIDATES" &&
       typeof response.selection_id === "string" &&

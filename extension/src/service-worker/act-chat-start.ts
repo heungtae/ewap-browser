@@ -15,6 +15,7 @@ import { withDeadline } from "../security/deadline.js";
 import type {
   AnalysisCollectionSelection,
   AnalysisCollectionWait,
+  AnalysisAdapterReview,
   AnalysisDataAcquisitionResult,
 } from "./analysis-data-acquisition.js";
 import { requestsCollectionAnalysis } from "./analysis-data-acquisition.js";
@@ -32,6 +33,9 @@ type PendingSelection = {
   prompt: string;
   profile: { id: string; version: number };
   profileDefinitions: ActSession["profileDefinitions"];
+  analysisData?: NonNullable<ActSession["analysisData"]>;
+  analysisScope?: PageScope;
+  requestContext?: RequestContext;
   candidates: Map<string, WorkflowCandidate>;
 };
 
@@ -184,7 +188,12 @@ export const createActChatStart =
           options?.analysisSelection,
         );
         if (isAnalysisWait(analysisData)) {
-          dependencies.finishActivity(activityId, "SELECTION_REQUIRED");
+          dependencies.finishActivity(
+            activityId,
+            analysisData.state === "ANALYSIS_ADAPTER_REVIEW_REQUIRED"
+              ? "COMPLETED"
+              : "SELECTION_REQUIRED",
+          );
           return analysisData;
         }
         if (analysisData) {
@@ -210,12 +219,29 @@ export const createActChatStart =
           path: active.path,
           documentEpoch: active.snapshot.document_epoch,
           prompt: value.prompt,
+          ...(session.analysisData
+            ? {
+                analysisData: session.analysisData,
+                ...(session.analysisScope
+                  ? { analysisScope: session.analysisScope }
+                  : {}),
+                ...(context ? { requestContext: context } : {}),
+              }
+            : {}),
           profile,
           profileDefinitions: matchedProfile?.definitions ?? [],
           candidates: new Map(
             candidates.map((candidate) => [candidate.candidate.id, candidate]),
           ),
         });
+        context?.signal.addEventListener(
+          "abort",
+          () => {
+            dependencies.selections.delete(id);
+            void dependencies.persistSelections().catch(() => undefined);
+          },
+          { once: true },
+        );
         await dependencies.persistSelections();
         dependencies.finishActivity(activityId, "SELECTION_REQUIRED");
         return {
@@ -234,10 +260,14 @@ export const createActChatStart =
     }
   };
 
-const isAnalysisWait = (value: unknown): value is AnalysisCollectionWait =>
+const isAnalysisWait = (
+  value: unknown,
+): value is AnalysisCollectionWait | AnalysisAdapterReview =>
   typeof value === "object" &&
   value !== null &&
   ((value as { state?: unknown }).state ===
-    "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
+    "ANALYSIS_ADAPTER_REVIEW_REQUIRED" ||
+    (value as { state?: unknown }).state ===
+      "ANALYSIS_COLLECTION_SELECTION_REQUIRED" ||
     (value as { state?: unknown }).state ===
       "ANALYSIS_COLLECTION_PERMISSION_REQUIRED");

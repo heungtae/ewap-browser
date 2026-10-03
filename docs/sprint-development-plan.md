@@ -1,5 +1,14 @@
 # Sprint 개발 계획서
 
+## Browser S13 분석 연결 종료 (2026-10-04)
+
+[S13-C1~C8](sprints/s13-ask-act-analysis-data-acquisition.md)은 Completed다.
+공통 collection/reviewed API 선택·별도 R0 승인·같은 요청 재개·bounded
+재투입과 lifecycle/비노출을 구현하고 실제 Chrome/통제 Provider로 검증했다.
+[완료 증거](evidence/s13-analysis-closure-2026-10-04.md)를 따른다.
+실제 사이트 adapter·외부 live provider·Enterprise Platform 연동과 S15는
+별도 작업으로 남긴다.
+
 ## Browser 리뷰 후속 우선순위 (2026-10-01)
 
 [S10-R](sprints/s10-r-page-api-request-cancellation.md)은 Completed 상태의 P1

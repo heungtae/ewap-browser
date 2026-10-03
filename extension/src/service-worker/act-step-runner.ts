@@ -1,5 +1,5 @@
 import { nextWorkflowStep } from "../contracts/workflow.js";
-import { fail } from "../security/validation.js";
+import { fail, ContractError } from "../security/validation.js";
 import { genericActTools } from "./act-tools.js";
 import { actionReview, actionView } from "./act-review-presentation.js";
 import {
@@ -151,6 +151,22 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           : {},
       );
       assertRequestActive(session.requestContext);
+      if (session.analysisData) {
+        const current = await dependencies
+          .readActive(undefined, session.tabId)
+          .catch(() => undefined);
+        assertRequestActive(session.requestContext);
+        if (
+          !current ||
+          current.tabId !== session.tabId ||
+          analysisDataForScope(
+            session.analysisData,
+            session.analysisScope,
+            dependencies.pageScope(current),
+          ).reason === "PAGE_CHANGED"
+        )
+          throw new ContractError("PAGE_SCOPE_STALE");
+      }
       if (run.phase === "TERMINAL") return fail("POLICY_DENIED");
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");

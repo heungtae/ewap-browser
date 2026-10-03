@@ -3,6 +3,14 @@ import type {
   CollectionReadResult,
   SanitizedCollectionRecord,
 } from "../contracts/collection-read-types.js";
+import {
+  createAnalysisSourceSelection,
+  type AnalysisSource,
+} from "./analysis-source-selection.js";
+import type {
+  PageApiReadBinding,
+  PageApiReadResult,
+} from "./page-api-read-runner.js";
 import type { Capability } from "../policy/permission-manager.js";
 import { withDeadline } from "../security/deadline.js";
 import type { BrowserChromeApi } from "./browser-api.js";
@@ -10,54 +18,21 @@ import { CollectionReadOrchestrator } from "./collection-read-orchestrator.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
 
-type AnalysisReason =
-  | "REQUIRES_SELECTION"
-  | "PERMISSION_REQUIRED"
-  | "UNAVAILABLE"
-  | "CAP_REACHED"
-  | "CONTEXT_TRUNCATED"
-  | "NO_STABLE_ID"
-  | "NO_EOF_EVIDENCE"
-  | "PAGE_CHANGED"
-  | "UNSUPPORTED_OBJECT"
-  | "ADAPTER_UNAVAILABLE"
-  | "CANCELLED"
-  | "TIMEOUT";
-
-export type AnalysisDataContext = {
-  source: { kind: "collection"; label: string };
-  coverage: "complete" | "partial" | "viewport_only" | "unavailable";
-  reason?: AnalysisReason;
-  collected_count: number;
-  records: readonly { index: number; cells: readonly string[] }[];
-  truncated: boolean;
-};
-
-export type AnalysisCollectionCandidate = {
-  candidate_id: string;
-  object_kind: string;
-  label: string;
-  estimated_total?: number;
-  has_virtual_scroll: boolean;
-};
-export type AnalysisCollectionWait = {
-  ok: true;
-  state:
-    | "ANALYSIS_COLLECTION_SELECTION_REQUIRED"
-    | "ANALYSIS_COLLECTION_PERMISSION_REQUIRED";
-  selection_id: string;
-  candidates: readonly AnalysisCollectionCandidate[];
-  selected_candidate_id?: string;
-  permission_request_id?: string;
-};
-export type AnalysisCollectionSelection = {
-  selection_id: string;
-  candidate_id: string;
-};
-export type AnalysisDataAcquisitionResult =
-  | AnalysisDataContext
-  | AnalysisCollectionWait
-  | undefined;
+import type {
+  AnalysisReason,
+  AnalysisDataContext,
+  AnalysisCollectionSelection,
+  AnalysisDataAcquisitionResult,
+} from "./analysis-data-types.js";
+export type {
+  AnalysisReason,
+  AnalysisDataContext,
+  AnalysisCollectionCandidate,
+  AnalysisAdapterReview,
+  AnalysisCollectionWait,
+  AnalysisCollectionSelection,
+  AnalysisDataAcquisitionResult,
+} from "./analysis-data-types.js";
 
 type Dependencies = {
   chrome: BrowserChromeApi;
@@ -71,7 +46,24 @@ type Dependencies = {
   scopeFor(
     tabId: number,
   ): { document_epoch: string; page_scope_epoch: string } | undefined;
-  permissionRequest?(origin: string, runId: string): string;
+  permissionRequest?(
+    origin: string,
+    runId: string,
+    capability?: "collection_read" | "page_api_read",
+  ): string;
+  pageApiSource?(
+    active: ActivePage,
+    runId: string,
+  ): PageApiReadBinding | undefined;
+  requiresAdapterReview?(
+    active: ActivePage,
+    runId: string,
+    context?: RequestContext,
+  ): Promise<boolean>;
+  readPageApi?(
+    binding: PageApiReadBinding,
+    context?: RequestContext,
+  ): Promise<PageApiReadResult>;
 };
 
 const objectKinds = new Set([
@@ -138,14 +130,6 @@ const isDiscovery = (
 
 const labelFor = (descriptor: CollectionReadDescriptor): string =>
   `${descriptor.object_kind.replace("_", " ")} data`;
-const candidateBinding = (descriptor: CollectionReadDescriptor): string =>
-  JSON.stringify({
-    object_kind: descriptor.object_kind,
-    container_xpath: descriptor.container_xpath,
-    aria_attributes: descriptor.aria_attributes,
-    roles: descriptor.roles,
-  });
-
 /** Only an explicit, single object kind can disambiguate multiple sources. */
 const requestedCollectionKind = (
   prompt: string,
@@ -247,9 +231,9 @@ const contextFromResult = (
  * Page API candidates, descriptors, locators, cursors, and row IDs are never
  * exposed to the model.
  */
-export const createAnalysisDataAcquisition =
-  (dependencies: Dependencies) =>
-  async (
+export const createAnalysisDataAcquisition = (dependencies: Dependencies) => {
+  const selectSource = createAnalysisSourceSelection(dependencies);
+  return async (
     prompt: string,
     active: ActivePage,
     runId: string,
@@ -258,8 +242,6 @@ export const createAnalysisDataAcquisition =
     selection?: AnalysisCollectionSelection,
   ): Promise<AnalysisDataAcquisitionResult> => {
     if (!force && !requestsCollectionAnalysis(prompt)) return undefined;
-    for (const [id, selection] of pendingSelections)
-      if (selection.expiresAt <= Date.now()) pendingSelections.delete(id);
     assertRequestActive(context);
     const initialScope = dependencies.scopeFor(active.tabId);
     if (
@@ -295,7 +277,7 @@ export const createAnalysisDataAcquisition =
     )
       return unavailable("UNAVAILABLE");
     const collections = discovery.collections.filter(isDescriptor);
-    if (collections.length === 0) return unavailable("UNAVAILABLE");
+
     // A generic or mixed-kind request cannot choose between page objects.
     const requestedKind = requestedCollectionKind(prompt);
     const narrowed =
@@ -304,96 +286,65 @@ export const createAnalysisDataAcquisition =
             (candidate) => candidate.object_kind === requestedKind,
           )
         : collections;
-    const candidates = narrowed.length > 0 ? narrowed : collections;
-    let descriptor: CollectionReadDescriptor | undefined;
-    if (selection) {
-      const stored = pendingSelections.get(selection.selection_id);
-      if (
-        !stored ||
-        stored.expiresAt < Date.now() ||
-        stored.runId !== (context?.requestId ?? runId) ||
-        stored.tabId !== active.tabId ||
-        stored.origin !== active.origin ||
-        stored.path !== active.path ||
-        stored.documentEpoch !== discovery.document_epoch ||
-        stored.pageScopeEpoch !== discovery.page_scope_epoch
-      )
-        return unavailable("PAGE_CHANGED");
-      const selected = stored.candidates.get(selection.candidate_id);
-      descriptor = candidates.find(
-        (candidate) =>
-          selected !== undefined &&
-          candidateBinding(candidate) === candidateBinding(selected.descriptor),
-      );
-      if (!descriptor) return unavailable("PAGE_CHANGED");
-    } else if (candidates.length === 1) {
-      descriptor = candidates[0];
-    } else {
-      const selectionId = crypto.randomUUID();
-      const requestId = context?.requestId ?? runId;
-      pendingSelections.set(selectionId, {
-        runId: requestId,
-        tabId: active.tabId,
-        origin: active.origin,
-        path: active.path,
-        documentEpoch: discovery.document_epoch,
-        pageScopeEpoch: discovery.page_scope_epoch,
-        expiresAt: Date.now() + 5 * 60_000,
-        candidates: new Map(
-          candidates.map((candidate) => [
-            crypto.randomUUID(),
-            { collection_ref: candidate.collection_ref, descriptor: candidate },
-          ]),
-        ),
-      });
-      return selectionResult(selectionId, pendingSelections.get(selectionId)!);
-    }
-    if (!descriptor) return unavailable("UNAVAILABLE");
-    const permission = dependencies.permissions.check(
-      "collection_read",
-      active.origin,
+    const candidates: AnalysisSource[] = (
+      narrowed.length > 0 ? narrowed : collections
+    ).map((descriptor) => ({ kind: "collection", descriptor }));
+    const api = dependencies.pageApiSource?.(
+      active,
       context?.requestId ?? runId,
     );
-    let selectionId = selection?.selection_id;
-    if (permission === "DENY") return unavailable("PERMISSION_REQUIRED");
-    if (permission === "REQUIRE_PERMISSION") {
-      selectionId ??= crypto.randomUUID();
-      const pending = pendingSelections.get(selectionId) ?? {
-        runId: context?.requestId ?? runId,
-        tabId: active.tabId,
-        origin: active.origin,
-        path: active.path,
-        documentEpoch: discovery.document_epoch,
-        pageScopeEpoch: discovery.page_scope_epoch,
-        expiresAt: Date.now() + 5 * 60_000,
-        candidates: new Map<
-          string,
-          { collection_ref: string; descriptor: CollectionReadDescriptor }
-        >(),
-      };
-      let candidateId = selection?.candidate_id;
-      if (!candidateId) {
-        candidateId = crypto.randomUUID();
-        pending.candidates.set(candidateId, {
-          collection_ref: descriptor.collection_ref,
-          descriptor,
-        });
-      }
-      pendingSelections.set(selectionId, pending);
-      const permissionRequestId = dependencies.permissionRequest?.(
-        active.origin,
-        context?.requestId ?? runId,
+    // An explicitly named DOM object keeps its collection scope. Otherwise a
+    // reviewed API competes with collections and requires the same source choice.
+    if (api && !requestedKind)
+      candidates.push({ kind: "page_api_read", binding: api });
+    if (candidates.length === 0) {
+      if (selection) return unavailable("PAGE_CHANGED");
+      if (
+        await dependencies.requiresAdapterReview?.(
+          active,
+          context?.requestId ?? runId,
+          context,
+        )
+      )
+        return { ok: true, state: "ANALYSIS_ADAPTER_REVIEW_REQUIRED" };
+      assertRequestActive(context);
+      return unavailable("UNAVAILABLE");
+    }
+    const selected = selectSource(
+      candidates,
+      active,
+      initialScope,
+      context?.requestId ?? runId,
+      selection,
+      context,
+    );
+    if ("coverage" in selected || "state" in selected) return selected;
+    if (selected.kind === "page_api_read") {
+      assertRequestActive(context);
+      const result = await dependencies.readPageApi?.(
+        selected.binding,
+        context,
       );
-      if (!permissionRequestId) return unavailable("PERMISSION_REQUIRED");
+      assertRequestActive(context);
+      if (result?.ok) return result.context;
+      const reason: AnalysisReason =
+        result?.code === "PAGE_SCOPE_STALE"
+          ? "PAGE_CHANGED"
+          : result?.code === "REQUEST_CANCELLED"
+            ? "CANCELLED"
+            : result?.code === "PAGE_API_TIMEOUT"
+              ? "TIMEOUT"
+              : result?.code === "PAGE_API_CONTRACT_INVALID"
+                ? "INVALID_SCHEMA"
+                : result?.code === "POLICY_DENIED"
+                  ? "PERMISSION_REQUIRED"
+                  : "UNAVAILABLE";
       return {
-        ok: true,
-        state: "ANALYSIS_COLLECTION_PERMISSION_REQUIRED",
-        selection_id: selectionId,
-        candidates: displayCandidates(pending),
-        selected_candidate_id: candidateId,
-        permission_request_id: permissionRequestId,
+        ...unavailable(reason),
+        source: { kind: "page_api_read", label: "reviewed page summary" },
       };
     }
+    const descriptor = selected.descriptor;
 
     const cancel = (): void => CollectionReadOrchestrator.cancel();
     context?.signal.addEventListener("abort", cancel, { once: true });
@@ -431,46 +382,9 @@ export const createAnalysisDataAcquisition =
         invalidatedReadReasons.has(response.result.reason)
       )
         return unavailable(response.result.reason);
-      if (selectionId) pendingSelections.delete(selectionId);
       return contextFromResult(descriptor, response.result);
     } finally {
       context?.signal.removeEventListener("abort", cancel);
     }
   };
-
-type PendingSelection = {
-  runId: string;
-  tabId: number;
-  origin: string;
-  path: string;
-  documentEpoch: string;
-  pageScopeEpoch: string;
-  expiresAt: number;
-  candidates: Map<
-    string,
-    { collection_ref: string; descriptor: CollectionReadDescriptor }
-  >;
 };
-
-const pendingSelections = new Map<string, PendingSelection>();
-const displayCandidates = (
-  selection: PendingSelection,
-): AnalysisCollectionCandidate[] =>
-  [...selection.candidates].map(([candidate_id, item], index) => ({
-    candidate_id,
-    object_kind: item.descriptor.object_kind,
-    label: `${item.descriptor.object_kind.replace("_", " ")} data ${index + 1}`,
-    ...(item.descriptor.estimated_total === undefined
-      ? {}
-      : { estimated_total: item.descriptor.estimated_total }),
-    has_virtual_scroll: item.descriptor.has_virtual_scroll,
-  }));
-const selectionResult = (
-  selectionId: string,
-  selection: PendingSelection,
-): AnalysisCollectionWait => ({
-  ok: true,
-  state: "ANALYSIS_COLLECTION_SELECTION_REQUIRED",
-  selection_id: selectionId,
-  candidates: displayCandidates(selection),
-});

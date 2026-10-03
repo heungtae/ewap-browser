@@ -2,6 +2,7 @@
  * Controlled Chrome evidence for S13. This uses a local HTTPS OpenAI-compatible
  * fixture; it proves extension wiring, not a live provider's behavior.
  */
+import { checkS13Analysis } from "./chrome-s13-analysis-check.mjs";
 import { spawn } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -42,7 +43,7 @@ try {
       "--no-default-browser-check",
       "--disable-background-networking",
       "--ignore-certificate-errors",
-      "--host-resolver-rules=MAP analysis.fixture.test 127.0.0.1",
+      `--host-resolver-rules=MAP analysis.fixture.test 127.0.0.1, MAP page-api-fixture.invalid:443 127.0.0.1:${fixturePort}`,
       `--user-data-dir=${profile}`,
       `--disable-extensions-except=${resolve("dist-extension")}`,
       `--load-extension=${resolve("dist-extension")}`,
@@ -107,209 +108,227 @@ try {
         payload,
       })})`,
     );
-  const discover = await panelRequest({ kind: "COLLECTION_DISCOVER" });
-  const table = discover?.collections?.find(
-    (item) => item.object_kind === "table",
-  );
-  if (!table)
-    throw new Error(`table was not discovered: ${JSON.stringify(discover)}`);
-  let permission = await panelRequest({
-    kind: "COLLECTION_READ_START",
-    request: { collection_ref: table.collection_ref, mode: "full" },
-  });
-  if (permission?.code !== "REQUIRE_PERMISSION")
-    throw new Error(
-      `collection permission was not requested: ${JSON.stringify(permission)}`,
+  if (!process.env.S13_CHECK_ONLY) {
+    const discover = await panelRequest({ kind: "COLLECTION_DISCOVER" });
+    const table = discover?.collections?.find(
+      (item) => item.object_kind === "table",
     );
-  permission = await panelRequest({
-    kind: "PERMISSION_DECISION",
-    permission_request_id: permission.request_id,
-    decision: "always",
-  });
-  if (permission?.ok !== true)
-    throw new Error("collection permission was not persisted");
-  await evaluate(
-    panel,
-    `chrome.storage.local.set({provider_settings:{schema_version:1,providers:{fixture:{plugin_id:'contextpilot.openai-compatible',plugin_version:'1.0.0',label:'fixture',base_url:'https://analysis.fixture.test:${fixturePort}/v1',wire_api:'chat_completions',model:'fixture',api_key:'',api_key_header:'none',headers:[],timeout_ms:120000,enabled:true}},active_provider:'fixture'}})`,
-  );
-  const submit = (mode, prompt) =>
-    evaluate(
+    if (!table)
+      throw new Error(`table was not discovered: ${JSON.stringify(discover)}`);
+    let permission = await panelRequest({
+      kind: "COLLECTION_READ_START",
+      request: { collection_ref: table.collection_ref, mode: "full" },
+    });
+    if (permission?.code !== "REQUIRE_PERMISSION")
+      throw new Error(
+        `collection permission was not requested: ${JSON.stringify(permission)}`,
+      );
+    permission = await panelRequest({
+      kind: "PERMISSION_DECISION",
+      permission_request_id: permission.request_id,
+      decision: "always",
+    });
+    if (permission?.ok !== true)
+      throw new Error("collection permission was not persisted");
+    await evaluate(
       panel,
-      `(() => { document.querySelector('#mode-${mode}').click(); document.querySelector('#chat-input').value=${JSON.stringify(prompt)}; document.querySelector('#chat-form').requestSubmit(); return true; })()`,
+      `chrome.storage.local.set({provider_settings:{schema_version:1,providers:{fixture:{plugin_id:'contextpilot.openai-compatible',plugin_version:'1.0.0',label:'fixture',base_url:'https://analysis.fixture.test:${fixturePort}/v1',wire_api:'chat_completions',model:'fixture',api_key:'',api_key_header:'none',headers:[],timeout_ms:120000,enabled:true}},active_provider:'fixture'}})`,
     );
-  await submit("ask", "이 페이지 표 데이터를 분석 요약해");
-  await waitFor(
-    () =>
+    const submit = (mode, prompt) =>
       evaluate(
         panel,
-        "document.querySelector('#chat-messages')?.textContent.includes('Ask analysis fixture answer')",
-      ),
-    20_000,
-    "Ask did not complete through the controlled provider",
-  );
-  await submit("act", "표 데이터를 분석하고 저장해");
-  await waitFor(
-    () =>
-      evaluate(
-        panel,
-        "document.querySelector('#chat-messages')?.textContent.includes('Act analysis fixture answer')",
-      ),
-    20_000,
-    "Act did not complete through the controlled provider",
-  );
-  const analysisRequests = providerRequests.filter((request) =>
-    request.messages?.some(
-      (message) =>
-        typeof message.content === "string" &&
-        message.content.includes("[UNTRUSTED_ANALYSIS_DATA]"),
-    ),
-  );
-  if (analysisRequests.length !== 2)
-    throw new Error(
-      `expected Ask and Act analysis provider turns: ${JSON.stringify(providerRequests)}`,
-    );
-  for (const request of analysisRequests) {
-    const analysisContent = request.messages.find(
-      (message) =>
-        typeof message.content === "string" &&
-        message.content.includes("[UNTRUSTED_ANALYSIS_DATA]"),
-    )?.content;
-    if (typeof analysisContent !== "string")
-      throw new Error("analysis context was not a provider message");
-    const forbidden = [
-      "collection_ref",
-      "container_xpath",
-      "row_id",
-      "aria_row_index",
-      "not-for-provider",
-    ].filter((value) => analysisContent.includes(value));
-    if (
-      !analysisContent.includes('"coverage":"complete"') ||
-      !analysisContent.includes('"collected_count":4') ||
-      forbidden.length > 0
-    )
-      throw new Error(
-        `analysis context boundary mismatch (${forbidden.join(",")}): ${analysisContent}`,
+        `(() => { document.querySelector('#mode-${mode}').click(); document.querySelector('#chat-input').value=${JSON.stringify(prompt)}; document.querySelector('#chat-form').requestSubmit(); return true; })()`,
       );
-  }
-
-  const revoked = await evaluate(
-    panel,
-    "chrome.runtime.sendMessage({kind:'PERMISSION_REVOKE_ALL'})",
-  );
-  if (revoked?.ok !== true)
-    throw new Error("collection permission was not revoked for resume test");
-  await cdp(fixturePage.webSocketDebuggerUrl, "Page.navigate", {
-    url: `https://analysis.fixture.test:${fixturePort}/multi`,
-  });
-  await waitFor(
-    () =>
-      evaluate(fixturePage, "document.querySelectorAll('table').length === 2"),
-    10_000,
-    "multi-source fixture did not load",
-  );
-  const clickPanelButton = async (label) =>
-    evaluate(
-      panel,
-      `(() => { const button = [...document.querySelectorAll('#chat-messages button')].reverse().find((item) => !item.disabled && item.textContent?.includes(${JSON.stringify(label)})); if (!button) return false; button.click(); return true; })()`,
-    );
-  const hasEnabledPanelButton = (label) =>
-    evaluate(
-      panel,
-      `([...document.querySelectorAll('#chat-messages button')].some((item) => !item.disabled && item.textContent?.includes(${JSON.stringify(label)})))`,
-    );
-  const submitAndResume = async (mode, prompt, answer, marker) => {
-    const selectedAnalysisBlocks = () =>
-      providerRequests
-        .flatMap((request) => request.messages ?? [])
-        .map((message) => message.content)
-        .filter((content) => typeof content === "string")
-        .map(
-          (content) =>
-            content.match(
-              /\[UNTRUSTED_ANALYSIS_DATA\]\s*([\s\S]*?)\s*\[\/UNTRUSTED_ANALYSIS_DATA\]/,
-            )?.[1],
-        )
-        .filter(
-          (content) => typeof content === "string" && content.includes(marker),
-        );
-    const selectedContextCount = () => selectedAnalysisBlocks().length;
-    const contextBaseline = selectedContextCount();
-    await submit(mode, prompt);
-    await waitFor(
-      () => hasEnabledPanelButton("table data 2"),
-      10_000,
-      `${mode} did not request source selection`,
-    );
-    if (!(await clickPanelButton("table data 2")))
-      throw new Error(`${mode} did not render the second source option`);
-    const permissionCard = await waitFor(
-      () => hasEnabledPanelButton("이번 요청에서 허용"),
-      10_000,
-      `${mode} did not request collection permission after selection`,
-    ).catch(() => false);
-    if (!permissionCard) {
-      const transcript = await evaluate(
-        panel,
-        "document.querySelector('#chat-messages')?.textContent ?? ''",
-      );
-      throw new Error(
-        `${mode} permission resume card missing; transcript=${transcript}`,
-      );
-    }
-    if (!(await clickPanelButton("이번 요청에서 허용")))
-      throw new Error(
-        `${mode} did not render the one-request permission action`,
-      );
-    const resumedContext = await waitFor(
-      () => selectedContextCount() > contextBaseline,
-      20_000,
-      `${mode} resumed without selected collection data reaching the fixture provider`,
-    ).catch(() => false);
-    if (!resumedContext) {
-      const transcript = await evaluate(
-        panel,
-        "document.querySelector('#chat-messages')?.textContent ?? ''",
-      );
-      throw new Error(
-        `${mode} resumed without selected collection data; transcript=${transcript}`,
-      );
-    }
-    const analysisContent = selectedAnalysisBlocks().at(-1);
-    if (
-      typeof analysisContent !== "string" ||
-      analysisContent.includes("UNSELECTED_ALPHA")
-    )
-      throw new Error(
-        `${mode} included an unselected source in provider context: ${analysisContent}`,
-      );
+    await submit("ask", "이 페이지 표 데이터를 분석 요약해");
     await waitFor(
       () =>
         evaluate(
           panel,
-          `(document.querySelector('#chat-messages')?.textContent.split(${JSON.stringify(answer)}).length ?? 0) >= 3`,
+          "document.querySelector('#chat-messages')?.textContent.includes('Ask analysis fixture answer')",
         ),
       20_000,
-      `${mode} did not finish after same-request resume`,
+      "Ask did not complete through the controlled provider",
     );
-    return { analysisContent };
-  };
-  const resumedAsk = await submitAndResume(
-    "ask",
-    "이 페이지의 데이터를 분석 요약해",
-    "Ask analysis fixture answer",
-    "SELECTED_BETA",
-  );
-  if (resumedAsk.analysisContent.includes("UNSELECTED_ALPHA"))
-    throw new Error("Ask included the unselected collection");
-  const resumedAct = await submitAndResume(
-    "act",
-    "표 데이터를 분석하고 저장해",
-    "Act analysis fixture answer",
-    "SELECTED_BETA",
-  );
-  if (resumedAct.analysisContent.includes("UNSELECTED_ALPHA"))
-    throw new Error("Act included the unselected collection");
+    await submit("act", "표 데이터를 분석하고 저장해");
+    await waitFor(
+      () =>
+        evaluate(
+          panel,
+          "document.querySelector('#chat-messages')?.textContent.includes('Act analysis fixture answer')",
+        ),
+      20_000,
+      "Act did not complete through the controlled provider",
+    );
+    const analysisRequests = providerRequests.filter((request) =>
+      request.messages?.some(
+        (message) =>
+          typeof message.content === "string" &&
+          message.content.includes("[UNTRUSTED_ANALYSIS_DATA]"),
+      ),
+    );
+    if (analysisRequests.length !== 2)
+      throw new Error(
+        `expected Ask and Act analysis provider turns: ${JSON.stringify(providerRequests)}`,
+      );
+    for (const request of analysisRequests) {
+      const analysisContent = request.messages.find(
+        (message) =>
+          typeof message.content === "string" &&
+          message.content.includes("[UNTRUSTED_ANALYSIS_DATA]"),
+      )?.content;
+      if (typeof analysisContent !== "string")
+        throw new Error("analysis context was not a provider message");
+      const forbidden = [
+        "collection_ref",
+        "container_xpath",
+        "row_id",
+        "aria_row_index",
+        "not-for-provider",
+      ].filter((value) => analysisContent.includes(value));
+      if (
+        !analysisContent.includes('"coverage":"complete"') ||
+        !analysisContent.includes('"collected_count":4') ||
+        forbidden.length > 0
+      )
+        throw new Error(
+          `analysis context boundary mismatch (${forbidden.join(",")}): ${analysisContent}`,
+        );
+    }
+
+    const revoked = await evaluate(
+      panel,
+      "chrome.runtime.sendMessage({kind:'PERMISSION_REVOKE_ALL'})",
+    );
+    if (revoked?.ok !== true)
+      throw new Error("collection permission was not revoked for resume test");
+    await cdp(fixturePage.webSocketDebuggerUrl, "Page.navigate", {
+      url: `https://analysis.fixture.test:${fixturePort}/multi`,
+    });
+    await waitFor(
+      () =>
+        evaluate(
+          fixturePage,
+          "document.querySelectorAll('table').length === 2",
+        ),
+      10_000,
+      "multi-source fixture did not load",
+    );
+    const clickPanelButton = async (label) =>
+      evaluate(
+        panel,
+        `(() => { const button = [...document.querySelectorAll('#chat-messages button')].reverse().find((item) => !item.disabled && item.textContent?.includes(${JSON.stringify(label)})); if (!button) return false; button.click(); return true; })()`,
+      );
+    const hasEnabledPanelButton = (label) =>
+      evaluate(
+        panel,
+        `([...document.querySelectorAll('#chat-messages button')].some((item) => !item.disabled && item.textContent?.includes(${JSON.stringify(label)})))`,
+      );
+    const submitAndResume = async (mode, prompt, answer, marker) => {
+      const selectedAnalysisBlocks = () =>
+        providerRequests
+          .flatMap((request) => request.messages ?? [])
+          .map((message) => message.content)
+          .filter((content) => typeof content === "string")
+          .map(
+            (content) =>
+              content.match(
+                /\[UNTRUSTED_ANALYSIS_DATA\]\s*([\s\S]*?)\s*\[\/UNTRUSTED_ANALYSIS_DATA\]/,
+              )?.[1],
+          )
+          .filter(
+            (content) =>
+              typeof content === "string" && content.includes(marker),
+          );
+      const selectedContextCount = () => selectedAnalysisBlocks().length;
+      const contextBaseline = selectedContextCount();
+      await submit(mode, prompt);
+      await waitFor(
+        () => hasEnabledPanelButton("table data 2"),
+        10_000,
+        `${mode} did not request source selection`,
+      );
+      if (!(await clickPanelButton("table data 2")))
+        throw new Error(`${mode} did not render the second source option`);
+      const permissionCard = await waitFor(
+        () => hasEnabledPanelButton("이번 요청에서 허용"),
+        10_000,
+        `${mode} did not request collection permission after selection`,
+      ).catch(() => false);
+      if (!permissionCard) {
+        const transcript = await evaluate(
+          panel,
+          "document.querySelector('#chat-messages')?.textContent ?? ''",
+        );
+        throw new Error(
+          `${mode} permission resume card missing; transcript=${transcript}`,
+        );
+      }
+      if (!(await clickPanelButton("이번 요청에서 허용")))
+        throw new Error(
+          `${mode} did not render the one-request permission action`,
+        );
+      const resumedContext = await waitFor(
+        () => selectedContextCount() > contextBaseline,
+        20_000,
+        `${mode} resumed without selected collection data reaching the fixture provider`,
+      ).catch(() => false);
+      if (!resumedContext) {
+        const transcript = await evaluate(
+          panel,
+          "document.querySelector('#chat-messages')?.textContent ?? ''",
+        );
+        throw new Error(
+          `${mode} resumed without selected collection data; transcript=${transcript}`,
+        );
+      }
+      const analysisContent = selectedAnalysisBlocks().at(-1);
+      if (
+        typeof analysisContent !== "string" ||
+        analysisContent.includes("UNSELECTED_ALPHA")
+      )
+        throw new Error(
+          `${mode} included an unselected source in provider context: ${analysisContent}`,
+        );
+      await waitFor(
+        () =>
+          evaluate(
+            panel,
+            `(document.querySelector('#chat-messages')?.textContent.split(${JSON.stringify(answer)}).length ?? 0) >= 3`,
+          ),
+        20_000,
+        `${mode} did not finish after same-request resume`,
+      );
+      return { analysisContent };
+    };
+    const resumedAsk = await submitAndResume(
+      "ask",
+      "이 페이지의 데이터를 분석 요약해",
+      "Ask analysis fixture answer",
+      "SELECTED_BETA",
+    );
+    if (resumedAsk.analysisContent.includes("UNSELECTED_ALPHA"))
+      throw new Error("Ask included the unselected collection");
+    const resumedAct = await submitAndResume(
+      "act",
+      "표 데이터를 분석하고 저장해",
+      "Act analysis fixture answer",
+      "SELECTED_BETA",
+    );
+    if (resumedAct.analysisContent.includes("UNSELECTED_ALPHA"))
+      throw new Error("Act included the unselected collection");
+  }
+  await checkS13Analysis({
+    panel,
+    panelWindowId,
+    page: fixturePage,
+    version,
+    cdpPort,
+    worker,
+    providerRequests,
+    control: fixtureServer.control,
+    fixturePort,
+    extensionId,
+  });
   console.log(
     "Chrome Ask/Act analysis data passed: unique-source context plus same-request multi-source selection and permission resume",
   );

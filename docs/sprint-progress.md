@@ -113,21 +113,21 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     확인했다. OS 다운로드 경로와 live provider는 완료 범위 밖이다.
     [완료 증거](evidence/diagnostics-zip-closure-2026-10-01.md),
     [완료 카드](sprints/s12-diagnostics-download-bundle.md).
--   S13 Ask/Act Analysis Data (Browser slice): In Progress — collection selection /
-    permission resume와 selected-source context reinjection은 S6-R 증거에 포함한다.
-    S13의 나머지 Browser/browser-provider 범위는 이 S6-R 종료 판정과 분리한다.
--   S13-C7 Provider 투입 경계: Ask의 Profile resolve와 Act의 action-planning
-    turn 사이에 page scope가 달라지면 수집 행을 `PAGE_CHANGED`·0건으로
-    대체한다. scope 표식은 worker 메모리에만 보관한다. TypeScript, ESLint,
-    format 검사는 통과했으며 이 추가 경계의 런타임/Chrome 검증은 별도다.
--   S13-C4 Provider context cap 보정: reader가 `complete`여도 Provider에
-    전달할 행·셀·문자가 잘리면 `partial`·`CONTEXT_TRUNCATED`·`truncated`로
-    표시한다. 기존 reader의 `partial`/`viewport_only` 사유는 유지한다.
-    범위 표시는 소스 변경 단계이며 Provider 응답의 정확성 검증은 별도다.
--   S13-C7 Ask tool loop scope 보정: collection 분석 데이터가 있는 Ask는
-    각 Provider 호출 직전과 응답 직후 현재 page scope를 새 snapshot으로
-    확인한다. 변경·조회 실패 시 `PAGE_SCOPE_STALE`로 종료하고 assistant
-    delta도 확인 전에는 표시하지 않는다. 런타임/Chrome 검증은 별도다.
+-   S13 Ask/Act Analysis Data (Browser slice): Completed — 2026-10-04.
+    S13-C1~C8의 collection/reviewed API 공통 source 선택, 별도 R0 승인 뒤
+    같은 요청 재개와 bounded context 재투입을 구현·검증했다. 실제 Chrome
+    Side Panel·Worker와 통제 HTTPS Provider에서 API complete/partial/cap/
+    invalid/timeout, 분석 후 별도 mutation review, Stop·scope 변경·Worker
+    재시작, adapter 검토 카드와 저장소·진단·실제 ZIP 비노출을 확인했다.
+    가상 grid 1,000행·EOF·위치 복구와 Stop 회귀도 통과했다. 453개 unit,
+    fixture/source E2E, 타입·lint·module boundary·build·package 검사가 통과했다.
+    실제 사이트 adapter·외부 live provider·Platform 연동은 별도 범위다.
+    [완료 카드](sprints/s13-ask-act-analysis-data-acquisition.md),
+    [완료 증거](evidence/s13-analysis-closure-2026-10-04.md).
+-   S13-C4/C7 보정: Provider cap에서 partial/CONTEXT_TRUNCATED와 수집 수·
+    전달 수를 구분한다. collection/API의 Provider 호출 전후 scope를 확인하고
+    stale 데이터·delta·proposal을 차단한다. 정적 검사만 기록했던 이전 경계는
+    위 단위·Chrome 증거로 검증했다.
 -   Browser S10 Page API·Discovery (기존 S10-C1~C5): Completed — 실제
     Side Panel의 승인·R1 권한·MAIN 호출·독립 UI 검증과 실패/취소/재시작
     경계를 확인했다. Discovery 검토 화면의 redaction·Stop·timeout·닫기·

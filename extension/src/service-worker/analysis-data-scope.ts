@@ -16,7 +16,7 @@ export const analysisDataForScope = (
   )
     return data;
   return {
-    source: { kind: "collection", label: "page collection" },
+    source: data.source,
     coverage: "unavailable",
     reason: "PAGE_CHANGED",
     collected_count: 0,

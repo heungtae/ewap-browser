@@ -133,6 +133,19 @@ export class ChatRequestLifecycle extends RequestExecution {
     result: Record<string, unknown>,
   ): void {
     const request = this.requests.get(requestId);
+    // A review-only availability result contains no page data and must reach
+    // the Panel even when the run terminal event settled the request first.
+    if (
+      request?.generation === generation &&
+      result.ok === true &&
+      result.state === "ANALYSIS_ADAPTER_REVIEW_REQUIRED" &&
+      (!request.outcome || request.outcome === "VERIFIED")
+    ) {
+      request.result = { ok: true, state: "ANALYSIS_ADAPTER_REVIEW_REQUIRED" };
+      if (request.state !== "TERMINAL")
+        this.finish(requestId, generation, "VERIFIED");
+      return;
+    }
     if (
       !request ||
       request.generation !== generation ||

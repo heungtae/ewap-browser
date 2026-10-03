@@ -1,3 +1,6 @@
+import { createAnalysisApiAvailability } from "./analysis-api-availability.js";
+import { fixturePageApiReadAdapter as adapter } from "../page-api/read-adapter.js";
+import type { ActivePage } from "./page-context-runtime.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
 import {
   createPageApiReadRunner,
@@ -62,12 +65,63 @@ const pageApiReadRuntime = createPageApiReadRunner({
 /** Caller owns source selection and permission-resume before starting this read. */
 export const readPageApiSource = async (
   binding: PageApiReadBinding,
-  context: RequestContext,
+  context?: RequestContext,
 ) => {
   assertRequestActive(context);
-  if (binding.run_id !== context.requestId || binding.tab_id !== context.tabId)
+  if (
+    !context ||
+    binding.run_id !== context.requestId ||
+    binding.tab_id !== context.tabId
+  )
     return { ok: false as const, code: "PAGE_SCOPE_STALE" as const };
   const result = await pageApiReadRuntime.read(binding, context.signal);
   assertRequestActive(context);
   return result;
 };
+
+/** Only the reviewed bundle registry can create callable analysis sources. */
+export const pageApiAnalysisSource = (
+  active: ActivePage,
+  runId: string,
+): PageApiReadBinding | undefined => {
+  if (active.origin !== adapter.origin || active.path !== adapter.path) return;
+  const document = registered.get(registrationKey(active.tabId, 0));
+  const scope = pageScopes.get(active.tabId);
+  if (
+    !document ||
+    !scope ||
+    document.epoch !== active.snapshot.document_epoch ||
+    scope.document_epoch !== document.epoch
+  )
+    return;
+  return {
+    run_id: runId,
+    tab_id: active.tabId,
+    document_id: document.documentId,
+    document_epoch: document.epoch,
+    page_scope_epoch: scope.page_scope_epoch,
+    origin: active.origin,
+    path: active.path,
+    adapter_id: adapter.adapter_id,
+    adapter_version: adapter.version,
+    option_id: "summary",
+  };
+};
+
+export const requiresAnalysisAdapterReview = createAnalysisApiAvailability({
+  scripting: chromeApi?.scripting,
+  documentFor: (tabId) => registered.get(registrationKey(tabId, 0)),
+  scopeFor: (tabId) => pageScopes.get(tabId),
+  authorize: async (active, runId) =>
+    (
+      await enterprisePolicy.authorize({
+        run_id: runId,
+        tab_id: active.tabId,
+        document_epoch: active.snapshot.document_epoch,
+        origin: active.origin,
+        capability: "page_api",
+        risk: "R0",
+        profile: localPageProfile,
+      })
+    ).decision === "ALLOW",
+});
