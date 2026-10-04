@@ -85,6 +85,17 @@ export const createS7Fixture = (certificateDirectory, kind) => {
     pages[kind] ?? pages.case,
     async (_request, response, body) => {
       if (
+        body.messages?.some(
+          (message) =>
+            message.role === "user" &&
+            typeof message.content === "string" &&
+            message.content.includes("Summarize public note for Community"),
+        )
+      ) {
+        stream(response, { content: "Community standalone Ask complete" });
+        return;
+      }
+      if (
         body.messages?.[0]?.content?.includes(
           "Classify the user's browser request",
         )

@@ -1,5 +1,12 @@
 # Sprint 설계 인덱스
 
+## Community 우선 출시와 Enterprise 후속 단계 (2026-10-04)
+
+[후속 Sprint 계획](sprints/community-release-enterprise-followup.md)을 따른다.
+C01~C04로 Community 기능·독립 실행·지원 OS·실제 배포를 완료한 뒤,
+E01~E08로 계약 수용·Enterprise 클라이언트·실제 Platform 연동을 진행한다.
+기존 완료 기록은 유지하며 S15는 E07 배포, 실제 연동 완료는 E08과 구분한다.
+
 ## Browser 리뷰 후속 스프린트 (2026-10-01)
 
 - [S10-R — Page API 취소·요청 바인딩 보강](sprints/s10-r-page-api-request-cancellation.md):

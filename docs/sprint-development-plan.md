@@ -1,5 +1,13 @@
 # Sprint 개발 계획서
 
+## Community 우선 개발 순서 (2026-10-04)
+
+[후속 Sprint 계획](sprints/community-release-enterprise-followup.md):
+C01 기능 점검 → C02 Platform 없는 독립 실행 → C03 지원 OS 출시 검증 →
+C04 Community 실제 배포. Enterprise 명세 확정은 Community 출시 선행 조건이 아니다.
+이후 계약 확정 → E01~E07 Enterprise 클라이언트 선행 개발·배포 →
+Platform 구축 → E08 실제 통합 및 운영 gate 순으로 진행한다.
+
 ## Browser S13 분석 연결 종료 (2026-10-04)
 
 [S13-C1~C8](sprints/s13-ask-act-analysis-data-acquisition.md)은 Completed다.

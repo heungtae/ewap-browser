@@ -1,5 +1,14 @@
 # Sprint 진행 상태
 
+## Community 출시 / Enterprise 후속 상태 (2026-10-04)
+
+[후속 Sprint 계획](sprints/community-release-enterprise-followup.md):
+C01/C02는 Linux 통제 fixture 기능 및 독립 실행 검증 완료, C03은 Linux
+unpacked ZIP 설치·update/rollback의 Partial, C04와 E01~E08은 Planned다.
+[현재 증거](evidence/community-readiness-2026-10-04.md)를 따른다.
+Windows와 대외 배포는 미검증이고 Enterprise 계약 불일치는 미해결이다.
+기존 S0~S14 완료 기록과 S15 Planned 상태는 유지한다.
+
 ## S0~S9 Browser 기반 종료 범위 (2026-09-26)
 
 [Sprint 설계 인덱스](sprint-design.md)의 종료 판정 범위를 따른다. 현재

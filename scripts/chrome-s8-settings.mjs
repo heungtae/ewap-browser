@@ -29,7 +29,7 @@ export const setS8Mode = async ({
       () =>
         evaluate(
           settings,
-          "document.querySelector('#agent-preferences-form select[name=permission_mode]') !== null",
+          "document.querySelector('#agent-preferences-form select[name=permission_mode]') !== null && document.querySelector('#screenshot-permission-status')?.value.length > 0",
         ),
       10_000,
       "S8_SETTINGS_FORM_MISSING",

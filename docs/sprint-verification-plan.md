@@ -1,5 +1,13 @@
 # Sprint 검증 계획서
 
+## Community 출시와 Enterprise 검증 분리 (2026-10-04)
+
+[후속 Sprint gate](sprints/community-release-enterprise-followup.md)를 적용한다.
+Community는 지원 OS별 clean-profile 설치·update/rollback·migration·실제 배포를
+검증한다. S9 Linux 로컬 완료만으로 Windows/대외 출시를 선언하지 않는다.
+Enterprise 계약 서버+실제 Chrome 검증과 실제 Platform L5/L6/운영 검증은
+별도 증거이며 후자가 없으면 Enterprise 운영 연동 완료로 기록하지 않는다.
+
 ## Browser S13 분석 수집 종료 gate (2026-10-04)
 
 [S13-C1~C8](sprints/s13-ask-act-analysis-data-acquisition.md)은 실제 Chrome

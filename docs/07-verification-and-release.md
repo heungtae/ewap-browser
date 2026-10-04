@@ -1,5 +1,17 @@
 # 07. 검증 및 출시
 
+## Community 독립 출시 gate (2026-10-04)
+
+[Community/Enterprise 후속 계획](sprints/community-release-enterprise-followup.md)을 따른다.
+Community는 Platform 및 제품 계정 없이 지원 기능을 검증하고, 지원 OS별
+clean-profile 설치·upgrade/rollback·설정 migration·실제 배포 증거로 판정한다.
+L0~L6는 Enterprise 연동 gate이며 Community 출시의 Platform 의존성을 만들지 않는다.
+Enterprise 기능의 계약 서버 검증·선행 패키지 배포와 실제 Platform 운영 활성화는
+구분하고, 필수 managed 의존성 실패는 Community 자동 전환 없이 차단한다.
+
+[Community 설치 및 지원 범위](community-installation.md)와
+[0.1.88 검증 증거](evidence/community-readiness-2026-10-04.md)를 참조한다.
+
 ## Enterprise Web AI Platform 정렬 (2026-08-31)
 
 검증 수준을 Enterprise Studio의 release evidence와 정렬한다.
