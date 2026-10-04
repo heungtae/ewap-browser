@@ -110,6 +110,7 @@ export type BootstrapEnvelope = {
   resources: ResourceInventory;
   workflow_inventory: WorkflowInventoryState;
   capabilities: CapabilityInventory;
+  unsupported_capabilities?: Array<{ name: string; reason: string }>;
   history_summary?: { evidence_refs: string[]; note: string };
   operating_instructions_ref?: string;
   description_excerpt?: { evidence_id: string; text: string };
