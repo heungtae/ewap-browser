@@ -1,3 +1,5 @@
+import { methodTraceSnapshot } from "../diagnostics/method-trace.js";
+import { safeMethodTraceSnapshot } from "../diagnostics/trace-export.js";
 import type { DiagnosticsLevel } from "./execution-diagnostics.js";
 import {
   requestId,
@@ -100,10 +102,22 @@ export const createDiagnosticsMessageHandler = (
       respond(dependencies.safeFailure("STORAGE_BOUNDARY_UNAVAILABLE"));
       return { handled: true };
     }
+    const selected = level as DiagnosticsLevel;
     respond({
       ok: true,
-      level: dependencies.diagnostics.setLevel(level as DiagnosticsLevel),
+      level: dependencies.diagnostics.setLevel(selected),
     });
+    void dependencies
+      .activeTab(sender)
+      .then((active) =>
+        dependencies.sendToContentScript(active.id, {
+          schema_version: 1,
+          kind: "CONTENT_METHOD_TRACE_SETTINGS",
+          level: selected,
+        }),
+      )
+      .catch(() => undefined);
+    void dependencies.offscreenDiagnostics?.(selected).catch(() => undefined);
     return { handled: true };
   },
   bundleExport(
@@ -172,6 +186,13 @@ export const createDiagnosticsMessageHandler = (
               level: trace.level,
               storage_failed: trace.storage_failed,
               worker_instance_id: diagnostics.getWorkerInstanceId(),
+              method_trace: {
+                worker: methodTraceSnapshot(
+                  "worker",
+                  requestIdOpt as string | undefined,
+                  tabId,
+                ),
+              },
             },
           },
           request: requestData
@@ -237,6 +258,37 @@ export const createDiagnosticsMessageHandler = (
           sections.page = {
             status: "unavailable",
             code: failureCode(error, "CONTENT_SCRIPT_UNAVAILABLE"),
+          };
+        }
+        const execution = sections.execution_trace!.data as Record<
+          string,
+          unknown
+        >;
+        const methodTrace = execution.method_trace as Record<string, unknown>;
+        try {
+          const content = await dependencies.sendToContentScript(tabId, {
+            schema_version: 1,
+            kind: "CONTENT_METHOD_TRACE",
+          });
+          methodTrace.content = safeMethodTraceSnapshot(content) ?? {
+            status: "unavailable",
+            code: "INVALID_ARGUMENT",
+          };
+        } catch (error) {
+          methodTrace.content = {
+            status: "unavailable",
+            code: failureCode(error, "CONTENT_SCRIPT_UNAVAILABLE"),
+          };
+        }
+        try {
+          methodTrace.offscreen = safeMethodTraceSnapshot(
+            await dependencies.offscreenDiagnostics?.(),
+            "offscreen",
+          ) ?? { status: "unavailable", code: "OFFSCREEN_NOT_RUNNING" };
+        } catch {
+          methodTrace.offscreen = {
+            status: "unavailable",
+            code: "OFFSCREEN_NOT_RUNNING",
           };
         }
         respond({

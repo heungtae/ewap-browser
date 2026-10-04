@@ -1,3 +1,4 @@
+import { traceDecision } from "../diagnostics/method-trace.js";
 import type { ProviderRuntime } from "../providers/runtime.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
@@ -75,7 +76,29 @@ export const createAskActIntentRouter =
         : {},
     );
     assertRequestActive(context);
-    return response.tool_calls.length === 0
-      ? validateActIntentRoute(response.content)
-      : "QUESTION";
+    const route =
+      response.tool_calls.length === 0
+        ? validateActIntentRoute(response.content)
+        : "QUESTION";
+    traceDecision("act.intent.route", {
+      request_id: context?.requestId,
+      tab_id: active.tabId,
+      prompt,
+      classifier_response: response.content,
+      tool_count: response.tool_calls.length,
+      route,
+      reason:
+        response.tool_calls.length > 0
+          ? "CLASSIFIER_TOOL_CALL_REJECTED"
+          : route === "QUESTION"
+            ? "QUESTION_OR_INVALID_CLASSIFIER_OUTPUT_READ_ONLY"
+            : "VALID_CLOSED_CLASSIFIER_ROUTE",
+      next_stage:
+        route === "ACTION_REQUIRED"
+          ? "6_ACTION_PLANNING"
+          : route === "ANALYSIS_READ_REQUIRED"
+            ? "4_ANALYSIS_THEN_5_ANSWER"
+            : "5_READ_ONLY_ANSWER",
+    });
+    return route;
   };

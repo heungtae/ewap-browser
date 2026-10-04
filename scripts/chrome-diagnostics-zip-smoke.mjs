@@ -182,6 +182,10 @@ try {
     kind: "DIAGNOSTICS_SETTINGS_SET",
     level: "trace",
   });
+  await evaluate(
+    panel,
+    "(() => { window.traceErrors = []; addEventListener('error', event => traceErrors.push(event.message + ' ' + event.error?.stack)); addEventListener('unhandledrejection', event => traceErrors.push(String(event.reason?.stack || event.reason))); return true; })()",
+  );
   const submit = () =>
     evaluate(
       panel,
@@ -196,11 +200,123 @@ try {
       ),
     20000,
     "provider answer absent",
-  );
+  ).catch(async (error) => {
+    console.error("Errors:", await evaluate(panel, "traceErrors"));
+    console.error(
+      "Panel:",
+      await evaluate(
+        panel,
+        "document.querySelector('#chat-messages')?.textContent",
+      ),
+    );
+    console.error("Provider request count:", providerRequests.length);
+    console.error(
+      "Worker lifecycle:",
+      await send({ schema_version: 1, kind: "DIAGNOSTICS_BUNDLE_EXPORT" }).then(
+        (reply) => reply.data?.sections?.execution_trace?.data?.records,
+      ),
+    );
+    throw error;
+  });
   const normal = await download();
   const requestId = normal["manifest.json"].request_id;
   if (!requestId || normal["request.json"].status !== "collected")
     throw new Error("normal request metadata missing");
+  const methodTraces = normal["execution-trace.json"].data.method_trace;
+  for (const realm of ["worker", "panel", "content", "offscreen"]) {
+    const trace = methodTraces[realm];
+    if (!trace?.records?.length)
+      throw new Error(`Missing ${realm} method records`);
+    if (
+      !trace.records.some(
+        (record) => record.level === "debug" && record.event === "method.enter",
+      )
+    )
+      throw new Error(`Missing ${realm} debug entries`);
+    if (
+      !trace.records.some(
+        (record) => record.level === "trace" && record.event === "method.input",
+      )
+    )
+      throw new Error(`Missing ${realm} trace inputs`);
+    if (!trace.records.some((record) => record.detail?.masking?.masked))
+      throw new Error(`Missing ${realm} masking report`);
+    if (trace.rejected_count)
+      throw new Error(
+        `Rejected ${realm} method records: ${trace.rejected_count}`,
+      );
+  }
+  if (
+    !methodTraces.worker.records.some(
+      (record) =>
+        record.method.includes("ask-chat-runner") &&
+        record.request_id === requestId,
+    )
+  )
+    throw new Error("Ask method records are not request-bound");
+  const beforeAct = await evaluate(
+    panel,
+    "document.querySelector('#chat-messages').textContent.split('DIAGNOSTICS_SECRET_RESPONSE').length",
+  );
+  await evaluate(
+    panel,
+    "(() => { document.querySelector('#mode-act').click(); document.querySelector('#chat-input').value='저장 버튼을 눌러줘 password=DIAGNOSTICS_SECRET_PROMPT'; document.querySelector('#chat-form').requestSubmit(); return true; })()",
+  );
+  await waitFor(
+    async () => {
+      await evaluate(
+        panel,
+        "(() => { const button = [...document.querySelectorAll('button')].reverse().find(button => button.textContent === '일반 한 단계 실행'); if (button) button.click(); return true; })()",
+      );
+      return await evaluate(
+        panel,
+        `document.querySelector('#chat-messages').textContent.split('DIAGNOSTICS_SECRET_RESPONSE').length > ${beforeAct}`,
+      );
+    },
+    20000,
+    "Act no-tool answer absent",
+  );
+  const act = await download();
+  const actRecords =
+    act["execution-trace.json"].data.method_trace.worker.records;
+  const route = actRecords.find(
+    (record) => record.method === "act.intent.route",
+  );
+  const result = actRecords.find(
+    (record) => record.method === "act.provider.response",
+  );
+  if (route?.detail?.data?.route !== "ACTION_REQUIRED")
+    throw new Error("Act route decision not diagnosable");
+  if (
+    result?.detail?.data?.result_kind !== "ANSWER_ONLY_NO_PAGE_ACTION" ||
+    result?.detail?.data?.tool_count !== 0
+  )
+    throw new Error("Act answer-only result not diagnosable");
+  if (
+    !JSON.stringify(route).includes("저장 버튼을 눌러줘") ||
+    JSON.stringify(route).includes("DIAGNOSTICS_SECRET_PROMPT")
+  )
+    throw new Error("Act request meaning/masking not preserved");
+  await evaluate(
+    panel,
+    "document.querySelector('#execution-details').open = true",
+  );
+  await waitFor(
+    () =>
+      evaluate(
+        panel,
+        "document.querySelector('#execution-trace').textContent.includes('ANSWER_ONLY_NO_PAGE_ACTION')",
+      ),
+    10000,
+    "Execution detail UI omits method decisions",
+  );
+  const executionDetail = await evaluate(
+    panel,
+    "JSON.parse(document.querySelector('#execution-trace').textContent)",
+  );
+  if (!executionDetail.method_trace?.worker?.records?.length)
+    throw new Error("Execution detail JSON lacks method records");
+  await evaluate(panel, "document.querySelector('#mode-ask').click()");
   fixtureServer.setFailure(true);
   await submit();
   await waitFor(
@@ -288,10 +404,10 @@ try {
     unavailable["execution-trace.json"].status !== "collected"
   )
     throw new Error("content failure prevented independent ZIP");
-  if (providerRequests.length !== 2)
+  if (providerRequests.length !== 4)
     throw new Error("diagnostics sent extra provider requests");
   console.log(
-    "Chrome diagnostics ZIP passed: real Panel, 25x6 metadata, both buttons, truncation, normal/provider failure, navigation, missing IDs, worker restart, independent content failure, hashes/CRC/redaction; provider requests=2",
+    "Chrome diagnostics ZIP passed: real Panel, 25x6 metadata, both buttons, truncation, normal/provider failure, navigation, missing IDs, worker restart, independent content failure, hashes/CRC/redaction; provider requests=4; Worker/Panel/Content/Offscreen method traces, masking and Act answer-only diagnosis",
   );
 } finally {
   child?.kill("SIGTERM");

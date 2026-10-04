@@ -1,3 +1,4 @@
+import { traceDecision } from "../diagnostics/method-trace.js";
 import { nextWorkflowStep } from "../contracts/workflow.js";
 import { fail, ContractError } from "../security/validation.js";
 import { genericActTools } from "./act-tools.js";
@@ -168,6 +169,22 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           throw new ContractError("PAGE_SCOPE_STALE");
       }
       if (run.phase === "TERMINAL") return fail("POLICY_DENIED");
+      traceDecision("act.provider.response", {
+        request_id: session.requestContext?.requestId,
+        tab_id: session.tabId,
+        tool_count: response.tool_calls.length,
+        offered_tool_count: tools.length,
+        offered_tools: tools.map((tool) => tool.function.name),
+        response_text: response.content,
+        result_kind:
+          response.tool_calls.length === 0
+            ? "ANSWER_ONLY_NO_PAGE_ACTION"
+            : "ACTION_PROPOSAL",
+        verification_meaning:
+          response.tool_calls.length === 0
+            ? "ANSWER_COMPLETED_NOT_PAGE_MUTATION_VERIFIED"
+            : "APPROVAL_AND_DISPATCH_REQUIRED",
+      });
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
         if (session.awaitingExpandedMenuSelection)

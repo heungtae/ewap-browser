@@ -60,7 +60,10 @@ export class DiagnosticsStorage {
     }
   }
   protected prune(now: number): void {
-    if (this.level === "trace" && now >= this.debugUntil) {
+    if (
+      (this.level === "trace" || this.level === "debug") &&
+      now >= this.debugUntil
+    ) {
       this.level = "error";
       this.retainAtLevel();
       this.persist();
@@ -100,7 +103,7 @@ export class DiagnosticsStorage {
     if (value === "trace")
       return this.debugUntil > Date.now() ? "trace" : "error";
     if (value === "debug")
-      return this.debugUntil > Date.now() ? "trace" : "error";
+      return this.debugUntil > Date.now() ? "debug" : "error";
     // Older `basic` diagnostics recorded every lifecycle transition.  Do not
     // continue that collection after upgrading; a user must opt into trace.
     if (value === "info" || value === "warn" || value === "error") return value;

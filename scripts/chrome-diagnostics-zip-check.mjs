@@ -48,7 +48,7 @@ export const checkDiagnosticsZip = (values) => {
     assert.equal(
       data.includes(Buffer.from("analysis.fixture.test")),
       false,
-      `endpoint in ${name}`,
+      `endpoint in ${name}: ${data.toString().slice(Math.max(0, data.toString().indexOf("analysis.fixture.test") - 80), data.toString().indexOf("analysis.fixture.test") + 100)}`,
     );
     assert.equal(Object.hasOwn(files, name), false);
     files[name] = {

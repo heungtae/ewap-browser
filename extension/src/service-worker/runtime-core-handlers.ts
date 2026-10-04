@@ -110,6 +110,14 @@ export const chatMessageHandler = createChatMessageHandler({
   chatPersistence: chatRunLifecycle.persistence,
   clearScheduledChatPersistence: chatRunLifecycle.clearScheduled,
   diagnostics: executionDiagnostics,
+  offscreenDiagnostics: (level) =>
+    chromeApi!.runtime.sendMessage({
+      schema_version: 1,
+      kind: level
+        ? "OFFSCREEN_METHOD_TRACE_SETTINGS"
+        : "OFFSCREEN_METHOD_TRACE",
+      ...(level ? { level } : {}),
+    }),
   providerDiagnostics: () =>
     providerRuntime?.diagnostics() ?? Promise.resolve({ configured: false }),
   isPanelSender: pageSenderContext.isPanelSender,

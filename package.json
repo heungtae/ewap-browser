@@ -1,7 +1,7 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.89",
+  "version": "0.1.90",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -37,7 +37,9 @@
     "test:release": "node scripts/release-smoke.mjs",
     "package:local": "node scripts/package-local.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "test:chrome-accessible-items": "node --experimental-websocket scripts/chrome-accessible-items-smoke.mjs"
+    "test:chrome-example-requests": "node --experimental-websocket scripts/chrome-example-requests.mjs",
+    "test:chrome-accessible-items": "node --experimental-websocket scripts/chrome-accessible-items-smoke.mjs",
+    "check:method-trace": "node scripts/test-method-trace-instrumentation.mjs && node scripts/check-method-trace-coverage.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

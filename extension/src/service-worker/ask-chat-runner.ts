@@ -1,3 +1,4 @@
+import { traceDecision } from "../diagnostics/method-trace.js";
 import { digestCanonical } from "../security/canonical.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import { BusinessMcpClient } from "../profile/business-mcp-client.js";
@@ -317,6 +318,18 @@ export const createAskChatRunner =
       if (!(await analysisPageCurrent())) return failStaleAnalysis();
       if (dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL")
         return dependencies.safeFailure("POLICY_DENIED", "run cancelled");
+      traceDecision("ask.provider.response", {
+        request_id: context?.requestId,
+        tab_id: active.tabId,
+        tool_count: response.tool_calls.length,
+        tool_names: response.tool_calls.map((call) => call.name),
+        response_text: response.content,
+        result_kind:
+          response.tool_calls.length === 0
+            ? "READ_ONLY_ANSWER"
+            : "READ_TOOL_CALLS",
+        verification_meaning: "ANSWER_COMPLETION_ONLY_NO_PAGE_MUTATION",
+      });
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");

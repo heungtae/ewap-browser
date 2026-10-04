@@ -1,3 +1,4 @@
+import { setMethodTraceLevel } from "../diagnostics/method-trace.js";
 import type { ErrorCode, Outcome } from "../contracts/core-types.js";
 import { DiagnosticsStorage } from "./diagnostics-storage.js";
 import {
@@ -237,7 +238,9 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
 
   public setLevel(level: DiagnosticsLevel): DiagnosticsLevel {
     this.level = level;
-    this.debugUntil = level === "trace" ? Date.now() + ttlMs : 0;
+    setMethodTraceLevel(level);
+    this.debugUntil =
+      level === "trace" || level === "debug" ? Date.now() + ttlMs : 0;
     if (level !== "trace") this.retainAtLevel();
     this.persist(true);
     return this.level;

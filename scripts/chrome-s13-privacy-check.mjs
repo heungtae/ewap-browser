@@ -9,7 +9,11 @@ const assertRedacted = (value) => {
     "S13_SECRET_TOKEN",
     "readSummary",
   ])
-    assert.equal(text.includes(marker), false, `persisted/exported ${marker}`);
+    assert.equal(
+      text.includes(marker),
+      false,
+      `persisted/exported ${marker}: ${text.slice(Math.max(0, text.indexOf(marker) - 100), text.indexOf(marker) + 100)}`,
+    );
 };
 
 /** Inspect successful diagnostics responses and the actual Panel ZIP payload. */

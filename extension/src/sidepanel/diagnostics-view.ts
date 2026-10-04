@@ -1,3 +1,7 @@
+import {
+  methodTraceSnapshot,
+  setMethodTraceLevel,
+} from "../diagnostics/method-trace.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { sha256 } from "../security/canonical.js";
 import { readDiagnostics, type DiagnosticsPage } from "./diagnostics-client.js";
@@ -13,7 +17,7 @@ const diagnosticsReadme = (): string =>
   [
     "ContextPilot diagnostics bundle (redacted)",
     "",
-    "execution-trace.json records allowed lifecycle events only.",
+    "execution-trace.json includes lifecycle and method_trace Worker/Panel/Content debug/trace records, masked inputs/results, branches, caught errors and timing.",
     "request.json contains mode, public state transitions and prompt length/digest.",
     "llm-processing.json contains redacted provider configuration and stage timing.",
     "llm-memory.json contains redacted event metadata, not message or action contents.",
@@ -22,7 +26,7 @@ const diagnosticsReadme = (): string =>
     "",
     "A section marked unavailable or failed includes its collection code. Truncated means a bounded list was shortened.",
     "Reproduction template: page type; request mode; observed code; expected behavior; actual behavior; time range.",
-    "Credentials, custom-header values, URLs, document source, scripts, and chat/action contents are excluded.",
+    "Sensitive fields and values are masked. Each method record includes masking.masked, fields/reasons/counts and truncated. Safe prompt/answer text and decision details are retained.",
   ].join("\n");
 export const createDiagnosticsView = (options: {
   send(value: unknown): Promise<Reply>;
@@ -173,6 +177,7 @@ export const createDiagnosticsView = (options: {
       kind: "DIAGNOSTICS_SETTINGS_SET",
       level,
     });
+    setMethodTraceLevel(level);
     if (diagnosticsDebug) {
       diagnosticsDebug.dataset.level = level;
       diagnosticsDebug.textContent =
@@ -186,6 +191,81 @@ export const createDiagnosticsView = (options: {
         : "개발 추적을 끄고 오류 기록만 유지합니다.",
     );
   };
+  let methodDetailsLoading = false;
+  const refreshMethodDetails = async (): Promise<void> => {
+    const id = options.current()?.request_id;
+    if (typeof id !== "string" || methodDetailsLoading) return;
+    methodDetailsLoading = true;
+    try {
+      const response = await sendRuntime({
+        schema_version: 1,
+        kind: "DIAGNOSTICS_BUNDLE_EXPORT",
+        request_id: id,
+      });
+      if (options.current()?.request_id !== id || response.ok !== true) return;
+      const data = response.data as {
+        sections?: Record<string, Record<string, unknown>>;
+      };
+      const execution = data.sections?.execution_trace?.data as
+        | {
+            method_trace?: Record<
+              string,
+              { records?: Array<Record<string, unknown>> }
+            >;
+          }
+        | undefined;
+      const traces = {
+        ...execution?.method_trace,
+        panel: methodTraceSnapshot("panel", id),
+      };
+      const display = Object.fromEntries(
+        Object.entries(traces).map(([realm, trace]) => {
+          const records = Array.isArray(trace.records) ? trace.records : [];
+          const selected = [
+            ...new Map(
+              [
+                ...records.filter(
+                  (record) => record.event === "method.decision",
+                ),
+                ...records.slice(-200),
+              ].map((record) => [record.sequence, record]),
+            ).values(),
+          ];
+          return [
+            realm,
+            {
+              ...trace,
+              available_count: records.length,
+              displayed_count: selected.length,
+              display_truncated: selected.length < records.length,
+              records: selected,
+            },
+          ];
+        }),
+      );
+      setExecutionTrace(
+        JSON.stringify(
+          {
+            request_id: id,
+            display_scope:
+              "최근 200건/realm 및 모든 decision; 전체 기록은 진단 ZIP",
+            method_trace: display,
+          },
+          null,
+          2,
+        ),
+      );
+    } catch (error) {
+      setStatus(
+        `메서드 상세 수집 실패: ${error instanceof Error ? error.message : "알 수 없는 오류"}`,
+      );
+    } finally {
+      methodDetailsLoading = false;
+    }
+  };
+  executionDetails?.addEventListener("toggle", () => {
+    if (executionDetails.open) void refreshMethodDetails();
+  });
   const downloadDiagnostics = async (): Promise<void> => {
     const request = options.current();
     const requestId =
@@ -205,6 +285,18 @@ export const createDiagnosticsView = (options: {
       const sections = data.sections as Record<string, Record<string, unknown>>;
       if (!sections || typeof sections !== "object")
         throw new Error("INVALID_ARGUMENT");
+      const executionData = sections.execution_trace?.data as
+        | Record<string, unknown>
+        | undefined;
+      if (executionData) {
+        const traces = executionData.method_trace as
+          | Record<string, unknown>
+          | undefined;
+        executionData.method_trace = {
+          ...traces,
+          panel: methodTraceSnapshot("panel", requestId),
+        };
+      }
       lastBundleSections = sections;
       const timestamp = new Date()
         .toISOString()
@@ -381,7 +473,7 @@ export const createDiagnosticsView = (options: {
       }
       showDiagnosticsDialog();
       const request = options.current();
-      if (request) void refreshTrace(request);
+      if (request) void refreshTrace(request).then(refreshMethodDetails);
       setStatus("진단 창에서 기록을 확인할 수 있습니다.");
     },
     failure: (code: string) => {

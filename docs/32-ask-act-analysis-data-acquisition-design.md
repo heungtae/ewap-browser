@@ -188,3 +188,14 @@ cap에 걸렸다면 `truncated=true`로 표시한다. `collected_count`는 reade
 사용한 증거는 [S13 완료 증거](evidence/s13-analysis-closure-2026-10-04.md)를
 따른다. 외부 live provider의 답변 정확성이나 실제 회사 사이트의 adapter 배포를
 이 Browser 완료 범위로 재해석하지 않는다.
+
+## 분석 단계 메서드 진단
+
+단계 4.1~4.4의 획득·선택·권한·reader·normalization 메서드와 callback을
+debug/trace로 계측한다. branch 조건, source availability, 선택·R0 권한
+판정, coverage/reason/count/truncated, 실패·취소·scope 변경을 기록한다.
+원문 record/row/cell과 data callback 입출력은 마스킹하고, 마스킹 여부·
+대상·이유·개수·축약 여부를 남긴다. 읽기 성공과 mutation 성공은 구분한다.
+
+[메서드 진단 기록](reference/method-execution-diagnostics.md)에
+공통 schema, realm별 수집·재검증, UI/ZIP 위치와 보관 한계를 정리한다.

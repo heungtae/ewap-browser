@@ -12,12 +12,18 @@ import { createS1Fixture } from "./chrome-s1-fixture.mjs";
 import assert from "node:assert/strict";
 import { resolve, join } from "node:path";
 import { tmpdir } from "node:os";
+import {
+  exampleRequests,
+  checkReading,
+} from "./chrome-example-request-cases.mjs";
+const documented = await exampleRequests();
+const readingSuite = process.env.EXAMPLE_REQUEST_SUITE === "reading";
 const root = resolve(".");
 const executable = process.env.CHROME_FOR_TESTING_BIN;
 if (!executable)
   throw Error("CHROME_FOR_TESTING_BIN must point to Chrome for Testing");
 const output = process.env.ACCESSIBLE_ITEMS_REPORT;
-const targetUrl = process.env.ACCESSIBLE_ITEMS_URL;
+const targetUrl = process.env.ACCESSIBLE_ITEMS_URL || undefined;
 const headful = process.env.CHROME_HEADED === "1";
 const profile = await mkdtemp(
   join(tmpdir(), "contextpilot-accessible-profile-"),
@@ -53,7 +59,24 @@ const stream = (response, delta) => {
 };
 const fixture = await createS1Fixture(
   cert,
-  await readFile("examples/accessible-items-demo/index.html", "utf8"),
+  readingSuite
+    ? async (url) => {
+        const file = current?.file ?? documented.reading[0].file;
+        if (
+          file.includes("page-api") &&
+          url.split("?")[0] === "/external-fixture.js"
+        )
+          return await readFile(
+            "examples/page-api-discovery-demo/external-fixture.js",
+            "utf8",
+          );
+        const html = await readFile(file, "utf8");
+        return !file.includes("page-api")
+          ? html
+          : html +
+              `<script>window.__exampleCalls=0;for(const name of ['appData','gridApi','demoControls']){const descriptors=Object.getOwnPropertyDescriptors(window[name]);for(const d of Object.values(descriptors)){if(typeof d.value==='function'){const original=d.value;d.value=function(...args){window.__exampleCalls++;return original.apply(this,args)}}if(d.get){const original=d.get;d.get=function(){window.__exampleCalls++;return original.call(this)}}}window[name]=Object.defineProperties({},descriptors)}</script>`;
+      }
+    : await readFile("examples/accessible-items-demo/index.html", "utf8"),
   async (req, res, body) => {
     const system = body.messages?.[0]?.content ?? "";
     const projection = body.messages
@@ -65,6 +88,19 @@ const fixture = await createS1Fixture(
     const nodes = projection ? JSON.parse(projection[1]).nodes : [];
     calls.push({
       case: current.id,
+      promptMatches: body.messages?.some(
+        (m) =>
+          typeof m.content === "string" && m.content.includes(current.prompt),
+      ),
+      analysis: (() => {
+        const match = body.messages
+          ?.map((m) => m.content ?? "")
+          .join("\n")
+          .match(
+            /\[UNTRUSTED_ANALYSIS_DATA\]\n([^]*?)\n\[\/UNTRUSTED_ANALYSIS_DATA\]/,
+          );
+        return match ? JSON.parse(match[1]) : undefined;
+      })(),
       tools: body.tools?.map((t) => t.function.name) ?? [],
       nodes: nodes.map((n) => ({
         name: n.name,
@@ -81,6 +117,9 @@ const fixture = await createS1Fixture(
       return stream(res, {
         content:
           "Fixture read complete: " +
+          (readingSuite
+            ? JSON.stringify(calls.at(-1).analysis ?? {}) + " "
+            : "") +
           nodes
             .filter((n) => !n.hidden)
             .map((n) => n.name)
@@ -209,7 +248,7 @@ try {
     10000,
     "PAGE_READY",
   );
-  const { panel } = await openAnalysisPanel({
+  const { panel, panelWindowId } = await openAnalysisPanel({
     cdpPort: port,
     extensionId,
     fixtureTarget,
@@ -264,10 +303,15 @@ try {
       });
   };
   const state = () =>
-    evaluate(
-      page,
-      "({search:document.querySelector('#search').value,notes:document.querySelector('#notes').value,scope:document.querySelector('#report-scope').value,checked:document.querySelector('#include-details').checked,disabled:document.querySelector('#preview').disabled,result:document.querySelector('#result').textContent.trim(),activity:document.querySelector('#activity-tab').getAttribute('aria-selected'),menu:document.querySelector('#menu-button').getAttribute('aria-expanded'),dialog:document.querySelector('#confirmation-dialog').open,details:document.querySelector('#more-details').open})",
-    );
+    readingSuite
+      ? evaluate(
+          page,
+          "({controls:[...document.querySelectorAll('input,select,textarea,button')].map(e=>({value:e.value,checked:e.checked,disabled:e.disabled})),scroll:[scrollX,scrollY],fixtureCalls:window.__exampleCalls??0})",
+        )
+      : evaluate(
+          page,
+          "({search:document.querySelector('#search').value,notes:document.querySelector('#notes').value,scope:document.querySelector('#report-scope').value,checked:document.querySelector('#include-details').checked,disabled:document.querySelector('#preview').disabled,result:document.querySelector('#result').textContent.trim(),activity:document.querySelector('#activity-tab').getAttribute('aria-selected'),menu:document.querySelector('#menu-button').getAttribute('aria-expanded'),dialog:document.querySelector('#confirmation-dialog').open,details:document.querySelector('#more-details').open})",
+        );
   const button = async (text) =>
     evaluate(
       panel,
@@ -417,12 +461,55 @@ try {
     },
     { id: "password", mode: "ask", prompt: "Account password 값을 알려줘." },
   ];
-  for (current of cases) {
+  cases.push(
+    {
+      id: "controls-link",
+      target: "Controls",
+      role: "link",
+      tool: "propose_navigate",
+      prompt: documented.accessible[17].prompt,
+      prepare: () =>
+        evaluate(
+          page,
+          "(()=>{location.hash='#states';scrollTo(0,0);return true})()",
+        ),
+    },
+    {
+      id: "states-link",
+      prepare: () => evaluate(page, "scrollTo(0,0)"),
+      target: "State examples",
+      role: "link",
+      tool: "propose_navigate",
+      prompt: documented.accessible[18].prompt,
+    },
+    {
+      id: "external-link",
+      prepare: () => evaluate(page, "scrollTo(0,0)"),
+      target: "External example",
+      role: "link",
+      tool: "propose_navigate",
+      prompt: documented.accessible[19].prompt,
+    },
+  );
+  for (let i = 0; i < cases.length; i++)
+    assert.equal(cases[i].prompt, documented.accessible[i].prompt);
+  const suiteCases = readingSuite ? documented.reading : cases;
+  const selectedCases = process.env.ACCESSIBLE_ITEMS_CASES
+    ? suiteCases.filter((item) =>
+        process.env.ACCESSIBLE_ITEMS_CASES.split(",").includes(item.id),
+      )
+    : suiteCases;
+  for (current of selectedCases) {
+    let evidence;
     try {
       await send({ kind: "CANCEL" });
       await send({ kind: "CHAT_CLEAR" });
       await send({ kind: "PERMISSION_REVOKE_ALL" });
-      await cdp(page.webSocketDebuggerUrl, "Page.reload", {
+      await cdp(page.webSocketDebuggerUrl, "Page.navigate", {
+        url: readingSuite
+          ? `https://s1.fixture.test:${fixture.fixturePort}${current.path}?case=${current.id}`
+          : (targetUrl ??
+            `https://s1.fixture.test:${fixture.fixturePort}/?case=${current.id}#controls`),
         ignoreCache: true,
       });
       await sleep(1000);
@@ -456,6 +543,30 @@ try {
         await button("확인하고 실행");
         if (current.deny) await button("거부");
         else await button("이번만 허용");
+        if (readingSuite) {
+          if (
+            current.boundary &&
+            (await evaluate(
+              panel,
+              "[...document.querySelectorAll('.event-card')].some(e=>e.dataset.testSeen!=='1' && e.textContent.includes('분석할 데이터 선택'))",
+            ))
+          ) {
+            current.boundarySelectionObserved = true;
+            await send({ kind: "CANCEL" });
+            await evaluate(
+              panel,
+              "document.querySelectorAll('.event-card').forEach(e=>e.dataset.testSeen='1')",
+            );
+          }
+          await button("이번 요청에서 허용");
+          if (current.selection && (await button(current.selection)))
+            current.selectionHandled = true;
+          if (current.selection && !current.selectionHandled)
+            current.selectionHandled = await evaluate(
+              panel,
+              `(()=>{const card=[...document.querySelectorAll('.event-card')].find(e=>e.dataset.testSeen!=='1' && e.textContent.includes('분석할 데이터 선택'));if(!card)return false;const buttons=[...card.querySelectorAll('button')].filter(b=>!b.disabled);const b=${current.path === "/mixed-collections.html" ? "buttons.find(b=>b.textContent.includes('" + (current.selection === "Feature requests" ? "15" : "20") + "'))" : "buttons[0]"};if(!b)return false;card.dataset.testSeen='1';b.click();return true})()`,
+            );
+        }
         if (current.value && !value)
           value = await evaluate(
             panel,
@@ -469,7 +580,10 @@ try {
           panel,
           "[...document.querySelectorAll('.event-card')].some(e=>e.dataset.testSeen!=='1' && ['review','permission','value','confirmation'].includes(e.dataset.kind) && [...e.querySelectorAll('button')].some(b=>!b.disabled))",
         );
-        if (done && !pending && i > 20) break;
+        const workflowDone =
+          !current.workflow ||
+          (await state()).result === "Preview generated for Detailed.";
+        if (done && !pending && workflowDone && i > 20) break;
       }
       const after = await state();
       const ui = await evaluate(
@@ -478,6 +592,9 @@ try {
       );
       const result = {
         id: current.id,
+        prompt: current.prompt,
+        boundarySelectionObserved: current.boundarySelectionObserved,
+        selectionHandled: current.selectionHandled,
         before,
         after,
         acted,
@@ -485,17 +602,26 @@ try {
         calls: calls.slice(start),
         ui,
       };
+      evidence = result;
       const blocked = ["disabled-preview", "disabled-action"].includes(
         current.id,
       );
       assert.equal(ui.busy, "send", current.id + ": panel did not settle");
-      if (!blocked)
+      if (!blocked && current.id !== "external-link")
         assert.equal(
           ui.cards.filter((c) => c.kind === "error").length,
           0,
           current.id + ": unexpected error",
         );
       const expected = {
+        "controls-link": async () =>
+          (await evaluate(page, "location.hash")) === "#controls",
+        "states-link": async () =>
+          (await evaluate(page, "location.hash")) === "#states",
+        "external-link": async () =>
+          (await targets()).some(
+            (t) => t.type === "page" && t.url.startsWith("https://example.com"),
+          ),
         search: () => after.search === current.value,
         notes: () => after.notes === current.value,
         scope: () => after.scope === "detailed",
@@ -534,32 +660,55 @@ try {
                 !c.secret && !c.nodes.some((n) => /password|otp/i.test(n.name)),
             ),
       };
-      assert.equal(
-        expected[current.id](),
-        true,
-        current.id + ": expected page state missing",
-      );
+      if (readingSuite)
+        checkReading(current, calls.slice(start), before, after);
+      else
+        assert.equal(
+          await expected[current.id](),
+          true,
+          current.id + ": expected page state missing",
+        );
       result.pass = true;
       results.push(result);
       console.log(current.id + " PASS");
       if (ui.busy !== "send")
         await evaluate(panel, "document.querySelector('#chat-send').click()");
     } catch (e) {
-      results.push({ id: current.id, pass: false, error: String(e) });
+      if (current.workflow && output) {
+        const diagnostics = await evaluate(
+          panel,
+          `chrome.runtime.sendMessage(${JSON.stringify({ kind: "PANEL_REQUEST", window_id: panelWindowId, payload: { schema_version: 1, kind: "DIAGNOSTICS_BUNDLE_EXPORT" } })})`,
+        );
+        await writeFile(
+          output + ".workflow-trace.json",
+          JSON.stringify(
+            diagnostics?.data?.sections?.execution_trace ?? diagnostics,
+            null,
+            2,
+          ),
+        );
+      }
+      results.push({
+        ...evidence,
+        id: current.id,
+        prompt: current.prompt,
+        pass: false,
+        error: String(e),
+      });
       console.log(current.id, "FAIL", String(e));
     }
     if (output) await writeFile(output, JSON.stringify(results, null, 2));
   }
-  assert.equal(results.length, 17);
+  assert.equal(results.length, selectedCases.length);
   assert.equal(
     results.filter((r) => r.pass === true).length,
-    17,
+    selectedCases.length,
     JSON.stringify(
       results.filter((r) => !r.pass).map((r) => ({ id: r.id, error: r.error })),
     ),
   );
   console.log(
-    "Accessible items: all 17 real Chrome Side Panel cases passed (controlled provider)",
+    `${readingSuite ? "Example reading" : "Accessible items"}: all ${selectedCases.length} real Chrome Side Panel cases passed (controlled provider)`,
   );
 } finally {
   child.kill("SIGTERM");

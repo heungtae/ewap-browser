@@ -21,6 +21,9 @@ export type Dependencies = {
   diagnostics?: ExecutionDiagnostics;
   chatEvents: TabChatSessionStore;
   providerDiagnostics?(): Promise<unknown>;
+  offscreenDiagnostics?(
+    level?: import("../contracts/diagnostic-types.js").DiagnosticsLevel,
+  ): Promise<unknown>;
   sendToContentScript(tabId: number, message: unknown): Promise<unknown>;
   runAct(
     payload: unknown,

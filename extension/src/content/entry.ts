@@ -1,3 +1,7 @@
+import {
+  methodTraceSnapshot,
+  setMethodTraceLevel,
+} from "../diagnostics/method-trace.js";
 import { createUiCompletionObserver } from "./ui-completion.js";
 import { digestCanonical } from "../security/canonical.js";
 import {
@@ -1343,6 +1347,41 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       return true;
     }
     respond({ ok: true, result });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_METHOD_TRACE_SETTINGS"
+  ) {
+    const level = (message as { level?: unknown }).level;
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js") ||
+      !["error", "warn", "info", "debug", "trace"].includes(String(level))
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    setMethodTraceLevel(
+      level as import("../contracts/diagnostic-types.js").DiagnosticsLevel,
+    );
+    respond({ ok: true });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_METHOD_TRACE"
+  ) {
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js")
+    ) {
+      respond({ ok: false, code: "INVALID_ARGUMENT" });
+      return true;
+    }
+    respond({ ok: true, trace: methodTraceSnapshot("content") });
     return true;
   }
   if (

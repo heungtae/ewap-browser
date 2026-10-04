@@ -1,5 +1,7 @@
 import { build } from "esbuild";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { methodTracePlugin } from "./method-trace-instrumentation.mjs";
+const methodInventory = [];
 const output = new URL("../dist-extension/", import.meta.url);
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
@@ -11,6 +13,7 @@ await build({
     settings: "extension/src/settings/entry.ts",
     offscreen: "extension/src/offscreen/entry.ts",
   },
+  plugins: [methodTracePlugin(methodInventory)],
   bundle: true,
   format: "esm",
   target: "chrome106",
@@ -18,6 +21,17 @@ await build({
   sourcemap: false,
   minify: false,
 });
+await writeFile(
+  new URL("method-trace-coverage.json", output),
+  JSON.stringify(
+    {
+      schema_version: 1,
+      methods: methodInventory.sort((a, b) => a.method.localeCompare(b.method)),
+    },
+    null,
+    2,
+  ),
+);
 const manifest = JSON.parse(await readFile("extension/manifest.json", "utf8"));
 manifest.background.service_worker = "js/service-worker.js";
 manifest.content_scripts[0].js = ["js/content.js"];

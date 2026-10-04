@@ -32,6 +32,9 @@ export type ChatMessageHandlerDependencies = {
   clearScheduledChatPersistence(): void;
   diagnostics?: ExecutionDiagnostics;
   providerDiagnostics?(): Promise<unknown>;
+  offscreenDiagnostics?(
+    level?: import("../contracts/diagnostic-types.js").DiagnosticsLevel,
+  ): Promise<unknown>;
   isPanelSender(sender: Sender): boolean;
   providerAvailable(): boolean;
   requests: ChatRequestLifecycle;
@@ -83,6 +86,9 @@ export const createChatMessageHandler = (
       : {}),
     ...(dependencies.providerDiagnostics
       ? { providerDiagnostics: dependencies.providerDiagnostics }
+      : {}),
+    ...(dependencies.offscreenDiagnostics
+      ? { offscreenDiagnostics: dependencies.offscreenDiagnostics }
       : {}),
     runAct: dependencies.runActChat,
     runAsk: dependencies.runAskChat,

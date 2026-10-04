@@ -42,14 +42,20 @@ export const createDiagnosticsFixture = async (
           response.end("DIAGNOSTICS_SECRET_ERROR_BODY");
           return;
         }
-        const content = "DIAGNOSTICS_SECRET_RESPONSE";
+        const content = parsed.messages?.some(
+          (message) =>
+            message.role === "system" &&
+            message.content?.includes("Classify the user"),
+        )
+          ? '{"route":"ACTION_REQUIRED"}'
+          : "DIAGNOSTICS_SECRET_RESPONSE";
         response.writeHead(200, { "content-type": "application/json" });
         response.end(JSON.stringify({ choices: [{ message: { content } }] }));
         return;
       }
       response.writeHead(200, { "content-type": "text/html" });
       response.end(`<!doctype html><title>DIAGNOSTICS_SECRET_TITLE</title>
-        <main><table>${Array.from({ length: 25 }, (_, row) => `<tr>${Array.from({ length: 6 }, (_, column) => `<td>DIAGNOSTICS_SECRET_CELL_${row}_${column}</td>`).join("")}</tr>`).join("")}</table>
+        <main><button id="save">저장</button><table>${Array.from({ length: 25 }, (_, row) => `<tr>${Array.from({ length: 6 }, (_, column) => `<td>DIAGNOSTICS_SECRET_CELL_${row}_${column}</td>`).join("")}</tr>`).join("")}</table>
         <input type="password" value="DIAGNOSTICS_SECRET_PASSWORD"><script>window.fixtureSecret="DIAGNOSTICS_SECRET_SCRIPT";</script></main>`);
     },
   );

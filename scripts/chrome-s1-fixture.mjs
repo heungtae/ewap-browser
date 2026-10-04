@@ -165,7 +165,9 @@ export const createS1Fixture = async (
         "set-cookie":
           "session=S1_SECRET_COOKIE; Secure; HttpOnly; SameSite=Lax",
       });
-      response.end(pageHtml);
+      response.end(
+        typeof pageHtml === "function" ? await pageHtml(request.url) : pageHtml,
+      );
     },
   );
   const fixturePort = await new Promise((resolvePort, reject) => {

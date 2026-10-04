@@ -14,6 +14,7 @@ it("downloads a safe panel failure when no worker request was accepted", async (
     hidden: true,
     open: false,
     scrollIntoView: vi.fn(),
+    addEventListener: vi.fn(),
   };
   const dialog = { open: false, showModal: vi.fn(), close: vi.fn() };
   const dialogTrace = { textContent: "" };
