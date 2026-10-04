@@ -96,7 +96,7 @@ const MAX_CONTEXT_CHARS = 48_000;
 
 /** Only explicit data-analysis requests may start collection reading. */
 export const requestsCollectionAnalysis = (prompt: string): boolean =>
-  /(?:데이터|표|테이블|그리드|목록).{0,32}(?:분석|요약|집계|통계)|(?:분석|요약|집계|통계).{0,32}(?:데이터|표|테이블|그리드|목록)|\b(?:analy[sz]e|summari[sz]e|aggregate|statistics?)\b.{0,48}\b(?:data|table|grid|list)\b|\b(?:data|table|grid|list)\b.{0,48}\b(?:analy[sz]e|summari[sz]e|aggregate|statistics?)\b/i.test(
+  /(?:데이터|표|테이블|그리드|목록)[^.!?。！？\n]*(?:분석|요약|집계|통계|정리)|(?:분석|요약|집계|통계|정리)[^.!?。！？\n]*(?:데이터|표|테이블|그리드|목록)|\b(?:analy[sz]e|summari[sz]e|aggregate|statistics?)\b[^.!?。！？\n]*\b(?:data|table|grid|list)\b|\b(?:data|table|grid|list)\b[^.!?。！？\n]*\b(?:analy[sz]e|summari[sz]e|aggregate|statistics?)\b/i.test(
     prompt,
   );
 

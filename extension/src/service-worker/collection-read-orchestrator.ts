@@ -130,6 +130,11 @@ export class CollectionReadOrchestrator {
         return this.unavailable(request, "UNSUPPORTED_OBJECT");
 
       const { records, total_rows: totalRows, truncated } = response.result;
+      const sourceTotalHint = Math.max(
+        totalRows,
+        descriptor.estimated_total ?? 0,
+      );
+      const incomplete = truncated || records.length < sourceTotalHint;
       this.setProgress(records.length, 0);
       if (!(await this.hasCurrentScope(request, sendToContent)))
         return this.partial(request, records, "PAGE_CHANGED", totalRows);
@@ -138,9 +143,15 @@ export class CollectionReadOrchestrator {
         result: {
           collection_ref: request.collection_ref,
           object_kind: request.object_kind,
-          coverage: truncated ? "partial" : "complete",
-          ...(truncated ? { reason: "CAP_REACHED" as const } : {}),
-          source_total_hint: totalRows,
+          coverage: incomplete ? "partial" : "complete",
+          ...(incomplete
+            ? {
+                reason: truncated
+                  ? ("CAP_REACHED" as const)
+                  : ("NO_EOF_EVIDENCE" as const),
+              }
+            : {}),
+          source_total_hint: sourceTotalHint,
           collected_count: records.length,
           restored_position: true,
           records,

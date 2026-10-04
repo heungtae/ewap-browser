@@ -82,6 +82,39 @@ describe("CollectionReadOrchestrator", () => {
     });
   });
 
+  it.each(["table", "list"] as const)(
+    "does not claim complete for a static %s with missing advertised rows",
+    async (kind) => {
+      const send = vi.fn(async (_tabId: number, message: unknown) =>
+        (message as { kind?: unknown }).kind === "CONTENT_COLLECTION_CONTEXT"
+          ? { ok: true, document_epoch: "doc", page_scope_epoch: "scope" }
+          : {
+              ok: true,
+              result: {
+                records: [{ index: 0, cells: ["visible"] }],
+                total_rows: 1,
+                truncated: false,
+              },
+            },
+      );
+      await expect(
+        CollectionReadOrchestrator.start(
+          { ...request, object_kind: kind },
+          descriptor({ object_kind: kind, estimated_total: 15 }),
+          send,
+        ),
+      ).resolves.toMatchObject({
+        ok: true,
+        result: {
+          coverage: "partial",
+          reason: "NO_EOF_EVIDENCE",
+          source_total_hint: 15,
+          collected_count: 1,
+        },
+      });
+    },
+  );
+
   it("collects a virtual grid through the content-owned scroll lifecycle", async () => {
     let windowCount = 0;
     const send = vi.fn(async (_tabId: number, message: unknown) => {

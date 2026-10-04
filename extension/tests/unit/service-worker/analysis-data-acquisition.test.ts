@@ -40,6 +40,27 @@ describe("analysis data acquisition", () => {
     expect(requestsCollectionAnalysis("What does this button do?")).toBe(false);
   });
 
+  it("recognizes the documented condition and long grouping requests without crossing sentences", () => {
+    expect(
+      requestsCollectionAnalysis(
+        "이 페이지의 테이블에서 Status가 Active인 계정의 Name과 Role을 정리해줘. 실제로 읽은 데이터 범위도 알려줘.",
+      ),
+    ).toBe(true);
+    expect(
+      requestsCollectionAnalysis(
+        "이 페이지의 그리드 데이터를 읽고 Category별 항목 수와 Status별 항목 수를 분석해줘. 실제 수집 수를 알려줘.",
+      ),
+    ).toBe(true);
+    expect(
+      requestsCollectionAnalysis("테이블 버튼을 눌러줘. 다른 질문을 요약해줘."),
+    ).toBe(false);
+    expect(
+      requestsCollectionAnalysis(
+        "Open the table button. Summarize another question.",
+      ),
+    ).toBe(false);
+  });
+
   it("reads one permitted collection and strips worker-only identifiers before provider context", async () => {
     const sendMessage = vi.fn(async (_tabId: number, message: unknown) => {
       const kind = (message as { kind?: unknown }).kind;
