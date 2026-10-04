@@ -36,6 +36,16 @@ export const openAnalysisPanel = async ({
     10_000,
     "Settings target was not created",
   );
+  await waitFor(
+    () =>
+      cdp(settings.webSocketDebuggerUrl, "Runtime.evaluate", {
+        expression:
+          "!!chrome.sidePanel && !!document.querySelector('#agent-preferences-form')",
+        returnByValue: true,
+      }).then((result) => result.result?.value),
+    10_000,
+    "Settings document did not finish loading",
+  );
   const opened = await cdp(settings.webSocketDebuggerUrl, "Runtime.evaluate", {
     expression: `chrome.sidePanel.open({windowId:${activeWindow.result.value}}).then(() => true)`,
     awaitPromise: true,

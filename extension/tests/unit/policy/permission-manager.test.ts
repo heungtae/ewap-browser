@@ -49,6 +49,30 @@ describe("permission manager", () => {
     );
   });
 
+  it("denies loopback immediately without persisting or affecting another run", () => {
+    const manager = new PermissionManager();
+    const url = "http://127.0.0.1:3002";
+    manager.decide("type", url, "run", "once");
+    manager.decide("type", url, "run", "deny");
+    expect(manager.check("type", url, "run")).toBe("DENY");
+    expect(manager.check("type", url, "other")).toBe("REQUIRE_PERMISSION");
+    expect(manager.snapshot()).toEqual([]);
+    manager.endRun("run");
+    expect(manager.check("type", url, "run")).toBe("REQUIRE_PERMISSION");
+    expect(() => manager.decide("type", url, "run", "always")).toThrow(
+      "ORIGIN_NOT_ALLOWED",
+    );
+  });
+
+  it("revokes scoped denials", () => {
+    const manager = new PermissionManager();
+    manager.decide("click", "http://[::1]:3002", "run", "deny");
+    manager.revoke("click", "[::1]");
+    expect(manager.check("click", "http://[::1]:3002", "run")).toBe(
+      "REQUIRE_PERMISSION",
+    );
+  });
+
   it("given_once_and_always_grants_when_revoked_then_both_are_removed", () => {
     const manager = new PermissionManager();
     manager.decide("click", "https://fixture.company.test", "run", "once");

@@ -84,20 +84,35 @@ export const prepareActProposal = (
     proposal.tool === "click_by_ref" &&
     typeof target.state === "object" &&
     target.state !== null &&
-    (target.state as { expanded?: unknown }).expanded === false &&
+    typeof (target.state as { expanded?: unknown }).expanded === "boolean" &&
     definition.verifier.kind === "semantic-state-transition" &&
     definition.verifier.required_changes.length === 0
   )
     definition.verifier.required_changes = [
-      { ref_id: proposal.refId, field: "expanded", expected: true },
+      {
+        ref_id: proposal.refId,
+        field: "expanded",
+        expected: !(target.state as { expanded: boolean }).expanded,
+      },
     ];
   if (
     proposal.tool === "click_by_ref" &&
     typeof target.state === "object" &&
     target.state !== null &&
-    (target.state as { expanded?: unknown }).expanded === false
+    (target.state as { expanded?: unknown }).expanded === false &&
+    proposal.approvalScope === "session"
   )
     session.awaitingExpandedMenuSelection = true;
+  if (
+    proposal.tool === "click_by_ref" &&
+    target.role === "tab" &&
+    definition.verifier.kind === "semantic-state-transition" &&
+    definition.verifier.required_changes.length === 0 &&
+    (target.state as { selected?: unknown })?.selected === false
+  )
+    definition.verifier.required_changes = [
+      { ref_id: proposal.refId, field: "selected", expected: true },
+    ];
   const next = dependencies.coordinator.mutations.propose(
     run,
     {

@@ -4,6 +4,8 @@ import { prepareActProposal } from "../../../src/service-worker/act-proposal-rea
 import type { ActSession } from "../../../src/service-worker/act-session-types.js";
 import type { ParsedActProposal } from "../../../src/service-worker/act-proposal-parser.js";
 
+import type { Run } from "../../../src/state/run-coordinator.js";
+
 const policy = {
   permission_origins: ["<all_urls>"],
   page_read_origins: ["<all_urls>"],
@@ -83,5 +85,88 @@ describe("Act proposal readiness", () => {
         session.awaitingConfirmation!.confirmationNonce,
       ).state,
     ).toBe("READY_TO_EXECUTE");
+  });
+});
+
+const fixture = (
+  state: Record<string, boolean>,
+  role: "button" | "tab" = "button",
+  approvalScope: "session" | "single_step" = "single_step",
+) => {
+  const propose = vi.fn(() => ({ state: "READY_TO_EXECUTE" }));
+  const session = {
+    profile: { id: "page", version: 1 },
+    id: "session",
+  } as ActSession;
+  const proposal = {
+    id: "proposal",
+    targetName: "Target",
+    approvalReason: "Test",
+    toolCallId: "tool",
+    tool: "click_by_ref",
+    refId: "ref",
+    approvalScope,
+    definition: {
+      tool: "click_by_ref",
+      effect: "local-ui-only",
+      risk: "R1",
+      eligible_roles: [role],
+      verifier: {
+        kind: "semantic-state-transition",
+        declaration_id: "test",
+        pre_state_digest: "before",
+        required_changes: [],
+      },
+    },
+  } as ParsedActProposal;
+  prepareActProposal(
+    {
+      coordinator: { mutations: { propose, executeR1: () => ({}) } } as never,
+      actionView: () => ({}) as never,
+      publish: () => undefined,
+    },
+    session,
+    {} as Run,
+    proposal,
+    {
+      ref_id: "ref",
+      name: "Target",
+      role,
+      visible: true,
+      enabled: true,
+      state,
+    },
+  );
+  return {
+    session,
+    definition: (propose.mock.calls[0] as unknown as unknown[])[4] as {
+      verifier: { required_changes: unknown[] };
+    },
+  };
+};
+
+describe("browser-derived control completion", () => {
+  it("verifies both expanding and collapsing native disclosure controls", () => {
+    expect(
+      fixture({ expanded: false }).definition.verifier.required_changes,
+    ).toEqual([{ ref_id: "ref", field: "expanded", expected: true }]);
+    expect(
+      fixture({ expanded: true }).definition.verifier.required_changes,
+    ).toEqual([{ ref_id: "ref", field: "expanded", expected: false }]);
+  });
+  it("requires menu continuation only for approved navigation sessions", () => {
+    expect(
+      fixture({ expanded: false }).session.awaitingExpandedMenuSelection,
+    ).toBeUndefined();
+    expect(
+      fixture({ expanded: false }, "button", "session").session
+        .awaitingExpandedMenuSelection,
+    ).toBe(true);
+  });
+  it("verifies tab selection and keeps unknown clicks without a completion", () => {
+    expect(
+      fixture({ selected: false }, "tab").definition.verifier.required_changes,
+    ).toEqual([{ ref_id: "ref", field: "selected", expected: true }]);
+    expect(fixture({}).definition.verifier.required_changes).toEqual([]);
   });
 });

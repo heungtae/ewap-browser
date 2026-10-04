@@ -38,6 +38,15 @@ describe("bounded CDP cancellation", () => {
         if (method === "DOM.querySelectorAll") return { nodeIds: [2] };
         if (method === "DOM.getBoxModel")
           return { model: { content: [10, 10, 20, 10, 20, 20, 10, 20] } };
+        if (method === "Page.getLayoutMetrics")
+          return {
+            cssLayoutViewport: {
+              pageX: 0,
+              pageY: 0,
+              clientWidth: 100,
+              clientHeight: 100,
+            },
+          };
         if (method === "DOM.getNodeForLocation") return { nodeId: 2 };
         if (method === "DOM.getAttributes") {
           reachedAttributes?.();

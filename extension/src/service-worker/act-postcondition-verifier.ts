@@ -42,6 +42,31 @@ export type CompletionEvaluation = {
 };
 
 export const createActPostconditionVerifier = (dependencies: Dependencies) => {
+  const uiBaselines = new Set<string>();
+  const prepareBrowserUi = async (
+    run: Run,
+    intent: ActionIntent,
+  ): Promise<boolean> => {
+    if (
+      intent.tool !== "click_by_ref" ||
+      intent.effect !== "local-ui-only" ||
+      intent.risk !== "R1"
+    )
+      return false;
+    try {
+      const result = await dependencies.send(run.tabId, {
+        kind: "CONTENT_PREPARE_UI_COMPLETION",
+        run_id: run.id,
+        document_epoch: run.documentEpoch,
+        ref_id: intent.ref_id,
+      });
+      if (!isPlainObject(result) || result.ok !== true) return false;
+      uiBaselines.add(run.id);
+      return true;
+    } catch {
+      return false;
+    }
+  };
   const markerBaselines = new Map<string, boolean>();
   const markerMatches = (
     node: {
@@ -89,12 +114,40 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
   };
   const release = (run: Run): void => {
     markerBaselines.delete(run.id);
+    if (uiBaselines.delete(run.id))
+      void dependencies
+        .send(run.tabId, {
+          kind: "CONTENT_RELEASE_UI_COMPLETION",
+          run_id: run.id,
+          document_epoch: run.documentEpoch,
+        })
+        .catch(() => undefined);
   };
 
   const evaluate = async (
     run: Run,
     intent: ActionIntent,
   ): Promise<CompletionEvaluation> => {
+    if (uiBaselines.has(run.id)) {
+      try {
+        const result = await dependencies.send(run.tabId, {
+          kind: "CONTENT_VERIFY_UI_COMPLETION",
+          run_id: run.id,
+          document_epoch: run.documentEpoch,
+        });
+        if (!isPlainObject(result) || result.ok !== true)
+          return { status: "invalid", reason: "SCOPE_NOT_READY" };
+        return {
+          status: result.matches === true ? "satisfied" : "pending",
+          reason:
+            result.matches === true
+              ? "EXPECTED_STATE_MATCHED"
+              : "EXPECTED_STATE_PENDING",
+        };
+      } catch {
+        return { status: "invalid", reason: "SCHEMA_INVALID" };
+      }
+    }
     const verifier = intent.verifier;
     const completion = intent.completion;
     if (completion?.kind === "ui_relation") {
@@ -371,6 +424,7 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
   return {
     bounded,
     canVerify,
+    prepareBrowserUi,
     evaluate,
     navigationTarget,
     prepare,

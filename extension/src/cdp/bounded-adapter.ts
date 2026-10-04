@@ -245,21 +245,28 @@ export class BoundedCdpAdapter {
       ];
       const x = xs.reduce((sum, item) => sum + item, 0) / 4;
       const y = ys.reduce((sum, item) => sum + item, 0) / 4;
-      if (
-        !Number.isFinite(prepared.viewportWidth) ||
-        !Number.isFinite(prepared.viewportHeight) ||
-        prepared.viewportWidth <= 0 ||
-        prepared.viewportHeight <= 0 ||
-        x >= prepared.viewportWidth ||
-        y >= prepared.viewportHeight
-      )
+      // Box model and input coordinates use the viewport; hit testing uses
+      // document coordinates. Read offsets after scrolling the bound node.
+      const metrics = await this.debuggerApi.sendCommand(
+        target,
+        "Page.getLayoutMetrics",
+      );
+      const viewport = metrics.cssLayoutViewport as
+        | Record<string, unknown>
+        | undefined;
+      if (!viewport) fail("TARGET_NOT_ACTIONABLE");
+      const scrollX = number(viewport!.pageX);
+      const scrollY = number(viewport!.pageY);
+      const width = number(viewport!.clientWidth);
+      const height = number(viewport!.clientHeight);
+      if (width <= 0 || height <= 0 || x >= width || y >= height)
         fail("TARGET_NOT_ACTIONABLE");
       const hit = await this.debuggerApi.sendCommand(
         target,
         "DOM.getNodeForLocation",
         {
-          x: Math.round(x),
-          y: Math.round(y),
+          x: Math.round(x + scrollX),
+          y: Math.round(y + scrollY),
           includeUserAgentShadowDOM: false,
         },
       );

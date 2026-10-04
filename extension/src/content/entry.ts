@@ -1,3 +1,4 @@
+import { createUiCompletionObserver } from "./ui-completion.js";
 import { digestCanonical } from "../security/canonical.js";
 import {
   discoverCollections,
@@ -109,7 +110,7 @@ const maxWorkflowDeclarationChars = 16_384;
 const maxWorkflowScriptCount = 12;
 const maxWorkflowInlineScriptChars = 256 * 1024;
 const projectionSelector =
-  "button,input,textarea,select,option,a,[role],h1,h2,h3,h4,h5,h6";
+  "button,input,textarea,select,option,summary,dialog,a,[role],h1,h2,h3,h4,h5,h6";
 const workflowDeclaration = (): unknown | undefined => {
   const declarations = document.querySelectorAll(
     'script[type="application/contextpilot-workflow+json"]',
@@ -219,7 +220,10 @@ const boundedTarget = (
     !actionTokenPattern.test(request.action_token)
   )
     return undefined;
-  const record = refRecords.get(request.ref_id);
+  return actionableRef(request.ref_id);
+};
+const actionableRef = (refId: string): HTMLElement | undefined => {
+  const record = refRecords.get(refId);
   const element = record?.element;
   if (
     !record ||
@@ -286,6 +290,8 @@ const refFor = (element: Element, role: string, name: string): string => {
 const roleFor = (element: Element): string | undefined => {
   const aria = element.getAttribute("role");
   if (aria && supportedRoles.has(aria)) return aria;
+  if (element.tagName === "SUMMARY") return "button";
+  if (element instanceof HTMLDialogElement) return "dialog";
   if (element instanceof HTMLButtonElement) return "button";
   if (element instanceof HTMLInputElement)
     return element.type === "checkbox"
@@ -314,18 +320,27 @@ const boundedTextContent = (
   root: Node,
   maxCharacters: number,
   skipNonContent = false,
+  skipControls = false,
 ): string => {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   let result = "";
-  for (let node = walker.nextNode(); node && result.length < maxCharacters; ) {
+  let visited = 0;
+  for (
+    let node = walker.nextNode();
+    node &&
+    result.length < maxCharacters &&
+    visited++ < maxProjectionDomElements;
+
+  ) {
     const parent = node.parentElement;
     if (
-      !skipNonContent ||
-      (parent &&
-        !parent.closest(
-          "script,style,noscript,template,[hidden],[aria-hidden=true]",
-        ) &&
-        hiddenReasonFor(parent) === undefined)
+      !(skipControls && parent?.closest("input,select,textarea,button")) &&
+      (!skipNonContent ||
+        (parent &&
+          !parent.closest(
+            "script,style,noscript,template,[hidden],[aria-hidden=true]",
+          ) &&
+          hiddenReasonFor(parent) === undefined))
     )
       result += (node.nodeValue ?? "").slice(0, maxCharacters - result.length);
     node = walker.nextNode();
@@ -348,7 +363,7 @@ const nameFor = (element: Element): string => {
     element instanceof HTMLTextAreaElement ||
     element instanceof HTMLSelectElement
       ? [...(element.labels ?? [])]
-          .map((label) => boundedTextContent(label, 160))
+          .map((label) => boundedTextContent(label, 160, false, true))
           .join(" ")
       : "";
   const candidate =
@@ -387,6 +402,7 @@ new MutationObserver((mutations) => {
     "disabled",
     "aria-expanded",
     "aria-selected",
+    "open",
     "required",
     "type",
     "autocomplete",
@@ -452,9 +468,12 @@ const hiddenReasonFor = (element: Element): string | undefined => {
       return current === element ? "visibility_hidden" : "ancestor_hidden";
     if (Number(style.opacity) === 0)
       return current === element ? "opacity_zero" : "ancestor_hidden";
+    if (current instanceof HTMLDetailsElement && !current.open) {
+      const summary = current.querySelector(":scope > summary");
+      if (!summary?.contains(element)) return "collapsed";
+    }
     current = current.parentElement;
   }
-  if (element.closest("details:not([open])")) return "collapsed";
   const rects = layoutElement.getClientRects();
   if (rects.length === 0) return "zero_box";
   const rect = rects[0];
@@ -549,6 +568,10 @@ const projectionNodes = (
               : element.hasAttribute("aria-selected")
                 ? { selected: element.getAttribute("aria-selected") === "true" }
                 : {}),
+            ...(element.tagName === "SUMMARY" &&
+            element.parentElement instanceof HTMLDetailsElement
+              ? { expanded: element.parentElement.open }
+              : {}),
             ...(element.hasAttribute("aria-expanded")
               ? { expanded: element.getAttribute("aria-expanded") === "true" }
               : {}),
@@ -626,7 +649,31 @@ const projection = (scope: ReadScope = "all_dom"): unknown => {
     ...(workflow === undefined ? {} : { workflow }),
   };
 };
+const uiCompletion = createUiCompletionObserver({
+  epoch: () => documentEpoch,
+  resolve: actionableRef,
+});
 runtime?.onMessage.addListener((message, sender, respond) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    [
+      "CONTENT_PREPARE_UI_COMPLETION",
+      "CONTENT_VERIFY_UI_COMPLETION",
+      "CONTENT_RELEASE_UI_COMPLETION",
+    ].includes(String((message as { kind?: unknown }).kind))
+  ) {
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js")
+    ) {
+      respond({ ok: false });
+      return true;
+    }
+    respond(uiCompletion.handle(message as Record<string, unknown>));
+    return true;
+  }
+
   if (
     typeof message === "object" &&
     message !== null &&
@@ -756,6 +803,10 @@ runtime?.onMessage.addListener((message, sender, respond) => {
         : element.hasAttribute("aria-selected")
           ? { selected: element.getAttribute("aria-selected") === "true" }
           : {}),
+      ...(element.tagName === "SUMMARY" &&
+      element.parentElement instanceof HTMLDetailsElement
+        ? { expanded: element.parentElement.open }
+        : {}),
       ...(element.hasAttribute("aria-expanded")
         ? { expanded: element.getAttribute("aria-expanded") === "true" }
         : {}),

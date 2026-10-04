@@ -149,6 +149,67 @@ describe("Act postcondition verifier", () => {
     });
   });
 
+  it("uses browser observation only for local R1 UI and releases its baseline", async () => {
+    const messages: string[] = [];
+    let response: Record<string, unknown> = { ok: false };
+    const verifier = createActPostconditionVerifier({
+      readAll: async () => ({
+        tabId: run.tabId,
+        snapshot: { document_epoch: run.documentEpoch, nodes: [] },
+      }),
+      send: async (_tab, message) => {
+        messages.push((message as { kind: string }).kind);
+        return response;
+      },
+      tab: async () => ({}),
+    });
+    const intent = {
+      tool: "click_by_ref" as const,
+      run_id: run.id,
+      tab_id: run.tabId,
+      frame_id: run.frameId,
+      document_epoch: run.documentEpoch,
+      profile: { id: "page", version: 1 },
+      ref_id: "ref",
+      risk: "R1" as const,
+      effect: "local-ui-only" as const,
+      verifier: {
+        kind: "semantic-state-transition" as const,
+        declaration_id: "test",
+        pre_state_digest: "before",
+        required_changes: [],
+      },
+    };
+    expect(verifier.canVerify(intent)).toBe(false);
+    await expect(verifier.prepareBrowserUi(run, intent)).resolves.toBe(false);
+    response = { ok: true };
+    await expect(
+      verifier.prepareBrowserUi(run, { ...intent, effect: "server-side" }),
+    ).resolves.toBe(false);
+    await expect(
+      verifier.prepareBrowserUi(run, { ...intent, risk: "R2" }),
+    ).resolves.toBe(false);
+    await expect(verifier.prepareBrowserUi(run, intent)).resolves.toBe(true);
+    response = { ok: true, matches: false };
+    await expect(verifier.evaluate(run, intent)).resolves.toMatchObject({
+      status: "pending",
+    });
+    response = { ok: true, matches: true };
+    await expect(verifier.evaluate(run, intent)).resolves.toMatchObject({
+      status: "satisfied",
+    });
+    response = { ok: false };
+    await expect(verifier.evaluate(run, intent)).resolves.toMatchObject({
+      status: "invalid",
+    });
+    verifier.release(run);
+    expect(messages.at(-1)).toBe("CONTENT_RELEASE_UI_COMPLETION");
+    await expect(verifier.evaluate(run, intent)).resolves.toMatchObject({
+      status: "invalid",
+      reason: "CONTRACT_INVALID",
+    });
+  });
+
   it("requires_a_changed_scope_and_fresh_snapshot_after_a_url_transition", async () => {
     const milestones: string[] = [];
     let scopeReads = 0;

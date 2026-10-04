@@ -237,7 +237,9 @@
             Download</label
           >
         </fieldset>
-        <button id="preview" type="button" disabled>Generate preview</button>
+        <button id="preview" aria-controls="result" type="button" disabled>
+          Generate preview
+        </button>
         <p id="result" role="status" aria-live="polite">
           Choose a report scope and include detailed results to enable preview.
         </p>
@@ -290,10 +292,21 @@
           aria-label="Local actions"
           data-open="false"
         >
-          <button role="menuitem" type="button" id="mark-reviewed">
+          <button
+            role="menuitem"
+            type="button"
+            id="mark-reviewed"
+            aria-controls="result"
+          >
             Mark reviewed
           </button>
-          <button role="menuitem" type="button" id="open-dialog">
+          <button
+            role="menuitem"
+            type="button"
+            id="open-dialog"
+            aria-controls="confirmation-dialog"
+            aria-haspopup="dialog"
+          >
             Open confirmation dialog
           </button>
         </div>
@@ -302,7 +315,9 @@
       <dialog id="confirmation-dialog" aria-labelledby="dialog-title">
         <h2 id="dialog-title">Local confirmation</h2>
         <p>This dialog only changes fixture UI state.</p>
-        <button id="close-dialog" type="button">Close dialog</button>
+        <form method="dialog">
+          <button id="close-dialog" type="submit">Close dialog</button>
+        </form>
       </dialog>
     </main>
 

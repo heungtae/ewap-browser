@@ -155,7 +155,9 @@ R3 결제, 계약 확정, 계정/보안 기본 거부. 사용자의 명시 작�
     selector, node ID, 좌표, session ID와 execution path를 지정하지
     못한다.
 8.  CDP adapter는 `docs/15-bounded-cdp-adapter.md`의 closed command
-    allowlist와 parameter builder만 사용한다. unknown
+    allowlist와 parameter builder만 사용한다. `Page.getLayoutMetrics`는
+    scroll 이후 CSS viewport offset/크기를 읽는 데만 사용하며 Page
+    domain의 다른 command를 허용하지 않는다. unknown
     method/domain/parameter는 dispatch 전에 거부한다.
 9.  content script target binding과 CDP hit test가 일치하지 않거나
     target이 stale, sensitive, hidden, disabled, occluded 또는 중복
@@ -196,3 +198,16 @@ R3 결제, 계약 확정, 계정/보안 기본 거부. 사용자의 명시 작�
   plan을 검증한 뒤 마지막 단계에서 추가한다.
 - executable provider adapter는 source tree에 포함되어 extension
   package와 함께 review·build·서명된 경우에만 등록한다.
+
+## Browser-derived UI completion
+
+일반 R1 `local-ui-only` click에만 native dialog 열기, `form method="dialog"`
+닫기, `aria-controls`가 유일한 same-document status/alert를 가리키는 관계를
+실행 전에 관찰해 검증할 수 있다. status는 실행 전 digest와 다른 비어 있지 않은
+표시 텍스트를 요구한다. 관계가 없거나 중복이면 dispatch 전에 차단한다.
+
+observer는 현재 run, document epoch, URL, 연결된 source/target에 결속한다.
+20초 TTL과 최대 32개 제한을 적용하며 terminal에서 해제한다. scope 변경,
+대상 제거, 관계 변경/중복, 만료는 성공으로 처리하지 않는다. 원문은 content
+script 밖으로 보내거나 저장하지 않고, verifier에는 boolean 결과만 전달한다.
+trusted Profile의 선언된 완료 조건은 기존 검증 경로를 유지한다.

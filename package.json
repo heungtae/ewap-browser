@@ -1,7 +1,7 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.88",
+  "version": "0.1.89",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -23,7 +23,7 @@
     "test:chrome-community": "node --experimental-websocket scripts/chrome-s7-smoke.mjs --community",
     "test:chrome-s7": "node --experimental-websocket scripts/chrome-s7-smoke.mjs",
     "test:chrome-s8": "node --experimental-websocket scripts/chrome-s8-smoke.mjs",
-    "test:chrome-s9": "node --experimental-websocket scripts/chrome-s9-upgrade-smoke.mjs",
+    "test:chrome-s9": "node scripts/package-local.mjs && node --experimental-websocket scripts/chrome-s9-upgrade-smoke.mjs",
     "test:chrome-s11": "node --experimental-websocket scripts/chrome-s11-mcp-smoke.mjs",
     "test:chrome-s14": "node --experimental-websocket scripts/chrome-s14-workflow-smoke.mjs",
     "test:chrome-s10": "node --experimental-websocket scripts/chrome-s10-page-api-smoke.mjs",
@@ -36,7 +36,8 @@
     "validate:package": "node scripts/validate-package.mjs",
     "test:release": "node scripts/release-smoke.mjs",
     "package:local": "node scripts/package-local.mjs",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "test:chrome-accessible-items": "node --experimental-websocket scripts/chrome-accessible-items-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

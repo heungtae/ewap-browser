@@ -92,6 +92,9 @@ coordinate 또는 mutation authority를 만들지 않는다.
             `getAttributes`,              사용; `describeNode`는 최대 16단계
             `describeNode`, `focus`       조상 확인만 허용
 
+  `Page`    `getLayoutMetrics`             scroll 이후 CSS viewport offset과
+                                          크기를 읽는 용도로만 사용
+
   `Input`   `dispatchMouseEvent`          left button, click count 1, 검증된
                                           box 내부 point만 허용
 
@@ -111,6 +114,11 @@ right/middle button, arbitrary modifier와 반복 count는
 
 allowlist 확장은 architecture, security policy, 이 문서, S2 negative
 test와 manifest permission snapshot을 같은 변경에서 갱신해야 한다.
+
+`getBoxModel`과 Input은 viewport 좌표를 사용하며, `getNodeForLocation`에는
+scroll 이후 `cssLayoutViewport.pageX/pageY`를 반영한 document 좌표를 전달한다.
+모델이나 페이지가 좌표를 지정할 수 없으며, hit target과 bound token을 다시
+검증한 후에만 입력을 dispatch한다.
 
 ## 4. Target binding과 preflight
 

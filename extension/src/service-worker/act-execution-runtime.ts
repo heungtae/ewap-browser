@@ -42,6 +42,7 @@ type Dependencies = {
     navigationTarget(targetUrl: unknown): string | undefined;
     semantic(run: Run, intent: ActionIntent): Promise<boolean>;
     canVerify?(intent: ActionIntent, value?: string): boolean;
+    prepareBrowserUi?(run: Run, intent: ActionIntent): Promise<boolean>;
     prepare?(run: Run, intent: ActionIntent): Promise<boolean>;
     release?(run: Run): void;
     verify?(
@@ -129,7 +130,8 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
     };
     if (
       dependencies.verifier.canVerify &&
-      !dependencies.verifier.canVerify(ready.intent, ready.value)
+      !dependencies.verifier.canVerify(ready.intent, ready.value) &&
+      !(await dependencies.verifier.prepareBrowserUi?.(run, ready.intent))
     )
       return dependencies.safeFailure("UNSUPPORTED_COMPLETION");
     if (

@@ -54,6 +54,7 @@ export const permissionHost = (rawUrl: string): string => {
 
 export class PermissionManager {
   private persistent: StoredPermission[];
+  private readonly denied = new Map<string, Set<string>>();
   private readonly once = new Map<string, Set<string>>();
 
   public constructor(initial: readonly StoredPermission[] = []) {
@@ -66,6 +67,7 @@ export class PermissionManager {
     runId: string,
   ): "ALLOW" | "DENY" | "REQUIRE_PERMISSION" {
     const host = permissionHost(rawUrl);
+    if (this.denied.get(runId)?.has(this.key(capability, host))) return "DENY";
     const persistent = this.persistent.find(
       (entry) => entry.capability === capability && entry.host === host,
     );
@@ -84,6 +86,13 @@ export class PermissionManager {
     if (!CAPABILITIES.includes(capability)) fail("INVALID_ARGUMENT");
     const host = permissionHost(rawUrl);
     const key = this.key(capability, host);
+    if (decision === "deny" && (isIp(host) || host === "localhost")) {
+      const denials = this.denied.get(runId) ?? new Set<string>();
+      denials.add(key);
+      this.denied.set(runId, denials);
+      this.once.get(runId)?.delete(key);
+      return;
+    }
     if (decision === "once") {
       const grants = this.once.get(runId) ?? new Set<string>();
       grants.add(key);
@@ -92,7 +101,7 @@ export class PermissionManager {
     }
     // Development loopback is intentionally run-scoped and cannot become an
     // always grant in product settings.
-    if (isIp(host)) return fail("ORIGIN_NOT_ALLOWED");
+    if (isIp(host) || host === "localhost") return fail("ORIGIN_NOT_ALLOWED");
     const next: StoredPermission = {
       capability,
       host,
@@ -109,6 +118,7 @@ export class PermissionManager {
 
   public endRun(runId: string): void {
     this.once.delete(runId);
+    this.denied.delete(runId);
   }
 
   public revoke(capability?: Capability, host?: string): void {
@@ -118,16 +128,18 @@ export class PermissionManager {
         (host !== undefined && entry.host !== host),
     );
     if (capability === undefined && host === undefined) this.persistent = [];
-    for (const [runId, grants] of this.once) {
-      for (const key of grants) {
-        const [grantedCapability, grantedHost] = key.split("\n");
-        if (
-          (capability === undefined || capability === grantedCapability) &&
-          (host === undefined || host === grantedHost)
-        )
-          grants.delete(key);
+    for (const scoped of [this.once, this.denied]) {
+      for (const [runId, grants] of scoped) {
+        for (const key of grants) {
+          const [grantedCapability, grantedHost] = key.split("\n");
+          if (
+            (capability === undefined || capability === grantedCapability) &&
+            (host === undefined || host === grantedHost)
+          )
+            grants.delete(key);
+        }
+        if (grants.size === 0) scoped.delete(runId);
       }
-      if (grants.size === 0) this.once.delete(runId);
     }
   }
 

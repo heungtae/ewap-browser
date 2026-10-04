@@ -21,6 +21,9 @@ const action: BoundedCdpAction = {
 };
 const fixture = (
   options: {
+    scrollX?: number;
+    scrollY?: number;
+    wrongHit?: boolean;
     granted?: boolean;
     detachFails?: boolean;
     attachFails?: boolean;
@@ -32,6 +35,8 @@ const fixture = (
   } = {},
 ) => {
   const calls: string[] = [];
+  const commands: Array<{ method: string; params?: Record<string, unknown> }> =
+    [];
   let mouseCalls = 0;
   const api: DebuggerApi = {
     async attach() {
@@ -39,8 +44,9 @@ const fixture = (
       if (options.attachFails)
         throw new Error("Another debugger is already attached");
     },
-    async sendCommand(_target, method) {
+    async sendCommand(_target, method, params) {
       calls.push(method);
+      commands.push({ method, ...(params ? { params } : {}) });
       if (method === "Input.dispatchMouseEvent") mouseCalls += 1;
       if (
         options.failSecondMouse &&
@@ -60,7 +66,17 @@ const fixture = (
               : [10, 10, 20, 10, 20, 20, 10, 20],
           },
         };
-      if (method === "DOM.getNodeForLocation") return { nodeId: 2 };
+      if (method === "Page.getLayoutMetrics")
+        return {
+          cssLayoutViewport: {
+            pageX: options.scrollX ?? 0,
+            pageY: options.scrollY ?? 0,
+            clientWidth: 100,
+            clientHeight: 100,
+          },
+        };
+      if (method === "DOM.getNodeForLocation")
+        return { nodeId: options.wrongHit ? 99 : 2 };
       if (method === "DOM.getAttributes")
         return {
           attributes: ["data-contextpilot-action-token", action.actionToken],
@@ -103,7 +119,7 @@ const fixture = (
     },
     () => options.granted ?? true,
   );
-  return { adapter, calls };
+  return { adapter, calls, commands };
 };
 
 describe("bounded CDP adapter", () => {
@@ -124,6 +140,37 @@ describe("bounded CDP adapter", () => {
     expect(calls.at(-2)).toBe("detach");
     expect(calls.at(-1)).toBe("marker:clear");
     expect(calls).not.toContain("Runtime.evaluate");
+  });
+
+  it("uses document offsets for hit testing but viewport coordinates for input", async () => {
+    const { adapter, commands } = fixture({ scrollX: 30, scrollY: 629 });
+    expect(await adapter.execute(action)).toMatchObject({
+      outcome: "DISPATCHED",
+    });
+    expect(
+      commands.find((c) => c.method === "DOM.getNodeForLocation")?.params,
+    ).toMatchObject({ x: 45, y: 644 });
+    expect(
+      commands
+        .filter((c) => c.method === "Input.dispatchMouseEvent")
+        .map((c) => [c.params?.x, c.params?.y]),
+    ).toEqual([
+      [15, 15],
+      [15, 15],
+    ]);
+    expect(
+      commands.findIndex((c) => c.method === "Page.getLayoutMetrics"),
+    ).toBeGreaterThan(
+      commands.findIndex((c) => c.method === "DOM.scrollIntoViewIfNeeded"),
+    );
+  });
+
+  it("does not dispatch when the document hit belongs to another node", async () => {
+    const { adapter, calls } = fixture({ scrollY: 629, wrongHit: true });
+    await expect(adapter.execute(action)).rejects.toThrow(
+      "TARGET_NOT_ACTIONABLE",
+    );
+    expect(calls).not.toContain("Input.dispatchMouseEvent");
   });
 
   it("given_detach_failure_when_next_action_then_tab_is_quarantined", async () => {

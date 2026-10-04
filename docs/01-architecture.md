@@ -134,8 +134,8 @@ collection reader, 설계 문서와 검증의 우선 기준이다.
 3. 권한이 없으면 사용자는 이번 작업만 허용, 항상 허용, 거부 중 하나를 선택한다.
 4. 제출·외부 전송·결제·삭제 같은 결과적 행동은 매 실행마다 별도 확인을 요구한다.
 5. content script가 target을 다시 확인한다. 현재 runtime은 click/key/text에 bounded CDP, 나머지 도구에 content 경로를 선택한다. preflight와 tool hard guard는 계속 적용한다.
-6. CDP 경로는 현재 target에 결속된 내부 hit-test token을 해석하고 allowlisted trusted input 한 건을 전송한다. dispatch가 시작된 뒤에는 DOM/CDP 경로를 바꾸거나 자동 재시도하지 않는다.
-7. service worker가 navigation 또는 semantic 상태 변화를 확인하고 CDP를 detach한다. 효과가 불명확하면 `UNKNOWN`으로 끝낸다.
+6. CDP 경로는 현재 target에 결속된 내부 hit-test token을 해석하고, scroll 이후 읽은 CSS viewport offset으로 document hit-test 좌표를 계산한다. hit 대상과 token을 재확인하고 viewport 좌표로 allowlisted trusted input 한 건을 전송한다. dispatch가 시작된 뒤에는 DOM/CDP 경로를 바꾸거나 자동 재시도하지 않는다.
+7. service worker가 navigation 또는 semantic 상태 변화를 확인하고 CDP를 detach한다. 일반 R1 local UI click은 content script가 실행 전에 관찰한 명시적 ARIA status 관계나 native dialog 관계로 완료를 검증할 수 있다. 이 결과는 local UI 변화만 증명하며 business 성공을 증명하지 않는다. 효과가 불명확하면 `UNKNOWN`으로 끝낸다.
 
 ## 5. 상태와 수명
 
