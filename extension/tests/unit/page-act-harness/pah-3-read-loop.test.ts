@@ -263,4 +263,34 @@ describe("PAH-3 read loop and plan contract", () => {
       "A response without tool calls is never",
     );
   });
+
+  it("rejects_a_repeated_tool_call_id_inside_one_turn", () => {
+    const seen = new Set<string>();
+    expect(() =>
+      validateToolCallBinding(
+        {
+          turn_id: "turn-abcdefghijklmnop",
+          request_revision: 1,
+          tool_calls: [
+            call("call-aaaaaaaaaaaaaaaa", "read_page"),
+            call("call-aaaaaaaaaaaaaaaa", "find", { query: "x" }),
+          ],
+        },
+        seen,
+        1,
+      ),
+    ).toThrow("DUPLICATE_TOOL_CALL");
+    // Atomic: the failed turn commits nothing, so a later turn reusing one
+    // of its ids still binds cleanly.
+    validateToolCallBinding(
+      {
+        turn_id: "turn-bcdefghijklmnopq",
+        request_revision: 1,
+        tool_calls: [call("call-aaaaaaaaaaaaaaaa", "read_page")],
+      },
+      seen,
+      1,
+    );
+    expect(seen.has("call-aaaaaaaaaaaaaaaa")).toBe(true);
+  });
 });

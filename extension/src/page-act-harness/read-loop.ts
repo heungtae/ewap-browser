@@ -169,6 +169,9 @@ export const validateToolCallBinding = (
         throw new Error("STALE_REQUEST_REVISION");
       }
       // Validate everything before committing ids (atomic: no partial add).
+      // Duplicates are rejected both against prior turns AND within this
+      // turn, so two identical ids in one response can never both bind.
+      const turnIds = new Set<string>();
       for (const call of turn.tool_calls) {
         if (!isOpaqueId(call.tool_call_id)) {
           traceBranch(
@@ -180,7 +183,10 @@ export const validateToolCallBinding = (
           );
           throw new Error("TOOL_CALL_ID_INVALID");
         }
-        if (seenCallIds.has(call.tool_call_id)) {
+        if (
+          seenCallIds.has(call.tool_call_id) ||
+          turnIds.has(call.tool_call_id)
+        ) {
           traceBranch(
             context,
             method,
@@ -190,6 +196,7 @@ export const validateToolCallBinding = (
           );
           throw new Error(`DUPLICATE_TOOL_CALL:${call.tool_call_id}`);
         }
+        turnIds.add(call.tool_call_id);
       }
       for (const call of turn.tool_calls) seenCallIds.add(call.tool_call_id);
       traceDecision("page-act-harness.turn.bound", {

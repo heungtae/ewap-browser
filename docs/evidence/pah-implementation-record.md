@@ -49,3 +49,27 @@
   실행하고, holdout 페이지에서 일반 경로 자동 선택 없이 측정한다.
 - 공유 계약 변경이 필요해지면 workspace contract-first 순서를 선행한다.
 - 기존 문서 동기화는 사용자 확인 후 D01~D29/C01~C13 순서로 진행한다.
+
+## P1/P2 후속 수정 기록 (2026-10-05)
+
+- P1 진입점 연결: 신규 `page-act-harness/act-entry-bridge.ts`를
+  `service-worker/act-chat-start.ts`(envelope 구성·검증·attach, best-effort +
+  trace)와 `service-worker/act-step-runner.ts`(선언⊆제공 검사, entry·fresh
+  교집합에서만 generic 경로 loud-fail `HARNESS_TOOL_NARROWING`)에 연결.
+  에러 코드 1종을 공유 계약에 추가 (`core-types.ts`, `error-codes.ts`,
+  `sidepanel/panel.ts` 문구). workflow 경로 좁힘은 trace만 남기고 PAH-5
+  재검토 경로가 소유한다.
+- P1 마스킹 우회: full-body 줄 분류 후 chunk 절단 (`resource-reader.ts`),
+  값 분리줄 규칙 + search 발췌의 전체 분류 (`resource-inventory.ts`).
+- P1 component 마스킹: `maskComponentRows` 실제 검사 (민감 키·대입값·bearer·
+  secret query), 정직한 counts.
+- P2 component offset: `offset` 윈도우 전진 + `offset:endPos` cursor.
+  `offset > rows.length`는 `INVALID_OFFSET`.
+- P2 approval: `createApprovalStore` 저장 레코드 기준 check-and-set
+  (`APPROVAL_REUSED`/`APPROVAL_ID_CONFLICT`/`APPROVAL_NOT_FOUND`).
+- P2 needs_context: `NEEDS_CONTEXT_WITHOUT_MISSING` 거부 제거, LLM 판단
+  복귀 (+ 빈 missing trace alert).
+- P2 중복 tool-call ID: turn내 Set 검사 + 원자적 커밋.
+- 검증: `typecheck`·`lint`·`build`·`test:unit`(549 PASS)·`test:fixture`·
+  `test:e2e`·module-boundaries(262 files)·method-trace-coverage PASS.
+  live Provider + Chrome은 여전히 미검증.

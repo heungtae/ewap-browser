@@ -4,6 +4,7 @@ import {
   describeCoverageGap,
 } from "../../../src/page-act-harness/component-descriptor.js";
 import {
+  maskComponentRows,
   readChannel,
   selectChannel,
 } from "../../../src/page-act-harness/component-facade.js";
@@ -153,5 +154,95 @@ describe("PAH-4 component observation", () => {
     const selection = selectChannel(grid(), "bounded_scroll");
     expect(selection.side_effect).toBe("DOM_MUTATION_SCROLL");
     expect(grid().restoration).toContain("offset 0");
+  });
+
+  it("masks_sensitive_fields_instead_of_labeling_raw_rows_masked", () => {
+    const masked = maskComponentRows([
+      { username: "kim", password: "s3cr3t-value" },
+      { note: "api_key=sk-live-abcdef123456" },
+      { label: "plain description" },
+    ]);
+    expect(masked.redacted_count).toBe(2);
+    expect(masked.categories).toContain("component-sensitive");
+    expect(JSON.stringify(masked.rows)).not.toContain("s3cr3t-value");
+    expect(JSON.stringify(masked.rows)).not.toContain("sk-live-abcdef123456");
+    const read = readChannel(
+      grid(),
+      [{ username: "kim", password: "s3cr3t-value" }],
+      {
+        evidence_id: "ev-read-abcdefghijklmnop",
+        request_revision: 1,
+        channel: "visible_rows",
+      },
+    );
+    expect(JSON.stringify(read.content)).not.toContain("s3cr3t-value");
+    expect(read.masking.redacted_count).toBe(1);
+    expect(read.limitations.join(" ")).toContain("redacted");
+  });
+
+  it("lets_benign_secret_named_labels_pass_while_catching_values", () => {
+    const masked = maskComponentRows([
+      { status: "token: expired" },
+      { auth: "bearer lowercase-abcdef123456" },
+      { next: "https://app.test/cb?code=secret-abc123#frag" },
+    ]);
+    expect(masked.rows[0]).toEqual({ status: "token: expired" });
+    expect(JSON.stringify(masked.rows[1])).not.toContain("lowercase-abcdef");
+    expect(masked.rows[2]).toEqual({
+      next: "https://app.test/cb?[REDACTED:query]#frag",
+    });
+    expect(masked.redacted_count).toBe(2);
+  });
+
+  it("walks_the_full_collection_across_offset_continuations", () => {
+    const paged = buildComponentDescriptor({
+      resource_id: "component-dddddddddddddd1",
+      binding_revision: "epoch-abcdefghijklmnop",
+      observed_hint: "grid",
+      hint_basis: "role=grid with pagination observed",
+      visible_count: 2,
+      logical_count: 5,
+      total_count: 5,
+      has_eof: true,
+      channels: [{ channel: "visible_rows", available: true }],
+    });
+    const rows = [0, 1, 2, 3, 4].map((i) => ({ i }));
+    const first = readChannel(paged, rows, {
+      evidence_id: "ev-read-abcdefghijklmnop",
+      request_revision: 1,
+      channel: "visible_rows",
+      offset: 0,
+      max_items: 2,
+    });
+    expect(first.content).toMatchObject({ rows: [{ i: 0 }, { i: 1 }] });
+    expect(first.coverage.complete).toBe(false);
+    expect(first.continuation?.cursor).toBe("offset:2");
+    const second = readChannel(paged, rows, {
+      evidence_id: "ev-read-abcdefghijklmnop",
+      request_revision: 1,
+      channel: "visible_rows",
+      offset: 2,
+      max_items: 2,
+    });
+    expect(second.content).toMatchObject({ rows: [{ i: 2 }, { i: 3 }] });
+    expect(second.continuation?.cursor).toBe("offset:4");
+    const third = readChannel(paged, rows, {
+      evidence_id: "ev-read-abcdefghijklmnop",
+      request_revision: 1,
+      channel: "visible_rows",
+      offset: 4,
+      max_items: 2,
+    });
+    expect(third.content).toMatchObject({ rows: [{ i: 4 }] });
+    expect(third.coverage.complete).toBe(true);
+    expect(third.continuation).toBeUndefined();
+    expect(() =>
+      readChannel(paged, rows, {
+        evidence_id: "ev-read-abcdefghijklmnop",
+        request_revision: 1,
+        channel: "visible_rows",
+        offset: -1,
+      }),
+    ).toThrow("INVALID_OFFSET");
   });
 });

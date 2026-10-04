@@ -168,6 +168,86 @@ describe("PAH-2 resource inventory and partial reads", () => {
     expect(gated.content).toBeUndefined();
   });
 
+  it("masks_a_keyword_split_by_a_chunk_boundary_on_both_sides", () => {
+    const body = `${"A".repeat(190)}\napi_key=topsecretvalue12345\n${"B".repeat(190)}`;
+    const storeBase = {
+      resource_id: "script-inline-aaaaaaa1",
+      revision: "rev-bbbbbbbbbbbbbbb1",
+      kind: "inline_script",
+      body,
+      consent: "GRANTED" as const,
+      readable: true,
+    };
+    const inputBase = {
+      evidence_id: "ev-read-abcdefghijklmnop",
+      request_revision: 1,
+      binding_revision: "epoch-abcdefghijklmnop",
+      resource_id: "script-inline-aaaaaaa1",
+      current_revision: "rev-bbbbbbbbbbbbbbb1",
+    };
+    const first = readResourceChunk(storeBase, {
+      ...inputBase,
+      offset: 0,
+      max_bytes: 200,
+    });
+    const firstText = JSON.stringify(first.content);
+    expect(firstText).not.toContain("api_key");
+    expect(firstText).not.toContain("topsecretvalue");
+    expect(firstText).toContain("[REDACTED:credential-like]");
+    const cursor = Number(first.continuation?.cursor.split(":")[1] ?? 200);
+    const second = readResourceChunk(storeBase, {
+      ...inputBase,
+      offset: cursor,
+      max_bytes: 2000,
+    });
+    expect(JSON.stringify(second.content)).not.toContain("topsecretvalue");
+    expect(second.masking.redacted_count).toBeGreaterThan(0);
+  });
+
+  it("redacts_a_value_stranded_on_the_line_after_its_keyword", () => {
+    const body =
+      "config = load()\napi_key\nsuper-secret-value-abcdef123456789\nstatus = ok";
+    const read = readResourceChunk(
+      {
+        resource_id: "script-inline-aaaaaaa1",
+        revision: "rev-bbbbbbbbbbbbbbb1",
+        kind: "inline_script",
+        body,
+        consent: "GRANTED",
+        readable: true,
+      },
+      {
+        evidence_id: "ev-read-abcdefghijklmnop",
+        request_revision: 1,
+        binding_revision: "epoch-abcdefghijklmnop",
+        resource_id: "script-inline-aaaaaaa1",
+        offset: "config = load()\napi_key\n".length,
+        max_bytes: 200,
+        current_revision: "rev-bbbbbbbbbbbbbbb1",
+      },
+    );
+    expect(JSON.stringify(read.content)).not.toContain("super-secret-value");
+  });
+
+  it("masks_search_excerpts_using_full_line_context", () => {
+    const { hits } = searchAllowedSources(
+      [
+        {
+          resource_id: "script-inline-aaaaaaa1",
+          revision: "rev-bbbbbbbbbbbbbbb1",
+          kind: "inline_script",
+          body: 'function connect() {\n  const api_key = "sk-live-abcdef123456";\n  return open(query);\n}',
+          consent: "GRANTED",
+          readable: true,
+        },
+      ],
+      "open(query)",
+    );
+    expect(hits.length).toBe(1);
+    expect(hits[0]?.excerpt).not.toContain("sk-live-abcdef123456");
+    expect(hits[0]?.excerpt.length ?? 0).toBeLessThanOrEqual(200);
+  });
+
   it("reads_chunks_with_continuation_and_masks_credential_like_lines", () => {
     expect(containsCredentialLike("api_key=123")).toBe(true);
     const body = `${"a".repeat(250)}\napi_key=should-redact\n${"b".repeat(250)}`;

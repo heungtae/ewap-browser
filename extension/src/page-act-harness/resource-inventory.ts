@@ -28,7 +28,12 @@ export type InventoryPage = {
 };
 
 const CREDENTIAL_LIKE =
-  /(api[_-]?key|secret|passwd|password|otp|mfa|token|cookie)/i;
+  /(api[_-]?key|secret|passwd|password|otp|mfa|token|cookie|bearer|jwt|private[_-]?key)/i;
+// A value line split off from its keyword line (e.g. `api_key` on one line,
+// the value on the next, or either side landing in different chunks) must
+// still be treated as sensitive. Fail-closed: the line following a keyword
+// line is sensitive when it carries an assignment, quoting, or a long token.
+const VALUE_LIKE = /[:=]|["']|[A-Za-z0-9\-_+/=]{16,}/;
 
 const hostOf = (value: string | undefined): string | null => {
   if (!value) return null;
@@ -116,11 +121,12 @@ export const buildResourceInventory = (
 export const maskSourceChunk = (
   text: string,
 ): { text: string; categories: string[]; redacted_count: number } => {
+  const lines = text.split("\n");
+  const sensitive = classifySensitiveLines(text);
   let redacted = 0;
-  const masked = text
-    .split("\n")
-    .map((line) =>
-      CREDENTIAL_LIKE.test(line)
+  const masked = lines
+    .map((line, index) =>
+      sensitive[index] === true
         ? ((redacted += 1), "[REDACTED:credential-like]")
         : line,
     )
@@ -130,4 +136,17 @@ export const maskSourceChunk = (
     categories: redacted > 0 ? ["credential-like"] : [],
     redacted_count: redacted,
   };
+};
+
+// Full-body line classification. Chunking/search must classify against the
+// FULL text first: a keyword cut by a chunk boundary, or a value stranded on
+// the next line, is still sensitive and must not leak through a partial read.
+export const classifySensitiveLines = (body: string): boolean[] => {
+  const lines = body.split("\n");
+  return lines.map((line, index) => {
+    if (CREDENTIAL_LIKE.test(line)) return true;
+    if (index === 0) return false;
+    const prev = lines[index - 1] ?? "";
+    return CREDENTIAL_LIKE.test(prev) && VALUE_LIKE.test(line);
+  });
 };

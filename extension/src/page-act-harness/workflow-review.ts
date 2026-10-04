@@ -87,11 +87,17 @@ export const reviewCandidate = (
       // The core never substitutes the model's semantic verdict by source
       // rank, title, signature, or keyword heuristics (design §8.1). This
       // module takes no rank/threshold parameters by design.
+      // needs_context stays the model's call: listed kinds being present
+      // never proves nothing else is needed (another chunk, a second
+      // script, a fresher observation), so the core must not refuse it.
       const missing = candidate.required_evidence_kinds.filter(
         (kind) => !context.evidence_kinds.includes(kind),
       );
       if (llmVerdict === "needs_context" && missing.length === 0)
-        fail("NEEDS_CONTEXT_WITHOUT_MISSING", "missing material required");
+        traceDecision("page-act-harness.workflow.needs_context_open", {
+          candidate_id: candidate.candidate_id,
+          rationale_length: rationale.trim().length,
+        });
       const originDiff =
         candidate.stored_scope && candidate.current_origin
           ? candidate.stored_scope.origin === candidate.current_origin

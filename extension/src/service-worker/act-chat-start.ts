@@ -6,6 +6,9 @@ import { ContractError, fail, isPlainObject } from "../security/validation.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { selectActActionTools } from "./page-derived-actions.js";
+import { composeActEntryEnvelope } from "../page-act-harness/act-entry-bridge.js";
+import { isOpaqueId } from "../page-act-harness/contracts.js";
+import { traceDecision } from "../diagnostics/method-trace.js";
 import {
   genericActSystemPrompt,
   type ActSession,
@@ -80,6 +83,61 @@ type Dependencies = {
     force?: boolean,
     selection?: AnalysisCollectionSelection,
   ): Promise<AnalysisDataAcquisitionResult>;
+};
+
+// Page Act Harness entry wiring: compose and validate the bootstrap envelope
+// from the live snapshot so the harness runs on every Act start. Best
+// effort: without an opaque request id / binding epochs there is nothing to
+// bind the envelope to, so the start proceeds untracked (traced, never
+// silent). Envelope validation failures likewise never break the start.
+const attachHarnessCapabilities = (
+  session: ActSession,
+  prompt: string,
+  active: ActivePage,
+  definitionTools: string[],
+  dependencies: Pick<Dependencies, "createId" | "pageScope">,
+  context?: RequestContext,
+): void => {
+  try {
+    const requestId = context?.requestId;
+    if (requestId === undefined || !isOpaqueId(requestId)) {
+      traceDecision("page-act-harness.entry.skipped", {
+        reason: "REQUEST_ID_UNAVAILABLE",
+      });
+      return;
+    }
+    const scope = dependencies.pageScope(active);
+    const { envelope, propose_tools, entry_roles } = composeActEntryEnvelope({
+      request_id: requestId,
+      request_revision: context?.generation ?? 1,
+      mode: "act",
+      text: prompt,
+      document_epoch: active.snapshot.document_epoch,
+      page_scope_epoch: scope.page_scope_epoch,
+      origin: active.origin,
+      path: active.path,
+      nodes: active.snapshot.nodes,
+      definition_tools: definitionTools,
+      inventory_id: dependencies.createId(),
+      observation_evidence_id: dependencies.createId(),
+      script_read: "CONSENT_REQUIRED",
+    });
+    session.harnessCapabilities = {
+      request_revision: context?.generation ?? 1,
+      read_tools: [...envelope.capabilities.read],
+      propose_tools,
+      entry_roles,
+    };
+    traceDecision("page-act-harness.entry.attached", {
+      request_revision: context?.generation ?? 1,
+      propose_tools,
+      entry_roles,
+    });
+  } catch (error) {
+    traceDecision("page-act-harness.entry.skipped", {
+      reason: error instanceof Error ? error.message : "UNKNOWN",
+    });
+  }
 };
 
 export const createActChatStart =
@@ -177,6 +235,14 @@ export const createActChatStart =
         definitions: selected.definitions,
         profileDefinitions: matchedProfile?.definitions ?? [],
       };
+      attachHarnessCapabilities(
+        session,
+        value.prompt,
+        active,
+        selected.definitions.map((definition) => definition.tool),
+        dependencies,
+        context,
+      );
       if (requestsCollectionAnalysis(value.prompt)) {
         const analysisScope = dependencies.pageScope(active);
         const analysisData = await dependencies.collectAnalysisData?.(

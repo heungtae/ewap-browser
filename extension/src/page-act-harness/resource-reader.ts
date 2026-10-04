@@ -1,6 +1,6 @@
 import { traceDecision, traceMethod } from "../diagnostics/method-trace.js";
 import { validateReadEvidence, type ReadEvidence } from "./contracts.js";
-import { maskSourceChunk } from "./resource-inventory.js";
+import { classifySensitiveLines } from "./resource-inventory.js";
 
 export type SourceStore = {
   resource_id: string;
@@ -158,8 +158,54 @@ export const readResourceChunk = (
           limitations: ["offset beyond source end; not an empty success"],
         });
       const slice = bytes.slice(input.offset, input.offset + input.max_bytes);
-      const text = new TextDecoder().decode(slice);
-      const masked = maskSourceChunk(text);
+      // Mask BEFORE cutting: sensitivity is classified on FULL-body lines so
+      // a keyword split by the chunk boundary, or a value stranded on the
+      // next line, can never leak through a partial read. Each overlapped
+      // sensitive line is redacted; benign overlapped bytes pass through.
+      const chunkEnd = input.offset + slice.length;
+      const bodyLines = store.body.split("\n");
+      const sensitive = classifySensitiveLines(store.body);
+      const lineRanges: Array<{ start: number; end: number }> = [];
+      {
+        let pos = 0;
+        bodyLines.forEach((line, index) => {
+          const width = encoder.encode(line).length;
+          const hasNewline = index < bodyLines.length - 1;
+          lineRanges.push({
+            start: pos,
+            end: pos + width + (hasNewline ? 1 : 0),
+          });
+          pos += width + (hasNewline ? 1 : 0);
+        });
+      }
+      const decoder = new TextDecoder();
+      const outParts: string[] = [];
+      let redacted = 0;
+      lineRanges.forEach((range, index) => {
+        const from = Math.max(range.start, input.offset);
+        const to = Math.min(range.end, chunkEnd);
+        if (to <= from) return;
+        if (sensitive[index] === true) {
+          // Unit: sensitive FULL lines overlapped by this chunk. A line
+          // straddling two chunks counts in both; counts are per-chunk.
+          redacted += 1;
+          outParts.push(
+            index < bodyLines.length - 1
+              ? "[REDACTED:credential-like]\n"
+              : "[REDACTED:credential-like]",
+          );
+          return;
+        }
+        // Interior line ranges are byte-exact, so only the outer chunk
+        // edges can split a multi-byte char (same as plain slicing).
+        outParts.push(decoder.decode(bytes.slice(from, to), { stream: true }));
+      });
+      outParts.push(decoder.decode());
+      const masked = {
+        text: outParts.join(""),
+        categories: redacted > 0 ? ["credential-like"] : [],
+        redacted_count: redacted,
+      };
       const nextOffset = input.offset + slice.length;
       const truncated = nextOffset < bytes.length;
       const evidence = validateReadEvidence({
@@ -233,10 +279,31 @@ export const searchAllowedSources = (
         }
         const index = store.body.indexOf(query);
         if (index >= 0) {
-          const masked = maskSourceChunk(
-            store.body.slice(Math.max(0, index - 80), index + 120),
-          );
-          hits.push({ resource_id: store.resource_id, excerpt: masked.text });
+          // Expand to full-line boundaries, then classify against the FULL
+          // body: a value line stranded at the window edge keeps its
+          // previous-line context, so it can never slip through. Truncation
+          // applies after masking, so it can never expose raw secrets.
+          const rawStart = Math.max(0, index - 80);
+          const rawEnd = index + 120;
+          const lineStart = store.body.lastIndexOf("\n", rawStart - 1) + 1;
+          let lineEnd = store.body.indexOf("\n", rawEnd);
+          if (lineEnd < 0) lineEnd = store.body.length;
+          const fullSensitive = classifySensitiveLines(store.body);
+          const excerptLines = store.body.slice(lineStart, lineEnd).split("\n");
+          const firstLineNo =
+            store.body.slice(0, lineStart).split("\n").length - 1;
+          const maskedExcerpt = excerptLines
+            .map((line, offset) =>
+              fullSensitive[firstLineNo + offset] === true
+                ? "[REDACTED:credential-like]"
+                : line,
+            )
+            .join("\n");
+          const excerpt =
+            maskedExcerpt.length > 200
+              ? `${maskedExcerpt.slice(0, 188)}…[TRUNCATED]`
+              : maskedExcerpt;
+          hits.push({ resource_id: store.resource_id, excerpt });
           if (hits.length >= maxHits) break;
         }
       }

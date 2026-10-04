@@ -103,6 +103,29 @@ describe("PAH-5 workflow review", () => {
     expect(mismatch.signed_warning).toContain("never changes the request");
   });
 
+  it("accepts_needs_context_for_material_beyond_the_listed_kinds", () => {
+    // Listed kinds being present never proves nothing else is needed: the
+    // model may still lack another chunk, script, or fresher observation.
+    const review = reviewCandidate(
+      {
+        candidate_id: "candidate-aaaaaaaaaaaaa1",
+        source: "saved",
+        title: "input flow",
+        definition_revision: "rev-aaaaaaaaaaaaaaa1",
+        catalog_status: "verified",
+        required_capabilities: ["propose_set_text"],
+        required_evidence_kinds: ["ui"],
+        ...scope(),
+      },
+      "needs_context",
+      "ui seen, but the handler wiring needs one more script chunk",
+      context(),
+      ["description"],
+    );
+    expect(review.verdict).toBe("needs_context");
+    expect(review.missing).toEqual([]);
+  });
+
   it("requests_a_fresh_evidence_marker_after_an_unfitting_pick", () => {
     const prior = reviewCandidate(
       {

@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   consumeApproval,
+  consumeStoredApproval,
+  createApprovalStore,
   grantApproval,
+  grantStoredApproval,
   revokeApproval,
 } from "../../../src/page-act-harness/approval-store.js";
 import {
@@ -264,5 +267,37 @@ describe("PAH-6 approval and outcomes", () => {
         budget_exhausted: true,
       }).kind,
     ).toBe("FAILED");
+  });
+
+  it("blocks_a_second_consume_of_the_same_stored_approval", () => {
+    const store = createApprovalStore();
+    const first = grantStoredApproval(store, {
+      approval_id: "approval-abcdefghijklmnop",
+      plan_id: "plan-abcdefghijklmnop",
+      plan_revision: 2,
+      request_revision: 1,
+      scope: "single_step",
+    });
+    expect(first.used).toBe(false);
+    // A stale copy of the pre-consume object must not bypass single-use.
+    const staleCopy = { ...first };
+    expect(
+      consumeStoredApproval(store, first.approval_id, expectApproval).used,
+    ).toBe(true);
+    expect(() =>
+      consumeStoredApproval(store, staleCopy.approval_id, expectApproval),
+    ).toThrow("APPROVAL_REUSED");
+    expect(() =>
+      grantStoredApproval(store, {
+        approval_id: "approval-abcdefghijklmnop",
+        plan_id: "plan-abcdefghijklmnop",
+        plan_revision: 2,
+        request_revision: 1,
+        scope: "single_step",
+      }),
+    ).toThrow("APPROVAL_ID_CONFLICT");
+    expect(() =>
+      consumeStoredApproval(store, "approval-xxxxxxxxxxxxxxxx", expectApproval),
+    ).toThrow("APPROVAL_NOT_FOUND");
   });
 });

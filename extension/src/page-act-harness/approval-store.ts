@@ -102,3 +102,84 @@ export const revokeApproval = (approval: Approval, reason: string): Approval =>
       return { ...approval, revoked: true };
     },
   );
+
+export type ApprovalStore = {
+  records: Map<string, Approval>;
+};
+
+// Stateful product path: the store owns the used/revoked record, so
+// consuming the same approval twice — even with two copies of the original
+// object — fails on the second attempt. The pure grantApproval/
+// consumeApproval helpers above remain for validation-only call sites.
+export const createApprovalStore = (): ApprovalStore =>
+  traceMethod(
+    "page-act-harness/approval-store.ts:createApprovalStore",
+    {},
+    () => {
+      traceDecision("page-act-harness.approval.store_created", {});
+      return { records: new Map<string, Approval>() };
+    },
+  );
+
+export const grantStoredApproval = (
+  store: ApprovalStore,
+  opts: {
+    approval_id: string;
+    plan_id: string;
+    plan_revision: number;
+    request_revision: number;
+    scope: string;
+  },
+): Approval =>
+  traceMethod(
+    "page-act-harness/approval-store.ts:grantStoredApproval",
+    { plan_revision: opts.plan_revision },
+    () => {
+      if (store.records.has(opts.approval_id))
+        throw new Error("APPROVAL_ID_CONFLICT");
+      const approval = grantApproval(opts);
+      store.records.set(approval.approval_id, approval);
+      return { ...approval };
+    },
+  );
+
+export const consumeStoredApproval = (
+  store: ApprovalStore,
+  approvalId: string,
+  expected: {
+    plan_id: string;
+    plan_revision: number;
+    request_revision: number;
+    binding_current: boolean;
+  },
+): Approval =>
+  traceMethod(
+    "page-act-harness/approval-store.ts:consumeStoredApproval",
+    { plan_revision: expected.plan_revision },
+    (context) => {
+      const method = "page-act-harness/approval-store.ts:consumeStoredApproval";
+      const record = store.records.get(approvalId);
+      if (!record) {
+        traceBranch(context, method, "fail", approvalId, "unknown approval");
+        throw new Error("APPROVAL_NOT_FOUND");
+      }
+      // Check-and-set against the STORED record is the single-use gate:
+      // a second consume of the same id always fails here, regardless of
+      // which object copy the caller holds.
+      const consumed = consumeApproval(record, expected);
+      store.records.set(approvalId, consumed);
+      return { ...consumed };
+    },
+  );
+
+export const revokeStoredApproval = (
+  store: ApprovalStore,
+  approvalId: string,
+  reason: string,
+): Approval => {
+  const record = store.records.get(approvalId);
+  if (!record) throw new Error("APPROVAL_NOT_FOUND");
+  const revoked = revokeApproval(record, reason);
+  store.records.set(approvalId, revoked);
+  return { ...revoked };
+};

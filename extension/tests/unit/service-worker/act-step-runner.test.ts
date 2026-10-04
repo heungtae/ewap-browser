@@ -168,8 +168,8 @@ describe("Act step runner", () => {
             {
               ref_id: "target-abcdefghijklmnop",
               role: "button",
-              name: "Variant",
-              state: { expanded: true },
+              name: "Open SSH guide",
+              state: {},
               visible: true,
               enabled: true,
             },
@@ -267,5 +267,76 @@ describe("Act step runner", () => {
       expect.objectContaining({ type: "run_terminal", outcome: "FAILED" }),
     );
     expect(endSession).toHaveBeenCalledWith(session);
+  });
+
+  it("fails_loudly_when_declared_entry_tools_are_narrowed_away", async () => {
+    const coordinator = new ServiceCoordinator(policy);
+    const publish = vi.fn();
+    const runner = createActStepRunner({
+      coordinator,
+      provider: {
+        chat: async () => {
+          throw new Error("provider must not be reached after narrowing");
+        },
+      } as unknown as ProviderRuntime,
+      preferences,
+      readActive: async () => ({
+        tabId: 1,
+        origin: "https://portal.company.test",
+        path: "/guide",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "",
+          nodes: [
+            {
+              ref_id: "target-abcdefghijklmnop",
+              role: "button",
+              name: "Open SSH guide",
+              state: {},
+              visible: true,
+              enabled: true,
+            },
+            {
+              ref_id: "search-abcdefghijklmnop",
+              role: "textbox",
+              name: "Search query",
+              state: {},
+              visible: true,
+              enabled: true,
+            },
+          ],
+        },
+      }),
+      threadContext: () => [],
+      pageScope: () => "scope" as never,
+      bindRun: () => undefined,
+      publish,
+      serialise: JSON.stringify,
+      executeApprovedProposal: async () => ({ ok: true }),
+      endSession: () => undefined,
+    });
+    const session: ActSession = {
+      id: "session-abcdefghijkl",
+      tabId: 1,
+      origin: "https://portal.company.test",
+      prompt: "Open the SSH guide",
+      messages: [{ role: "system", content: "system" }],
+      profile: { id: "profile", version: 1 },
+      discovery: "page-derived",
+      definitions: [definition],
+      profileDefinitions: [definition],
+      harnessCapabilities: {
+        request_revision: 1,
+        read_tools: ["read_page"],
+        propose_tools: ["propose_set_text", "propose_click"],
+        entry_roles: ["button", "textbox"],
+      },
+    };
+
+    await expect(runner.runStep(session)).rejects.toMatchObject({
+      code: "HARNESS_TOOL_NARROWING",
+    });
   });
 });

@@ -8,6 +8,7 @@ import {
   parsePageApiProposal,
 } from "./act-proposal-parser.js";
 import { workflowActionDefinitions } from "./act-workflow-authority.js";
+import { findUnjustifiedDrops } from "../page-act-harness/act-entry-bridge.js";
 import { selectActActionTools } from "./page-derived-actions.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
@@ -134,6 +135,46 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         targetRefId ? new Set([targetRefId]) : undefined,
         session.pageApiActions,
       );
+      if (session.harnessCapabilities) {
+        // No silent narrowing: a declared entry tool dropped while its
+        // targets are still visible fails loudly on the generic path. A
+        // workflow step intentionally scopes tools (PAH-5 re-review owns that
+        // path), and a stale declaration (request moved on) is skipped.
+        const declaredRevision = session.harnessCapabilities.request_revision;
+        const currentRevision = session.requestContext?.generation ?? 1;
+        if (declaredRevision !== currentRevision) {
+          traceDecision("page-act-harness.entry.declaration_stale", {
+            declared_revision: declaredRevision,
+            current_revision: currentRevision,
+          });
+        } else {
+          // Fail only on the intersection: targets present at entry AND in
+          // the fresh snapshot, yet the tool is gone. Targets lost to a
+          // page change never fail here (stale machinery owns that case).
+          const entryNodes = session.harnessCapabilities.entry_roles.map(
+            (role) => ({ role, visible: true, enabled: true }),
+          );
+          const entryDrops = findUnjustifiedDrops(
+            session.harnessCapabilities.propose_tools,
+            tools.map((tool) => ({ name: tool.function.name })),
+            entryNodes,
+          );
+          const freshDrops = findUnjustifiedDrops(
+            session.harnessCapabilities.propose_tools,
+            tools.map((tool) => ({ name: tool.function.name })),
+            active.snapshot.nodes,
+          );
+          const unjustified = entryDrops.filter((name) =>
+            freshDrops.includes(name),
+          );
+          if (unjustified.length > 0 && !session.workflow)
+            return fail("HARNESS_TOOL_NARROWING");
+          if (unjustified.length > 0)
+            traceDecision("page-act-harness.entry.workflow_scoped", {
+              unjustified,
+            });
+        }
+      }
       dependencies.publish(run.id, {
         type: "activity_progress",
         stage: "CONTACTING_PROVIDER",

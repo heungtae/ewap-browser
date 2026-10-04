@@ -47,6 +47,20 @@ export type ActSession = {
   discovery: "profile" | "page-derived";
   definitions: readonly ProfileActionTool[];
   profileDefinitions: readonly ProfileActionTool[];
+  // Non-authoritative harness declaration recorded at Act start: the propose
+  // tools derived from the entry definitions. The step runner verifies the
+  // offered schemas still cover this set (no silent narrowing). It never
+  // selects a workflow and never confers execution authority.
+  harnessCapabilities?: {
+    request_revision: number;
+    read_tools: string[];
+    propose_tools: string[];
+    // Distinct roles of the visible+enabled entry snapshot. The step runner
+    // fails only when a declared tool is missing while its targets were
+    // present both at entry and in the fresh snapshot (stable page,
+    // narrowed tools). Targets lost to a page change never fail here.
+    entry_roles: string[];
+  };
   pageApiActions?: readonly PageApiActionRef[];
   pageApiScope?: PageScope;
   workflow?: {

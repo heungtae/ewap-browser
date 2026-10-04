@@ -86,7 +86,8 @@ export type ErrorCode =
   | "PAGE_API_UNAVAILABLE"
   | "PAGE_API_CONTRACT_INVALID"
   | "PAGE_API_TIMEOUT"
-  | "PAGE_API_CALL_FAILED";
+  | "PAGE_API_CALL_FAILED"
+  | "HARNESS_TOOL_NARROWING";
 export type Role =
   | "button"
   | "checkbox"

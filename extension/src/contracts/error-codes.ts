@@ -59,6 +59,7 @@ export const errorCodes = new Set<ErrorCode>([
   "PAGE_API_CONTRACT_INVALID",
   "PAGE_API_TIMEOUT",
   "PAGE_API_CALL_FAILED",
+  "HARNESS_TOOL_NARROWING",
 ]);
 export const isErrorCode = (value: unknown): value is ErrorCode =>
   typeof value === "string" && errorCodes.has(value as ErrorCode);

@@ -71,6 +71,8 @@ export const userMessage: Record<ErrorCode, string> = {
   PAGE_API_CONTRACT_INVALID: "페이지 API 작업 계약을 확인하지 못했습니다.",
   PAGE_API_TIMEOUT: "페이지 API 응답 시간이 초과되었습니다.",
   PAGE_API_CALL_FAILED: "페이지 API 호출 결과를 확인하지 못했습니다.",
+  HARNESS_TOOL_NARROWING:
+    "실행 도구가 시작할 때와 달라 요청을 계속할 수 없습니다. 새로고침 후 다시 시도해 주세요.",
 };
 export const timelineToolLabel = (
   tool: string,
