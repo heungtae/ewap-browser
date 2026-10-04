@@ -1,8 +1,4 @@
-import {
-  traceBranch,
-  traceDecision,
-  traceMethod,
-} from "../diagnostics/method-trace.js";
+import { traceDecision, traceMethod } from "../diagnostics/method-trace.js";
 import { validateReadEvidence, type ReadEvidence } from "./contracts.js";
 import { maskSourceChunk } from "./resource-inventory.js";
 
@@ -37,8 +33,7 @@ export const readResourceChunk = (
       offset: input.offset,
       max_bytes: input.max_bytes,
     },
-    (context) => {
-      const method = "page-act-harness/resource-reader.ts:readResourceChunk";
+    (_context) => {
       if (!Number.isInteger(input.offset) || input.offset < 0)
         throw new Error("INVALID_OFFSET");
       if (
