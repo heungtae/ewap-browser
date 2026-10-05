@@ -392,15 +392,17 @@ describe("act harness turns", () => {
     expect(gate.proceed).toBe(false);
   });
 
-  it("proceeds_on_generation_zero_by_normalizing_to_revision_one", async () => {
-    // Product requests start at generation 0 (accepted, not yet running)
-    // while harness revisions start at 1. The gate normalizes, so a real
-    // accepted-state request records and passes like revision 1.
+  it("clarifies_on_unnormalized_zero_instead_of_recording", async () => {
+    // Single conversion boundary: callers normalize raw product
+    // generations (toHarnessRevision) before the gate. A raw 0 reaching
+    // the gate cannot record, so the gate clarifies instead of proceeding
+    // on an unbound revision. Generation-0 flows work because the runner
+    // normalizes before calling (covered at the runner level).
     const session = {
       ...baseSession(),
       harnessReview: {
         ...baseSession().harnessReview!,
-        approval_id: "approval-gate-genzero-aa",
+        approval_id: "approval-gate-rawzero-aa",
       },
     };
     const gate = await runWorkflowReviewGate({
@@ -421,7 +423,7 @@ describe("act harness turns", () => {
       runId: "run-dcdefghijklmnopq",
       publishDelta: () => undefined,
     });
-    expect(gate.proceed).toBe(true);
+    expect(gate.proceed).toBe(false);
     expect(session.harnessReview?.verdict).toBe("match");
   });
 
@@ -432,5 +434,107 @@ describe("act harness turns", () => {
       "get_page_text",
       "find",
     ]);
+  });
+
+  it("clarifies_on_partial_without_executing_or_consuming_approval", async () => {
+    const session = baseSession();
+    const published: string[] = [];
+    const gate = await runWorkflowReviewGate({
+      chat: scriptedChat([
+        {
+          content: "",
+          tool_calls: [reviewCall("call-aaaaaaaaaaaaaaaa", "partial")],
+        },
+      ]),
+      session,
+      projection: PROJECTION,
+      serialise: JSON.stringify,
+      readTools: [],
+      executeRead: async () => {
+        throw new Error("must not be called");
+      },
+      expectedRevision: 1,
+      runId: "run-ecdefghijklmnopq",
+      publishDelta: (text) => published.push(text),
+    });
+    expect(gate.proceed).toBe(false);
+    if (!gate.proceed)
+      expect(gate.message).toContain("그대로 실행할 수 없습니다");
+    expect(session.harnessReview?.verdict).toBe("partial");
+    // No approval was granted or consumed for the unexecuted original.
+    expect(() =>
+      consumeStoredApproval(
+        getHarnessApprovalStore(),
+        baseSession().harnessReview?.approval_id ?? "",
+        {
+          plan_id: "candidate-aaaaaaaaaaaaa1",
+          plan_revision: 0,
+          request_revision: 1,
+          binding_current: true,
+        },
+      ),
+    ).toThrow("APPROVAL_NOT_FOUND");
+  });
+
+  it("sends_targets_branches_and_binding_in_the_review_payload", async () => {
+    const seen: ProviderMessage[] = [];
+    const declaration = {
+      schema_version: 1 as const,
+      id: "preview-v1",
+      title: "Preview",
+      steps: [
+        {
+          id: "step-aaaaaaaaaaaaaa1",
+          tool: "click_by_ref" as const,
+          target: { role: "button" as const, name: "Mark reviewed" },
+          next: "step-bbbbbbbbbbbbbbb",
+          branches: [
+            {
+              next: "step-bbbbbbbbbbbbbbb",
+              when: {
+                kind: "target_state" as const,
+                target: { role: "button" as const, name: "Mark reviewed" },
+                field: "enabled" as const,
+                expected: true,
+              },
+            },
+          ],
+        },
+      ],
+    };
+    const session = {
+      ...baseSession(),
+      workflow: {
+        declaration,
+        step: declaration.steps[0]!,
+        count: 0,
+      },
+    };
+    await runWorkflowReviewGate({
+      chat: async (messages: ProviderMessage[]) => {
+        seen.push(...messages);
+        return {
+          content: "",
+          tool_calls: [reviewCall("call-aaaaaaaaaaaaaaaa", "mismatch")],
+        };
+      },
+      session,
+      projection: PROJECTION,
+      serialise: JSON.stringify,
+      readTools: [],
+      executeRead: async () => {
+        throw new Error("must not be called");
+      },
+      expectedRevision: 1,
+      runId: "run-fcdefghijklmnopqr",
+      publishDelta: () => undefined,
+    });
+    const userMessage =
+      seen.find((message) => message.role === "user")?.content ?? "";
+    // Same title/tools would not distinguish; targets/order/branches do.
+    expect(userMessage).toContain("Mark reviewed");
+    expect(userMessage).toContain("-> step-bbbbbbbbbbbbbbb");
+    expect(userMessage).toContain("branches:");
+    expect(userMessage).toContain("request_revision 1");
   });
 });

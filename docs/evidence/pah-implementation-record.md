@@ -167,3 +167,37 @@
   (workflow 1회 — generation 0 결함 수정 전, reviewed 1회 —
   원인 미확정 UI 타이밍 의심, 단독·페어 재실행 PASS). 릴리스 게이트용
   반복 실행·원인 추적을 별도 작업으로 권장.
+
+## 재검증 문서 F1–F5 구현 (2026-10-05)
+
+기준: `pah-review-reverification-de00af6d4-2026-10-05.md` §3–§5, §8.
+
+- F1 [P1] partial 실행 차단: 게이트에서 `match`만 진행하고 `partial`은
+  mismatch와 같은 clarification 종료로 전환 (mutation 0, 원본 불변,
+  subset 선택 없음). 변경안 확인은 사용자의 새 요청 revision으로 받고,
+  승인된 revision과 실행 내용이 일치할 때만 실행한다.
+- F2 [P1] 검토 payload: 전체 step의 대상·순서·분기 조건을 bounded 요약으로
+  전달하고 request_revision 결속 근거를 포함한다. 읽지 않은 정의는 근거가
+  될 수 없다는 지침을 검토 prompt에 추가했다.
+- F3 [P1] percent-encoded 키: 검사 전용으로 최대 3회 디코딩해 검사하고,
+  디코딩 실패·인코딩 잔류는 명시적으로 redact한다. 출력은 raw 표기를
+  유지한 채 값만 절단한다.
+- F4 [P2] revision 단일 경계: 원시 product generation 진입 시 1회만
+  `toHarnessRevision`으로 변환하고, 저장된 harness revision은 직접
+  비교한다. 동일 generation 생성 capability의 stale 오인 해소와 실제
+  변경 감지를 함께 검증한다.
+- F5 [P2] budget 소진: `INCOMPLETE` 상태 + `UNKNOWN`/`CONTEXT_BUDGET_EXCEEDED`
+  터미널로 기록하고, 원인·읽기 횟수·계속 방법을 사용자에게 전달한다.
+  `VERIFIED` 성공으로의 승격을 제거했다.
+- 검증: `typecheck`·`lint`·`build`·`test:unit`(575 PASS)·`test:fixture`·
+  `test:e2e`·module-boundaries(263 files)·method-trace-coverage PASS.
+- 실제 Chrome (격리 프로필·통제 Provider·0.1.90 artifact):
+  - search/notes/workflow targeted PASS (notes readFirst 루프 포함).
+  - accessible 전체 20/20 PASS.
+  - 강제 무관 선택 mismatch: `submit_review:mismatch` 1회 후 propose 0회,
+    페이지 무변화.
+  - 강제 무관 선택 partial: `submit_review:partial` 1회 후 propose 0회,
+    페이지 무변화 (F1 종료 기준 충족).
+- 잔여: live Provider·실제 모델 추론, Platform/workspace 통합,
+  inventory/component 읽기 도구의 Act 루프 편입, 기존 ACT_APPROVE 실행
+  경로의 저장소 승인 교체, 기존 문서 동기화 (사용자 확인 후).

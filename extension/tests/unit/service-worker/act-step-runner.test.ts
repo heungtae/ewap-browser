@@ -452,4 +452,236 @@ describe("Act step runner", () => {
     ).toBe(true);
     expect(endSession).toHaveBeenCalledWith(session);
   });
+
+  it("treats_a_generation_zero_context_as_the_stored_revision", async () => {
+    // F4: chat-start stores toHarnessRevision(0) == 1. The runner must
+    // compare against the same single-converted value instead of
+    // re-normalizing the stored revision (which previously skipped the
+    // narrowing check as stale).
+    const coordinator = new ServiceCoordinator(policy);
+    const runner = createActStepRunner({
+      coordinator,
+      provider: {
+        chat: async () => {
+          throw new Error("provider must not be reached after narrowing");
+        },
+      } as unknown as ProviderRuntime,
+      preferences,
+      readActive: async () => ({
+        tabId: 1,
+        origin: "https://portal.company.test",
+        path: "/guide",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "",
+          nodes: [
+            {
+              ref_id: "target-abcdefghijklmnop",
+              role: "button",
+              name: "Open SSH guide",
+              state: {},
+              visible: true,
+              enabled: true,
+            },
+            {
+              ref_id: "search-abcdefghijklmnop",
+              role: "textbox",
+              name: "Search query",
+              state: {},
+              visible: true,
+              enabled: true,
+            },
+          ],
+        },
+      }),
+      threadContext: () => [],
+      pageScope: () => "scope" as never,
+      bindRun: () => undefined,
+      publish: vi.fn(),
+      serialise: JSON.stringify,
+      executeApprovedProposal: async () => ({ ok: true }),
+      endSession: () => undefined,
+    });
+    const session: ActSession = {
+      id: "session-abcdefghijkl",
+      tabId: 1,
+      origin: "https://portal.company.test",
+      prompt: "Open the SSH guide",
+      messages: [{ role: "system", content: "system" }],
+      profile: { id: "profile", version: 1 },
+      discovery: "page-derived",
+      definitions: [definition],
+      profileDefinitions: [definition],
+      requestContext: {
+        tabId: 1,
+        signal: new AbortController().signal,
+        check: () => undefined,
+        generation: 0,
+      },
+      harnessCapabilities: {
+        request_revision: 1,
+        read_tools: ["read_page"],
+        propose_tools: ["propose_set_text", "propose_click"],
+        entry_roles: ["button", "textbox"],
+      },
+    };
+
+    await expect(runner.runStep(session)).rejects.toMatchObject({
+      code: "HARNESS_TOOL_NARROWING",
+    });
+  });
+
+  it("skips_the_narrowing_check_only_on_a_real_revision_change", async () => {
+    const coordinator = new ServiceCoordinator(policy);
+    const runner = createActStepRunner({
+      coordinator,
+      provider: {
+        chat: async () => ({ content: "stale answer", tool_calls: [] }),
+      } as unknown as ProviderRuntime,
+      preferences,
+      readActive: async () => ({
+        tabId: 1,
+        origin: "https://portal.company.test",
+        path: "/guide",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "",
+          nodes: [],
+        },
+      }),
+      threadContext: () => [],
+      pageScope: () => "scope" as never,
+      bindRun: () => undefined,
+      publish: vi.fn(),
+      serialise: JSON.stringify,
+      executeApprovedProposal: async () => ({ ok: true }),
+      endSession: () => undefined,
+    });
+    const session: ActSession = {
+      id: "session-abcdefghijkl",
+      tabId: 1,
+      origin: "https://portal.company.test",
+      prompt: "Open the SSH guide",
+      messages: [{ role: "system", content: "system" }],
+      profile: { id: "profile", version: 1 },
+      discovery: "page-derived",
+      definitions: [],
+      profileDefinitions: [],
+      requestContext: {
+        tabId: 1,
+        signal: new AbortController().signal,
+        check: () => undefined,
+        generation: 5,
+      },
+      harnessCapabilities: {
+        request_revision: 1,
+        read_tools: [],
+        propose_tools: [],
+        entry_roles: [],
+      },
+    };
+
+    await expect(runner.runStep(session)).resolves.toMatchObject({
+      ok: true,
+      state: "ANSWER",
+    });
+  });
+
+  it("records_budget_exhaustion_as_incomplete_instead_of_verified", async () => {
+    const coordinator = new ServiceCoordinator(policy);
+    const publish = vi.fn();
+    const endSession = vi.fn();
+    const readIds = [
+      "call-aaaaaaaaaaaaaaaa",
+      "call-bbbbbbbbbbbbbbbb",
+      "call-cccccccccccccccc",
+    ];
+    let readTurn = 0;
+    const runner = createActStepRunner({
+      coordinator,
+      provider: {
+        chat: async () => ({
+          content: "자료를 더 확인하겠습니다.",
+          tool_calls: [
+            {
+              // A fourth chat would be a loop bug; the undefined id trips
+              // the binding check loudly instead of looping forever.
+              id: readIds[readTurn++]!,
+              name: "read_page",
+              arguments: "{}",
+            },
+          ],
+        }),
+      } as unknown as ProviderRuntime,
+      preferences,
+      readActive: async () => ({
+        tabId: 1,
+        origin: "https://portal.company.test",
+        path: "/guide",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "guide",
+          nodes: [],
+        },
+      }),
+      threadContext: () => [],
+      pageScope: () => "scope" as never,
+      bindRun: () => undefined,
+      publish,
+      serialise: JSON.stringify,
+      executeApprovedProposal: async () => {
+        throw new Error("must not dispatch without a proposal");
+      },
+      endSession,
+      readAssist: {
+        tabs: {} as never,
+        redactTitle: (value: string | undefined) => value ?? "",
+      },
+    });
+    const session: ActSession = {
+      id: "session-abcdefghijkl",
+      tabId: 1,
+      origin: "https://portal.company.test",
+      prompt: "Analyze the guide deeply",
+      messages: [{ role: "system", content: "system" }],
+      profile: { id: "profile", version: 1 },
+      discovery: "page-derived",
+      definitions: [],
+      profileDefinitions: [],
+      harnessCapabilities: {
+        request_revision: 1,
+        read_tools: ["read_page"],
+        propose_tools: [],
+        entry_roles: [],
+      },
+    };
+
+    await expect(runner.runStep(session)).resolves.toMatchObject({
+      ok: true,
+      state: "INCOMPLETE",
+      reason: "BUDGET_EXHAUSTED",
+    });
+    const terminal = publish.mock.calls.find(
+      ([, event]) => event.type === "run_terminal",
+    )?.[1];
+    expect(terminal).toMatchObject({
+      outcome: "UNKNOWN",
+      code: "CONTEXT_BUDGET_EXCEEDED",
+    });
+    expect(
+      publish.mock.calls.some(
+        ([, event]) =>
+          event.type === "assistant_delta" &&
+          typeof event.text === "string" &&
+          event.text.includes("budget"),
+      ),
+    ).toBe(true);
+    expect(endSession).toHaveBeenCalledWith(session);
+  });
 });

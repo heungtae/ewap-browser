@@ -227,6 +227,21 @@ describe("PAH-4 component observation", () => {
     expect(masked.redacted_count).toBeGreaterThanOrEqual(5);
   });
 
+  it("redacts_percent_encoded_keys_and_flags_decode_failures", () => {
+    const marker = "Qs7K9m2Zx4Pv8Lw0Nq5Rt6Y";
+    const masked = maskComponentRows([
+      { url: `https://app.test/cb?%74oken=${marker}#section` },
+      { url: "https://app.test/ok?a=b#frag" },
+      { url: "https://app.test/cb?%E0%A4%A=1" },
+    ]);
+    const flat = JSON.stringify(masked.rows);
+    expect(flat).not.toContain(marker);
+    expect(flat).toContain("%74oken=[REDACTED]");
+    expect(flat).toContain("https://app.test/ok?a=b#frag");
+    expect(masked.redacted_count).toBe(2);
+    expect(masked.categories).toEqual(["component-sensitive"]);
+  });
+
   it("terminates_default_pagination_at_the_last_page", () => {
     const grid550 = buildComponentDescriptor({
       resource_id: "component-dddddddddddddd1",

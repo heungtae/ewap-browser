@@ -194,10 +194,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         session.workflow &&
         session.harnessReview?.status === "PENDING_REVIEW"
       ) {
-        const expectedRevision = toHarnessRevision(
-          session.requestContext?.generation ??
-            session.harnessReview.request_revision,
-        );
+        // Raw product generations convert exactly once here; an already
+        // stored harness revision passes through untouched (the mapping is
+        // not idempotent, so stored values are never re-normalized).
+        const expectedRevision = session.requestContext
+          ? toHarnessRevision(session.requestContext.generation)
+          : session.harnessReview.request_revision;
         const gate = await runWorkflowReviewGate({
           chat: (gateMessages, gateTools) =>
             dependencies.provider.chat(
@@ -265,14 +267,15 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       if (session.harnessCapabilities) {
         // No silent narrowing: a declared entry tool dropped while its
         // targets are still visible fails loudly on the generic path. A
-        // workflow step intentionally scopes tools (PAH-5 re-review owns that
+        // workflow step intentionally scopes tools (the review gate owns that
         // path), and a stale declaration (request moved on) is skipped.
-        const declaredRevision = toHarnessRevision(
-          session.harnessCapabilities.request_revision,
-        );
-        const currentRevision = toHarnessRevision(
-          session.requestContext?.generation,
-        );
+        // The stored declaration revision is compared directly; only the
+        // live product generation converts (stored values are never
+        // re-normalized — the mapping is not idempotent).
+        const declaredRevision = session.harnessCapabilities.request_revision;
+        const currentRevision = session.requestContext
+          ? toHarnessRevision(session.requestContext.generation)
+          : declaredRevision;
         if (declaredRevision !== currentRevision) {
           traceDecision("page-act-harness.entry.declaration_stale", {
             declared_revision: declaredRevision,
@@ -341,29 +344,63 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           readNames: harnessReads.map((tool) => tool.function.name),
           executeRead: (call) => harnessExecutor(call),
           serialise: dependencies.serialise,
-          expectedRevision: toHarnessRevision(
-            session.requestContext?.generation ??
-              session.harnessCapabilities?.request_revision ??
-              1,
-          ),
+          expectedRevision: session.requestContext
+            ? toHarnessRevision(session.requestContext.generation)
+            : (session.harnessCapabilities?.request_revision ?? 1),
           maxRounds: 3,
           isCancelled: () =>
             dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL",
         });
-        // A budget-exhausted answer carries no completion claim: the
-        // exhaustion is traced for diagnosis since the answer text cannot
-        // carry it.
-        if (loop.exhausted && loop.calls.length === 0)
+        if (loop.exhausted && loop.calls.length === 0) {
+          // Budget exhaustion is INCOMPLETE, never a verified answer: the
+          // model kept asking for reads, so the goal is unmet by definition.
+          // The user gets the cause plus how to continue; the run terminal
+          // records UNKNOWN with the budget code instead of VERIFIED.
+          const terminal = classifyOutcome({
+            tool_calls_made: loop.reads > 0,
+            read_only: false,
+            actions: [],
+            budget_exhausted: true,
+          });
           traceDecision("page-act-harness.read_loop.exhausted_answer", {
+            kind: terminal.kind,
             rounds: loop.rounds,
             reads: loop.reads,
           });
-        response =
-          loop.exhausted && loop.calls.length === 0
-            ? loop.content
-              ? { content: loop.content, tool_calls: [] }
-              : fail("PROVIDER_UNAVAILABLE")
-            : { content: loop.content, tool_calls: loop.calls };
+          if (!loop.content) return fail("PROVIDER_UNAVAILABLE");
+          dependencies.publish(run.id, {
+            type: "assistant_delta",
+            text: loop.content,
+          });
+          dependencies.publish(run.id, {
+            type: "assistant_delta",
+            text: `읽기 budget을 소진해 ${loop.reads}회 읽고 중단했습니다(라운드 ${loop.rounds}회). 목표는 아직 확인되지 않았습니다. 더 읽어야 하면 "계속 읽어줘"라고 답하면 같은 페이지에서 이어서 확인합니다.`,
+          });
+          dependencies.coordinator.runs.terminal(
+            run.id,
+            "UNKNOWN",
+            "CONTEXT_BUDGET_EXCEEDED",
+          );
+          dependencies.publish(run.id, {
+            type: "activity_finished",
+            stage: "FAILED",
+          });
+          dependencies.publish(run.id, {
+            type: "run_terminal",
+            outcome: "UNKNOWN",
+            code: "CONTEXT_BUDGET_EXCEEDED",
+          });
+          dependencies.endSession(session);
+          return {
+            ok: true,
+            state: "INCOMPLETE",
+            message: loop.content,
+            reason: "BUDGET_EXHAUSTED",
+            reads: loop.reads,
+            rounds: loop.rounds,
+          };
+        }
+        response = { content: loop.content, tool_calls: loop.calls };
       }
       assertRequestActive(session.requestContext);
       if (session.analysisData) {

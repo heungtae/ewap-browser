@@ -50,12 +50,26 @@ const maskParams = (params: string): { text: string; hit: boolean } => {
       const eq = segment.indexOf("=");
       const key = eq < 0 ? segment : segment.slice(0, eq);
       const val = eq < 0 ? "" : segment.slice(eq + 1);
-      // Key-side match, a credential-looking value, or an opaque secret
-      // under a generic key (e.g. OAuth `code=4/0AZ...`).
+      // Percent-encoded keys/values are decoded for INSPECTION (up to three
+      // rounds for nested encoding). Output keeps the raw spelling with the
+      // value cut. A decode failure, or encoding residue afterwards, means
+      // the pair cannot be proven benign, so it is redacted explicitly.
+      const decodedKey = decodeQueryPart(key);
+      const decodedVal = decodeQueryPart(val);
+      // Key-side match (raw or decoded), a credential-looking value, or an
+      // opaque secret under a generic key (e.g. OAuth `code=4/0AZ...`).
       if (
         SENSITIVE_KEY.test(key) ||
+        decodedKey.sensitive ||
+        (decodedKey.ok && SENSITIVE_KEY.test(decodedKey.text)) ||
         (SENSITIVE_KEY.test(val) && SECRET_VALUE.test(val)) ||
-        (OPAQUE_SECRET_KEYS.test(key) && SECRET_VALUE.test(val))
+        (decodedVal.ok &&
+          SENSITIVE_KEY.test(decodedVal.text) &&
+          SECRET_VALUE.test(decodedVal.text)) ||
+        (OPAQUE_SECRET_KEYS.test(key) && SECRET_VALUE.test(val)) ||
+        (OPAQUE_SECRET_KEYS.test(decodedKey.text) &&
+          decodedKey.ok &&
+          SECRET_VALUE.test(decodedVal.ok ? decodedVal.text : val))
       ) {
         hit = true;
         return `${key}=[REDACTED]`;
@@ -64,6 +78,27 @@ const maskParams = (params: string): { text: string; hit: boolean } => {
     })
     .join("&");
   return { text, hit };
+};
+
+// Query-part decoder for inspection only. Never throws: failures and
+// leftover encodings report sensitive so callers redact explicitly.
+const decodeQueryPart = (
+  part: string,
+): { text: string; ok: boolean; sensitive: boolean } => {
+  let text = part;
+  for (let round = 0; round < 3; round += 1) {
+    if (!/%[0-9A-Fa-f]{2}/.test(text))
+      return { text, ok: true, sensitive: false };
+    try {
+      // `+` is a space in query strings; decodeURIComponent leaves it.
+      text = decodeURIComponent(text.replace(/\+/g, " "));
+    } catch {
+      return { text: part, ok: false, sensitive: true };
+    }
+  }
+  if (/%[0-9A-Fa-f]{2}/.test(text))
+    return { text: part, ok: false, sensitive: true };
+  return { text, ok: true, sensitive: false };
 };
 const URL_WITH_QUERY = /\bhttps?:\/\/[^\s?#]*\?/;
 const maskUrlQuery = (value: string): { value: string; hit: boolean } => {

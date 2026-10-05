@@ -31,10 +31,7 @@ import {
   type WorkflowSource,
 } from "../page-act-harness/workflow-review.js";
 import { classifyOutcome } from "../page-act-harness/outcome.js";
-import {
-  EXECUTOR_TO_PROPOSE,
-  toHarnessRevision,
-} from "../page-act-harness/act-entry-bridge.js";
+import { EXECUTOR_TO_PROPOSE } from "../page-act-harness/act-entry-bridge.js";
 import { ContractError, fail } from "../security/validation.js";
 
 export const ACT_HARNESS_READ_TOOL_NAMES: string[] = listActReadTools();
@@ -117,7 +114,10 @@ export const runHarnessReadTurns = async (opts: {
     async (context) => {
       const method = "service-worker/act-harness-turns.ts:runHarnessReadTurns";
       const maxRounds = opts.maxRounds ?? 3;
-      const expectedRevision = toHarnessRevision(opts.expectedRevision);
+      // The caller passes an already-normalized revision (toHarnessRevision
+      // at the product boundary). Stored harness revisions are NEVER
+      // re-normalized here: the mapping is not idempotent by design.
+      const expectedRevision = opts.expectedRevision;
       const readable = new Set(opts.readNames);
       const seen = new Set<string>();
       let rounds = 0;
@@ -282,6 +282,7 @@ export const HARNESS_REVIEW_SYSTEM_PROMPT = [
   "Use the read tools when the supplied context is insufficient; without a resource id, list the inventory first.",
   "Never claim unread material as read, nor partial data as the whole.",
   "Decide only from the supplied evidence. A signed or saved candidate never implies suitability or approval.",
+  "Only the candidate summary above and the tool results count as evidence. Steps, targets, or inputs you have not read must not support a match: report them as missing instead.",
   "When done, call submit_review exactly once with your verdict. Do not call any other non-read tool.",
   'Verdicts: "match" (fits as-is), "partial" (fits with stated changes), "mismatch" (does not fit), "needs_context" (cannot decide yet).',
 ].join("\n");
@@ -374,7 +375,7 @@ export const runSuitabilityReview = async (opts: {
         { role: "system", content: HARNESS_REVIEW_SYSTEM_PROMPT },
         {
           role: "user",
-          content: `User execution request: ${opts.requestText}\n\nCandidate under review:\n${opts.candidateSummary}\n\n${opts.projection}`,
+          content: `User execution request: ${opts.requestText}\n\nCandidate under review:\n${opts.candidateSummary}\n\nBinding: request_revision ${opts.expectedRevision}. Judge this revision only; anything read earlier for another revision does not count.\n\n${opts.projection}`,
         },
       ];
       const tools = [...opts.readTools, submitReviewTool()];
@@ -461,18 +462,51 @@ export const runWorkflowReviewGate = async (opts: {
     "service-worker/act-harness-turns.ts:runWorkflowReviewGate",
     {},
     async () => {
-      const expectedRevision = toHarnessRevision(opts.expectedRevision);
+      // Single conversion boundary: the caller must pass a normalized
+      // revision (toHarnessRevision of the raw product generation). Stored
+      // harness revisions pass through untouched below.
+      const expectedRevision = opts.expectedRevision;
       const review = opts.session.harnessReview;
       const workflow = opts.session.workflow;
       if (!workflow || review?.status !== "PENDING_REVIEW")
         throw fail("INVALID_ARGUMENT");
       const stepTool = EXECUTOR_TO_PROPOSE[workflow.step.tool];
+      // Full step detail (bounded): targets, order, and branch conditions
+      // are what distinguish same-title candidates, so all of them travel.
+      // Labels are page-visible text at the same trust level as the
+      // projection; control characters are stripped and each field is
+      // length-capped. Unread steps never count as evidence (see prompt).
+      const summarizeStep = (step: {
+        id: string;
+        tool: string;
+        target: { role: string; name: string };
+        next?: string;
+        branches?: Array<{ when: unknown }>;
+      }): string => {
+        const clean = (value: string): string =>
+          value
+            .split("")
+            .map((character) => {
+              const code = character.charCodeAt(0);
+              return code <= 31 || code === 127 ? " " : character;
+            })
+            .join("")
+            .replace(/\s+/g, " ")
+            .trim()
+            .slice(0, 160);
+        const branches = (step.branches ?? [])
+          .map((branch) => JSON.stringify(branch.when).slice(0, 160))
+          .join("; ");
+        return `[${step.tool}] target ${step.target.role} "${clean(step.target.name)}"${step.next ? ` -> ${step.next}` : ""}${branches ? ` branches: ${branches}` : ""}`;
+      };
       const candidateSummary = [
         `candidate ${review.candidate_id} (source ${review.source}):`,
-        `workflow "${workflow.declaration.title}" with ${workflow.declaration.steps.length} step(s)`,
-        `[${workflow.declaration.steps.map((step) => step.tool).join(" -> ")}];`,
+        `workflow "${workflow.declaration.title}" with ${workflow.declaration.steps.length} step(s):`,
+        ...workflow.declaration.steps.map(
+          (step, index) => `step ${index + 1}. ${summarizeStep(step)}`,
+        ),
         `current step ${workflow.count + 1} proposes ${workflow.step.tool}.`,
-      ].join(" ");
+      ].join("\n");
       const verdict: SuitabilityVerdict = await runSuitabilityReview({
         chat: opts.chat,
         requestText: opts.session.prompt,
@@ -570,7 +604,13 @@ export const runWorkflowReviewGate = async (opts: {
           message: `검토 중 페이지가 바뀌어 이전 판단으로 진행할 수 없습니다. ${verdict.rationale} 다시 진행하려면 요청을 다시 보내 주세요.`,
         };
       }
-      if (verdict.verdict === "match" || verdict.verdict === "partial") {
+      // Only a full match proceeds. A partial verdict means the candidate
+      // differs from the request: the model must present the origin diff or
+      // a new draft (or ask), and execution waits for an actual user
+      // response that fixes a new request/plan revision. The core never
+      // picks a subset of the original or rewrites it in place, so partial
+      // falls through to the clarification close below with zero mutations.
+      if (verdict.verdict === "match") {
         // A failed recording (unknown scope, policy-stale catalog) or a
         // technically unexecutable candidate never proceeds on words alone.
         if (!recorded || recorded.executable === false) {
@@ -629,16 +669,8 @@ export const runWorkflowReviewGate = async (opts: {
             message: `이전 검토 승인을 확인할 수 없어 다시 확인합니다. ${verdict.rationale} 계속 진행하려면 요청을 다시 확인해 주세요.`,
           };
         }
-        if (verdict.verdict === "partial") {
-          opts.publishDelta(
-            `워크플로우 검토: 요청과 일부 다르지만 진행합니다. ${verdict.rationale}`,
-          );
-        }
         outcome("proceed");
-        return {
-          proceed: true,
-          ...(verdict.verdict === "partial" ? { note: verdict.rationale } : {}),
-        };
+        return { proceed: true };
       }
       outcome("clarify");
       // Non-authoritative harness record: review turns dispatch nothing, so
@@ -654,12 +686,16 @@ export const runWorkflowReviewGate = async (opts: {
         reason:
           verdict.verdict === "mismatch"
             ? "REVIEW_MISMATCH"
-            : "REVIEW_NEEDS_CONTEXT",
+            : verdict.verdict === "partial"
+              ? "REVIEW_PARTIAL"
+              : "REVIEW_NEEDS_CONTEXT",
       });
       const question =
         verdict.verdict === "mismatch"
           ? "이 워크플로우는 현재 요청과 맞지 않습니다."
-          : "판단에 필요한 정보가 부족합니다.";
+          : verdict.verdict === "partial"
+            ? "이 워크플로우는 요청과 일부 달라 그대로 실행할 수 없습니다."
+            : "판단에 필요한 정보가 부족합니다.";
       return {
         proceed: false,
         message: `${question} ${verdict.rationale} 원래 목표대로 진행하려면 다른 후보를 선택하거나 요청을 다시 설명해 주세요.`,
