@@ -110,12 +110,12 @@
   - 일반 Search 입력 PASS (읽기 루프·harness block 동작 중 입력 수행).
   - 정당 Preview 선택 PASS (match 검토 후 3단계 실행, Preview 생성).
   - 강제 무관 선택 (/tmp 변형): `submit_review:mismatch` 1회 후
-    propose_* 0회, 페이지 무변화 (scope/checkbox/click 미실행).
+    propose\_\* 0회, 페이지 무변화 (scope/checkbox/click 미실행).
   - accessible 전체 20/20 PASS.
 - 실행 번들 의존성: 5개 진입점 그래프 242개 중 harness 8개
   (contracts, bootstrap-composer, capability-check, act-entry-bridge,
   approval-store, outcome, read-loop, workflow-review).
-  미포함 모듈과 사유: resource-inventory/reader, component-*
+  미포함 모듈과 사유: resource-inventory/reader, component-\*
   (content-script fetch·collection-reader 배선이 필요한 product 작업으로
   별도 범위), plan-contract/recovery/diagnostics/verification-matrix
   (런타임 실행 경로가 아닌 검증·운영 모듈).
