@@ -6,7 +6,10 @@ import { ContractError, fail, isPlainObject } from "../security/validation.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { selectActActionTools } from "./page-derived-actions.js";
-import { composeActEntryEnvelope } from "../page-act-harness/act-entry-bridge.js";
+import {
+  composeActEntryEnvelope,
+  toHarnessRevision,
+} from "../page-act-harness/act-entry-bridge.js";
 import { isOpaqueId } from "../page-act-harness/contracts.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import {
@@ -107,9 +110,10 @@ const attachHarnessCapabilities = (
       return;
     }
     const scope = dependencies.pageScope(active);
+    const revision = toHarnessRevision(context?.generation);
     const { envelope, propose_tools, entry_roles } = composeActEntryEnvelope({
       request_id: requestId,
-      request_revision: context?.generation ?? 1,
+      request_revision: revision,
       mode: "act",
       text: prompt,
       document_epoch: active.snapshot.document_epoch,
@@ -123,13 +127,13 @@ const attachHarnessCapabilities = (
       script_read: "CONSENT_REQUIRED",
     });
     session.harnessCapabilities = {
-      request_revision: context?.generation ?? 1,
+      request_revision: revision,
       read_tools: [...envelope.capabilities.read],
       propose_tools,
       entry_roles,
     };
     traceDecision("page-act-harness.entry.attached", {
-      request_revision: context?.generation ?? 1,
+      request_revision: revision,
       propose_tools,
       entry_roles,
     });

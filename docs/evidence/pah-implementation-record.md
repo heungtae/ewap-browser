@@ -73,3 +73,97 @@
 - 검증: `typecheck`·`lint`·`build`·`test:unit`(549 PASS)·`test:fixture`·
   `test:e2e`·module-boundaries(262 files)·method-trace-coverage PASS.
   live Provider + Chrome은 여전히 미검증.
+
+## 재검증 지적 R1/R2/R3 후속 구현 (2026-10-05)
+
+기준: `docs/evidence/pah-review-reverification-2026-10-05.md` §3~§5, §8.
+
+- R2 컴포넌트 마스킹 (`component-facade.ts`): 민감 키의 하위 전체를
+  값 타입과 무관하게 redact (배열·객체·scalar, count 1), query·fragment를
+  파라미터 단위로 redact (정상 파라미터·경로·구조 보존), Bearer 전역 치환
+  (개수만큼 count). 대입값은 길이·숫자 포함 조건으로 benign 라벨 통과.
+- R3 pagination (`component-facade.ts`): per-call 200 cap과 종료 판정 분리.
+  종료는 남은 행·EOF로만 판정하므로 기본/명시 옵션이 마지막 페이지에서
+  동일하게 complete. 정확히 끝점의 빈 읽기는 complete, 초과 offset은
+  `INVALID_OFFSET`.
+- R1 실행 연결:
+  - `service-worker/act-harness-turns.ts` (신규): Ask 읽기 schema 재사용,
+    요청 revision 결속 읽기 루프 (결속 검증·순차 배치·budget 소진 loud),
+    `submit_review` 구조화 검토 턴, workflow 재검토 게이트, 첫 payload
+    harness block.
+  - `act-step-runner.ts`: generic 경로 첫 payload에 harness block +
+    실제 읽기 도구 제공·루프 실행, workflow `PENDING_REVIEW` 세션의
+    검토 게이트 (match/partial만 진행, mismatch/needs_context는
+    clarification으로 mutation 없이 종료), answer 분기 결과 분리 기록.
+  - `workflow-session-actions.ts`: 선택 시 harnessReview/provenance/
+    capabilities 전파, dismiss 시 generic 선언 전파.
+  - 승인 저장소: 게이트에서 grant·consume을 유효 revision으로 원자 수행
+    (선택 시점 grant의 generation drift 결함을 제거). 싱글톤은 worker
+    재시작 시 소멸한다.
+  - `runtime-chat.ts`: `readAssist` 제공 (chrome API 존재 시).
+  - 테스트 더블 진화: `scripts/chrome-accessible-items-smoke.mjs`의
+    controlled provider가 review 턴에 `submit_review`로 답한다
+    (case 적합 시 match, 강제 무관 선택 시 mismatch).
+- 검증: `typecheck`·`lint`·`build`·`test:unit`(563 PASS)·`test:fixture`·
+  `test:e2e`·module-boundaries(263 files)·method-trace-coverage PASS.
+- 실제 Chrome (격리 프로필·통제 Provider·0.1.90 artifact):
+  - 일반 Search 입력 PASS (읽기 루프·harness block 동작 중 입력 수행).
+  - 정당 Preview 선택 PASS (match 검토 후 3단계 실행, Preview 생성).
+  - 강제 무관 선택 (/tmp 변형): `submit_review:mismatch` 1회 후
+    propose_* 0회, 페이지 무변화 (scope/checkbox/click 미실행).
+  - accessible 전체 20/20 PASS.
+- 실행 번들 의존성: 5개 진입점 그래프 242개 중 harness 8개
+  (contracts, bootstrap-composer, capability-check, act-entry-bridge,
+  approval-store, outcome, read-loop, workflow-review).
+  미포함 모듈과 사유: resource-inventory/reader, component-*
+  (content-script fetch·collection-reader 배선이 필요한 product 작업으로
+  별도 범위), plan-contract/recovery/diagnostics/verification-matrix
+  (런타임 실행 경로가 아닌 검증·운영 모듈).
+- 잔여: live Provider·실제 모델 추론, Platform/workspace 통합,
+  inventory/component 읽기 도구의 Act 루프 편입, 기존 ACT_APPROVE
+  실행 경로의 저장소 승인 교체 (현 구현은 검토 게이트 승인만 연결),
+  기존 문서 동기화 (사용자 확인 후).
+
+## 재검증 후속 2차 구현 (2026-10-05)
+
+- generation 0 정규화 (`toHarnessRevision`): 제품 요청은 generation 0에서
+  시작하고 harness revision은 1부터 시작한다. 경계 5곳 (chat-start attach,
+  step-runner 게이트·루프·narrow 검사, selection 전파 2곳)과 루프·게이트
+  진입점에서 정규화해 grant/consume/record가 desync되지 않는다. 실제
+  Chrome에서 generation 0 워크플로우가 match 검토 후 진행됨을 확인.
+- 검토 게이트 강화: `recorded` 실패·`executable:false`는 진행 불가
+  (REVIEW_NOT_EXECUTABLE clarification), 턴 내 중복 `submit_review`는
+  needs_context, 승인 소비 전 취소 확인, 전체 step tool 요약 포함.
+- 컴포넌트 마스킹 정밀화: OAuth 불투명 키, schemeless query, 단문 기계형
+  대입값 redact, benign 라벨 통과, URL은 파라미터 단위 우선.
+- 읽기 루프·게이트 주석 정직화 및 좁힘 검사 선언 우선화.
+- 테스트 더블: `notes` 케이스에 readFirst 턴을 추가해 generic 읽기 루프
+  (읽기→결과→제안→실행)를 Chrome에서 커버.
+- 검증: `typecheck`·`lint`·`build`·`test:unit`(568 PASS)·`test:fixture`·
+  `test:e2e`·module-boundaries(263 files)·method-trace-coverage PASS.
+- 실제 Chrome: accessible 전체 20/20 PASS (notes readFirst 포함),
+  정당 Preview match 후 3단계 실행, 강제 무관 선택 mismatch 후
+  propose 0회·페이지 무변화.
+
+## 재검증 후속 3차 구현 (2026-10-05, 최종 리뷰 반영)
+
+- revision 매핑을 단조 증가로 변경 (`toHarnessRevision`: g → g+1).
+  0/1 붕괴가 첫 drift 탐지를 무력화한다는 지적 반영. 모든 경계가 동일
+  helper를 사용하므로 grant/consume/record/narrow 동등성은 유지.
+- 게이트 binding 신선도: 승인 소비 직전 `refreshBinding` (스냅샷 재읽기,
+  epoch·origin 대조)으로 stale 진행 차단. 취소 중 read 루프는
+  clarification으로 수렴 (POLICY_DENIED 구분).
+- 마스킹 순서: Bearer 전역 치환 후 URL 파라미터 단위 마스킹으로
+  혼합 문자열 누출 제거. `CREDENTIAL_LIKE` 별칭 제거.
+- 소진된 읽기 루프의 answer 승격 시 `exhausted_answer` trace 병기.
+- 선언 능력 우선: 제공 읽기 도구는 선언 목록과의 교집합으로만 제공.
+- 테스트 더블(`notes.readFirst`)로 generic 읽기 루프를 Chrome에서 커버.
+- 검증: `typecheck`·`lint`·`build`·`test:unit`(569 PASS)·`test:fixture`·
+  `test:e2e`·module-boundaries(263 files)·method-trace-coverage PASS.
+- 실제 Chrome: accessible 20/20 PASS 2회 (notes readFirst 포함),
+  정당 Preview 3단계 실행 3회 확인, 강제 무관 선택 mismatch 후
+  propose 0회·페이지 무변화 (통제 provider 응답 로그 + 상태 확인).
+- 플레이크 관찰: 전체 스위트 5회 중 2회 단일 케이스 실패
+  (workflow 1회 — generation 0 결함 수정 전, reviewed 1회 —
+  원인 미확정 UI 타이밍 의심, 단독·페어 재실행 PASS). 릴리스 게이트용
+  반복 실행·원인 추적을 별도 작업으로 권장.

@@ -187,11 +187,89 @@ describe("PAH-4 component observation", () => {
       { next: "https://app.test/cb?code=secret-abc123#frag" },
     ]);
     expect(masked.rows[0]).toEqual({ status: "token: expired" });
-    expect(JSON.stringify(masked.rows[1])).not.toContain("lowercase-abcdef");
+    expect(JSON.stringify(masked.rows[1])).not.toContain("lowercase-ab");
     expect(masked.rows[2]).toEqual({
-      next: "https://app.test/cb?[REDACTED:query]#frag",
+      next: "https://app.test/cb?code=[REDACTED]#frag",
     });
     expect(masked.redacted_count).toBe(2);
+  });
+
+  it("redacts_opaque_oauth_values_and_schemeless_queries", () => {
+    const masked = maskComponentRows([
+      { code: "4/0AZabcdefghijklmnopqrstuvwxyz123456" },
+      { next: "/cb?token=secret123" },
+      { short: "token=ab" },
+      { plain: "?a=b" },
+    ]);
+    expect(masked.rows[0]).toEqual({ code: "[REDACTED:credential-like]" });
+    expect(masked.rows[1]).toEqual({ next: "/cb?token=[REDACTED]" });
+    // Short value under a sensitive key is still machine-shaped: redacted.
+    expect(masked.rows[2]).toEqual({ short: "[REDACTED:credential-like]" });
+    expect(masked.rows[3]).toEqual({ plain: "?a=b" });
+    expect(masked.redacted_count).toBe(3);
+  });
+
+  it("redacts_nested_values_fragment_secrets_and_repeated_bearers", () => {
+    const marker = "ReviewCanaryABC";
+    const masked = maskComponentRows([
+      { password: [marker] },
+      { password: { value: marker } },
+      { password: 123456 },
+      { label: `https://app.test/path?token=dummy#access_token=${marker}` },
+      { label: `Bearer ${marker} and Bearer ${marker}` },
+      { label: "https://app.test/ok?a=b#frag" },
+    ]);
+    const flat = JSON.stringify(masked.rows);
+    expect(flat).not.toContain(marker);
+    expect(flat).toContain("access_token=[REDACTED]");
+    expect(flat).not.toContain("Bearer ReviewCanaryABC");
+    expect(flat).toContain("https://app.test/ok?a=b#frag");
+    expect(masked.redacted_count).toBeGreaterThanOrEqual(5);
+  });
+
+  it("terminates_default_pagination_at_the_last_page", () => {
+    const grid550 = buildComponentDescriptor({
+      resource_id: "component-dddddddddddddd1",
+      binding_revision: "epoch-abcdefghijklmnop",
+      observed_hint: "grid",
+      hint_basis: "role=grid with pagination observed",
+      visible_count: 200,
+      logical_count: 550,
+      total_count: 550,
+      has_eof: true,
+      channels: [{ channel: "visible_rows", available: true }],
+    });
+    const rows = Array.from({ length: 550 }, (_, i) => ({ i }));
+    const read = (offset?: number, max_items?: number) =>
+      readChannel(grid550, rows, {
+        evidence_id: "ev-read-abcdefghijklmnop",
+        request_revision: 1,
+        channel: "visible_rows",
+        ...(offset === undefined ? {} : { offset }),
+        ...(max_items === undefined ? {} : { max_items }),
+      });
+    const first = read();
+    expect(first.coverage.complete).toBe(false);
+    expect(first.continuation?.cursor).toBe("offset:200");
+    const second = read(200);
+    expect(second.coverage.complete).toBe(false);
+    expect(second.continuation?.cursor).toBe("offset:400");
+    const last = read(400);
+    expect(last.coverage.complete).toBe(true);
+    expect(last.continuation).toBeUndefined();
+    expect(last.content).toMatchObject({ rows: rows.slice(400) });
+    // Reading exactly at the end completes with zero rows, never loops.
+    const empty = read(550);
+    expect(empty.coverage.complete).toBe(true);
+    expect(empty.continuation).toBeUndefined();
+    expect(() =>
+      readChannel(grid550, rows, {
+        evidence_id: "ev-read-abcdefghijklmnop",
+        request_revision: 1,
+        channel: "visible_rows",
+        offset: 551,
+      }),
+    ).toThrow("INVALID_OFFSET");
   });
 
   it("walks_the_full_collection_across_offset_continuations", () => {

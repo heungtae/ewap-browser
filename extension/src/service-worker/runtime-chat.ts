@@ -159,6 +159,16 @@ const actStepRunner = createActStepRunner({
     if (!executor) throw new Error("INTERNAL_FAILURE");
     return executor.executeProposal(session);
   },
+  // Harness read support for Act: real tab reads back the request-bound
+  // read loop. Absent (no chrome API) the step runner stays propose-only.
+  ...(chromeApi
+    ? {
+        readAssist: {
+          tabs: chromeApi.tabs,
+          redactTitle: redactedTabTitle,
+        },
+      }
+    : {}),
   endSession: (session) => {
     const run = session.runId
       ? coordinator.runs.byId(session.runId)

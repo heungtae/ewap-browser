@@ -183,3 +183,14 @@ export const revokeStoredApproval = (
   store.records.set(approvalId, revoked);
   return { ...revoked };
 };
+
+let sharedStore: ApprovalStore | undefined;
+
+// Product singleton: the service worker owns one harness approval store, so
+// grants and consumes across modules (selection start vs step dispatch)
+// resolve against the same single-use records. A worker restart drops the
+// module state, which revokes all pending nonces by construction.
+export const getHarnessApprovalStore = (): ApprovalStore => {
+  if (!sharedStore) sharedStore = createApprovalStore();
+  return sharedStore;
+};

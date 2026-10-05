@@ -61,6 +61,21 @@ export type ActSession = {
     // narrowed tools). Targets lost to a page change never fail here.
     entry_roles: string[];
   };
+  // Workflow suitability review gate. Set when a workflow session starts
+  // from a user selection; the first step turn runs an LLM review (current
+  // page + original request + candidate facts) before any step tool is
+  // offered. PENDING_REVIEW never dispatches step mutations.
+  harnessReview?: {
+    candidate_id: string;
+    source: "saved" | "profile" | "page_generated";
+    request_revision: number;
+    catalog_status: "verified" | "draft";
+    stored_scope?: { origin: string; path: string };
+    current_origin?: string;
+    approval_id: string;
+    status: "PENDING_REVIEW" | "REVIEWED";
+    verdict?: "match" | "partial" | "mismatch" | "needs_context";
+  };
   pageApiActions?: readonly PageApiActionRef[];
   pageApiScope?: PageScope;
   workflow?: {

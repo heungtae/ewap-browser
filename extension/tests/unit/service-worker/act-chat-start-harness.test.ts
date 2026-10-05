@@ -76,7 +76,7 @@ describe("Act chat start harness wiring", () => {
       },
     )) as { harnessCapabilities: unknown };
     expect(result.harnessCapabilities).toMatchObject({
-      request_revision: 1,
+      request_revision: 2,
       propose_tools: ["propose_set_text"],
     });
   });

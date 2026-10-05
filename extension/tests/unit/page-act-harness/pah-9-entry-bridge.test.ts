@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  EXECUTOR_TO_PROPOSE,
   assertHarnessSubsetOffered,
   composeActEntryEnvelope,
   findUnjustifiedDrops,
   proposeNamesFor,
+  toHarnessRevision,
 } from "../../../src/page-act-harness/act-entry-bridge.js";
 
 // Entry-wiring contract slice: snapshot mapping (incl. password
@@ -95,5 +97,29 @@ describe("page-act-harness entry bridge", () => {
         [{ role: "textbox", visible: false, enabled: true }],
       ),
     ).toEqual([]);
+  });
+
+  it("normalizes_product_generation_zero_to_harness_revision_one", () => {
+    expect(toHarnessRevision(undefined)).toBe(1);
+    expect(toHarnessRevision(0)).toBe(1);
+    expect(toHarnessRevision(-2)).toBe(1);
+    expect(toHarnessRevision(1)).toBe(2);
+    expect(toHarnessRevision(7)).toBe(8);
+  });
+
+  it("mirrors_every_executor_tool_with_a_propose_schema", () => {
+    // service-worker/act-tools.ts genericActTools handles exactly these
+    // executor tools; an unmapped tool would silently weaken the declared
+    // set, so the mirror is pinned here.
+    expect(Object.keys(EXECUTOR_TO_PROPOSE).sort()).toEqual(
+      [
+        "click_by_ref",
+        "navigate",
+        "press_key_by_ref",
+        "select_option_by_ref",
+        "set_checked_by_ref",
+        "set_text_by_ref",
+      ].sort(),
+    );
   });
 });

@@ -328,7 +328,7 @@ describe("Act step runner", () => {
       definitions: [definition],
       profileDefinitions: [definition],
       harnessCapabilities: {
-        request_revision: 1,
+        request_revision: 0,
         read_tools: ["read_page"],
         propose_tools: ["propose_set_text", "propose_click"],
         entry_roles: ["button", "textbox"],
@@ -338,5 +338,118 @@ describe("Act step runner", () => {
     await expect(runner.runStep(session)).rejects.toMatchObject({
       code: "HARNESS_TOOL_NARROWING",
     });
+  });
+
+  it("clarifies_instead_of_dispatching_when_the_review_mismatches", async () => {
+    const coordinator = new ServiceCoordinator(policy);
+    const publish = vi.fn();
+    const endSession = vi.fn();
+    const runner = createActStepRunner({
+      coordinator,
+      provider: {
+        chat: async () => ({
+          content: "",
+          tool_calls: [
+            {
+              id: "tool-call-abcdefghijkl",
+              name: "submit_review",
+              arguments: JSON.stringify({
+                verdict: "mismatch",
+                rationale: "report scope is unrelated to search input",
+                missing: [],
+              }),
+            },
+          ],
+        }),
+      } as unknown as ProviderRuntime,
+      preferences,
+      readActive: async () => ({
+        tabId: 1,
+        origin: "https://portal.company.test",
+        path: "/guide",
+        snapshot: {
+          schema_version: 2,
+          document_epoch: "epoch-abcdefghijklmnop",
+          frame_id: 0,
+          visible_text: "",
+          nodes: [
+            {
+              ref_id: "target-abcdefghijklmnop",
+              role: "button",
+              name: "Generate preview",
+              state: {},
+              visible: true,
+              enabled: true,
+            },
+          ],
+        },
+      }),
+      threadContext: () => [],
+      pageScope: () => "scope" as never,
+      bindRun: () => undefined,
+      publish,
+      serialise: JSON.stringify,
+      executeApprovedProposal: async () => {
+        throw new Error("must not dispatch after mismatch");
+      },
+      endSession,
+    });
+    const declaration = {
+      schema_version: 1 as const,
+      id: "preview-v1",
+      title: "Preview",
+      steps: [
+        {
+          id: "step-aaaaaaaaaaaaaa1",
+          tool: "click_by_ref" as const,
+          target: { role: "button" as const, name: "Generate preview" },
+        },
+      ],
+    };
+    const session: ActSession = {
+      id: "session-abcdefghijkl",
+      tabId: 1,
+      origin: "https://portal.company.test",
+      prompt: "Search query에 browser test를 입력해줘.",
+      messages: [{ role: "system", content: "system" }],
+      profile: { id: "profile", version: 1 },
+      discovery: "page-derived",
+      definitions: [],
+      profileDefinitions: [],
+      harnessReview: {
+        candidate_id: "candidate-aaaaaaaaaaaaa1",
+        source: "saved",
+        request_revision: 1,
+        catalog_status: "verified",
+        stored_scope: {
+          origin: "https://portal.company.test",
+          path: "/guide",
+        },
+        current_origin: "https://portal.company.test",
+        approval_id: "approval-runner-mismatch",
+        status: "PENDING_REVIEW",
+      },
+      workflow: {
+        declaration,
+        step: declaration.steps[0]!,
+        count: 0,
+      },
+    };
+
+    await expect(runner.runStep(session)).resolves.toMatchObject({
+      ok: true,
+      state: "CLARIFICATION",
+    });
+    expect(session.harnessReview?.status).toBe("REVIEWED");
+    expect(session.harnessReview?.verdict).toBe("mismatch");
+    expect(
+      publish.mock.calls.some(
+        ([, event]) =>
+          event.type === "assistant_delta" &&
+          typeof event.text === "string" &&
+          event.text.includes("맞지 않습니다"),
+      ),
+    ).toBe(true);
+    expect(endSession).toHaveBeenCalledWith(session);
   });
 });

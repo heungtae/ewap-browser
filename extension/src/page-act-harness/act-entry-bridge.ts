@@ -11,6 +11,15 @@ import {
 import { listActReadTools } from "./capability-check.js";
 import type { BootstrapEnvelope } from "./contracts.js";
 
+// Product request generations start at 0 (accepted, not yet running)
+// while harness revisions start at 1. Shift monotonically (g -> g+1) so the
+// accepted/running transition stays visible to staleness checks instead of
+// collapsing 0 and 1 together. Every boundary uses this helper, so grant,
+// consume, record, and narrow paths can never desync.
+export const toHarnessRevision = (generation?: number): number => {
+  if (!Number.isInteger(generation) || (generation as number) < 0) return 1;
+  return (generation as number) + 1;
+};
 // Executor-level definition tool -> offered propose_* schema. Mirrors
 // service-worker/act-tools.ts genericActTools without importing the
 // service-worker graph (keeps the harness free of product cycles).

@@ -125,11 +125,51 @@ const fixture = await createS1Fixture(
             .map((n) => n.name)
             .join(", "),
       });
-    if (!current.workflow && body.messages?.some((m) => m.role === "tool"))
-      return stream(res, { content: "Fixture action complete" });
+    if (!current.workflow && body.messages?.some((m) => m.role === "tool")) {
+      // Harness read loop coverage: after grounding reads, fall through to
+      // the proposal once. Any other read-only turn ends as an answer.
+      if (current.readFirst && !current.proposed) current.proposed = true;
+      else return stream(res, { content: "Fixture action complete" });
+    }
+    if (current.readFirst && !current.readDone) {
+      current.readDone = true;
+      return stream(res, {
+        tool_calls: [
+          {
+            id: "test-read-abcdefghijkl",
+            type: "function",
+            function: { name: "read_page", arguments: "{}" },
+          },
+        ],
+      });
+    }
     if (current.workflow) {
       const preview = nodes.find((n) => n.name === "Generate preview");
       const tools = body.tools ?? [];
+      // Harness suitability review turn: the runner offers read tools plus
+      // submit_review before any step tool. The controlled double answers
+      // the review from the known case fit instead of reasoning.
+      if (tools.some((t) => t.function.name === "submit_review")) {
+        const fits = current.id === "workflow";
+        return stream(res, {
+          tool_calls: [
+            {
+              id: "test-review-abcdefghijkl",
+              type: "function",
+              function: {
+                name: "submit_review",
+                arguments: JSON.stringify({
+                  verdict: fits ? "match" : "mismatch",
+                  rationale: fits
+                    ? "Preview request matches the Preview workflow candidate."
+                    : "Search input request does not match the Preview workflow candidate.",
+                  missing: [],
+                }),
+              },
+            },
+          ],
+        });
+      }
       if (tools.some((t) => t.function.name === "propose_select_option")) {
         current.target = "Report scope";
         current.role = "combobox";
@@ -338,6 +378,8 @@ try {
       tool: "propose_set_text",
       value: "테스트 메모",
       prompt: "Notes에 테스트 메모를 입력해줘.",
+      // Covers the harness read loop: first turn reads, second proposes.
+      readFirst: true,
     },
     {
       id: "scope",

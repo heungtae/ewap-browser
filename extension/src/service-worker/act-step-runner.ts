@@ -1,3 +1,7 @@
+import type {
+  ProviderToolCall,
+  ProviderToolDefinition,
+} from "../providers/types.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import { nextWorkflowStep } from "../contracts/workflow.js";
 import { fail, ContractError } from "../security/validation.js";
@@ -8,7 +12,18 @@ import {
   parsePageApiProposal,
 } from "./act-proposal-parser.js";
 import { workflowActionDefinitions } from "./act-workflow-authority.js";
-import { findUnjustifiedDrops } from "../page-act-harness/act-entry-bridge.js";
+import {
+  findUnjustifiedDrops,
+  toHarnessRevision,
+} from "../page-act-harness/act-entry-bridge.js";
+import {
+  actHarnessReadTools,
+  createActHarnessReadExecutor,
+  harnessFirstPayloadBlock,
+  runHarnessReadTurns,
+  runWorkflowReviewGate,
+} from "./act-harness-turns.js";
+import { classifyOutcome } from "../page-act-harness/outcome.js";
 import { selectActActionTools } from "./page-derived-actions.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
@@ -102,12 +117,34 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       const analysisContext = session.analysisData
         ? `[UNTRUSTED_ANALYSIS_DATA]\n${dependencies.serialise(session.analysisData)}\n[/UNTRUSTED_ANALYSIS_DATA]`
         : undefined;
+      // Harness read support is request-bound: the first payload carries the
+      // harness context block and callable read tools only when an executor
+      // is actually wired. Otherwise the propose-only path applies. The
+      // declared capability list wins: drift can only ever offer FEWER reads.
+      const harnessReads =
+        dependencies.readAssist && session.harnessCapabilities
+          ? actHarnessReadTools().filter((tool) =>
+              session.harnessCapabilities?.read_tools.includes(
+                tool.function.name,
+              ),
+            )
+          : [];
       const messages = actStepMessages({
         session,
         profileContext,
         projection,
         threadContext: dependencies.threadContext(active.tabId),
         ...(analysisContext ? { analysisContext } : {}),
+        ...(harnessReads.length > 0 && session.harnessCapabilities
+          ? {
+              harnessBlock: harnessFirstPayloadBlock({
+                requestRevision: session.harnessCapabilities.request_revision,
+                documentEpoch: active.snapshot.document_epoch,
+                coverageNote: "visible_only_synopsis; use read tools for more",
+                readTools: harnessReads.map((tool) => tool.function.name),
+              }),
+            }
+          : {}),
       });
       if (!session.pageApiActions) {
         const adapter = pageApiRegistry.find(active.origin, active.path);
@@ -135,13 +172,107 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         targetRefId ? new Set([targetRefId]) : undefined,
         session.pageApiActions,
       );
+      // Shared harness read executor (text reads only; no vision/business).
+      // Built once per turn when read support is wired; absent otherwise.
+      const harnessExecutor =
+        harnessReads.length > 0 && dependencies.readAssist
+          ? createActHarnessReadExecutor({
+              snapshot: model.snapshot,
+              tabId: active.tabId,
+              runId: run.id,
+              ...(session.requestContext?.signal
+                ? { signal: session.requestContext.signal }
+                : {}),
+              assist: dependencies.readAssist,
+            })
+          : undefined;
+      // Workflow suitability review gate: a session started from a user
+      // selection reviews fit (original request + current page + candidate
+      // facts, with reads) BEFORE any step tool is offered. mismatch and
+      // needs_context end in a user clarification with zero mutations.
+      if (
+        session.workflow &&
+        session.harnessReview?.status === "PENDING_REVIEW"
+      ) {
+        const expectedRevision = toHarnessRevision(
+          session.requestContext?.generation ??
+            session.harnessReview.request_revision,
+        );
+        const gate = await runWorkflowReviewGate({
+          chat: (gateMessages, gateTools) =>
+            dependencies.provider.chat(
+              {
+                messages: gateMessages,
+                ...(gateTools.length > 0 ? { tools: gateTools } : {}),
+              },
+              session.requestContext
+                ? {
+                    signal: session.requestContext.signal,
+                    onProgress: () =>
+                      session.requestContext?.progress?.("PROVIDER_BODY"),
+                  }
+                : {},
+            ),
+          session,
+          projection,
+          serialise: dependencies.serialise,
+          readTools: harnessReads,
+          executeRead: harnessExecutor
+            ? (call) => harnessExecutor(call)
+            : async (): Promise<unknown> => {
+                throw fail("INVALID_ARGUMENT");
+              },
+          expectedRevision,
+          runId: run.id,
+          publishDelta: (text) =>
+            dependencies.publish(run.id, {
+              type: "assistant_delta",
+              text,
+            }),
+          isCancelled: () =>
+            dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL",
+          refreshBinding: async () => {
+            const current = await dependencies
+              .readActive(undefined, session.tabId)
+              .catch(() => undefined);
+            assertRequestActive(session.requestContext);
+            return (
+              current !== undefined &&
+              current.snapshot.document_epoch ===
+                active.snapshot.document_epoch &&
+              current.origin === active.origin
+            );
+          },
+        });
+        if (!gate.proceed) {
+          dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
+          dependencies.publish(run.id, {
+            type: "assistant_delta",
+            text: gate.message,
+          });
+          dependencies.publish(run.id, {
+            type: "activity_finished",
+            stage: "COMPLETED",
+          });
+          dependencies.publish(run.id, {
+            type: "run_terminal",
+            outcome: "VERIFIED",
+          });
+          dependencies.endSession(session);
+          return { ok: true, state: "CLARIFICATION", message: gate.message };
+        }
+      }
       if (session.harnessCapabilities) {
         // No silent narrowing: a declared entry tool dropped while its
         // targets are still visible fails loudly on the generic path. A
         // workflow step intentionally scopes tools (PAH-5 re-review owns that
         // path), and a stale declaration (request moved on) is skipped.
-        const declaredRevision = session.harnessCapabilities.request_revision;
-        const currentRevision = session.requestContext?.generation ?? 1;
+        const declaredRevision = toHarnessRevision(
+          session.harnessCapabilities.request_revision,
+        );
+        const currentRevision = toHarnessRevision(
+          session.requestContext?.generation,
+        );
         if (declaredRevision !== currentRevision) {
           traceDecision("page-act-harness.entry.declaration_stale", {
             declared_revision: declaredRevision,
@@ -179,19 +310,61 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         type: "activity_progress",
         stage: "CONTACTING_PROVIDER",
       });
-      const response = await dependencies.provider.chat(
-        {
+      const chatOnce = (offered: ProviderToolDefinition[]) =>
+        dependencies.provider.chat(
+          {
+            messages,
+            ...(offered.length > 0 ? { tools: offered } : {}),
+          },
+          session.requestContext
+            ? {
+                signal: session.requestContext.signal,
+                onProgress: () =>
+                  session.requestContext?.progress?.("PROVIDER_BODY"),
+              }
+            : {},
+        );
+      let response: { content: string; tool_calls: ProviderToolCall[] };
+      if (harnessReads.length === 0 || !harnessExecutor) {
+        response = await chatOnce(tools);
+      } else {
+        // Request-bound read loop: the first payload already carries the
+        // harness context block plus callable read tools; read results
+        // return into the same request/binding before any proposal.
+        const loop = await runHarnessReadTurns({
+          // Shared message-array reference: the loop appends assistant and
+          // tool messages in place so the follow-up proposal turn sees the
+          // grounded transcript.
+          chat: (_loopMessages, loopTools) => chatOnce(loopTools),
           messages,
-          ...(tools.length > 0 ? { tools } : {}),
-        },
-        session.requestContext
-          ? {
-              signal: session.requestContext.signal,
-              onProgress: () =>
-                session.requestContext?.progress?.("PROVIDER_BODY"),
-            }
-          : {},
-      );
+          offeredTools: [...harnessReads, ...tools],
+          readNames: harnessReads.map((tool) => tool.function.name),
+          executeRead: (call) => harnessExecutor(call),
+          serialise: dependencies.serialise,
+          expectedRevision: toHarnessRevision(
+            session.requestContext?.generation ??
+              session.harnessCapabilities?.request_revision ??
+              1,
+          ),
+          maxRounds: 3,
+          isCancelled: () =>
+            dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL",
+        });
+        // A budget-exhausted answer carries no completion claim: the
+        // exhaustion is traced for diagnosis since the answer text cannot
+        // carry it.
+        if (loop.exhausted && loop.calls.length === 0)
+          traceDecision("page-act-harness.read_loop.exhausted_answer", {
+            rounds: loop.rounds,
+            reads: loop.reads,
+          });
+        response =
+          loop.exhausted && loop.calls.length === 0
+            ? loop.content
+              ? { content: loop.content, tool_calls: [] }
+              : fail("PROVIDER_UNAVAILABLE")
+            : { content: loop.content, tool_calls: loop.calls };
+      }
       assertRequestActive(session.requestContext);
       if (session.analysisData) {
         const current = await dependencies
@@ -230,6 +403,16 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
         if (session.awaitingExpandedMenuSelection)
           return fail("TARGET_NOT_ACTIONABLE");
+        // Non-authoritative harness record: a tool-less answer is never a
+        // page mutation. Legacy terminal semantics below are unchanged.
+        const terminal = classifyOutcome({
+          tool_calls_made: false,
+          read_only: true,
+          actions: [],
+        });
+        traceDecision("page-act-harness.outcome.terminal_kind", {
+          kind: terminal.kind,
+        });
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
         dependencies.publish(run.id, {
           type: "assistant_delta",

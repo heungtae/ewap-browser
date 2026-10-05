@@ -6,6 +6,7 @@ import type { PageScope } from "../state/tab-chat-session-store.js";
 import type { ServiceCoordinator } from "./coordinator.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import type { ActSession } from "./act-session-types.js";
+import type { ActHarnessReadAssist } from "./act-harness-turns.js";
 
 export type ActStepDependencies = {
   requestContext?(
@@ -24,4 +25,8 @@ export type ActStepDependencies = {
     session: ActSession,
   ): Promise<Record<string, unknown>>;
   endSession(session: ActSession): void;
+  // Optional harness read support: when present, Act offers its text read
+  // tools and runs the request-bound read loop before proposing. Absent in
+  // tests and minimal embeddings; the propose-only path then applies.
+  readAssist?: ActHarnessReadAssist;
 };

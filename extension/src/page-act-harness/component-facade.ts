@@ -22,7 +22,8 @@ const SENSITIVE_KEY =
 // Substring match is deliberate (fail-closed): snake_case keys such as
 // my_api_key must not slip through on word-boundary technicalities.
 // An assignment only redacts when its value looks secret-bearing (long or
-// digit-bearing): benign `token: expired` labels pass through.
+// digit-bearing) or machine-shaped (no whitespace): benign `token: expired`
+// labels pass through while `token=ab` does not.
 const ASSIGNMENT_VALUE = /[:=]\s*(\S+)/;
 const SECRET_VALUE = /(\S{8,}|[A-Za-z]*\d\S*|\S*\d[A-Za-z]*)/;
 const assignmentLike = (value: string): boolean => {
@@ -32,17 +33,61 @@ const assignmentLike = (value: string): boolean => {
     );
   if (!keyed) return false;
   const match = ASSIGNMENT_VALUE.exec(value);
-  return match !== null && SECRET_VALUE.test(match[1] ?? "");
+  if (!match) return false;
+  const secret = match[1] ?? "";
+  return SECRET_VALUE.test(secret) || !/\s/.test(value);
 };
-const BEARER_TOKEN = /bearer\s*[:\s]+[A-Za-z0-9\-._~+/=]{8,}/i;
-const URL_WITH_QUERY = /(\bhttps?:\/\/[^\s?#]*\?)([^\s#]*)(#\S*)?/;
-
+const BEARER_TOKEN = /bearer\s*[:\s]+[A-Za-z0-9\-._~+/=]{8,}/gi;
+// Generic OAuth-style keys whose values are opaque secrets even without a
+// credential keyword in the value itself.
+const OPAQUE_SECRET_KEYS =
+  /^(code|id_token|access_token|refresh_token|auth|next|state)$/i;
+const maskParams = (params: string): { text: string; hit: boolean } => {
+  let hit = false;
+  const text = params
+    .split("&")
+    .map((segment) => {
+      const eq = segment.indexOf("=");
+      const key = eq < 0 ? segment : segment.slice(0, eq);
+      const val = eq < 0 ? "" : segment.slice(eq + 1);
+      // Key-side match, a credential-looking value, or an opaque secret
+      // under a generic key (e.g. OAuth `code=4/0AZ...`).
+      if (
+        SENSITIVE_KEY.test(key) ||
+        (SENSITIVE_KEY.test(val) && SECRET_VALUE.test(val)) ||
+        (OPAQUE_SECRET_KEYS.test(key) && SECRET_VALUE.test(val))
+      ) {
+        hit = true;
+        return `${key}=[REDACTED]`;
+      }
+      return segment;
+    })
+    .join("&");
+  return { text, hit };
+};
+const URL_WITH_QUERY = /\bhttps?:\/\/[^\s?#]*\?/;
 const maskUrlQuery = (value: string): { value: string; hit: boolean } => {
-  const match = URL_WITH_QUERY.exec(value);
-  if (!match || !SENSITIVE_KEY.test(match[2] ?? ""))
+  // Absolute http(s) URLs take the parameter-preserving path. Schemeless
+  // strings carrying a query (`/cb?token=...`, `?token=...`) take the same
+  // path: only the `?`/`#` structure is trusted, never the scheme.
+  const qIndex = value.indexOf("?");
+  if (qIndex < 0) return { value, hit: false };
+  if (!URL_WITH_QUERY.test(value) && !/[?&][^=\s&]+=[^=\s&]*/.test(value))
     return { value, hit: false };
-  // Only the secret-bearing query is redacted; path and fragment survive.
-  return { value: `${match[1]}[REDACTED:query]${match[3] ?? ""}`, hit: true };
+  // Query AND fragment are masked param-by-param: benign params, path, and
+  // fragment structure survive; every secret-bearing pair is redacted.
+  const hashIndex = value.indexOf("#", qIndex);
+  const query = value.slice(qIndex + 1, hashIndex < 0 ? undefined : hashIndex);
+  const fragment = hashIndex < 0 ? null : value.slice(hashIndex + 1);
+  const maskedQuery = maskParams(query);
+  const maskedFragment =
+    fragment === null || fragment === "" ? null : maskParams(fragment);
+  if (!maskedQuery.hit && (maskedFragment === null || !maskedFragment.hit))
+    return { value, hit: false };
+  return {
+    value: `${value.slice(0, qIndex + 1)}${maskedQuery.text}${maskedFragment === null ? "" : `#${maskedFragment.text}`}`,
+    hit: true,
+  };
 };
 
 // Fail-closed component masking: sensitive keyed fields are redacted, and
@@ -53,37 +98,75 @@ export const maskComponentRows = (
   rows: unknown[],
 ): { rows: unknown[]; categories: string[]; redacted_count: number } => {
   let redacted = 0;
-  const maskValue = (value: unknown, key?: string): unknown => {
+  // Sensitivity propagates: a sensitive key redacts its ENTIRE subtree
+  // (string, array, object, scalar) with one count. Arrays/objects never
+  // launder a sensitive parent by recursing keylessly.
+  const maskValue = (
+    value: unknown,
+    key?: string,
+    inherited = false,
+  ): unknown => {
+    const sensitive =
+      inherited || (key !== undefined && SENSITIVE_KEY.test(key));
+    // Opaque-secret keys (OAuth `code`, callback `next`/`state`): the value
+    // is a secret by convention when it is secret-shaped, even without a
+    // credential keyword anywhere.
+    const opaqueSecret =
+      !sensitive &&
+      typeof value === "string" &&
+      key !== undefined &&
+      OPAQUE_SECRET_KEYS.test(key) &&
+      SECRET_VALUE.test(value);
     if (typeof value === "string") {
-      if (key !== undefined && SENSITIVE_KEY.test(key)) {
+      if (sensitive) {
         redacted += 1;
         return "[REDACTED:credential-like]";
       }
-      // URLs first: only a secret-bearing query is cut (path/fragment
-      // survive). The assignment rule below would redact the whole string.
-      const urlMasked = maskUrlQuery(value);
+      // Bearer tokens first: every occurrence is counted and cut, including
+      // ones sharing the string with a URL (the URL pass below returns
+      // early and would otherwise leave them).
+      const bearerMatches = value.match(BEARER_TOKEN);
+      const unbearered =
+        bearerMatches !== null
+          ? value.replace(BEARER_TOKEN, "Bearer [REDACTED]")
+          : value;
+      if (bearerMatches !== null) redacted += bearerMatches.length;
+      // URLs: only secret-bearing pairs are cut (path/fragment survive).
+      // The rules below would redact the whole string.
+      const urlMasked = maskUrlQuery(unbearered);
       if (urlMasked.hit) {
         redacted += 1;
         return urlMasked.value;
       }
-      if (assignmentLike(value)) {
+      if (bearerMatches !== null) return unbearered;
+      if (opaqueSecret) {
         redacted += 1;
         return "[REDACTED:credential-like]";
       }
-      if (BEARER_TOKEN.test(value)) {
+      if (assignmentLike(unbearered)) {
         redacted += 1;
-        return value.replace(BEARER_TOKEN, "Bearer [REDACTED]");
+        return "[REDACTED:credential-like]";
       }
-      return value;
+      return unbearered;
     }
-    if (Array.isArray(value)) return value.map((item) => maskValue(item));
+    if (Array.isArray(value)) {
+      if (sensitive) {
+        redacted += 1;
+        return "[REDACTED:credential-like]";
+      }
+      return value.map((item) => maskValue(item));
+    }
     if (typeof value === "object" && value !== null) {
+      if (sensitive) {
+        redacted += 1;
+        return "[REDACTED:credential-like]";
+      }
       const out: Record<string, unknown> = {};
       for (const [entryKey, entryValue] of Object.entries(value))
         out[entryKey] = maskValue(entryValue, entryKey);
       return out;
     }
-    if (typeof key === "string" && SENSITIVE_KEY.test(key)) {
+    if (sensitive) {
       redacted += 1;
       return "[REDACTED:credential-like]";
     }
@@ -148,6 +231,9 @@ export const readChannel = (
       if (!Number.isInteger(offset) || offset < 0)
         throw new Error("INVALID_OFFSET");
       if (offset > rows.length) throw new Error("INVALID_OFFSET");
+      // Per-window bound (not a collection bound): callers asking beyond
+      // 200 are silently capped and walk continuations; completion still
+      // follows remaining rows and EOF.
       const maxItems = Math.min(input.max_items ?? rows.length, 200);
       // Visual estimation applies when the caller asked for the visual
       // channel and no value-bearing channel (alt table / reviewed data) is
@@ -163,10 +249,10 @@ export const readChannel = (
         categories: masked.categories,
         redacted_count: masked.redacted_count,
       };
-      // NOTE: the visual estimate covers all supplied rows; offset/max_items
-      // pagination does not apply to this channel (alt-table/reviewed-data
-      // reads paginate instead). An explicit offset here is accepted but
-      // ignored by design.
+      // NOTE: the visual estimate covers all supplied rows; in-range
+      // offsets are accepted but ignored by this channel (alt-table /
+      // reviewed-data reads paginate instead). Out-of-range offsets throw
+      // above before reaching here.
       if (input.channel === "visual" && !hasValueChannel)
         return validateReadEvidence({
           evidence_id: input.evidence_id,
@@ -204,9 +290,11 @@ export const readChannel = (
         });
       // offset advances the window: repeated reads with the continuation
       // cursor walk the full collection instead of replaying page one.
+      // The 200-item bound caps each WINDOW, never the collection: completion
+      // is decided by remaining rows and EOF, so default and explicit
+      // options terminate identically at the last page.
       const supplied = masked.rows.slice(offset, offset + maxItems);
       const endPos = offset + supplied.length;
-      const hitCap = (input.max_items ?? rows.length) > 200;
       const gap = describeCoverageGap(
         descriptor,
         descriptor.total_count !== undefined
@@ -216,14 +304,12 @@ export const readChannel = (
       const totalKnown = descriptor.total_count;
       const belowTotal = totalKnown !== undefined && endPos < totalKnown;
       const truncated =
-        gap.complete === false || endPos < rows.length || belowTotal || hitCap;
+        gap.complete === false || endPos < rows.length || belowTotal;
       const reason = belowTotal
         ? "PARTIAL_WINDOW"
-        : hitCap
-          ? "CAP_REACHED"
-          : truncated
-            ? gap.reason
-            : "CHANNEL_COMPLETE";
+        : truncated
+          ? gap.reason
+          : "CHANNEL_COMPLETE";
       const evidence = validateReadEvidence({
         evidence_id: input.evidence_id,
         request_revision: input.request_revision,

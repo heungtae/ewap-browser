@@ -8,6 +8,7 @@ type Input = {
   projection: string;
   threadContext: ProviderMessage[];
   analysisContext?: string;
+  harnessBlock?: string;
 };
 
 export const actStepMessages = ({
@@ -16,6 +17,7 @@ export const actStepMessages = ({
   projection,
   threadContext,
   analysisContext,
+  harnessBlock,
 }: Input): ProviderMessage[] =>
   session.workflow
     ? [
@@ -43,4 +45,7 @@ export const actStepMessages = ({
           ? [{ role: "user" as const, content: analysisContext }]
           : []),
         { role: "user", content: projection },
+        ...(harnessBlock
+          ? [{ role: "user" as const, content: harnessBlock }]
+          : []),
       ];
