@@ -9,6 +9,7 @@ import {
   type ReadChannel,
 } from "./component-descriptor.js";
 import { validateReadEvidence, type ReadEvidence } from "./contracts.js";
+import { decodeQueryPart } from "./resource-inventory.js";
 
 export type ChannelReadInput = {
   evidence_id: string;
@@ -78,27 +79,6 @@ const maskParams = (params: string): { text: string; hit: boolean } => {
     })
     .join("&");
   return { text, hit };
-};
-
-// Query-part decoder for inspection only. Never throws: failures and
-// leftover encodings report sensitive so callers redact explicitly.
-const decodeQueryPart = (
-  part: string,
-): { text: string; ok: boolean; sensitive: boolean } => {
-  let text = part;
-  for (let round = 0; round < 3; round += 1) {
-    if (!/%[0-9A-Fa-f]{2}/.test(text))
-      return { text, ok: true, sensitive: false };
-    try {
-      // `+` is a space in query strings; decodeURIComponent leaves it.
-      text = decodeURIComponent(text.replace(/\+/g, " "));
-    } catch {
-      return { text: part, ok: false, sensitive: true };
-    }
-  }
-  if (/%[0-9A-Fa-f]{2}/.test(text))
-    return { text: part, ok: false, sensitive: true };
-  return { text, ok: true, sensitive: false };
 };
 const URL_WITH_QUERY = /\bhttps?:\/\/[^\s?#]*\?/;
 const maskUrlQuery = (value: string): { value: string; hit: boolean } => {

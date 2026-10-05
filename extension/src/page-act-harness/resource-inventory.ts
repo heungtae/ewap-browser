@@ -118,6 +118,29 @@ export const buildResourceInventory = (
     },
   );
 
+// Query-part decoder for inspection only. Never throws: failures and
+// leftover encodings report sensitive so callers redact explicitly.
+// Shared with component masking so percent-encoded credential keys cannot
+// bypass either the source-chunk path or the component path.
+export const decodeQueryPart = (
+  part: string,
+): { text: string; ok: boolean; sensitive: boolean } => {
+  let text = part;
+  for (let round = 0; round < 3; round += 1) {
+    if (!/%[0-9A-Fa-f]{2}/.test(text))
+      return { text, ok: true, sensitive: false };
+    try {
+      // `+` is a space in query strings; decodeURIComponent leaves it.
+      text = decodeURIComponent(text.replace(/\+/g, " "));
+    } catch {
+      return { text: part, ok: false, sensitive: true };
+    }
+  }
+  if (/%[0-9A-Fa-f]{2}/.test(text))
+    return { text: part, ok: false, sensitive: true };
+  return { text, ok: true, sensitive: false };
+};
+
 export const maskSourceChunk = (
   text: string,
 ): { text: string; categories: string[]; redacted_count: number } => {
@@ -143,10 +166,20 @@ export const maskSourceChunk = (
 // the next line, is still sensitive and must not leak through a partial read.
 export const classifySensitiveLines = (body: string): boolean[] => {
   const lines = body.split("\n");
-  return lines.map((line, index) => {
+  // Keyword hits include percent-encoded spellings: decode each line for
+  // inspection so `%74oken` counts exactly like `token`. The continuation
+  // rule below keys off the same per-line verdict, so an encoded keyword
+  // line also shields the value stranded on the next line.
+  const keywordHit = lines.map((line) => {
     if (CREDENTIAL_LIKE.test(line)) return true;
+    const decoded = decodeQueryPart(line);
+    return (
+      decoded.sensitive || (decoded.ok && CREDENTIAL_LIKE.test(decoded.text))
+    );
+  });
+  return lines.map((line, index) => {
+    if (keywordHit[index]) return true;
     if (index === 0) return false;
-    const prev = lines[index - 1] ?? "";
-    return CREDENTIAL_LIKE.test(prev) && VALUE_LIKE.test(line);
+    return keywordHit[index - 1] === true && VALUE_LIKE.test(line);
   });
 };

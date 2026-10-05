@@ -432,13 +432,13 @@ export const harnessFirstPayloadBlock = (opts: {
   `[HARNESS_CONTEXT]\nrequest_revision: ${opts.requestRevision}\ndocument_epoch: ${opts.documentEpoch}\ncoverage: ${opts.coverageNote}\nread_tools: ${opts.readTools.join(",")}\n[/HARNESS_CONTEXT]`;
 
 export type WorkflowReviewGateResult =
-  | { proceed: true; note?: string }
+  | { proceed: true }
   | { proceed: false; message: string };
 
 // First-turn gate for workflow sessions started from a user selection: an
 // LLM suitability review (original request + current page + candidate facts,
-// with read tools) runs BEFORE any step tool is offered. match/partial
-// consume the single-use review approval and proceed; mismatch/needs_context
+// with read tools) runs BEFORE any step tool is offered. Only match consumes
+// the single-use review approval and proceeds; partial/mismatch/needs_context
 // (or any gate failure) ends in a user clarification with zero mutations.
 // Nothing here executes, narrows, or rewrites the stored workflow.
 export const runWorkflowReviewGate = async (opts: {

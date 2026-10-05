@@ -537,4 +537,66 @@ describe("act harness turns", () => {
     expect(userMessage).toContain("branches:");
     expect(userMessage).toContain("request_revision 1");
   });
+
+  it("distinguishes_same_title_candidates_by_target_in_the_payload", async () => {
+    // F2 repro shape: same candidate id/title/tool names, different click
+    // targets. The two review payloads must differ before the shared
+    // projection so a model can tell them apart.
+    const runWithTarget = async (targetName: string): Promise<string> => {
+      const seen: ProviderMessage[] = [];
+      const session = {
+        ...baseSession(),
+        workflow: {
+          declaration: {
+            schema_version: 1 as const,
+            id: "preview-v1",
+            title: "Preview",
+            steps: [
+              {
+                id: "step-aaaaaaaaaaaaaa1",
+                tool: "click_by_ref" as const,
+                target: { role: "button" as const, name: targetName },
+              },
+            ],
+          },
+          step: {
+            id: "step-aaaaaaaaaaaaaa1",
+            tool: "click_by_ref" as const,
+            target: { role: "button" as const, name: targetName },
+          },
+          count: 0,
+        },
+      };
+      await runWorkflowReviewGate({
+        chat: async (messages: ProviderMessage[]) => {
+          seen.push(...messages);
+          return {
+            content: "",
+            tool_calls: [reviewCall("call-aaaaaaaaaaaaaaaa", "mismatch")],
+          };
+        },
+        session,
+        projection: PROJECTION,
+        serialise: JSON.stringify,
+        readTools: [],
+        executeRead: async () => {
+          throw new Error("must not be called");
+        },
+        expectedRevision: 1,
+        runId: "run-gcdefghijklmnopqrs",
+        publishDelta: () => undefined,
+      });
+      return seen.find((message) => message.role === "user")?.content ?? "";
+    };
+    const forReviewed = await runWithTarget("Mark reviewed");
+    const forMenu = await runWithTarget("Open menu");
+    expect(forReviewed).not.toBe(forMenu);
+    const summaryOf = (payload: string, target: string): void => {
+      const summary = payload.split("Binding:")[0] ?? "";
+      expect(summary).toContain(target);
+    };
+    summaryOf(forReviewed, "Mark reviewed");
+    summaryOf(forMenu, "Open menu");
+    expect(forReviewed.split("Binding:")[0]).not.toContain("Open menu");
+  });
 });

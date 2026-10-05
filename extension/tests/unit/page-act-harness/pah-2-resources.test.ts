@@ -372,4 +372,88 @@ describe("PAH-2 resource inventory and partial reads", () => {
     expect(complete).toBe(false);
     expect(hits[0]?.excerpt.length ?? 0).toBeLessThanOrEqual(200);
   });
+
+  it("redacts_percent_encoded_credential_keys_in_chunks_and_search", () => {
+    // Synthetic value carries no credential keyword by itself; only the
+    // decoded key (`%74oken` -> `token`) marks the line sensitive.
+    const marker = "Qs7K9m2Zx4Pv8Lw0Nq5Rt6Y";
+    const body = [
+      "const endpoint = 'https://app.test/cb';",
+      `fetch(endpoint + '?%74oken=${marker}');`,
+      "// 100%25 off today",
+    ].join("\n");
+    const storeBase = {
+      resource_id: "script-inline-aaaaaaa1",
+      revision: "rev-bbbbbbbbbbbbbbb1",
+      kind: "inline_script",
+      body,
+      consent: "GRANTED" as const,
+      readable: true,
+    };
+    const inputBase = {
+      evidence_id: "ev-read-abcdefghijklmnop",
+      request_revision: 1,
+      binding_revision: "epoch-abcdefghijklmnop",
+      resource_id: "script-inline-aaaaaaa1",
+      current_revision: "rev-bbbbbbbbbbbbbbb1",
+    };
+    const read = readResourceChunk(storeBase, {
+      ...inputBase,
+      offset: 0,
+      max_bytes: 2000,
+    });
+    const text = JSON.stringify(read.content);
+    expect(text).not.toContain(marker);
+    expect(text).toContain("[REDACTED:credential-like]");
+    expect(text).toContain("// 100%25 off today");
+    expect(read.masking.redacted_count).toBeGreaterThan(0);
+    expect(read.masking.categories).toEqual(["credential-like"]);
+
+    // A value stranded on the line after an ENCODED key is shielded too.
+    const stranded = readResourceChunk(
+      { ...storeBase, body: `?%74oken\n${marker}\n// done` },
+      { ...inputBase, offset: 0, max_bytes: 2000 },
+    );
+    expect(JSON.stringify(stranded.content)).not.toContain(marker);
+
+    const { hits } = searchAllowedSources(
+      [
+        {
+          resource_id: "script-inline-aaaaaaa1",
+          revision: "rev-bbbbbbbbbbbbbbb1",
+          kind: "inline_script",
+          body,
+          consent: "GRANTED",
+          readable: true,
+        },
+      ],
+      "fetch(endpoint",
+    );
+    expect(hits.length).toBe(1);
+    expect(hits[0]?.excerpt ?? "").not.toContain(marker);
+  });
+
+  it("redacts_undecodable_percent_sequences_explicitly", () => {
+    const read = readResourceChunk(
+      {
+        resource_id: "script-inline-aaaaaaa1",
+        revision: "rev-bbbbbbbbbbbbbbb1",
+        kind: "inline_script",
+        body: "const q = '%E0%A4%A=1';",
+        consent: "GRANTED",
+        readable: true,
+      },
+      {
+        evidence_id: "ev-read-abcdefghijklmnop",
+        request_revision: 1,
+        binding_revision: "epoch-abcdefghijklmnop",
+        resource_id: "script-inline-aaaaaaa1",
+        offset: 0,
+        max_bytes: 200,
+        current_revision: "rev-bbbbbbbbbbbbbbb1",
+      },
+    );
+    expect(JSON.stringify(read.content)).not.toContain("%E0%A4%A");
+    expect(read.masking.redacted_count).toBeGreaterThan(0);
+  });
 });

@@ -199,5 +199,27 @@
   - 강제 무관 선택 partial: `submit_review:partial` 1회 후 propose 0회,
     페이지 무변화 (F1 종료 기준 충족).
 - 잔여: live Provider·실제 모델 추론, Platform/workspace 통합,
-  inventory/component 읽기 도구의 Act 루프 편입, 기존 ACT_APPROVE 실행
-  경로의 저장소 승인 교체, 기존 문서 동기화 (사용자 확인 후).
+  inventory/component 읽기 도구의 Act 루프 편입, 기존 ACT_APPROVE
+  실행 경로의 저장소 승인 교체, 기존 문서 동기화 (사용자 확인 후).
+
+## F1–F5 종료 기준 재검증 하드닝 (2026-10-05)
+
+- F3 확장: percent-encoded 검사가 component 경로에만 있어 동일 우회가
+  source chunk·검색 발췌 경로에 잔존함을 확인. `decodeQueryPart`를
+  `resource-inventory.ts`로 이동해 양 경로가 단일 검사 로직을 공유하고,
+  `classifySensitiveLines`가 인코딩된 키워드 줄과 다음 줄 값을 함께
+  가린다. chunk·검색 단위 테스트 추가 (인코딩 키·디코딩 실패·benign 보존).
+- F1 runner partial 테스트 추가 (문서 repro 그대로: Search 요청 +
+  Preview 선택 + partial → CLARIFICATION, dispatch 없음).
+- F2 구별 가능성 테스트 추가 (동일 ID·title·도구명, 대상만 다른 두 선언의
+  검토 payload가 다르고 각 대상을 요약에 포함).
+- F4 narrowing 테스트를 실제 생성값(`request_revision: 1`)으로 정규화.
+- 게이트 dead `note` 필드 제거 및 stale 주석 정정.
+- 검증: `typecheck`·`lint`·`build`·`test:unit`(579 PASS)·`test:fixture`·
+  `test:e2e`·module-boundaries(263 files)·method-trace-coverage PASS.
+- 실제 Chrome: targeted 3건 PASS, 강제 mismatch/partial 모두 review
+  1회 후 propose 0회·페이지 무변화, 전체 20/20 PASS 2회.
+  동일 빌드에서 17/20 1회 발생 (workflow+menu+reviewed 동시 실패,
+  전후 동일 조건 재실행 PASS) — 제품 코드 변경 없이 해소되어 환경
+  플레이크로 기록. 릴리스 게이트용 반복 실행·원인 추적은 별도 작업으로
+  권장 (기존 플레이크 관찰과 동일).
