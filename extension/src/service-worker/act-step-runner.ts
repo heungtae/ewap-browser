@@ -367,14 +367,21 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             rounds: loop.rounds,
             reads: loop.reads,
           });
-          if (!loop.content) return fail("PROVIDER_UNAVAILABLE");
+          // Budget cause is independent of the last model body: an empty
+          // body still means INCOMPLETE/BUDGET_EXHAUSTED, never a provider
+          // outage. The provider path throws PROVIDER_UNAVAILABLE on
+          // transport failure; this branch is reached only after successful
+          // reads were cut off by the budget.
+          const budgetNote = `읽기 budget을 소진해 ${loop.reads}회 읽고 중단했습니다(라운드 ${loop.rounds}회). 목표는 아직 확인되지 않았습니다. 더 읽어야 하면 "계속 읽어줘"라고 답하면 같은 페이지에서 이어서 확인합니다.`;
+          if (loop.content) {
+            dependencies.publish(run.id, {
+              type: "assistant_delta",
+              text: loop.content,
+            });
+          }
           dependencies.publish(run.id, {
             type: "assistant_delta",
-            text: loop.content,
-          });
-          dependencies.publish(run.id, {
-            type: "assistant_delta",
-            text: `읽기 budget을 소진해 ${loop.reads}회 읽고 중단했습니다(라운드 ${loop.rounds}회). 목표는 아직 확인되지 않았습니다. 더 읽어야 하면 "계속 읽어줘"라고 답하면 같은 페이지에서 이어서 확인합니다.`,
+            text: budgetNote,
           });
           dependencies.coordinator.runs.terminal(
             run.id,
@@ -394,7 +401,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           return {
             ok: true,
             state: "INCOMPLETE",
-            message: loop.content,
+            message: loop.content || budgetNote,
             reason: "BUDGET_EXHAUSTED",
             reads: loop.reads,
             rounds: loop.rounds,

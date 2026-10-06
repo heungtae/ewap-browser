@@ -471,17 +471,18 @@ export const runWorkflowReviewGate = async (opts: {
       if (!workflow || review?.status !== "PENDING_REVIEW")
         throw fail("INVALID_ARGUMENT");
       const stepTool = EXECUTOR_TO_PROPOSE[workflow.step.tool];
-      // Full step detail (bounded): targets, order, and branch conditions
-      // are what distinguish same-title candidates, so all of them travel.
-      // Labels are page-visible text at the same trust level as the
-      // projection; control characters are stripped and each field is
-      // length-capped. Unread steps never count as evidence (see prompt).
+      // Full step detail (bounded): ids, targets, order, default next, and
+      // branch when+next pairs are what distinguish same-title candidates,
+      // so all of them travel. Labels are page-visible text at the same
+      // trust level as the projection; control characters are stripped and
+      // each field is length-capped. Unread steps never count as evidence
+      // (see prompt).
       const summarizeStep = (step: {
         id: string;
         tool: string;
         target: { role: string; name: string };
         next?: string;
-        branches?: Array<{ when: unknown }>;
+        branches?: Array<{ when: unknown; next: string }>;
       }): string => {
         const clean = (value: string): string =>
           value
@@ -494,10 +495,73 @@ export const runWorkflowReviewGate = async (opts: {
             .replace(/\s+/g, " ")
             .trim()
             .slice(0, 160);
+        // Meaning-preserving branch condition: kind/target/field/expected
+        // must survive long labels. Cutting the whole JSON at 160 chars can
+        // drop `expected` (true/false), so each field is capped separately
+        // and truncation is marked instead of silently dropping semantics.
+        // A truncated condition must not be treated as fully read (see
+        // system prompt: unread material never supports a match).
+        const summarizeWhen = (when: unknown): string => {
+          const cleanRaw = (value: string): string =>
+            value
+              .split("")
+              .map((character) => {
+                const code = character.charCodeAt(0);
+                return code <= 31 || code === 127 ? " " : character;
+              })
+              .join("")
+              .replace(/\s+/g, " ")
+              .trim();
+          const cap = (value: string, max: number): string => {
+            const raw = cleanRaw(value);
+            return raw.length > max
+              ? `${raw.slice(0, max)}…[+${raw.length - max} truncated]`
+              : raw;
+          };
+          if (typeof when === "object" && when !== null) {
+            const cond = when as Record<string, unknown>;
+            if (
+              cond.kind === "last_option_equals" &&
+              typeof cond.value === "string"
+            )
+              return `last_option=="${cap(cond.value, 80)}"`;
+            if (
+              cond.kind === "target_state" &&
+              typeof cond.field === "string" &&
+              typeof cond.expected === "boolean"
+            ) {
+              const target = cond.target as
+                | { role?: unknown; name?: unknown }
+                | undefined;
+              // role/field are enum-constrained upstream, but sanitize for
+              // consistency with name/value (same trust level as projection).
+              const role =
+                typeof target?.role === "string"
+                  ? cleanRaw(target.role).slice(0, 20)
+                  : "unknown";
+              const field = cleanRaw(cond.field).slice(0, 20);
+              const name =
+                typeof target?.name === "string" ? cap(target.name, 80) : "?";
+              return `${role} "${name}" ${field}==${cond.expected}`;
+            }
+          }
+          let raw: string;
+          try {
+            raw = JSON.stringify(when) ?? "unknown";
+          } catch {
+            raw = "unserializable-condition";
+          }
+          return raw.length > 160
+            ? `${raw.slice(0, 160)}…[+${raw.length - 160} truncated]`
+            : raw;
+        };
         const branches = (step.branches ?? [])
-          .map((branch) => JSON.stringify(branch.when).slice(0, 160))
+          .map(
+            (branch) =>
+              `when ${summarizeWhen(branch.when)} -> ${clean(branch.next).slice(0, 80)}`,
+          )
           .join("; ");
-        return `[${step.tool}] target ${step.target.role} "${clean(step.target.name)}"${step.next ? ` -> ${step.next}` : ""}${branches ? ` branches: ${branches}` : ""}`;
+        return `[${step.tool}] id "${clean(step.id).slice(0, 80)}" target ${step.target.role} "${clean(step.target.name)}"${step.next ? ` -> ${clean(step.next).slice(0, 80)}` : ""}${branches ? ` branches: ${branches}` : ""}`;
       };
       const candidateSummary = [
         `candidate ${review.candidate_id} (source ${review.source}):`,

@@ -57,11 +57,15 @@ const maskParams = (params: string): { text: string; hit: boolean } => {
       // the pair cannot be proven benign, so it is redacted explicitly.
       const decodedKey = decodeQueryPart(key);
       const decodedVal = decodeQueryPart(val);
-      // Key-side match (raw or decoded), a credential-looking value, or an
-      // opaque secret under a generic key (e.g. OAuth `code=4/0AZ...`).
+      // Key-side match (raw or decoded), value decode failure/residue
+      // (fail-closed: cannot prove benign), a credential-looking value, or
+      // an opaque secret under a generic key (e.g. OAuth `code=4/0AZ...`).
       if (
         SENSITIVE_KEY.test(key) ||
         decodedKey.sensitive ||
+        !decodedKey.ok ||
+        decodedVal.sensitive ||
+        !decodedVal.ok ||
         (decodedKey.ok && SENSITIVE_KEY.test(decodedKey.text)) ||
         (SENSITIVE_KEY.test(val) && SECRET_VALUE.test(val)) ||
         (decodedVal.ok &&
