@@ -293,10 +293,12 @@ try {
   )
     throw new Error("Act answer-only result not diagnosable");
   if (
-    !JSON.stringify(route).includes("저장 버튼을 눌러줘") ||
+    route?.detail?.data?.prompt?.masked !== "[MASKED:sensitive_field]" ||
+    !(route?.detail?.data?.prompt?.count > 0) ||
+    JSON.stringify(route).includes("저장 버튼을 눌러줘") ||
     JSON.stringify(route).includes("DIAGNOSTICS_SECRET_PROMPT")
   )
-    throw new Error("Act request meaning/masking not preserved");
+    throw new Error("Act request masking metadata not preserved");
   await evaluate(
     panel,
     "document.querySelector('#execution-details').open = true",

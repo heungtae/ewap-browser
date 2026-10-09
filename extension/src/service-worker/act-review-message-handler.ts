@@ -1,9 +1,13 @@
+import { decideSourceConsent } from "./source-consent.js";
 import { ContractError } from "../security/validation.js";
 import { exactKeys } from "./runtime-message-router.js";
 import type { BrowserSender } from "./browser-api.js";
 
 type Respond = (response: unknown) => void;
-type Session = { proposal?: { id: string } };
+type Session = {
+  proposal?: { id: string };
+  awaitingClarification?: { clarificationId: string };
+};
 type Result = { ok?: boolean };
 type Dependencies = {
   isPanelSender(sender: BrowserSender): boolean;
@@ -32,7 +36,12 @@ export const createActReviewMessageHandler = (dependencies: Dependencies) => {
     session: Session | undefined,
   ): boolean =>
     typeof (message as { proposal_id?: unknown }).proposal_id === "string" &&
-    session?.proposal?.id === (message as { proposal_id: string }).proposal_id;
+    (session?.proposal?.id ===
+      (message as { proposal_id: string }).proposal_id ||
+      // PAH-9 clarification answers reuse the value-card channel: the card
+      // carries the clarification id, not an execution proposal id.
+      session?.awaitingClarification?.clarificationId ===
+        (message as { proposal_id: string }).proposal_id);
   const respondResult = (promise: Promise<Result>, respond: Respond): void => {
     void promise
       .then((result) => respond(result.ok ? { ok: true } : result))
@@ -45,6 +54,30 @@ export const createActReviewMessageHandler = (dependencies: Dependencies) => {
       respond: Respond,
     ): { handled: boolean; keepAlive?: boolean } {
       const kind = (message as { kind?: unknown }).kind;
+      if (kind === "SOURCE_CONSENT_DECISION") {
+        const value = message as {
+          request_id?: unknown;
+          run_id?: unknown;
+          allowed?: unknown;
+        };
+        const valid =
+          dependencies.isPanelSender(sender) &&
+          exactKeys(message, ["kind", "request_id", "run_id", "allowed"]) &&
+          typeof value.request_id === "string" &&
+          typeof value.run_id === "string" &&
+          typeof value.allowed === "boolean";
+        respond(
+          valid &&
+            decideSourceConsent(
+              value.request_id as string,
+              value.run_id as string,
+              value.allowed as boolean,
+            )
+            ? { ok: true }
+            : dependencies.safeFailure("INVALID_ARGUMENT"),
+        );
+        return { handled: true };
+      }
       if (
         kind !== "ACT_REJECT" &&
         kind !== "ACT_VALUE_SUBMIT" &&

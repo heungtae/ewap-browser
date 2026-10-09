@@ -1,3 +1,9 @@
+import { createActReadToolRegistry } from "./act-read-tool-registry.js";
+import { createSourceReadAnswerGuard } from "./source-read-answer-guard.js";
+import {
+  createPageResourceExecutor,
+  pageResourceToolSchemas,
+} from "./page-resource-tools.js";
 import {
   traceBranch,
   traceDecision,
@@ -41,7 +47,9 @@ export const ACT_HARNESS_READ_TOOL_NAMES: string[] = listActReadTools();
 // tabs_context, or business tools are offered in Act harness reads.
 export const actHarnessReadTools = (): ProviderToolDefinition[] => {
   const names = new Set(ACT_HARNESS_READ_TOOL_NAMES);
-  return askReadTools.filter((tool) => names.has(tool.function.name));
+  return [...askReadTools, ...pageResourceToolSchemas].filter((tool) =>
+    names.has(tool.function.name),
+  );
 };
 
 export type ActHarnessReadAssist = {
@@ -57,7 +65,13 @@ export const createActHarnessReadExecutor = (opts: {
   runId: string;
   signal?: AbortSignal;
   assist: ActHarnessReadAssist;
-}): ((call: ActReadCall) => Promise<unknown>) => {
+  resources?: {
+    documentEpoch: string;
+    requestRevision: number;
+    current(): boolean;
+    consent(resources: string[]): Promise<boolean>;
+  };
+}) => {
   const executor = createAskToolExecutor({
     snapshot: opts.snapshot,
     tabId: opts.tabId,
@@ -71,7 +85,71 @@ export const createActHarnessReadExecutor = (opts: {
     businessBindings: [],
     redactTitle: opts.assist.redactTitle,
   });
-  return (call) => executor.execute({ name: call.name, arguments: call.args });
+  const resources = opts.resources
+    ? createPageResourceExecutor({
+        tabs: opts.assist.tabs,
+        tabId: opts.tabId,
+        ...opts.resources,
+        ...(opts.signal ? { signal: opts.signal } : {}),
+      })
+    : undefined;
+  const registry = createActReadToolRegistry(
+    actHarnessReadTools().map((schema) => {
+      const source = pageResourceToolSchemas.some(
+        (tool) => tool.function.name === schema.function.name,
+      );
+      return {
+        schema,
+        version: 1,
+        resultSchema: source
+          ? {
+              type: "object",
+              required: ["status"],
+              properties: {
+                status: {
+                  type: "string",
+                  enum: [
+                    "AVAILABLE",
+                    "CONSENT_REQUIRED",
+                    "DENIED",
+                    "STALE",
+                    "NOT_FOUND",
+                    "UNSUPPORTED",
+                    "FAILED",
+                    "CANCELLED",
+                    "INCOMPLETE",
+                  ],
+                },
+              },
+              additionalProperties: true,
+            }
+          : { type: "object" },
+        mode: "act",
+        phase: "read",
+        consent:
+          source && schema.function.name !== "list_page_resources"
+            ? "source-disclosure"
+            : "none",
+        binding: "request-document",
+        budget: "read",
+        ...(!source || resources
+          ? {
+              execute: (args: string) =>
+                source
+                  ? resources!.execute({ name: schema.function.name, args })
+                  : executor.execute({
+                      name: schema.function.name,
+                      arguments: args,
+                    }),
+            }
+          : {}),
+      };
+    }),
+  );
+  return Object.assign((call: ActReadCall) => registry.execute(call), {
+    tools: registry.tools,
+    bootstrap: resources?.bootstrap,
+  });
 };
 
 export type HarnessChat = (
@@ -86,6 +164,7 @@ export type HarnessReadTurnResult = {
   rounds: number;
   reads: number;
   exhausted: boolean;
+  incompleteReason?: "SOURCE_SEARCH_INCOMPLETE";
 };
 
 // Provider read loop bound to one request revision. The caller pins every
@@ -106,6 +185,8 @@ export const runHarnessReadTurns = async (opts: {
   serialise(value: unknown): string;
   expectedRevision: number;
   maxRounds?: number;
+  maxReads?: number;
+  sourceReadOnly?: boolean;
   isCancelled?: (() => boolean) | undefined;
 }): Promise<HarnessReadTurnResult> =>
   traceMethod(
@@ -120,6 +201,9 @@ export const runHarnessReadTurns = async (opts: {
       const expectedRevision = opts.expectedRevision;
       const readable = new Set(opts.readNames);
       const seen = new Set<string>();
+      const sourceGuard = opts.sourceReadOnly
+        ? createSourceReadAnswerGuard()
+        : undefined;
       let rounds = 0;
       let reads = 0;
       let content = "";
@@ -130,7 +214,7 @@ export const runHarnessReadTurns = async (opts: {
         }
         const budget = checkBudget({
           max_turns: maxRounds,
-          max_reads: 99,
+          max_reads: opts.maxReads ?? 24,
           used_turns: rounds,
           used_reads: reads,
         });
@@ -149,6 +233,7 @@ export const runHarnessReadTurns = async (opts: {
           };
         }
         const response = await opts.chat(opts.messages, opts.offeredTools);
+        if (opts.isCancelled?.()) throw fail("TARGET_STALE");
         rounds += 1;
         content = response.content;
         const mapped = response.tool_calls.map((call) => {
@@ -207,6 +292,25 @@ export const runHarnessReadTurns = async (opts: {
         const readCalls = mapped.filter((call) => readable.has(call.name));
         const otherCalls = mapped.filter((call) => !readable.has(call.name));
         if (readCalls.length === 0) {
+          const correction =
+            otherCalls.length === 0 ? sourceGuard?.review() : undefined;
+          if (correction) {
+            // Suppress the unsupported final body. A bounded model correction
+            // gets the technical coverage fact, never an automatically chosen call.
+            content = "";
+            if (correction.stop)
+              return {
+                messages: opts.messages,
+                calls: [],
+                content,
+                rounds,
+                reads,
+                exhausted: false,
+                incompleteReason: "SOURCE_SEARCH_INCOMPLETE",
+              };
+            opts.messages.push({ role: "system", content: correction.message });
+            continue;
+          }
           // Pure non-read turn (answer, submit_review, proposal, or a
           // hallucinated name): the caller rules on it, this loop doesn't.
           traceDecision("page-act-harness.read_loop.non_read", {
@@ -223,6 +327,15 @@ export const runHarnessReadTurns = async (opts: {
             exhausted: false,
           };
         }
+        if (reads + readCalls.length > (opts.maxReads ?? 24))
+          return {
+            messages: opts.messages,
+            calls: [],
+            content,
+            rounds,
+            reads,
+            exhausted: true,
+          };
         opts.messages.push({
           role: "assistant",
           content: response.content,
@@ -245,9 +358,14 @@ export const runHarnessReadTurns = async (opts: {
               });
             } catch (error) {
               result = {
+                status: "FAILED",
+                code:
+                  error instanceof ContractError ? error.code : "READ_FAILED",
                 error: error instanceof Error ? error.message : "READ_FAILED",
               };
             }
+            if (opts.isCancelled?.()) throw fail("TARGET_STALE");
+            sourceGuard?.observe(call.name, call.arguments, result);
             reads += 1;
             opts.messages.push({
               role: "tool",
@@ -365,6 +483,7 @@ export const runSuitabilityReview = async (opts: {
   executeRead: (call: ActReadCall) => Promise<unknown>;
   expectedRevision: number;
   maxRounds?: number;
+  maxReads?: number;
   isCancelled?: (() => boolean) | undefined;
 }): Promise<SuitabilityVerdict> =>
   traceMethod(
@@ -452,6 +571,7 @@ export const runWorkflowReviewGate = async (opts: {
   runId: string;
   publishDelta(text: string): void;
   maxRounds?: number;
+  maxReads?: number;
   isCancelled?: (() => boolean) | undefined;
   // Fresh binding check right before an approval is consumed: re-reads the
   // page and confirms document epoch and origin. Absent (tests) means the

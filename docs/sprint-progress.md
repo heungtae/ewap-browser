@@ -242,3 +242,44 @@ npx --yes node@22.23.2 scripts/chrome-preview-e2e.mjs
 
 S9의 현재 Linux clean-profile·upgrade/rollback 결과는 위의
 [2026-09-26 증거](evidence/s9-closure-2026-09-26.md)를 따른다.
+
+## Browser Act S15 / PAH-9 — 2026-10-08
+
+In Progress. 전체값 승인 표시, 같은 run의 clarification continuation, Chat Completions
+전송 계약, 원본 값의 trace/ZIP 마스킹을 보완했다. 통제 Provider+실제 Chrome 6/6,
+각 사례의 실제 ZIP CRC/SHA-256 및 원문 부재를 확인했다. live Provider의 질문 선택·
+후속 종료·holdout 완주가 미통과라 Completed로 변경하지 않는다. 기존 Managed
+Enterprise Release S15 Planned 상태는 별도 범위로 유지한다.
+
+- [구현·검증 기록](evidence/s15-pah-9-closure-2026-10-08.md)
+- [마스킹된 실행 요약](evidence/s15-pah-9-validation-2026-10-08.json)
+
+## Browser Act S16 — 2026-10-08
+
+**In Progress.** 실제 페이지 script inventory, 공통 read registry, 목록·검색·부분 읽기,
+source 동의 UI와 동일 conversation 결과 반환을 구현했다. 자동 테스트 633개와
+S15 입력 Chrome 회귀 6개를 통과했다. 최종 live 전체 경로는 미통과이며 마지막 Provider 호출은 HTTP 429였다.
+[구현·검증 증거](evidence/s16-script-tool-loop-2026-10-08.md)를 따른다.
+S15 / PAH-9 In Progress와 S17~S20 Planned는 유지한다.
+
+### S16 live 재검증 — 2026-10-09
+
+**In Progress 유지.** OpenRouter의 `nvidia/nemotron-3.5-lightning:free`로 실행했다.
+Provider 요청 12개는 모두 HTTP 200이었고 실제 목록·검색 결과 반환과 소스 동의를 확인했다.
+모델은 인자 타입·cursor 오류 이후 부분 검색을 전체 검색으로 해석했으며,
+`read_page_resource`를 호출하지 않고 대상 함수가 없다는 부정확한 답변으로 종료했다.
+live 전체 경로는 FAIL이며 이번 실행의 진단 ZIP 검사는 미실행이다.
+[수정 전 live 증거](evidence/s16-live-nemotron-2026-10-09.md)를 따른다.
+
+### S16 live 실패 수정·완료 — 2026-10-09
+
+**Completed — Browser-local.** Provider의 optional primitive schema, 도구·query별
+continuation 인자와 누적 검색 진행 수, 빈 부분 검색의 답변 재검토/INCOMPLETE 처리,
+모델이 인용한 코드의 진단 마스킹을 보완했다.
+`nvidia/nemotron-3.5-lightning:free`의 실제 요청 10개가 모두 HTTP 200이었고,
+목록→검색 4페이지→부분 읽기→계산 설명→진단 ZIP 검사를 통과했다.
+자동 테스트 645개, S16 Chrome 6개, S15 입력 Chrome 회귀 6개 PASS.
+보조 파일 크기 검사는 초과 파일 85개로 FAIL이다.
+[최종 수정·검증 증거](evidence/s16-live-tool-loop-fix-2026-10-09.md)를 따른다.
+이전 실패는 이력으로 유지한다. 운영 사이트·임의 Provider·배포 검증은 별도이며
+S15 / PAH-9의 별도 상태와 S17~S20 Planned는 유지한다.

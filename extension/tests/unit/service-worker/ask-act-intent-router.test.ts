@@ -6,6 +6,9 @@ import {
 
 describe("Ask/Act intent router", () => {
   it("accepts only a closed one-field route object", () => {
+    expect(validateActIntentRoute('{"route":"SOURCE_READ_REQUIRED"}')).toBe(
+      "SOURCE_READ_REQUIRED",
+    );
     expect(validateActIntentRoute('{"route":"ACTION_REQUIRED"}')).toBe(
       "ACTION_REQUIRED",
     );

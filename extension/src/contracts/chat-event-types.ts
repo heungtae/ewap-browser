@@ -28,6 +28,13 @@ export type ChatActionView = {
   approval_reason?: string;
   origin?: string;
   suggested_value?: string;
+  // Full ephemeral approval value, bounded by the 4096-character input contract.
+  suggested_value_length?: number;
+  suggested_value_truncated?: boolean;
+  // F3: tail excerpt and whole-value fingerprint for capped displays, so
+  // equal-length values with different tails stay distinguishable.
+  suggested_value_tail?: string;
+  suggested_value_digest?: string;
   workflow_title?: string;
   workflow_step?: number;
   workflow_total?: number;
@@ -67,6 +74,12 @@ export type ChatEventPayload =
       action: ChatActionView;
       confirmation_id: string;
       confirmation_nonce: string;
+    }
+  | {
+      type: "source_consent_required";
+      request_id: string;
+      resource_count: number;
+      host: string;
     }
   | { type: "run_terminal"; outcome: Outcome; code?: string };
 export type ChatEvent = ChatEventPayload & {

@@ -2,7 +2,7 @@
 
 - 작성일: 2026-10-04
 - 상태: unit/contract slice 완료. live Provider + Chrome 실행은 미검증.
-- 기준: `docs/page-act-context-harness-design.md`, `docs/sprint-page-act-context-harness-plan.md`
+- 기준: `docs/34-page-act-context-harness-design.md`, `docs/sprint-page-act-context-harness-plan.md`
 - 원칙: 기존 문서 동기화는 사용자 확인 전 수행하지 않음 (동기화 검토 목록 유지).
 
 ## 공통

@@ -7,7 +7,7 @@ const knownSecrets = new Set<string>();
 const credentialKey =
   /(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key)/i;
 const privateKey =
-  /^(?:.*(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key|nonce)|function_paths|function_name|functionPath|functionPaths|functionName|entrypoint|raw_result|source_text|record|row|cell|chunk|headers?|value|raw|records|rows|cells|cursor|selector|locator|endpoint|function_path|ref_id|source_ref|candidate_ref|data_url|image|source|html|script|textContent|innerHTML|host|hostname|origin|path|url|token|refId|targetRefId|document_id|documentEpoch|document_epoch|page_scope_epoch|profile_jws|jws|text_value|input_value)$/i;
+  /^(?:.*(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key|nonce)|function_paths|function_name|functionPath|functionPaths|functionName|entrypoint|raw_result|source_text|excerpt|record|row|cell|chunk|headers?|value|raw|records|rows|cells|cursor|selector|locator|endpoint|function_path|ref_id|source_ref|candidate_ref|data_url|image|source|html|script|textContent|innerHTML|host|hostname|origin|path|url|token|refId|targetRefId|document_id|documentEpoch|document_epoch|page_scope_epoch|profile_jws|jws|text_value|input_value|suggested_value|suggested_value_tail|prompt|question|answer|response_text|text|approval_reason|approvalReason|rationale|reasoning|reasoning_details)$/i;
 /** No getters, DOM values, arbitrary class internals or collection cells are read. */
 export const maskTraceValue = (
   input: unknown,
@@ -116,7 +116,7 @@ export const maskTraceValue = (
             collect(parsed);
             return `[${tag}]\n${JSON.stringify(visit(parsed, `${path}.${tag}`, depth + 1))}\n[/${tag}]`;
           } catch {
-            return whole;
+            return `[${tag}]${mark(path, "unstructured_context")}[/${tag}]`;
           }
         },
       );
@@ -168,7 +168,16 @@ export const maskTraceValue = (
         continue;
       }
       const child: unknown = descriptor.value;
-      if (privateKey.test(key)) {
+      // User/provider prose can echo arbitrary input values. Keep structured
+      // untrusted contexts inspectable through their field-level masking.
+      const prose =
+        typeof child === "string" &&
+        ((key === "content" &&
+          !/^\[(UNTRUSTED_[A-Z_]+)\][\s\S]*\[\/\1\]$/.test(child)) ||
+          ["result", "detail", "body", "delta", "message", "query"].includes(
+            key,
+          ));
+      if (privateKey.test(key) || prose) {
         result[safeKey] = {
           masked: mark(fieldPath, "sensitive_field"),
           ...(typeof child === "string" || Array.isArray(child)

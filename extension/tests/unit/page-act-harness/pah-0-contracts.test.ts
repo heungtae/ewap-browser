@@ -95,6 +95,8 @@ describe("PAH-0 internal contracts", () => {
 
   it("rejects_non_opaque_ids_for_request_binding_inventory_and_resource", () => {
     expect(isOpaqueId("request-abcdefghijklmnop")).toBe(true);
+    expect(isOpaqueId("_base64url-abcdefghijklmnop")).toBe(true);
+    expect(isOpaqueId("-base64url-abcdefghijklmnop")).toBe(true);
     expect(isOpaqueId("http://x/y?z=1")).toBe(false);
     expect(() =>
       validateBootstrapEnvelope({

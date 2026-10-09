@@ -1,6 +1,8 @@
 import type { ModelActionProposal } from "../contracts/types.js";
 import type { Role } from "../contracts/core-types.js";
 import { digestCanonical } from "../security/canonical.js";
+import { traceDecision } from "../diagnostics/method-trace.js";
+import { isSensitive } from "../security/redaction.js";
 import type {
   ActionDefinition,
   ReadyExecution,
@@ -37,7 +39,61 @@ export const prepareActProposal = (
   run: Run,
   proposal: ParsedActProposal,
   target: Target,
+  expectedRequestRevision?: number,
 ): Prepared => {
+  // PAH-9: LLM-judged values bind to the approved proposal. A clear value
+  // rides with the proposal (no extra value card); a missing value in the
+  // harness path is a contract error for the model, never an automatic card.
+  // The legacy target-only card remains only when no harness revision binds
+  // this turn (pre-harness callers and existing unit paths).
+  const isTextOrOption =
+    proposal.tool === "set_text_by_ref" ||
+    proposal.tool === "select_option_by_ref";
+  if (isTextOrOption && isSensitive(target.role, target.name)) {
+    traceDecision("page-act-harness.value.blocked", {
+      tool: proposal.tool,
+      request_revision: expectedRequestRevision ?? null,
+    });
+    return { response: { ok: false, code: "TARGET_NOT_ACTIONABLE" } };
+  }
+  if (
+    proposal.tool === "set_text_by_ref" &&
+    proposal.value === undefined &&
+    expectedRequestRevision !== undefined
+  ) {
+    traceDecision("page-act-harness.value.missing", {
+      request_revision: expectedRequestRevision,
+    });
+    return { response: { ok: false, code: "VALUE_BINDING_INVALID" } };
+  }
+  // PAH-9/R5: the option schema leaves value_source_revision optional so
+  // schema-valid calls parse, but a harness-bound option value without its
+  // source revision cannot prove freshness — a model contract error, never
+  // an automatic card or a guessed binding.
+  if (
+    proposal.tool === "select_option_by_ref" &&
+    proposal.value !== undefined &&
+    proposal.valueSourceRevision === undefined &&
+    expectedRequestRevision !== undefined
+  ) {
+    traceDecision("page-act-harness.value.missing_source", {
+      request_revision: expectedRequestRevision,
+    });
+    return { response: { ok: false, code: "VALUE_BINDING_INVALID" } };
+  }
+  if (
+    isTextOrOption &&
+    proposal.value !== undefined &&
+    proposal.valueSourceRevision !== undefined &&
+    expectedRequestRevision !== undefined &&
+    proposal.valueSourceRevision !== expectedRequestRevision
+  ) {
+    traceDecision("page-act-harness.value.stale_source", {
+      value_source_revision: proposal.valueSourceRevision,
+      request_revision: expectedRequestRevision,
+    });
+    return { response: { ok: false, code: "VALUE_BINDING_INVALID" } };
+  }
   const definition: ActionDefinition = {
     tool: proposal.definition.tool,
     effect: proposal.definition.effect,
@@ -135,14 +191,29 @@ export const prepareActProposal = (
   );
   if (next.state === "AWAITING_VALUE") {
     if (proposal.value) {
-      const afterValue = dependencies.coordinator.mutations.submitValue(
-        run,
-        next.valueSlotId,
-        proposal.value,
-      );
-      return afterValue.state === "READY_TO_EXECUTE"
-        ? { ready: dependencies.coordinator.mutations.executeR1(run) }
-        : { response: { ok: false, code: "CONFIRMATION_INVALID" } };
+      let afterValue;
+      try {
+        afterValue = dependencies.coordinator.mutations.submitValue(
+          run,
+          next.valueSlotId,
+          proposal.value,
+        );
+      } catch {
+        traceDecision("page-act-harness.value.submit_failed", {
+          value_length: [...proposal.value].length,
+          request_revision: expectedRequestRevision ?? null,
+        });
+        return { response: { ok: false, code: "VALUE_BINDING_INVALID" } };
+      }
+      if (afterValue.state !== "READY_TO_EXECUTE")
+        return { response: { ok: false, code: "CONFIRMATION_INVALID" } };
+      traceDecision("page-act-harness.value.bound", {
+        value_length: [...proposal.value].length,
+        has_source_revision: proposal.valueSourceRevision !== undefined,
+        value_source_revision: proposal.valueSourceRevision ?? null,
+        request_revision: expectedRequestRevision ?? null,
+      });
+      return { ready: dependencies.coordinator.mutations.executeR1(run) };
     }
     session.awaitingValue = {
       runId: run.id,

@@ -712,10 +712,30 @@ const actionSummary = (action: ChatActionView): string =>
     : "") +
   (action.suggested_value === undefined
     ? action.target_name + " 작업을 제안했습니다."
-    : action.target_name +
-      "에 '" +
-      action.suggested_value +
-      "' 선택을 제안했습니다.") +
+    : action.tool === "propose_select_option"
+      ? action.target_name +
+        "에 '" +
+        action.suggested_value +
+        "' 선택을 제안했습니다."
+      : action.target_name +
+        "에 '" +
+        action.suggested_value +
+        "' 입력을 제안했습니다. 승인하면 추가 입력 없이 바로 입력됩니다." +
+        (action.suggested_value_truncated === true
+          ? " (앞 " +
+            [...action.suggested_value].length +
+            "자만 표시되며 전체 " +
+            (action.suggested_value_length ??
+              [...action.suggested_value].length) +
+            "자 중 뒷부분이 생략됐습니다." +
+            (action.suggested_value_tail !== undefined
+              ? " 뒷부분 '" + action.suggested_value_tail + "'"
+              : "") +
+            (action.suggested_value_digest !== undefined
+              ? " · 값 지문 " + action.suggested_value_digest
+              : "") +
+            ". 끝까지 확인하고 승인하세요.)"
+          : "")) +
   (action.approval_scope === "session"
     ? " 한 번 승인하면 안전한 후속 단계도 계속 진행합니다."
     : " 이번 단계만 실행합니다." +
@@ -755,6 +775,7 @@ const approveAction = async (action: ChatActionView): Promise<void> => {
   }
 };
 const renderReview = (action: ChatActionView, runId: string): void => {
+  lockDecisionCards(runId, "응답 전달됨");
   const item = card("review", "작업 제안", actionSummary(action));
   const row = actionRow(item);
   let selected = false;
@@ -1487,6 +1508,44 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
   }
   if (event.type === "action_review_required")
     return renderReview(event.action, event.run_id);
+  if (event.type === "source_consent_required") {
+    lockDecisionCards(event.run_id, "처리됨");
+    const item = card(
+      "permission",
+      "페이지 소스 전달 동의",
+      `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
+    );
+    const row = actionRow(item);
+    let selected = false;
+    const decide = async (allowed: boolean) => {
+      if (selected) return;
+      selected = true;
+      for (const control of row.querySelectorAll<HTMLButtonElement>("button"))
+        control.disabled = true;
+      try {
+        await sendRuntime({
+          kind: "SOURCE_CONSENT_DECISION",
+          request_id: event.request_id,
+          run_id: event.run_id,
+          allowed,
+        });
+        item.dataset.decision = allowed ? "once" : "deny";
+        setStatus(
+          allowed ? "소스를 확인하는 중입니다." : "소스 전달을 거부했습니다.",
+        );
+      } catch (error) {
+        showFailure(error instanceof Error ? error.message : undefined);
+      }
+    };
+    row.append(
+      actionButton("이번 요청에 허용", "primary", () => decide(true)),
+      actionButton("거부", "danger", () => decide(false)),
+    );
+    append(item);
+    trackDecisionCard(event.run_id, item);
+    setStatus("페이지 소스 전달 동의가 필요합니다.");
+    return;
+  }
   if (event.type === "permission_required") {
     lockReview(event.run_id, "권한 대기");
     lockDecisionCards(event.run_id, "처리됨");

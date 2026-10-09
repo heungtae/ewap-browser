@@ -433,6 +433,9 @@ describe("act harness turns", () => {
       "read_page",
       "get_page_text",
       "find",
+      "list_page_resources",
+      "search_page_resources",
+      "read_page_resource",
     ]);
   });
 

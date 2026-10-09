@@ -8,6 +8,7 @@ import {
   sleep,
 } from "./chrome-cdp-utils.mjs";
 import { openAnalysisPanel } from "./chrome-analysis-panel.mjs";
+import { checkDiagnosticsZip } from "./chrome-diagnostics-zip-check.mjs";
 import { createS1Fixture } from "./chrome-s1-fixture.mjs";
 import assert from "node:assert/strict";
 import { resolve, join } from "node:path";
@@ -17,6 +18,8 @@ import {
   checkReading,
 } from "./chrome-example-request-cases.mjs";
 const documented = await exampleRequests();
+const s15Suite = process.env.S15_SUITE === "1";
+const liveModel = process.env.S15_LIVE_MODEL;
 const readingSuite = process.env.EXAMPLE_REQUEST_SUITE === "reading";
 const root = resolve(".");
 const executable = process.env.CHROME_FOR_TESTING_BIN;
@@ -76,7 +79,10 @@ const fixture = await createS1Fixture(
           : html +
               `<script>window.__exampleCalls=0;for(const name of ['appData','gridApi','demoControls']){const descriptors=Object.getOwnPropertyDescriptors(window[name]);for(const d of Object.values(descriptors)){if(typeof d.value==='function'){const original=d.value;d.value=function(...args){window.__exampleCalls++;return original.apply(this,args)}}if(d.get){const original=d.get;d.get=function(){window.__exampleCalls++;return original.call(this)}}}window[name]=Object.defineProperties({},descriptors)}</script>`;
       }
-    : await readFile("examples/accessible-items-demo/index.html", "utf8"),
+    : (await readFile("examples/accessible-items-demo/index.html", "utf8"))
+        .replaceAll(s15Suite ? "Notes" : "__unused__", "Draft annotation")
+        .replaceAll(s15Suite ? 'id="notes"' : "__unused_id__", 'id="memo"')
+        .replaceAll(s15Suite ? 'for="notes"' : "__unused_for__", 'for="memo"'),
   async (req, res, body) => {
     const system = body.messages?.[0]?.content ?? "";
     const projection = body.messages
@@ -87,6 +93,11 @@ const fixture = await createS1Fixture(
       );
     const nodes = projection ? JSON.parse(projection[1]).nodes : [];
     calls.push({
+      clarificationAnswerPresent: body.messages?.some(
+        (m) =>
+          typeof m.content === "string" &&
+          m.content.includes("User clarification answer"),
+      ),
       case: current.id,
       promptMatches: body.messages?.some(
         (m) =>
@@ -111,8 +122,78 @@ const fixture = await createS1Fixture(
       })),
       secret: JSON.stringify(body).includes("not-projected"),
     });
+    const callRecord = calls.at(-1);
+    if (liveModel) {
+      try {
+        const upstream = await fetch(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            },
+            body: JSON.stringify({
+              ...body,
+              model: liveModel,
+              max_tokens: 2048,
+              stream: false,
+            }),
+            signal: AbortSignal.timeout(60000),
+          },
+        );
+        callRecord.upstreamStatus = upstream.status;
+        if (!upstream.ok) {
+          const failure = await upstream.json().catch(() => ({}));
+          callRecord.upstreamReason = failure.error?.message;
+          callRecord.upstreamDetail = failure.error?.metadata?.raw;
+          throw Error(`LIVE_PROVIDER_HTTP_${upstream.status}`);
+        }
+        const result = await upstream.json();
+        callRecord.model = result.model;
+        callRecord.responseText = result.choices[0].message.content;
+        callRecord.responseTools =
+          result.choices[0].message.tool_calls?.map((c) => c.function.name) ??
+          [];
+        return stream(res, result.choices[0].message);
+      } catch (error) {
+        callRecord.upstreamError = String(error);
+        res.writeHead(502, { "content-type": "application/json" });
+        return res.end(JSON.stringify({ error: String(error) }));
+      }
+    }
+    if (current.clarify && current.proposed)
+      return stream(res, { content: "Fixture action complete" });
+    if (
+      current.clarify &&
+      !current.asked &&
+      !system.includes("Classify the user's browser request")
+    ) {
+      current.asked = true;
+      return stream(res, {
+        tool_calls: [
+          {
+            id: "test-question-abcdefghijkl",
+            type: "function",
+            function: {
+              name: "request_clarification",
+              arguments: JSON.stringify({
+                question: "어떤 검색값을 입력할까요?",
+                value_kind: "text",
+              }),
+            },
+          },
+        ],
+      });
+    }
     if (system.includes("Classify the user's browser request"))
       return stream(res, { content: '{"route":"ACTION_REQUIRED"}' });
+    if (current.multiple) {
+      if ((current.proposals ?? 0) >= 2)
+        return stream(res, { content: "Fixture action complete" });
+      current.target = current.proposals ? "Draft annotation" : "Search query";
+      current.value = current.proposals ? "second 'quoted'" : "first ⟪holdout⟫";
+    }
     if (current.mode === "ask")
       return stream(res, {
         content:
@@ -125,7 +206,12 @@ const fixture = await createS1Fixture(
             .map((n) => n.name)
             .join(", "),
       });
-    if (!current.workflow && body.messages?.some((m) => m.role === "tool")) {
+    if (
+      !current.workflow &&
+      body.messages?.some((m) => m.role === "tool") &&
+      !current.clarify &&
+      !current.multiple
+    ) {
       // Harness read loop coverage: after grounding reads, fall through to
       // the proposal once. Any other read-only turn ends as an answer.
       if (current.readFirst && !current.proposed) current.proposed = true;
@@ -200,12 +286,22 @@ const fixture = await createS1Fixture(
           "Fixture cannot propose this target/tool in current projection",
       });
     }
+    // PAH-9: controlled text proposals carry the LLM-judged value with its
+    // source revision so the approved value types without an extra card.
     const args = {
       target: node.model_ref,
       approval_scope: "single_step",
       approval_reason: "Execute this controlled local fixture test.",
       ...current.args,
+      ...(current.tool === "propose_set_text" && current.value !== undefined
+        ? {
+            value: current.value,
+            value_source_revision: 1,
+          }
+        : {}),
     };
+    if (current.clarify) current.proposed = true;
+    if (current.multiple) current.proposals = (current.proposals ?? 0) + 1;
     stream(res, {
       tool_calls: [
         {
@@ -295,6 +391,16 @@ try {
     version,
     worker,
   });
+  if (s15Suite)
+    await evaluate(
+      panel,
+      `(()=>{const original=chrome.runtime.sendMessage.bind(chrome.runtime);window.__s15Replies=[];chrome.runtime.sendMessage=async message=>{const result=await original(message);if((message.payload?.kind??message.kind).startsWith('ACT_'))window.__s15Replies.push({kind:message.payload?.kind??message.kind,ok:result?.ok,code:result?.code});return result};return true})()`,
+    );
+  if (s15Suite)
+    await evaluate(
+      panel,
+      `(()=>{window.__s15Downloads=[];const original=URL.createObjectURL.bind(URL);URL.createObjectURL=blob=>{blob.arrayBuffer().then(b=>window.__s15Downloads.push(Array.from(new Uint8Array(b))));return original(blob)};HTMLAnchorElement.prototype.click=function(){};return true})()`,
+    );
   const send = (m) =>
     evaluate(panel, `chrome.runtime.sendMessage(${JSON.stringify(m)})`);
   if (targetUrl?.startsWith("http:")) {
@@ -322,7 +428,7 @@ try {
         api_key: "",
         api_key_header: "none",
         headers: [],
-        timeout_ms: 15000,
+        timeout_ms: liveModel ? 90000 : 15000,
         enabled: true,
       },
     },
@@ -350,7 +456,7 @@ try {
         )
       : evaluate(
           page,
-          "({search:document.querySelector('#search').value,notes:document.querySelector('#notes').value,scope:document.querySelector('#report-scope').value,checked:document.querySelector('#include-details').checked,disabled:document.querySelector('#preview').disabled,result:document.querySelector('#result').textContent.trim(),activity:document.querySelector('#activity-tab').getAttribute('aria-selected'),menu:document.querySelector('#menu-button').getAttribute('aria-expanded'),dialog:document.querySelector('#confirmation-dialog').open,details:document.querySelector('#more-details').open})",
+          "({search:document.querySelector('#search').value,notes:document.querySelector('#notes,#memo').value,scope:document.querySelector('#report-scope').value,checked:document.querySelector('#include-details').checked,disabled:document.querySelector('#preview').disabled,result:document.querySelector('#result').textContent.trim(),activity:document.querySelector('#activity-tab').getAttribute('aria-selected'),menu:document.querySelector('#menu-button').getAttribute('aria-expanded'),dialog:document.querySelector('#confirmation-dialog').open,details:document.querySelector('#more-details').open})",
         );
   const button = async (text) =>
     evaluate(
@@ -535,7 +641,47 @@ try {
   );
   for (let i = 0; i < cases.length; i++)
     assert.equal(cases[i].prompt, documented.accessible[i].prompt);
-  const suiteCases = readingSuite ? documented.reading : cases;
+  const s15Cases = [
+    { ...cases.find((c) => c.id === "search") },
+    {
+      ...cases.find((c) => c.id === "notes"),
+      readFirst: false,
+      target: "Draft annotation",
+      value: "holdout ‘서울’ / 42",
+      prompt:
+        "Draft annotation에 다음 문자열 그대로 써 주세요: holdout ‘서울’ / 42",
+    },
+    {
+      ...cases.find((c) => c.id === "search"),
+      id: "clarification",
+      clarify: true,
+      value: "followup search",
+      prompt: "검색을 하고 싶어.",
+    },
+    {
+      ...cases.find((c) => c.id === "search"),
+      id: "long-value",
+      value: "a".repeat(512) + "middle-visible" + "z".repeat(584),
+      prompt:
+        "Search query에 다음 문자열을 정확하게 입력해줘: " +
+        "a".repeat(512) +
+        "middle-visible" +
+        "z".repeat(584),
+    },
+    {
+      ...cases.find((c) => c.id === "search"),
+      id: "multiple",
+      multiple: true,
+      prompt:
+        "Search query에 first ⟪holdout⟫, Draft annotation에 second 'quoted'를 각각 입력해줘.",
+    },
+    { ...cases.find((c) => c.id === "deny") },
+  ];
+  const suiteCases = s15Suite
+    ? s15Cases
+    : readingSuite
+      ? documented.reading
+      : cases;
   const selectedCases = process.env.ACCESSIBLE_ITEMS_CASES
     ? suiteCases.filter((item) =>
         process.env.ACCESSIBLE_ITEMS_CASES.split(",").includes(item.id),
@@ -570,10 +716,13 @@ try {
         `(()=>{document.querySelector('#mode-${current.mode ?? "act"}').click();document.querySelector('#chat-input').value=${JSON.stringify(current.prompt)};document.querySelector('#chat-form').requestSubmit();return true})()`,
       );
       let acted = false;
+      let approvalCount = 0;
       let dismissed = false;
       let selected = false;
       let value = false;
-      for (let i = 0; i < 180; i++) {
+      let fullReviewObserved = false;
+      const deadline = Date.now() + (liveModel ? 300000 : 60000);
+      for (let i = 0; Date.now() < deadline; i++) {
         await sleep(150);
         if (current.workflow) {
           if (!selected) selected = await button("Generate local preview");
@@ -581,7 +730,16 @@ try {
         } else if (!dismissed) {
           dismissed = await button("일반 한 단계 실행");
         }
-        if (await button("이번 단계 실행")) acted = true;
+        if (s15Suite && current.id === "long-value" && !acted) {
+          fullReviewObserved ||= await evaluate(
+            panel,
+            `[...document.querySelectorAll('.event-card[data-kind=review]')].some(e=>e.textContent.includes(${JSON.stringify(current.value)}))`,
+          );
+        }
+        if (await button("이번 단계 실행")) {
+          acted = true;
+          approvalCount++;
+        }
         await button("확인하고 실행");
         if (current.deny) await button("거부");
         else await button("이번만 허용");
@@ -609,6 +767,16 @@ try {
               `(()=>{const card=[...document.querySelectorAll('.event-card')].find(e=>e.dataset.testSeen!=='1' && e.textContent.includes('분석할 데이터 선택'));if(!card)return false;const buttons=[...card.querySelectorAll('button')].filter(b=>!b.disabled);const b=${current.path === "/mixed-collections.html" ? "buttons.find(b=>b.textContent.includes('" + (current.selection === "Feature requests" ? "15" : "20") + "'))" : "buttons[0]"};if(!b)return false;card.dataset.testSeen='1';b.click();return true})()`,
             );
         }
+        if (s15Suite && !current.clarify) {
+          assert.equal(
+            await evaluate(
+              panel,
+              "[...document.querySelectorAll('.event-card[data-kind=value]')].filter(e=>e.dataset.testSeen!=='1').length",
+            ),
+            0,
+            "Explicit value must not require reentry",
+          );
+        }
         if (current.value && !value)
           value = await evaluate(
             panel,
@@ -627,6 +795,32 @@ try {
           (await state()).result === "Preview generated for Detailed.";
         if (done && !pending && workflowDone && i > 20) break;
       }
+      let diagnosticZipRedacted;
+      if (s15Suite) {
+        const baseline = await evaluate(panel, "window.__s15Downloads.length");
+        await evaluate(
+          panel,
+          "document.querySelector('#diagnostics-export').click()",
+        );
+        const bytes = await waitFor(
+          () =>
+            evaluate(
+              panel,
+              `window.__s15Downloads.length>${baseline}?window.__s15Downloads.at(-1):null`,
+            ),
+          10000,
+          "S15_DIAGNOSTICS_ZIP",
+        );
+        const zipText = JSON.stringify(checkDiagnosticsZip(bytes));
+        diagnosticZipRedacted = (
+          current.multiple
+            ? ["first ⟪holdout⟫", "second 'quoted'"]
+            : [current.value ?? "__unused__"]
+        ).every((value) => !zipText.includes(value));
+      }
+      const recovered = s15Suite
+        ? await send({ kind: "CHAT_RECOVER" })
+        : undefined;
       const after = await state();
       const ui = await evaluate(
         panel,
@@ -640,11 +834,31 @@ try {
         before,
         after,
         acted,
+        approvalCount,
+        valueCardAnswered: value,
+        fullReviewObserved,
+        diagnosticZipRedacted,
+        eventSummary: recovered?.events?.map((e) => ({
+          type: e.type,
+          run: e.run_id,
+          code: e.code,
+          tool: e.action?.tool,
+        })),
+        replies: s15Suite
+          ? await evaluate(panel, "window.__s15Replies")
+          : undefined,
+        provider: liveModel ?? "controlled",
         workflowSelected: selected,
         calls: calls.slice(start),
         ui,
       };
       evidence = result;
+      if (s15Suite)
+        assert.equal(
+          diagnosticZipRedacted,
+          true,
+          current.id + ": raw value in diagnostic ZIP",
+        );
       const blocked = ["disabled-preview", "disabled-action"].includes(
         current.id,
       );
@@ -665,6 +879,13 @@ try {
             (t) => t.type === "page" && t.url.startsWith("https://example.com"),
           ),
         search: () => after.search === current.value,
+        multiple: () =>
+          approvalCount === 2 &&
+          after.search === "first ⟪holdout⟫" &&
+          after.notes === "second 'quoted'",
+        clarification: () => value && acted && after.search === current.value,
+        "long-value": () =>
+          fullReviewObserved && after.search === current.value,
         notes: () => after.notes === current.value,
         scope: () => after.scope === "detailed",
         checkbox: () => after.checked === true,

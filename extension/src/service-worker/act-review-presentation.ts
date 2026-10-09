@@ -1,3 +1,5 @@
+import type { ChatActionView } from "../contracts/chat-event-types.js";
+
 type Proposal = {
   id: string;
   tool: string;
@@ -27,7 +29,10 @@ export const actionReview = (session: Session, proposal: Proposal) => ({
   origin: session.origin,
 });
 
-export const actionView = (session: Session, proposal: Proposal) => ({
+export const actionView = (
+  session: Session,
+  proposal: Proposal,
+): ChatActionView => ({
   session_id: session.id,
   proposal_id: proposal.id,
   tool: proposal.tool,
@@ -35,7 +40,15 @@ export const actionView = (session: Session, proposal: Proposal) => ({
   approval_scope: proposal.approvalScope,
   approval_reason: proposal.approvalReason,
   origin: session.origin,
-  ...(proposal.value === undefined ? {} : { suggested_value: proposal.value }),
+  // The ephemeral approval event carries the entire supported value so the
+  // user can inspect changes anywhere in it before authorizing execution.
+  // Diagnostics and persisted history must continue to redact raw values.
+  ...(proposal.value === undefined
+    ? {}
+    : {
+        suggested_value: proposal.value,
+        suggested_value_length: [...proposal.value].length,
+      }),
   ...(session.workflow
     ? {
         workflow_title: session.workflow.declaration.title,

@@ -153,7 +153,8 @@ export type ReadEvidence = {
   limitations: string[];
 };
 
-const OPAQUE_ID = /^[A-Za-z0-9][A-Za-z0-9_-]{7,127}$/;
+// Generated IDs are base64url: a leading dash/underscore is valid too.
+const OPAQUE_ID = /^[A-Za-z0-9_-]{8,128}$/;
 const TEXT_LIMIT = 4000;
 const READ_STATUSES: ReadStatus[] = [
   "AVAILABLE",

@@ -8,6 +8,26 @@ import {
 } from "../../../src/diagnostics/method-trace.js";
 
 describe("method diagnostics", () => {
+  it("withholds source callback arrays while retaining primary coverage", () => {
+    const requestId = "44444444-4444-4444-4444-444444444444";
+    setMethodTraceLevel("trace");
+    traceMethod(
+      "page-act-harness/resource-reader.ts:readResourceChunk",
+      { requestId },
+      () => {
+        traceMethod(
+          "page-act-harness/resource-reader.ts:readResourceChunk:callback0",
+          ["function PRIVATE_SOURCE_LINE() {}", 0],
+          () => ["function PRIVATE_SOURCE_LINE() {}"],
+        );
+        return { status: "AVAILABLE", coverage: { supplied_count: 1 } };
+      },
+    );
+    const snapshot = JSON.stringify(methodTraceSnapshot("worker", requestId));
+    expect(snapshot).not.toContain("PRIVATE_SOURCE_LINE");
+    expect(snapshot).toContain("supplied_count");
+  });
+
   it("keeps concurrent async requests separate and records rejection before rethrow", async () => {
     setMethodTraceLevel("trace");
     const first = "11111111-1111-1111-1111-111111111111";
@@ -89,9 +109,11 @@ it("retains the causal input after hot loops evict chronological records", () =>
     snapshot.records.some(
       (record) =>
         record.event === "method.input" &&
-        JSON.stringify(record.detail).includes("저장 버튼"),
+        record.method.endsWith(":causalInput") &&
+        JSON.stringify(record.detail).includes("sensitive_field"),
     ),
   ).toBe(true);
+  expect(JSON.stringify(snapshot.records)).not.toContain("저장 버튼");
 });
 
 it("prefers invocation ownership over a callback factory's boot-time closure", () => {

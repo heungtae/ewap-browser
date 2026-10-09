@@ -168,6 +168,23 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       type: "action_review_required",
       action: validateActionView(value.action),
     };
+  if (value.type === "source_consent_required") {
+    if (
+      typeof value.request_id !== "string" ||
+      typeof value.host !== "string" ||
+      !Number.isInteger(value.resource_count) ||
+      (value.resource_count as number) < 1 ||
+      (value.resource_count as number) > 257
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "source_consent_required",
+      request_id: opaque(value.request_id),
+      host: string(value.host, 255),
+      resource_count: value.resource_count as number,
+    };
+  }
   if (value.type === "permission_required") {
     if (
       typeof value.request_id !== "string" ||

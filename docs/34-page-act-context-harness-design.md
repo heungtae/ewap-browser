@@ -1,6 +1,10 @@
-# 현재 페이지의 문맥 수집과 LLM 기반 Act Harness 상세 설계
+# 34. 현재 페이지의 문맥 수집과 LLM 기반 Act Harness 상세 설계
 
 - 작성일: 2026-10-04
+- 설계 변경: 2026-10-06. 입력값의 유무·대상·추가 질문 필요성은 LLM이 판단하고,
+  사용자가 제공한 명확한 값은 기존 실행 승인 후 자동 입력한다. 개발 계획은 PAH-9에 추가한다.
+- 설계 확장: 2026-10-06. 도구 사용법 제공→LLM 선택→실행→결과 반환→다음 판단의
+  연결 계약과 미연결 영역을 16절에 통합한다. Browser Act 후속 개발 단계는 S16~S20이다.
 - 상태: Proposed. 설계만 작성했으며 아래 계약·도구·상태는 구현 완료를 의미하지 않는다.
 - 소유 저장소: `ewap-browser`. Browser 실행 영역의 내부 설계다.
 - 개발 계획: [Sprint 계획](sprint-page-act-context-harness-plan.md)
@@ -62,6 +66,7 @@ WebMCP 도입은 보류한다. 향후 표준과 실제 지원이 확정되면 �
 | 판단 | 소유자 | 규칙 |
 | --- | --- | --- |
 | 사용자 목표, 자료의 관련성, 읽을 순서, 실행 대안 | LLM | 제공된 근거로 판단하고 부족하면 도구로 추가 자료를 요청 |
+| 입력값 제공 여부, 대상과 값의 대응, 추가 질문 필요성 | LLM | 원래 요청·관련 사용자 응답·최신 UI를 함께 검토. 명확한 값은 입력 제안에 포함하고, 없거나 모호하면 질문 |
 | 최종 요청 변경, 계획 승인, 민감한 자료 전달 동의 | 사용자 | 기존 요청과 다른 목표·부작용·권한은 묵시적으로 승인하지 않음 |
 | 문서 결속, 도구 schema, 실행 가능성, 정책·권한, fresh ref, 마스킹 | Browser core | 검증 가능한 실행·정보 전달 경계를 강제 |
 | 데이터 구조·읽기 가능성·자료 위치의 일반적 힌트 | Component/source adapter | 페이지의 업무 의미나 사용자의 실행 목표를 확정하지 않음 |
@@ -421,11 +426,45 @@ core는 계획 schema와 capability를 검사하며, 지원하지 않는 step을
 같은 승인 범위에서 순차 진행 가능한지와 재승인이 필요한 차이는 현재 permission 규칙과
 plan revision으로 판단한다. 동적 ref 재결속은 의도·대상 동일성을 별도 검증한다.
 
-입력 값 처리에는 기존 value card 경계를 유지한다. 현재 `propose_set_text`는 target을
-제안하고 실제 값은 사용자 입력 UI에서 결속한다. 요청에 `browser test`가 포함되어도
-이 설계 문서로 값을 provider에 추가 전달하거나 자동 결속하는 변경을 확정하지 않는다.
-값 사전 채움·자동 결속을 도입하려면 별도 privacy/승인 설계와 회귀 검증이 필요하다.
-모델에는 원본 값 대신 입력 완료·목표 일치 검증 결과를 전달하는 방법을 우선 검토한다.
+### 9.1 LLM의 입력값 판단과 실행 결속
+
+입력값이 제공됐는지, 어느 대상에 어떤 값을 적용할지, 추가 질문이 필요한지는 LLM이
+원래 요청·관련 사용자 응답·최신 UI 근거로 판단한다. 코드가 요청 키워드, 정규식,
+따옴표 유무, 특정 필드 이름으로 값을 추출하거나 추가 질문 여부를 결정하지 않는다.
+
+| 요청과 문맥 | LLM의 판단과 제안 | 승인 이후 동작 |
+| --- | --- | --- |
+| `Search query에 browser test를 입력해줘.` | Search query 대상과 `browser test` 값을 대응시켜 입력 제안 | 추가 value card 없이 해당 input에 자동 입력하고 실제 값 일치를 로컬 검증 |
+| `검색을 하고 싶어.`이며 검색값이 문맥에도 없음 | 검색값이 필요하다는 질문을 제안 | value card에서 응답을 받고 LLM이 대상·값을 검토한 뒤 입력 제안 |
+| 값 후보가 여러 개이거나 대상과 값의 대응이 모호함 | 모호한 부분을 설명하고 필요한 값/대상을 질문 | 사용자 응답으로 모호성이 해소된 뒤 입력 제안 |
+
+value card는 LLM이 값이 없거나 모호하다고 판단하여 추가 입력을 요청한 경우에만
+사용한다. 모든 텍스트 입력의 필수 단계로 표시하거나, 제공된 값을 다시 입력하게 하지
+않는다. 질문은 현재 request/plan revision과 대상 근거에 결속하며 응답이 올 때까지
+기다린다. 사용자 응답은 같은 모델 conversation에 돌려주어 LLM이 새 제안 또는 수정된
+계획을 만든다. 목표가 변경되면 request revision도 갱신한다.
+
+`propose_set_text`를 비롯한 관련 입력 제안 계약은 LLM이 판단한 대상과 실제 적용할
+값, 값의 출처인 사용자 request/clarification revision을 함께 전달할 수 있어야 한다.
+계획 검토·승인 화면에서 적용할 대상과 값을 확인할 수 있게 하되 민감값은 기존 표시
+경계를 따른다. 명확한 값의 자동 입력은 기존 계획·동작 승인과 permission 확인 이후에
+수행하며, 값 제공 자체를 실행 승인으로 취급하지 않는다.
+
+Browser core는 schema·타입·길이·option enum, request/plan/document revision,
+승인된 대상·값 제안의 동일성, fresh ref, 정책·권한과 민감 대상 차단을 검증한다.
+대상·값·의도가 변경되면 기존 승인을 재사용하지 않는다. 값이 누락된 실행 제안은
+모델에 계약 오류로 반환하여 보완 제안 또는 clarification을 받는다. 계약 오류를 이유로
+core가 자동으로 value card를 띄우거나 사용자 값을 추측하지 않는다.
+
+LLM은 페이지 설명·코드의 기본값이나 지시문을 사용자가 제공한 값으로 승격하지 않는다.
+password/OTP/credential 차단과 provider egress 검사는 유지한다. 실행에 필요한 값은
+요청 수명 안에서 결속하고 영구 transcript·trace·진단 ZIP에는 원문을 남기지 않는다.
+모델에 사후 결과를 전달할 때는 원본 값을 반복 전송하기보다 입력 완료·로컬 일치 검증
+결과를 사용한다. 취소·페이지 변경·worker 재시작 뒤 이전 값과 승인을 자동 재사용하지 않는다.
+
+이 변경은 [PAH-9](sprints/s15-pah-9-llm-input-value-binding.md)의 개발 대상이다.
+기존 target-only 제안과 항상 value card를 요청하는
+구현이 이 설계 변경으로 완료된 것은 아니다.
 
 사후 검증은 두 층으로 둔다. typed verifier가 실제 DOM/상태 변화를 검사하고, LLM은
 그 evidence로 현재 사용자 목표가 충족됐는지 점검한다. LLM의 설명만으로 typed
@@ -485,6 +524,7 @@ debug/trace는 모든 신규·변경 경로의 method 진입·정상 반환·오
 | provider round-trip | turn/tool-call ID, 입력 evidence 목록, offered tool 이름·개수, 호출 이름·schema 검사 결과 |
 | workflow review | 후보 ID/revision, 출처, match 결과, 사용한 근거, 미확인 자료, 의미·기술 거부의 구분 |
 | plan/approval | plan revision, 원본 대비 delta 요약, 승인 범위와 request revision 결속 |
+| value/clarification | LLM의 값 제공/모호성 판정, 사용자 request/응답 revision, 질문·응답·제안 ID와 결속 결과. 원본 값은 제외 |
 | dispatch/verify | action ID, target opaque ID, preflight 결과, verifier 종류와 실제 판정 |
 | terminal | answer/action/goal 결과 구분, 실행·미실행 개수, 남은 단계, budget/timeout/cancel 원인 |
 
@@ -529,6 +569,11 @@ reason code, masking metadata다. 여러 method가 동일 stage여도 method 이
 7. 설명/코드/tool 결과의 지시문 혼입·credential 유사 문자열·URL 비밀값. 자료가 권한이나
    운영 지침으로 승격되지 않고 egress/log/export 모두 masking 여부가 확인된다.
 8. 모델이 도구 없이 설명만 반환. 입력 성공 또는 goal verified로 표시하지 않는다.
+9. 명확한 입력값·값 미제공·모호한 값·여러 필드와 값·후속 사용자 정정. LLM이 값과
+   대상을 판단하며, 명확한 값은 승인 후 value card 없이 실제 입력된다. 부족한 경우에만
+   질문과 사용자 응답을 모델에 이어 전달한다. 요청 문구에 따른 제품 코드 분기가 없어야 한다.
+10. 값 제안 변경·stale 응답·Stop·재시작·잘못된 schema·민감 대상. 이전 값/승인이
+    재사용되지 않고, 계약 오류는 모델에 반환되며 로그·export에 원본 값이 남지 않는다.
 
 live 검증은 model/provider/plugin/prompt/build revision, 최초 context, 안전한 tool trace,
 실제 전후 상태, 반복 횟수·실패를 기록한다. API credential은 보고서에 남기지 않는다.
@@ -588,3 +633,138 @@ WorkflowDefinition은 서로 같은 schema로 가정할 수 없다.
 이 미확정 항목을 기존 구현에 이미 적용된 정책으로 문서화하지 않는다.
 기존 문서의 충돌 항목은 [동기화 검토 목록](page-act-context-harness-document-sync-review.md)에
 보관하며 사용자 확인 전에는 본문·상태·과거 검증 기록을 변경하지 않는다.
+
+## 16. 도구 사용법 제공과 LLM 탐색·실행 루프의 완성
+
+### 16.1 설계 결정과 현재 구현의 공백
+
+이 내용은 기존 4~9절의 구체화이므로 34번에 통합하며 별도 35번 문서를 만들지 않는다.
+Browser가 도구의 사용법과 접근 가능한 자료를 제공하고, LLM이 요청에 필요한 도구·
+인자·순서·추가 질문·완료 여부를 판단한다. Browser는 기술적 검증과 실행을 담당한다.
+Codex의 파일 목록→검색→부분 읽기→결과 반환→다음 판단에 대응하는 페이지 탐색이다.
+이는 shell이나 임의 JS를 Browser에 추가한다는 뜻이 아니다.
+
+2026-10-06 확인한 연결 상태는 아래와 같다. 현재 작업 트리의 입력값 처리 변경은
+구현 중 코드가 존재한다는 확인이며, 빌드·실제 Chrome·live Provider 완료 판정이 아니다.
+
+| 영역 | 확인한 연결 상태 | 후속 개발 |
+| --- | --- | --- |
+| UI 읽기 | Act에 read_semantic_projection/read_page/get_page_text/find와 결과 반환 loop 연결 | 공통 registry·binding·budget 회귀 |
+| 입력값/질문 | propose_set_text 값 인자와 request_clarification/응답 continuation 코드 존재 | S15/PAH-9의 실제 검증으로 완료 판단 |
+| script | inventory/chunk reader와 내부 도구 이름 존재. 모델 schema·실제 수집/executor 연결 없음 | S16 |
+| 계획·실행 결과 | plan 내부 계약 존재. submit_plan 호출 경로 미연결. navigation/Page API·workflow 종료는 모델 목표 점검까지 이어지지 않음 | S17 |
+| workflow 자료 | 검토 helper/gate 존재. 목록·원본 읽기를 모델이 호출하는 경로 미연결 | S18 |
+| component 자료 | descriptor/facade 존재. 모델용 describe/read 도구 미연결. Act의 vision 도구도 미연결 | S19 |
+| 종합 완료 | 내부·통제 테스트만으로 자연어 선택과 범용 완료를 입증할 수 없음 | S20 |
+
+### 16.2 최초 요청의 도구 제공 계약
+
+위 표는 2026-10-06의 연결 상태 기록이다. S16 script 경로는 이후 실제 도구·executor·
+동의·동일 대화 결과 반환으로 연결했고,
+[2026-10-09 live 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md)으로
+Browser-local 완료를 확인했다. S17~S20의 계획·자료 도구와 종합 검증은 별도다.
+
+최초 provider 요청은 원래 요청, 최신 UI synopsis, coverage, 자료 inventory의 첫 페이지,
+실행 수단 metadata와 실제 callable function definitions를 함께 제공한다. script 본문,
+전체 workflow, component 전체 데이터를 처음부터 전송하지 않는다. 자료 개수와 아직
+읽지 않은 상태, 목록을 확장하는 tool/cursor를 제공하여 LLM이 필요한 근거를 찾는다.
+
+공통 tool registry는 각 도구에 다음을 함께 등록한다.
+
+- 고유 name, 모델이 이해할 description, parameters JSON schema와 tool/version.
+- 실제 executor, 반환 결과 schema, 적용 mode/phase와 필요한 동의·권한.
+- request/document/resource 결속, budget·취소 처리, 안전한 진단 정보.
+
+description은 언제 쓰는지, 어떤 자료를 반환하는지, 한계·side effect·필요한 동의를
+설명한다. parameters는 필수/선택 인자, 타입·범위·동적 enum을 실제 parser와 일치시킨다.
+script/ref/action의 참조는 opaque ID이며 원본 selector·함수 경로·URL을 실행 인자로
+사용하지 않는다. registry로 capability 목록·provider schema·executor dispatch를 구성해
+셋이 서로 다른 지원 범위를 광고하지 않게 한다.
+
+도구 제공 여부는 실제 executor 지원, mode/phase, 정책, 현재 대상의 기술적 실행
+가능성으로 정한다. 코드가 요청 키워드·페이지 이름·workflow 출처로 업무 목표를
+확정하여 필요한 탐색 도구를 제거하지 않는다. 동의 후 사용할 수 있는 읽기 도구는
+지원된 consent 경로와 함께 제공하고 CONSENT_REQUIRED를 반환한다. executor가 없으면
+callable schema에 넣지 않고 UNSUPPORTED와 사유를 capability에 표시한다.
+
+### 16.3 추가 연결할 도구의 사용법
+
+아래 인자와 결과는 내부 계약 제안이다. S16~S19에서 JSON schema·parser·executor와
+함께 확정하며, 내부 helper의 인자를 그대로 외부 tool 계약으로 간주하지 않는다.
+공통 결과의 request/binding/resource revision은 실행 환경이 결속하고 검사한다.
+
+| name | description의 핵심 | parameters 제안 | 결과의 핵심 |
+| --- | --- | --- | --- |
+| list_page_resources | 접근 가능한 설명·inline/external script·component metadata 발견 | kind/parent/cursor/page_size 선택 | opaque resource ID, 종류, revision, 크기, 동의/지원 상태, next_cursor |
+| search_page_resources | 발견·허용된 자료에서 문자열을 찾아 읽을 위치 확보. 검색 hit는 코드 전체 이해가 아님 | query 필수, resource_ids/cursor/max_results 선택 | 마스킹된 hit, resource/range, coverage, continuation |
+| read_page_resource | 특정 자료의 제한된 범위를 동의 후 정적 텍스트로 읽기 | resource_id 필수, cursor 또는 range와 max_bytes 선택. cursor/range 동시 지정 금지 | ReadEvidence, 마스킹된 chunk, coverage, continuation |
+| submit_plan | 근거를 가진 목표·순서·입력·부작용·검증 계획 제출. 호출은 승인/실행이 아님 | request_revision/goal/evidence_ids/steps/approval_scope 필수, 원본 reference/delta 선택 | 검토 가능한 plan ID/revision, 기술 검증 결과, 승인 대기 또는 계약 오류 |
+| list_workflow_resources | 허용된 saved/Profile 후보와 generated 초안의 metadata 탐색 | source/cursor/page_size 선택 | 후보 ID/revision/provenance/적용 상태, 미검토 상태, next_cursor |
+| read_workflow_resource | 후보의 원본 단계·입력·조건·분기·검증 정의를 근거로 읽기 | resource_id 필수, cursor/max_bytes 선택 | 손실 없는 원본의 제한된 부분, coverage, continuation, 출처/무결성 metadata |
+| describe_component | 관찰한 component의 구조·읽기 채널·범위·복구/side effect 설명 | resource_id 필수 | descriptor, 채널별 availability, visible/logical/total count, continuation |
+| read_component_data | LLM이 선택한 지원 채널로 bounded 데이터 읽기 | resource_id/channel 필수, cursor/limit 선택 및 채널별 typed 인자 | typed data, masking, coverage/EOF, continuation, 복구 결과 |
+
+### 16.4 공통 호출·결과 반환·동의 처리
+
+`provider의 tool call → schema/binding/권한 검사 → executor → tool_call_id에 결속한
+결과 → 같은 conversation의 다음 provider 요청`을 공통 runner 계약으로 둔다.
+UI·script·workflow·component 모두 같은 방식으로 이어지며, 자료의 지시문은 운영
+지침으로 승격되지 않는다. 최신 observation과 앞선 tool 결과를 workflow 단계에서도
+유지하고, 다음 단계 prompt를 구성할 때 이전 근거를 제거하지 않는다.
+
+결과에는 ok/status, evidence ID, revision, 허용된 typed payload, coverage, continuation,
+지원/동의 상태와 안전한 오류 사유를 포함한다. 입력 오류·NOT_FOUND·DENIED·STALE·
+UNSUPPORTED·잘림은 모델이 다음 탐색·질문·대안을 판단할 수 있게 반환한다. 취소,
+소유권 상실, policy상 요청 종료는 terminal로 처리하고 모델 continuation을 강행하지 않는다.
+누락/중복 call ID와 미확인 mutation은 추측 실행하지 않는다.
+
+CONSENT_REQUIRED는 빈 읽기 성공이나 즉시 전체 요청 실패로 처리하지 않는다. Browser는
+요청한 resource/revision/범위에 결속된 동의 UI를 표시하고 실제 응답까지 기다린다.
+허용 시 최신 binding을 재검사해 해당 읽기를 재개하고 원래 call ID에 결과를 반환한다.
+거부 시 DENIED를 반환해 LLM이 다른 자료·실행 대안·설명을 판단하도록 한다.
+
+읽기/turn/time budget은 설정된 범위에서 검사하고 소진 시 INCOMPLETE와 수집 범위·
+미실행 동작·계속 방법을 표시한다. 현재 코드의 3 turn은 구현 설정이며 설계의 범용
+완료 기준이 아니다. 계속 진행할 때 최신 binding/동의와 남은 budget을 재검사한다.
+
+### 16.5 실행 수단과 결과 피드백
+
+LLM이 함수 정의를 읽었다고 실제 실행 가능한 함수로 간주하지 않는다. Browser는 실행
+수단 inventory에 현재 UI 제안 대상과 검토·등록된 Page API/reviewed data reader의
+opaque action ID, 설명, 입력 schema/허용 옵션, 결과 schema·coverage, side effect,
+권한·지원 상태를 제공한다. 많은 action은 목록 확장 수단을 제공하며 등록된 실행
+범위 밖의 함수는 호출 도구로 노출하지 않는다. 기존 adapter가 표현하지 못하는 인자나
+반환값은 지원 불가로 표시하고 계약 확장이 필요하면 별도 검토한다.
+
+LLM은 script 근거와 inventory를 비교해 UI 실행, 등록된 API, 추가 질문 또는 미지원
+설명을 선택한다. Browser가 함수 이름을 자동으로 실행 수단에 등록하거나 발견한
+endpoint를 호출하지 않는다. source 읽기 도구와 mutation/read adapter의 권한을 분리한다.
+
+승인 후 단일 실행→실제 postcondition 검증→최신 observation→LLM 목표 점검을 연결한다.
+DOM 동작뿐 아니라 Page API·승인된 navigation·workflow의 마지막 단계도 결과를 모델에
+반환한다. 단순 VERIFIED 이벤트나 고정 step 종료만으로 사용자 목표 완료를 확정하지 않는다.
+모델은 evidence에 따라 후속 읽기·새 계획·추가 질문·최종 응답을 선택하고 typed verifier
+실패나 UNKNOWN을 성공으로 바꾸지 않는다. 비동기 결과는 기존 bounded observation/
+verifier의 대기 상태·최종 관찰·timeout을 반환하여 모델이 미관찰 성공을 주장하지 않게 한다.
+
+navigation은 원래 요청의 허용된 이동 결과에 한해서 새 document를 관찰한다. 이전
+source cursor/ref/action 승인은 폐기하고 새 binding에서 가용 도구와 계획을 다시 검토한다.
+origin/권한 변경은 기존 정책을 재검사한다. 외부 navigation·탭 변경으로 안전한 후속
+관찰이 불가능하면 UNKNOWN/UNSUPPORTED와 범위를 기록하며 이전 도구를 재사용하지 않는다.
+
+### 16.6 단계별 개발과 완료 판정
+
+| 순서 | Sprint | 산출 행동 |
+| --- | --- | --- |
+| 선행 | [S15 / PAH-9](sprints/s15-pah-9-llm-input-value-binding.md) | LLM이 명확한 입력값과 질문 필요성을 판단 |
+| 1 | [Browser Act S16](sprints/s16-page-script-tool-loop.md) | 공통 registry와 script 목록·검색·부분 읽기·동의·결과 반환 |
+| 2 | [Browser Act S17](sprints/s17-act-plan-execution-feedback.md) | 계획 제출·승인·실행 수단 metadata·최종 관찰·LLM 목표 점검 |
+| 3 | [Browser Act S18](sprints/s18-workflow-resource-tools.md) | 후보 목록·원본 읽기·세 출처 검토·선택 후 재검토 |
+| 4 | [Browser Act S19](sprints/s19-component-data-tools.md) | component 발견·채널 선택·bounded 데이터/시각 읽기 |
+| 5 | [Browser Act S20](sprints/s20-act-tool-loop-live-qualification.md) | holdout/live Provider·호환성·취소·진단을 포함한 전체 경로 검증 |
+
+S16~S20은 Browser-local Act 후속 식별자다. 기존 Enterprise 배포 S15와 PAH-0~8의
+기록·완료 주장을 변경하지 않는다. 내부 모듈의 존재, capability 문자열, 빌드 성공만으로
+Sprint를 완료하지 않는다. schema 제공→실제 모델 호출→executor→동일 대화 결과 반환→
+다음 판단의 증거를 각 단계에서 확보한다. 본 변경은 설계·계획 작성이며 제품 개발이나
+live 검증 완료를 의미하지 않는다.

@@ -1,20 +1,28 @@
 # 현재 페이지 문맥 수집과 Act Harness Sprint 계획
 
 - 작성일: 2026-10-04
-- 상태: 전체 Planned. 이번 작성에서 구현·빌드·Chrome 실행은 수행하지 않았다.
-- 기준: [상세 설계](page-act-context-harness-design.md)
+- 계획 추가: 2026-10-06. LLM 판단에 따른 입력값 자동 결속·추가 질문을 PAH-9로 등록.
+- 후속 단계 추가: 2026-10-06. 34번 설계 16절의 도구 연결 완성을 Browser Act S16~S20으로 등록.
+- 상태: PAH-9 In Progress. [2026-10-08 검증](evidence/s15-pah-9-closure-2026-10-08.md). PAH-0~8의 표·절별 상태는 최초 계획 기록이며, 이후 실행 증거는
+  [구현 기록](evidence/pah-implementation-record.md)과 후속 검증 문서에서 확인한다.
+- 기준: [상세 설계](34-page-act-context-harness-design.md)
 - 문서 동기화 승인 전 목록: [기존 문서 검토](page-act-context-harness-document-sync-review.md)
 - 소유 저장소: `ewap-browser`. 외부 계약 변경이 필요할 때만 workspace/Platform 별도 작업을 만든다.
 
 ## 1. 운영 원칙
 
-기존 S0~S14 관리 문서와 구분하기 위해 이 계획은 `PAH-0`~`PAH-8`을 사용한다.
+기존 S0~S14 관리 문서와 구분하기 위해 이 계획은 `PAH-0`~`PAH-9`를 사용한다.
 PAH는 Page Act Harness 작업의 식별자이며 기존 Sprint의 완료 기록을 다시 쓰지 않는다.
+S15 파일명의 PAH-9 다음 개발 단계는 Browser Act S16~S20을 사용한다.
+이는 기존 Enterprise 배포 S15와 다른 Browser-local Act 후속 범위다.
 날짜·기간·story point는 정하지 않는다. 코드와 provider 호환성 조사 후 별도 추정한다.
 
-이번 요청의 완료 범위는 신규 설계·Sprint 문서·동기화 검토 목록 작성이다.
-아래 개발 항목은 아직 착수하지 않았다. 기존 문서 동기화는 사용자 확인 후 진행하며,
-제품 코드·예제 변경도 구현 요청 이후 진행한다.
+최초 작성 범위는 신규 설계·Sprint 문서·동기화 검토 목록이었다. 이후 입력값 처리
+설계와 PAH-9를 추가했고, 이번에는 도구 연결 설계 구체화와 S16~S20 개발 계획을 추가한다.
+현재 작업 트리의 PAH-9 코드 존재를 완료 증거로 간주하지 않는다. 기존 구현 증거는 유지하고
+2026-10-08 사용자 요청으로 S16을 구현했다. 검증 상태는 [S16 증거](evidence/s16-script-tool-loop-2026-10-08.md)와
+[10월 9일 live 실패 수정·완료 증거](evidence/s16-live-tool-loop-fix-2026-10-09.md)를 따른다.
+S16은 Browser-local Completed이며 S17~S20은 Planned다.
 
 각 Sprint는 작은 end-to-end 경로를 먼저 증명한 뒤 범위를 넓힌다. 현재 permission,
 credential 차단, document binding, opaque ref, typed verifier를 유지한다.
@@ -34,10 +42,28 @@ WebMCP 구현·실험 예제는 이 계획에 포함하지 않는다.
 | PAH-6 | 계획 승인→실행→관찰→동작/목표 검증 연결 | PAH-5 | Planned |
 | PAH-7 | Stop·재시작·문맥 압축·budget·전체 진단 보강 | PAH-6. 기본 취소/마스킹은 앞 Sprint부터 적용 | Planned |
 | PAH-8 | holdout·실제 LLM·Chrome 검증과 호환성·배포 준비 | PAH-4, PAH-7 | Planned |
+| PAH-9 | LLM이 입력값·대상·질문 필요성을 판단하고 제공된 값은 승인 후 자동 입력 | PAH-3의 모델 continuation, PAH-6의 승인·실행 연결 | Planned |
 
 워크플로우 세 출처의 적합성 검토를 먼저 고정한 뒤 읽기 도구를 뒤늦게 붙이지 않는다.
 PAH-1~3에서 모델이 필요한 근거를 구하는 능력을 먼저 만든다.
 PAH-4는 데이터 읽기가 필요한 계획의 공통 기반이며 단순 입력 계획의 전제는 아니다.
+
+### 2.1 실제 도구 연결을 완성하는 후속 단계
+
+이전 PAH 모듈·unit slice의 증거와 아래 최초 요청의 end-to-end 연결 완료를 구분한다.
+각 단계는 schema→모델 호출→executor→동일 대화 결과 반환→다음 판단을 입증한다.
+
+| 순서 | Sprint 상세 | 산출 행동 | 진입 조건 | 상태 |
+| --- | --- | --- | --- | --- |
+| 선행 | [S15 / PAH-9](sprints/s15-pah-9-llm-input-value-binding.md) | LLM의 입력값·추가 질문 판단 | 기존 모델 continuation·승인 연결 | 기존 계획 상태·실행 증거로 추적 |
+| 1 | [S16](sprints/s16-page-script-tool-loop.md) | registry와 script 발견·검색·부분 읽기·동의 | 현재 UI read loop/request binding | Completed — Browser-local |
+| 2 | [S17](sprints/s17-act-plan-execution-feedback.md) | 계획·실행 수단 metadata·관찰·목표 판단 | S16, S15 입력값 계약 | Planned |
+| 3 | [S18](sprints/s18-workflow-resource-tools.md) | 후보 목록·원본 읽기·세 출처 검토 | S16, S17 | Planned |
+| 4 | [S19](sprints/s19-component-data-tools.md) | component descriptor·채널별 데이터·Act vision | 순차 S18 이후, 기술 의존 S16/S17 | Planned |
+| 5 | [S20](sprints/s20-act-tool-loop-live-qualification.md) | 전체 경로 holdout/live·호환성·fault 검증 | S15~S19 연결 기능과 단계별 증거 | Planned |
+
+각 단계에서 실제 Chrome과 필요한 live 모델 판단을 확인한다. S20은 앞 단계의 live
+검증을 생략하는 이유가 아니라 전체 요청·오류·호환성의 종합 검증이다.
 
 ## 3. 모든 Sprint의 공통 완료 조건
 
@@ -262,7 +288,8 @@ saved와 Profile fixture의 출처·무결성을 모델 추론 결과와 구분�
 ### 작업
 
 - plan/request revision과 action approval을 결속하고 승인 뒤 최신 preflight를 수행한다.
-- 기존 값 입력 card, permission, executor, typed postcondition verifier를 연결한다.
+- permission, executor, typed postcondition verifier를 연결한다. 값 입력 card의 조건과
+  요청에서 제공한 값의 자동 결속은 PAH-9의 변경 계약을 따른다.
 - 실행 뒤 observation을 evidence로 반환하고 모델이 다음 단계/재계획/최종 목표를 점검하게 한다.
 - answer-only, action verified, goal verified, failed, unknown, incomplete를 내부 결과에서 분리한다.
 - 기존 export/storage enum 소비자와 호환 transition을 구현한다.
@@ -280,8 +307,17 @@ saved와 Profile fixture의 출처·무결성을 모델 추론 결과와 구분�
 ### 검증과 산출물
 
 Chrome의 입력·다단계·비동기·실패·answer-only·중간 변화 증거와 outcome migration 회귀.
-provider 관찰 설명과 typed verifier의 판정을 함께 보고한다. 요청의 값 자동 결속은
-기존 card 경계 변경을 별도 승인·설계하지 않았다면 추가하지 않는다.
+provider 관찰 설명과 typed verifier의 판정을 함께 보고한다. 입력값 처리의 변경 개발은
+PAH-9로 추적하며, 기존 card 경로의 PASS를 새 자동 결속 동작의 증거로 사용하지 않는다.
+
+## 10.1 PAH-9 — LLM의 입력값 판단·자동 입력·추가 질문
+
+상태: In Progress. [2026-10-08 검증](evidence/s15-pah-9-closure-2026-10-08.md). 추가일: 2026-10-06. 의존성: PAH-3의 모델 continuation,
+PAH-6의 승인·실행 연결.
+
+값 제공 여부·대상과 값의 대응·추가 질문 필요성은 LLM이 판단한다. 명확한 값은
+기존 승인 후 자동 입력하고, 없거나 모호한 경우에만 value card로 추가 입력을 요청한다.
+작업 범위·완료 기준·검증 계획은 [PAH-9 Sprint 상세](sprints/s15-pah-9-llm-input-value-binding.md)에 기록한다.
 
 ## 11. PAH-7 — 복구·budget·문맥 압축·진단
 
@@ -355,6 +391,9 @@ provider 관찰 설명과 typed verifier의 판정을 함께 보고한다. 요�
 | grid/chart/list/SVG/미분류 | 4, 8 | 필수 | 필수 | 선택 채널·coverage·복구·실제 데이터 |
 | 세 출처 match/partial/mismatch | 5 | 필수 | 필수 | 검토 evidence·원본 차이·요청 revision |
 | Search 요청에 Preview 선택 | 5, 6 | 필수 | 필수 | 목표 유지·재검토·미승인 scope mutation 없음 |
+| 명확한 값 제공·추가 입력 불필요 | 9 | 필수 | 필수 | LLM의 대상/값 제안→승인→value card 없이 실제 DOM 입력 |
+| 값 미제공·모호성·여러 값·정정 | 9 | 필수 | 필수 | LLM 질문 판단→value card 응답→모델 continuation→새 제안·승인 |
+| 값 계약 오류·stale·민감 대상·마스킹 | 9 | 필수 | 안전한 fixture | 오류 반환·이전 승인/값 재사용 없음·원문 비저장 |
 | 전용 선언 없는 Preview | 5, 6 | 필수 | 필수 | 설명/코드 근거·승인·최종 화면 |
 | 도구 없는 설명 | 6 | 필수 | 필수 | answer-only와 action/goal 분리 |
 | stale/Stop/restart/timeout | 6, 7 | 필수 | 오류 fixture와 분리 | mutation 중복 없음·unknown 보존 |
@@ -379,6 +418,13 @@ Browser / Platform / workspace·통합 수행 여부와 이유:
 다음 Sprint의 진입 조건:
 ```
 
-현재 기록은 `PAH-0~8: Planned`다. 과거 build·unit·Chrome 결과와 이번 신규 설계 문서의
-Markdown 검사를 Sprint 구현 증거로 채우지 않는다. 기존 문서의 동기화 목록은
+이 계획의 최초 작성 상태는 `PAH-0~8: Planned`이며, 이후 구현·검증 증거는
+[구현 기록](evidence/pah-implementation-record.md)과 후속 검증 문서에서 확인한다.
+2026-10-06에 추가한 `PAH-9`는 Planned이며 기존 PAH-0~8의 증거로 완료 처리하지 않는다.
+후속 Browser Act S16~S20의 최초 등록 상태도 Planned였다. 현재 S16은 Browser-local Completed이며
+[2026-10-09 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md)을 따른다.
+S17~S20은 Planned다. 단계별 문서는 docs/sprints에 저장하며
+설계·Markdown 검사를 실제 tool 연결이나 live 실행 증거로 사용하지 않는다.
+과거 build·unit·Chrome 결과와 이번 설계 문서의 Markdown 검사를 신규 Sprint 구현 증거로
+채우지 않는다. 기존 문서의 동기화 목록은
 사용자 확인 전까지 검토 목록으로만 유지한다.

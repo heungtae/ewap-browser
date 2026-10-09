@@ -321,35 +321,6 @@
       </dialog>
     </main>
 
-    <script type="application/contextpilot-workflow+json">
-      {
-        "schema_version": 1,
-        "id": "accessible-items-preview-v1",
-        "title": "Generate local preview",
-        "steps": [
-          {
-            "id": "scope",
-            "tool": "select_option_by_ref",
-            "target": { "role": "combobox", "name": "Report scope" },
-            "next": "details"
-          },
-          {
-            "id": "details",
-            "tool": "set_checked_by_ref",
-            "target": {
-              "role": "checkbox",
-              "name": "Include detailed results"
-            },
-            "next": "preview"
-          },
-          {
-            "id": "preview",
-            "tool": "click_by_ref",
-            "target": { "role": "button", "name": "Generate preview" }
-          }
-        ]
-      }
-    </script>
     <script>
       const scope = document.getElementById("report-scope");
       const includeDetails = document.getElementById("include-details");

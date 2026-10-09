@@ -1,0 +1,489 @@
+{
+  "date": "2026-10-08",
+  "scope": "Browser-local S15 / PAH-9; not Managed Enterprise Release S15",
+  "status": "In Progress",
+  "version": "0.1.98",
+  "controlled": [
+    {
+      "id": "search",
+      "pass": true,
+      "approval_count": 1,
+      "clarification_answered": false,
+      "full_review_observed": false,
+      "diagnostic_zip_redacted": true
+    },
+    {
+      "id": "notes",
+      "pass": true,
+      "approval_count": 1,
+      "clarification_answered": false,
+      "full_review_observed": false,
+      "diagnostic_zip_redacted": true
+    },
+    {
+      "id": "clarification",
+      "pass": true,
+      "approval_count": 1,
+      "clarification_answered": true,
+      "full_review_observed": false,
+      "diagnostic_zip_redacted": true
+    },
+    {
+      "id": "long-value",
+      "pass": true,
+      "approval_count": 1,
+      "clarification_answered": false,
+      "full_review_observed": true,
+      "diagnostic_zip_redacted": true
+    },
+    {
+      "id": "multiple",
+      "pass": true,
+      "approval_count": 2,
+      "clarification_answered": false,
+      "full_review_observed": false,
+      "diagnostic_zip_redacted": true
+    },
+    {
+      "id": "deny",
+      "pass": true,
+      "approval_count": 1,
+      "clarification_answered": false,
+      "full_review_observed": false,
+      "diagnostic_zip_redacted": true
+    }
+  ],
+  "live_trials": [
+    {
+      "run": "live",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "provider": "openai/gpt-4.1-mini",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: search: unexpected error\n\n1 !== 0\n"
+        },
+        {
+          "id": "notes",
+          "pass": false,
+          "provider": "openai/gpt-4.1-mini",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: notes: unexpected error\n\n1 !== 0\n"
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "openai/gpt-4.1-mini",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-probe",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "provider": "openai/gpt-4.1-mini",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: search: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-free",
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "provider": "openrouter/free",
+          "requests": 2,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": null
+        },
+        {
+          "id": "notes",
+          "pass": true,
+          "provider": "openrouter/free",
+          "requests": 2,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": null
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "openrouter/free",
+          "requests": 2,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: expected page state missing\n\nfalse !== true\n"
+        }
+      ]
+    },
+    {
+      "run": "live-clarification",
+      "cases": [
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "openrouter/free",
+          "requests": 2,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: expected page state missing\n\nfalse !== true\n"
+        }
+      ]
+    },
+    {
+      "run": "live-budget",
+      "cases": [
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "openai/gpt-4.1-mini",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-poolside",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "provider": "poolside/laguna-xs-2.1:free",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: search: unexpected error\n\n1 !== 0\n"
+        },
+        {
+          "id": "notes",
+          "pass": false,
+          "provider": "poolside/laguna-xs-2.1:free",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: notes: unexpected error\n\n1 !== 0\n"
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "poolside/laguna-xs-2.1:free",
+          "requests": 3,
+          "approval_count": null,
+          "clarification_answered": true,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: unexpected error\n\n2 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-poolside-question",
+      "cases": [
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "poolside/laguna-xs-2.1:free",
+          "requests": 1,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-final-question",
+      "cases": [
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "openrouter/free",
+          "requests": 2,
+          "approval_count": null,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: expected page state missing\n\nfalse !== true\n"
+        }
+      ]
+    },
+    {
+      "run": "live-laguna",
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "provider": "poolside/laguna-s-2.1:free",
+          "requests": 2,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": null
+        },
+        {
+          "id": "notes",
+          "pass": true,
+          "provider": "poolside/laguna-s-2.1:free",
+          "requests": 2,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": null
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "poolside/laguna-s-2.1:free",
+          "requests": 1,
+          "approval_count": 0,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: panel did not settle\n\n'stop' !== 'send'\n"
+        },
+        {
+          "id": "multiple",
+          "pass": false,
+          "provider": "poolside/laguna-s-2.1:free",
+          "requests": 1,
+          "approval_count": 0,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: multiple: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-cohere",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: search: raw value in diagnostic ZIP\n\nfalse !== true\n"
+        },
+        {
+          "id": "notes",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: notes: raw value in diagnostic ZIP\n\nfalse !== true\n"
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 0,
+          "clarification_answered": true,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: unexpected error\n\n2 !== 0\n"
+        },
+        {
+          "id": "multiple",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: multiple: raw value in diagnostic ZIP\n\nfalse !== true\n"
+        }
+      ]
+    },
+    {
+      "run": "live-qualified",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: search: raw value in diagnostic ZIP\n\nfalse !== true\n"
+        },
+        {
+          "id": "notes",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: notes: raw value in diagnostic ZIP\n\nfalse !== true\n"
+        },
+        {
+          "id": "multiple",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: multiple: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-gemma-question",
+      "cases": [
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "google/gemma-4-31b-it:free",
+          "requests": 1,
+          "approval_count": 0,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: unexpected error\n\n1 !== 0\n"
+        }
+      ]
+    },
+    {
+      "run": "live-route-fixed",
+      "cases": [
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "poolside/laguna-s-2.1:free",
+          "requests": 1,
+          "approval_count": 0,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: panel did not settle\n\n'stop' !== 'send'\n"
+        }
+      ]
+    },
+    {
+      "run": "live-closure",
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": null
+        },
+        {
+          "id": "notes",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 4,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: notes: panel did not settle\n\n'stop' !== 'send'\n"
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 2,
+          "approval_count": 0,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: expected page state missing\n\nfalse !== true\n"
+        },
+        {
+          "id": "multiple",
+          "pass": false,
+          "provider": "cohere/north-mini-code:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: multiple: panel did not settle\n\n'stop' !== 'send'\n"
+        }
+      ]
+    },
+    {
+      "run": "live-lightning",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "provider": "nvidia/nemotron-3.5-lightning:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: search: panel did not settle\n\n'stop' !== 'send'\n"
+        },
+        {
+          "id": "notes",
+          "pass": false,
+          "provider": "nvidia/nemotron-3.5-lightning:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: notes: panel did not settle\n\n'stop' !== 'send'\n"
+        },
+        {
+          "id": "clarification",
+          "pass": false,
+          "provider": "nvidia/nemotron-3.5-lightning:free",
+          "requests": 4,
+          "approval_count": 1,
+          "clarification_answered": true,
+          "error": "AssertionError [ERR_ASSERTION]: clarification: panel did not settle\n\n'stop' !== 'send'\n"
+        },
+        {
+          "id": "multiple",
+          "pass": false,
+          "provider": "nvidia/nemotron-3.5-lightning:free",
+          "requests": 3,
+          "approval_count": 1,
+          "clarification_answered": false,
+          "error": "AssertionError [ERR_ASSERTION]: multiple: panel did not settle\n\n'stop' !== 'send'\n"
+        }
+      ]
+    }
+  ],
+  "live_note": "Exploratory runs used successive worktree builds of 0.1.98; older asynchronous proxy response metadata may be attributed to a later request. Case pass/DOM observations and registered request counts are retained; response metadata is not promoted to qualification.",
+  "hashes": {
+    "extension/src/providers/openai-compatible.ts": "04167b63bcc8fc8e22a028bc640a5dd26a4f98bfd053790a495b1cfe7d7aa9b4",
+    "extension/src/service-worker/act-step-runner.ts": "7d0e4979add930bd024d9f9e534ba289b7bc915130503f8c16012f4398b76321",
+    "extension/src/service-worker/runtime-chat.ts": "7481dcf3b4a4bb0427daeefa16710a44dab88e8a50f76fdaa40318ec5241db8d",
+    "extension/src/service-worker/act-review-presentation.ts": "e94dcb7d57ffa602f948702aee7092dd3f6f467c02bab02a612269f813c23620",
+    "extension/src/diagnostics/trace-mask.ts": "fd193f32f243c9f730368350f18837d89ae719a6b3c85964573da39b94da9c1a",
+    "extension/src/diagnostics/trace-recording.ts": "d54a68e282ca032aa3e602ee1345516ef22e8252d9d6fb0856cadb237d06608a",
+    "extension/src/sidepanel/entry.ts": "9af272b1b7a25d84b942e66ea493e5a1a79a36134481f66d144c9ce1b9a95eab",
+    "extension/src/page-act-harness/value-binding.ts": "d25069b9abd0b8f97a4ea50d8037e5e0a64fbf97892939b5ea03480e414b4cec",
+    "scripts/chrome-s15-value-binding-smoke.mjs": "26113c905669a3d7c2e72d93c3e377bd6000e7a8cc6684eb516749baaf3c1b3b",
+    "scripts/chrome-accessible-items-smoke.mjs": "31f1b0612413723ba16e061796eea27ecf21e2d29029d25597fad25ed47ef6d5",
+    "scripts/chrome-diagnostics-zip-smoke.mjs": "e70e72eb21bfe82cd7c18ef08225f3f529a736e57b638223b059e6d5698a7913"
+  },
+  "verification": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "unit_fixture_e2e": {
+      "files": 130,
+      "tests": 612,
+      "result": "PASS"
+    },
+    "build": "PASS; no version bump; artifact 0.1.98",
+    "module_boundaries": {
+      "files": 265,
+      "result": "PASS"
+    },
+    "method_trace": {
+      "methods": 1532,
+      "modules": 167,
+      "result": "PASS"
+    },
+    "package_policy": "PASS",
+    "chrome_preview": "PASS",
+    "markdown_links": {
+      "documents": 109,
+      "unresolved": 0
+    },
+    "diff_check": "PASS",
+    "chrome_diagnostics_zip_regression": "PASS; assertion now checks masking, length and route instead of raw prompt"
+  }
+}

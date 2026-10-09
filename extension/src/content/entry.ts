@@ -1,3 +1,4 @@
+import { createPageResourceCollector } from "./page-resources.js";
 import {
   methodTraceSnapshot,
   setMethodTraceLevel,
@@ -657,7 +658,28 @@ const uiCompletion = createUiCompletionObserver({
   epoch: () => documentEpoch,
   resolve: actionableRef,
 });
+const pageResources = createPageResourceCollector(document, documentEpoch);
 runtime?.onMessage.addListener((message, sender, respond) => {
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    ["CONTENT_PAGE_RESOURCES", "CONTENT_PAGE_RESOURCE_READ"].includes(
+      String((message as { kind?: unknown }).kind),
+    )
+  ) {
+    if (
+      sender.id !== runtime.id ||
+      sender.url !== runtime.getURL("js/service-worker.js")
+    ) {
+      respond({ status: "DENIED" });
+      return true;
+    }
+    void pageResources
+      .handle(message as Record<string, unknown>)
+      .then(respond)
+      .catch(() => respond({ status: "FAILED" }));
+    return true;
+  }
   if (
     typeof message === "object" &&
     message !== null &&

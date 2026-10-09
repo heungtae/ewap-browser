@@ -2,7 +2,7 @@
 
 - 작성일: 2026-10-04
 - 상태: Review pending. 기존 문서의 수정·이동·삭제·상태 변경은 수행하지 않았다.
-- 기준: [신규 상세 설계](page-act-context-harness-design.md), [신규 Sprint 계획](sprint-page-act-context-harness-plan.md)
+- 기준: [신규 상세 설계](34-page-act-context-harness-design.md), [신규 Sprint 계획](sprint-page-act-context-harness-plan.md)
 - 사용자 지시: 현재 구현과 방향이 다를 수 있으므로 목록만 정리하고, 확인 후 동기화한다.
 
 ## 1. 검토 방법과 범위

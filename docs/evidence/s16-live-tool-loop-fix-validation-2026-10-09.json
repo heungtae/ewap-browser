@@ -1,0 +1,580 @@
+{
+  "date": "2026-10-09",
+  "status": "PASS",
+  "sprint_status": "Completed",
+  "scope": "Browser-local S16 on controlled HTTPS fixture, one live OpenRouter model, dirty worktree on fadab78fe; no release, real-site, Platform or S17-S20 qualification",
+  "provider": "OpenRouter",
+  "model": "nvidia/nemotron-3.5-lightning:free",
+  "version": "0.1.98",
+  "chrome": "Google Chrome for Testing 147.0.7727.15",
+  "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S16_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free S16_REPORT=/tmp/s16-final-live-nemotron-2026-10-09.json npm run test:chrome-s16",
+  "exit_code": 0,
+  "request_count": 10,
+  "all_http_200": true,
+  "tool_counts": {
+    "list_page_resources": 3,
+    "search_page_resources": 4,
+    "read_page_resource": 1
+  },
+  "recovered_errors": ["INVALID_CURSOR"],
+  "source_consent_ui_seen": true,
+  "source_before_consent_check_passed": true,
+  "same_call_id_results_verified": true,
+  "requested_calculation_present_in_read": true,
+  "final_answer_calculation_assertion_passed": true,
+  "final_answer_present": true,
+  "diagnostics_masked": true,
+  "source_sha256": {
+    "extension/src/content/page-resources.ts": "f507a00c9fff119ccbc0fcce8e00d56c57c8643d80e6922d16b1f44ba2e6f96d",
+    "extension/src/content/entry.ts": "57839e85daea53e862ded8852e55fbecd978d3b45404d2853ef449135fe52dd3",
+    "extension/src/contracts/page-resource-types.ts": "d0d6db424bcc1a75d6400df0416ccc84bf98fe8319a5043116ad77d73a009cec",
+    "extension/src/contracts/chat-events.ts": "098e542428bfd2b0843b3a46d1a20a7a853d45a895c6d2ea394d9f2c7117f26b",
+    "extension/src/service-worker/act-read-tool-registry.ts": "0f62ba64f2d27c15cfa9cd5da389d5f2ce5b71a07d9987e080b6068e644a168f",
+    "extension/src/service-worker/act-harness-turns.ts": "68677264670e0d03268fd259522648b9a8b57c1dba519981831f5967cce3e679",
+    "extension/src/service-worker/act-step-runner.ts": "22b3315c037292833c9e1d79c4286aa8f2398fffcaec147c3d04f51936e46150",
+    "extension/src/service-worker/act-chat-start.ts": "c39a33116c82dd39d82e92a10415dee67d20dc0a093347f01dbeb22d2b288508",
+    "extension/src/service-worker/act-session-types.ts": "203acab0a46b6ec1dd0bb086dfa526de400df55649b12a2c854c21c12aabfd67",
+    "extension/src/service-worker/ask-act-intent-router.ts": "fecb11a0fb9066443429f2cd9b5fe226b12928714bca0ca1535115ce9a2bda9d",
+    "extension/src/service-worker/page-resource-schemas.ts": "6770363b0c7e1f19fe93a07675e9e5501e42d4ce01f0a4cb568251adf3015bbf",
+    "extension/src/service-worker/page-resource-search.ts": "2cb61b7748a5e0803d4e3fa95ad61d2099b5eaf6978a0f33cd235f00b291f1d2",
+    "extension/src/service-worker/page-resource-store.ts": "f24b7c6da34063f7a9c2de2b3db3e8be9510cc0b86182bf6f054c9849f50bbc3",
+    "extension/src/service-worker/page-resource-tools.ts": "49d94719bb7a6b513986d148527e4413bf57b25f6227514df1a6aaf7664dcd1c",
+    "extension/src/service-worker/source-consent.ts": "e7ec2f76f1c0857258563035a857efe878fa226e77819eac654fcd075ae43b0a",
+    "extension/src/sidepanel/entry.ts": "4cfdb7fec41d691e30730199714057cf930c63d1abb1fa668fde6ab8519a3690",
+    "extension/src/page-act-harness/contracts.ts": "c2eb4d628d0461ed64109d0ec8179b933cfbac5b1042d1dbbf0e5d6ba2ea2d30",
+    "extension/src/diagnostics/trace-mask.ts": "1241f23b12bc48889853dcbbc80ac1261f47ad412d2f0f30681b2951a7e0d8e6",
+    "extension/src/diagnostics/trace-recording.ts": "f29b1912da8f6877ca5d2690bc4855775c1feae2cc4e04e3ed278b12cd863b6b",
+    "extension/src/providers/openai-compatible.ts": "04167b63bcc8fc8e22a028bc640a5dd26a4f98bfd053790a495b1cfe7d7aa9b4",
+    "extension/src/contracts/core-types.ts": "42167a5a664d1044208d8e8c200927d4c45bd02f4ba52c62bd6341431a8636bb",
+    "extension/src/contracts/error-codes.ts": "2e5af10668b9721d5f8759513bf0bf5dc5e6e256c640437c7a0d5c7f375316e6",
+    "extension/src/sidepanel/panel.ts": "a4bb9014a2d79224cb212771359a1762eff230681c57c8f361a071f9993187fe",
+    "extension/src/service-worker/page-resource-progress.ts": "462da54cb6b0ca9135cb572e54e9cf01c96a57a243511ca8b18dee87bcb4b157",
+    "extension/src/service-worker/source-read-answer-guard.ts": "0f0894d413b560ec110b5e984df4d87f9afbb89d698fa4c31b68f70ef9e84565"
+  },
+  "artifact_sha256": {
+    "dist-extension/js/service-worker.js": "b935792fa95c07ff29ac760edacce447d2a9b6d01725ec890ca48f271dc913e3",
+    "dist-extension/js/content.js": "48c59f1caedc210317f12961476e4d40fe55c2783bdbd28855cf020fa3f55e6a",
+    "dist-extension/js/panel.js": "7e6caaea0059d5f5f6cd421f1530cac64ed7c38572ef539d13f64148d12bdcc9",
+    "dist-extension/manifest.json": "7bee0156961f5f51287f058e20f5fbbf52be48a60e17d1de886e13352a52418c"
+  },
+  "verification_source_sha256": {
+    "scripts/chrome-s16-script-tools-smoke.mjs": "825dbf6ac34dab1a4f11c6b5d6d2e8e67736433dd0a1fba0b46b17eaeb0860e8",
+    "extension/tests/unit/service-worker/page-resource-tools.test.ts": "32fd932905c0f4f81b9f90b9cc39b25e2ca7a52c082cdc2a3e7486f8bdf11387",
+    "extension/tests/unit/service-worker/page-resource-collector.test.ts": "2a70d101447278fa4a935d7ef41d14baaae31f3232c0b9938cf5029c2a8c04aa",
+    "extension/tests/unit/service-worker/source-read-route.test.ts": "987aac0612f95d5e57dd265979b830ea769cbb772de740dac62fc10e550e23ee",
+    "extension/tests/unit/service-worker/page-resource-pagination.test.ts": "59dada927d44d6d4b129287e3cfc9bcd4fb0f429da878130f6b06343e10cb30c",
+    "extension/tests/unit/service-worker/page-resource-schema.test.ts": "86c11859f7ea9505844d231dba0ff0d0b9f774adc41df3c4a3dd5df6bfc82b49",
+    "extension/tests/unit/service-worker/source-read-answer-guard.test.ts": "f67e5af07987d520c339139647256ad95d330bb2fcd61ac09b7fde1ae8b1d56b",
+    "extension/tests/unit/service-worker/source-read-incomplete.test.ts": "969d3ea685cce362b1a3c47ac91ca094bd8d3e7b0a5ba31f6ab18f94553c7d62",
+    "extension/tests/unit/diagnostics/trace-mask.test.ts": "79cf8c451a2a6761a76f3b635a46911faf8c4cec5bdc82df8156024156bbc101"
+  },
+  "checks": {
+    "unit_fixture_e2e": {
+      "files": 137,
+      "tests": 645,
+      "pass": true
+    },
+    "typecheck": true,
+    "eslint": true,
+    "version_preserving_build": true,
+    "package_validation": true,
+    "module_boundaries": 275,
+    "method_trace": {
+      "runtime_modules": 176,
+      "methods_callbacks": 1599,
+      "pass": true
+    },
+    "diff_check": true,
+    "supplementary_source_size": {
+      "pass": false,
+      "oversized_files": 85,
+      "new_fix_modules_and_tests_below_200_lines": true
+    },
+    "lint": true,
+    "prettier": true
+  },
+  "controlled_chrome": [
+    {
+      "case": "allow",
+      "pass": true,
+      "diagnostics_masked": true
+    },
+    {
+      "case": "deny",
+      "pass": true,
+      "diagnostics_masked": true
+    },
+    {
+      "case": "stop",
+      "pass": true,
+      "diagnostics_masked": true
+    },
+    {
+      "case": "source-change",
+      "pass": true,
+      "diagnostics_masked": true
+    },
+    {
+      "case": "navigation",
+      "pass": true,
+      "diagnostics_masked": true
+    },
+    {
+      "case": "worker-restart",
+      "pass": true,
+      "diagnostics_masked": true
+    }
+  ],
+  "s15_input_chrome": {
+    "cases": [
+      "search",
+      "notes",
+      "clarification",
+      "long-value",
+      "multiple",
+      "deny"
+    ],
+    "pass_count": 6,
+    "pass": true,
+    "source": "console output; test script does not write S15_REPORT"
+  },
+  "intermediate_attempts": [
+    {
+      "revision_scope": "First correction build, before final schema and echo masking changes",
+      "pass": false,
+      "provider_requests": 1,
+      "http_status": 200,
+      "parsed_model_response": false,
+      "failure": "source consent UI not shown; no parsed classifier response; not a source-tool qualification"
+    },
+    {
+      "revision_scope": "After continuation/guard changes, before final primitive schema and echo masking",
+      "pass": false,
+      "provider_requests": 12,
+      "all_http_200": true,
+      "list_search_read_and_calculation_assertions_passed": true,
+      "failure": "raw script source in diagnostics ZIP via delta/message echo"
+    }
+  ],
+  "turns": [
+    {
+      "turn": 1,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 460,
+      "upstream_body_ms": 16771,
+      "offered_tools": [],
+      "chosen_tools": [],
+      "argument_types": [],
+      "new_results_since_previous_request": [],
+      "answer_present": true
+    },
+    {
+      "turn": 2,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 270,
+      "upstream_body_ms": 10432,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["list_page_resources"],
+      "argument_types": [
+        {
+          "tool": "list_page_resources",
+          "argument_types": {
+            "cursor": "str"
+          },
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [],
+      "answer_present": false
+    },
+    {
+      "turn": 3,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 308,
+      "upstream_body_ms": 1558,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["list_page_resources"],
+      "argument_types": [
+        {
+          "tool": "list_page_resources",
+          "argument_types": {},
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "FAILED",
+          "code": "INVALID_CURSOR",
+          "coverage": null,
+          "progress": null,
+          "hit_count": null,
+          "next_cursor_present": false
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 4,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 255,
+      "upstream_body_ms": 4506,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["list_page_resources"],
+      "argument_types": [
+        {
+          "tool": "list_page_resources",
+          "argument_types": {
+            "page_size": "int",
+            "cursor": "str"
+          },
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 28,
+            "supplied_count": 20,
+            "complete": false,
+            "truncated": true
+          },
+          "progress": {
+            "inspected_count": 20,
+            "available_count": 20,
+            "unavailable_count": 0,
+            "total_count": 28,
+            "complete": false
+          },
+          "hit_count": null,
+          "next_cursor_present": true
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 5,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 247,
+      "upstream_body_ms": 8851,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["search_page_resources"],
+      "argument_types": [
+        {
+          "tool": "search_page_resources",
+          "argument_types": {
+            "query": "str"
+          },
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 28,
+            "supplied_count": 8,
+            "complete": false,
+            "truncated": false
+          },
+          "progress": {
+            "inspected_count": 28,
+            "available_count": 28,
+            "unavailable_count": 0,
+            "total_count": 28,
+            "complete": true
+          },
+          "hit_count": null,
+          "next_cursor_present": false
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 6,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 315,
+      "upstream_body_ms": 9804,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["search_page_resources"],
+      "argument_types": [
+        {
+          "tool": "search_page_resources",
+          "argument_types": {
+            "query": "str",
+            "cursor": "str"
+          },
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "scope": "first_match_per_resource",
+            "supplied_count": 8,
+            "total_count": 28,
+            "complete": false,
+            "truncated": true
+          },
+          "progress": {
+            "inspected_count": 8,
+            "available_count": 8,
+            "unavailable_count": 0,
+            "total_count": 28,
+            "complete": false
+          },
+          "hit_count": 0,
+          "next_cursor_present": true
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 7,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 273,
+      "upstream_body_ms": 1249,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["search_page_resources"],
+      "argument_types": [
+        {
+          "tool": "search_page_resources",
+          "argument_types": {
+            "cursor": "str",
+            "query": "str"
+          },
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "scope": "first_match_per_resource",
+            "supplied_count": 8,
+            "total_count": 28,
+            "complete": false,
+            "truncated": true
+          },
+          "progress": {
+            "inspected_count": 16,
+            "available_count": 16,
+            "unavailable_count": 0,
+            "total_count": 28,
+            "complete": false
+          },
+          "hit_count": 0,
+          "next_cursor_present": true
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 8,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 249,
+      "upstream_body_ms": 4143,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["search_page_resources"],
+      "argument_types": [
+        {
+          "tool": "search_page_resources",
+          "argument_types": {
+            "query": "str",
+            "cursor": "str"
+          },
+          "max_bytes": null,
+          "offset": null
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "scope": "first_match_per_resource",
+            "supplied_count": 8,
+            "total_count": 28,
+            "complete": false,
+            "truncated": true
+          },
+          "progress": {
+            "inspected_count": 24,
+            "available_count": 24,
+            "unavailable_count": 0,
+            "total_count": 28,
+            "complete": false
+          },
+          "hit_count": 0,
+          "next_cursor_present": true
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 9,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 252,
+      "upstream_body_ms": 4042,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": ["read_page_resource"],
+      "argument_types": [
+        {
+          "tool": "read_page_resource",
+          "argument_types": {
+            "resource_id": "str",
+            "resource_revision": "str",
+            "max_bytes": "int",
+            "offset": "int"
+          },
+          "max_bytes": 256,
+          "offset": 9
+        }
+      ],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "scope": "first_match_per_resource",
+            "supplied_count": 4,
+            "total_count": 28,
+            "complete": false,
+            "truncated": false
+          },
+          "progress": {
+            "inspected_count": 28,
+            "available_count": 27,
+            "unavailable_count": 1,
+            "total_count": 28,
+            "complete": false
+          },
+          "hit_count": 1,
+          "next_cursor_present": false
+        }
+      ],
+      "answer_present": false
+    },
+    {
+      "turn": 10,
+      "http_status": 200,
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_headers_ms": 253,
+      "upstream_body_ms": 3363,
+      "offered_tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource"
+      ],
+      "chosen_tools": [],
+      "argument_types": [],
+      "new_results_since_previous_request": [
+        {
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "scope": "offset:9",
+            "complete": false,
+            "collected_count": 10515,
+            "supplied_count": 256,
+            "truncated": true,
+            "reason": "CHUNK_LIMIT",
+            "byte_space": "masked_utf8"
+          },
+          "progress": null,
+          "hit_count": null,
+          "next_cursor_present": false
+        }
+      ],
+      "answer_present": true
+    }
+  ]
+}

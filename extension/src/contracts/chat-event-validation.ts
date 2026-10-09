@@ -53,6 +53,7 @@ const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   permission_required: ["request_id", "action", "capability", "host"],
   value_required: ["action", "value_kind"],
   confirmation_required: ["action", "confirmation_id", "confirmation_nonce"],
+  source_consent_required: ["request_id", "resource_count", "host"],
   run_terminal: ["outcome", "code"],
 };
 export const hasExactChatEventKeys = (
@@ -83,6 +84,10 @@ export const validateActionView = (value: unknown): ChatActionView => {
           "approval_reason",
           "origin",
           "suggested_value",
+          "suggested_value_length",
+          "suggested_value_truncated",
+          "suggested_value_tail",
+          "suggested_value_digest",
           "workflow_title",
           "workflow_step",
           "workflow_total",
@@ -100,6 +105,14 @@ export const validateActionView = (value: unknown): ChatActionView => {
     (value.origin !== undefined && typeof value.origin !== "string") ||
     (value.suggested_value !== undefined &&
       typeof value.suggested_value !== "string") ||
+    (value.suggested_value_length !== undefined &&
+      !positiveInteger(value.suggested_value_length)) ||
+    (value.suggested_value_truncated !== undefined &&
+      typeof value.suggested_value_truncated !== "boolean") ||
+    (value.suggested_value_tail !== undefined &&
+      typeof value.suggested_value_tail !== "string") ||
+    (value.suggested_value_digest !== undefined &&
+      typeof value.suggested_value_digest !== "string") ||
     (value.workflow_title !== undefined &&
       typeof value.workflow_title !== "string") ||
     (value.workflow_step !== undefined &&
@@ -127,7 +140,19 @@ export const validateActionView = (value: unknown): ChatActionView => {
       ? { origin: string(value.origin, 512) }
       : {}),
     ...(typeof value.suggested_value === "string"
-      ? { suggested_value: string(value.suggested_value, 512) }
+      ? { suggested_value: string(value.suggested_value, 4096) }
+      : {}),
+    ...(typeof value.suggested_value_length === "number"
+      ? { suggested_value_length: value.suggested_value_length }
+      : {}),
+    ...(typeof value.suggested_value_truncated === "boolean"
+      ? { suggested_value_truncated: value.suggested_value_truncated }
+      : {}),
+    ...(typeof value.suggested_value_tail === "string"
+      ? { suggested_value_tail: string(value.suggested_value_tail, 64) }
+      : {}),
+    ...(typeof value.suggested_value_digest === "string"
+      ? { suggested_value_digest: string(value.suggested_value_digest, 16) }
       : {}),
     ...(typeof value.workflow_title === "string"
       ? { workflow_title: string(value.workflow_title, 160) }

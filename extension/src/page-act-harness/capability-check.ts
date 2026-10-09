@@ -13,6 +13,9 @@ export const ACT_READ_TOOLS = [
   "get_page_text",
   "find",
   "read_semantic_projection",
+  "list_page_resources",
+  "search_page_resources",
+  "read_page_resource",
 ] as const;
 
 // Name-level agreement only: executor binding/shape/version checks belong to

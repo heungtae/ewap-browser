@@ -40,6 +40,8 @@ export const userMessage: Record<ErrorCode, string> = {
   CHAT_STORAGE_QUOTA_EXCEEDED: "이 탭의 대화 저장 한도를 초과했습니다.",
   SESSION_STREAM_BUSY: "다른 탭에서 응답을 생성하고 있습니다.",
   CONTEXT_BUDGET_EXCEEDED: "요청이 대화 문맥 한도를 초과했습니다.",
+  SOURCE_SEARCH_INCOMPLETE:
+    "소스 검색이 부분적으로 끝나 답변 근거가 부족합니다.",
   INPUT_REDACTED: "민감한 정보가 포함되어 요청을 보낼 수 없습니다.",
   TRANSFER_STALE: "전달 대상 페이지가 변경되어 대화를 이어갈 수 없습니다.",
   INTERNAL_FAILURE: "작업을 안전하게 완료할 수 없습니다.",

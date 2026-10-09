@@ -266,6 +266,8 @@ const proposalExecutor = createActProposalExecutor({
   publishTerminal: publishActTerminal,
   actionView,
   continueWorkflow: actStepRunner.continueWorkflow,
+  continueAfterClarification: async (session) =>
+    actStepRunner.runStep(session, session.runId),
   endSession: (session) => {
     const run = session.runId
       ? coordinator.runs.byId(session.runId)

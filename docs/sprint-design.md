@@ -1,5 +1,22 @@
 # Sprint 설계 인덱스
 
+## Browser Act 도구 루프 후속 단계 (2026-10-06)
+
+[34번 설계 16절](34-page-act-context-harness-design.md#16-도구-사용법-제공과-llm-탐색실행-루프의-완성)을 따른다.
+Browser가 사용법과 실행 수단을 제공하고 LLM이 탐색·입력·계획·완료 여부를 판단한다.
+아래 Browser Act 식별자는 기존 Enterprise 배포 S15와 구분하며 과거 완료 기록은 유지한다.
+
+- [S15 / PAH-9 입력값·추가 질문](sprints/s15-pah-9-llm-input-value-binding.md)
+- [S16 Script 목록·검색·부분 읽기](sprints/s16-page-script-tool-loop.md)
+- [S17 계획·실행 결과 피드백](sprints/s17-act-plan-execution-feedback.md)
+- [S18 Workflow 목록·원본 읽기](sprints/s18-workflow-resource-tools.md)
+- [S19 Component 데이터·시각 읽기](sprints/s19-component-data-tools.md)
+- [S20 전체 루프 live 검증](sprints/s20-act-tool-loop-live-qualification.md)
+
+최초 계획은 S16~S20 Planned였다. 현재 S16은
+[2026-10-09 live 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md) 기준
+Browser-local Completed이며 S17~S20은 Planned다.
+
 ## Community 우선 출시와 Enterprise 후속 단계 (2026-10-04)
 
 [후속 Sprint 계획](sprints/community-release-enterprise-followup.md)을 따른다.

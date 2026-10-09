@@ -106,6 +106,37 @@ const genericActNavigateTool = (
   },
 });
 
+export const requestClarificationTool = (
+  targets: readonly string[],
+): ProviderToolDefinition => ({
+  type: "function",
+  function: {
+    name: "request_clarification",
+    description:
+      "Ask the user for a missing or ambiguous input value. Use only when the original request plus related user responses and the latest UI do not carry a clear value or target/value mapping. The question is shown in a value card; the answer returns into the same conversation and a new input proposal follows. Never guess a value and never use keyword or regex extraction.",
+    parameters: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        question: {
+          type: "string",
+          minLength: 1,
+          maxLength: 2000,
+          description: "The exact question for the missing value.",
+        },
+        value_kind: {
+          type: "string",
+          enum: ["text", "option"],
+        },
+        ...(targets.length > 0
+          ? { target: { type: "string", enum: [...targets] } }
+          : {}),
+      },
+      required: ["question", "value_kind"],
+    },
+  },
+});
+
 /**
  * Function tools remain generic by action type, while each target parameter is
  * constrained to the fresh opaque refs from this exact page projection.
@@ -116,8 +147,8 @@ export const genericActTools = (
   snapshot: SemanticSnapshot,
   allowedRefIds?: ReadonlySet<string>,
   pageApiActions: readonly PageApiActionRef[] = [],
-): ProviderToolDefinition[] =>
-  [
+): ProviderToolDefinition[] => {
+  const base = [
     ...definitions.flatMap((definition): ProviderToolDefinition[] => {
       const targets = eligibleTargets(
         definition,
@@ -137,12 +168,25 @@ export const genericActTools = (
             function: {
               name: "propose_set_text",
               description:
-                "Propose a visible enabled text field allowed by the current action policy. The user supplies the value after approval; never ask for a credential.",
+                "Propose one visible enabled text field with the LLM-judged value. Judge from the original request plus related user responses and the latest UI which target gets which value and whether a question is needed. When the request already carries a clear value for this target, include that exact value with its source request revision; the approved value is then typed without an extra value card. When no value is present or the target/value mapping is ambiguous, do not guess: call request_clarification instead. Never use keyword, regex, or fixture-name extraction and never ask for a credential.",
               parameters: {
                 type: "object",
                 additionalProperties: false,
                 properties: {
                   target: targetParameter(targets),
+                  value: {
+                    type: "string",
+                    minLength: 1,
+                    maxLength: 4096,
+                    description:
+                      "The exact user-supplied value to type. Omit only for the legacy target-only path; new proposals must include it with value_source_revision.",
+                  },
+                  value_source_revision: {
+                    type: "integer",
+                    minimum: 1,
+                    description:
+                      "Request revision that supplied the value (original request or clarification answer). Must accompany value.",
+                  },
                   approval_scope: approvalScopeParameter,
                   approval_reason: approvalReasonParameter,
                 },
@@ -161,13 +205,19 @@ export const genericActTools = (
             function: {
               name: "propose_select_option",
               description:
-                "Propose one visible enabled option selection allowed by the current action policy. This is not execution and requires user approval.",
+                "Propose one visible enabled option selection with the LLM-judged enum value. Judge the target/value mapping from the original request plus related user responses and the latest UI; ambiguous cases must call request_clarification instead of guessing. New proposals must include value_source_revision with the value so the binding proves freshness.",
               parameters: {
                 type: "object",
                 additionalProperties: false,
                 properties: {
                   target: targetParameter(targets),
                   value: { type: "string", enum: definition.option_values },
+                  value_source_revision: {
+                    type: "integer",
+                    minimum: 1,
+                    description:
+                      "Request revision that supplied the value (original request or clarification answer).",
+                  },
                   approval_scope: approvalScopeParameter,
                   approval_reason: approvalReasonParameter,
                 },
@@ -276,3 +326,23 @@ export const genericActTools = (
           },
         ]),
   ] as ProviderToolDefinition[];
+  // PAH-9: value clarification is offered alongside text/option inputs so the
+  // model can ask instead of guessing. It carries no approval fields and
+  // never executes; the answer returns into the same conversation.
+  const clarificationTargets = definitions.flatMap((definition) =>
+    definition.tool === "set_text_by_ref" ||
+    definition.tool === "select_option_by_ref"
+      ? eligibleTargets(definition, modelSnapshot, snapshot, allowedRefIds)
+      : [],
+  );
+  const hasInputTool = definitions.some(
+    (definition) =>
+      definition.tool === "set_text_by_ref" ||
+      definition.tool === "select_option_by_ref",
+  );
+  if (!hasInputTool) return base;
+  return [
+    ...base,
+    requestClarificationTool([...new Set(clarificationTargets)]),
+  ];
+};

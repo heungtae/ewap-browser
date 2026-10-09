@@ -1,0 +1,730 @@
+{
+  "status": "In Progress",
+  "date": "2026-10-08",
+  "scope": "Browser-local dirty worktree on fadab78fe; no release or Platform qualification",
+  "version": "0.1.98",
+  "source_sha256": {
+    "extension/src/content/page-resources.ts": "f507a00c9fff119ccbc0fcce8e00d56c57c8643d80e6922d16b1f44ba2e6f96d",
+    "extension/src/content/entry.ts": "57839e85daea53e862ded8852e55fbecd978d3b45404d2853ef449135fe52dd3",
+    "extension/src/contracts/page-resource-types.ts": "d0d6db424bcc1a75d6400df0416ccc84bf98fe8319a5043116ad77d73a009cec",
+    "extension/src/contracts/chat-events.ts": "098e542428bfd2b0843b3a46d1a20a7a853d45a895c6d2ea394d9f2c7117f26b",
+    "extension/src/service-worker/act-read-tool-registry.ts": "0f62ba64f2d27c15cfa9cd5da389d5f2ce5b71a07d9987e080b6068e644a168f",
+    "extension/src/service-worker/act-harness-turns.ts": "53fc4cfdfec38bb73c931fd1d004e2953f0fa85acde892184d255aed9dc587ab",
+    "extension/src/service-worker/act-step-runner.ts": "6392cb6c9b2ddcea396bee733a05c0b65432b79d78c349a013973ca3a2dedf25",
+    "extension/src/service-worker/act-chat-start.ts": "c39a33116c82dd39d82e92a10415dee67d20dc0a093347f01dbeb22d2b288508",
+    "extension/src/service-worker/act-session-types.ts": "23f9e59d76c2322d5db797a06979bbee7ef90b785e4f9eb77bf9d7972b72ec2e",
+    "extension/src/service-worker/ask-act-intent-router.ts": "fecb11a0fb9066443429f2cd9b5fe226b12928714bca0ca1535115ce9a2bda9d",
+    "extension/src/service-worker/page-resource-schemas.ts": "b9ac9fc6dee2c156a4546be06421e3c7f1f862e256dadec3483f1ae44711ce5b",
+    "extension/src/service-worker/page-resource-search.ts": "fe0a64b011864f22fc0b7edf0351ab9257438ebe2530c482bab5fdcde26473bf",
+    "extension/src/service-worker/page-resource-store.ts": "f24b7c6da34063f7a9c2de2b3db3e8be9510cc0b86182bf6f054c9849f50bbc3",
+    "extension/src/service-worker/page-resource-tools.ts": "6f50865e7ff83cdfe4fc90409a6915d766baf52ef1b7cdcd68da225d48201c1e",
+    "extension/src/service-worker/source-consent.ts": "e7ec2f76f1c0857258563035a857efe878fa226e77819eac654fcd075ae43b0a",
+    "extension/src/sidepanel/entry.ts": "4cfdb7fec41d691e30730199714057cf930c63d1abb1fa668fde6ab8519a3690",
+    "extension/src/page-act-harness/contracts.ts": "c2eb4d628d0461ed64109d0ec8179b933cfbac5b1042d1dbbf0e5d6ba2ea2d30",
+    "extension/src/diagnostics/trace-mask.ts": "79c6364ac923a8211fecc3e77114bfbd17592843dda44fe6ca3c8bb8f0424f11",
+    "extension/src/diagnostics/trace-recording.ts": "f29b1912da8f6877ca5d2690bc4855775c1feae2cc4e04e3ed278b12cd863b6b",
+    "extension/src/providers/openai-compatible.ts": "04167b63bcc8fc8e22a028bc640a5dd26a4f98bfd053790a495b1cfe7d7aa9b4"
+  },
+  "artifact_sha256": {
+    "dist-extension/js/service-worker.js": "ebe26476c75d067a819475290247107c7ff3ee9695bb51069a25d4a8e7583cc8",
+    "dist-extension/js/content.js": "c284dfb6779196df34cf747333aad50fd1088bfedf5367c60f59037a3246c863",
+    "dist-extension/js/panel.js": "759f70bf1587b094ff776f55114da1ee004c1eadddb77fe088a81508d8210b50",
+    "dist-extension/manifest.json": "7bee0156961f5f51287f058e20f5fbbf52be48a60e17d1de886e13352a52418c"
+  },
+  "verification_source_sha256": {
+    "scripts/chrome-s16-script-tools-smoke.mjs": "f7f24cc838f35fe7a2a2a991e7f12e470e6e00f6f27ffb63694978855960129b",
+    "extension/tests/unit/service-worker/page-resource-tools.test.ts": "28207a5f9c68f518695b0a30d848facb8770d7719a8d219ca7f9bf639672eea8",
+    "extension/tests/unit/service-worker/page-resource-collector.test.ts": "2a70d101447278fa4a935d7ef41d14baaae31f3232c0b9938cf5029c2a8c04aa",
+    "extension/tests/unit/service-worker/source-read-route.test.ts": "987aac0612f95d5e57dd265979b830ea769cbb772de740dac62fc10e550e23ee"
+  },
+  "checks": {
+    "unit_fixture_e2e": {
+      "files": 133,
+      "tests": 633,
+      "pass": true
+    },
+    "typecheck": true,
+    "eslint": true,
+    "prettier": true,
+    "version_preserving_build": true,
+    "module_boundaries": 273,
+    "package_validation": true,
+    "method_trace": {
+      "runtime_modules": 174,
+      "methods_callbacks": 1590
+    },
+    "diff_check": true,
+    "supplementary_source_size": {
+      "pass": false,
+      "reason": "existing files plus new smoke/test files exceed 200 lines; new production modules below 200"
+    }
+  },
+  "controlled_chrome": [
+    {
+      "case": "allow",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 7,
+      "diagnostics_masked": true,
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": false
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "supplied_count": 4,
+            "total_count": 4,
+            "complete": false,
+            "truncated": false
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": false,
+            "collected_count": 10515,
+            "supplied_count": 120,
+            "truncated": true,
+            "reason": "CHUNK_LIMIT",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": false,
+            "collected_count": 10515,
+            "supplied_count": 120,
+            "truncated": true,
+            "reason": "CHUNK_LIMIT",
+            "byte_space": "masked_utf8"
+          }
+        }
+      ],
+      "final_answer_present": false
+    },
+    {
+      "case": "deny",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 5,
+      "diagnostics_masked": true,
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": false
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "supplied_count": 4,
+            "total_count": 4,
+            "complete": false,
+            "truncated": false
+          }
+        }
+      ],
+      "final_answer_present": false
+    },
+    {
+      "case": "stop",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": true,
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": false
+          }
+        }
+      ],
+      "final_answer_present": false
+    },
+    {
+      "case": "source-change",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 5,
+      "diagnostics_masked": true,
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": false
+          }
+        },
+        {
+          "tool": null,
+          "status": "STALE",
+          "code": "SOURCE_CHANGED",
+          "coverage": {}
+        }
+      ],
+      "final_answer_present": false
+    },
+    {
+      "case": "navigation",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": true,
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": false
+          }
+        }
+      ],
+      "final_answer_present": false
+    },
+    {
+      "case": "worker-restart",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": true,
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": null,
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 4,
+            "supplied_count": 2,
+            "complete": false,
+            "truncated": false
+          }
+        }
+      ],
+      "final_answer_present": false
+    }
+  ],
+  "s15_input_chrome": [
+    {
+      "case": "search",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 3,
+      "diagnostics_masked": true,
+      "synthetic_prompt": "Search query에 browser test를 입력해줘.",
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [],
+      "final_answer_present": false
+    },
+    {
+      "case": "notes",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 3,
+      "diagnostics_masked": true,
+      "synthetic_prompt": "Draft annotation에 다음 문자열 그대로 써 주세요: holdout ‘서울’ / 42",
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [],
+      "final_answer_present": false
+    },
+    {
+      "case": "clarification",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": true,
+      "synthetic_prompt": "검색을 하고 싶어.",
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [],
+      "final_answer_present": false
+    },
+    {
+      "case": "long-value",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 3,
+      "diagnostics_masked": true,
+      "synthetic_prompt": "Search query에 다음 문자열을 정확하게 입력해줘: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaamiddle-visiblezzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [],
+      "final_answer_present": false
+    },
+    {
+      "case": "multiple",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": true,
+      "synthetic_prompt": "Search query에 first ⟪holdout⟫, Draft annotation에 second 'quoted'를 각각 입력해줘.",
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [],
+      "final_answer_present": false
+    },
+    {
+      "case": "deny",
+      "pass": true,
+      "provider": "controlled",
+      "call_count": 2,
+      "diagnostics_masked": true,
+      "synthetic_prompt": "Search query에 deny test를 입력해줘.",
+      "chosen_tools": [],
+      "upstream_statuses": [],
+      "tool_results": [],
+      "final_answer_present": false
+    }
+  ],
+  "live_direct_read": [
+    {
+      "case": "allow",
+      "pass": false,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": null,
+      "failure": "AssertionError [ERR_ASSERTION]: live model did not choose list_page_resources",
+      "chosen_tools": [
+        [
+          "search_page_resources"
+        ],
+        [
+          "read_page_resource"
+        ]
+      ],
+      "upstream_statuses": [
+        200,
+        200,
+        200,
+        200
+      ],
+      "tool_results": [
+        {
+          "tool": "search_page_resources",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "supplied_count": 4,
+            "total_count": 4,
+            "complete": false,
+            "truncated": false
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": false,
+            "collected_count": 10515,
+            "supplied_count": 8192,
+            "truncated": true,
+            "reason": "CHUNK_LIMIT",
+            "byte_space": "masked_utf8"
+          }
+        }
+      ],
+      "revision_scope": "Earlier 0.1.98 exploratory build; not final source-only system prompt qualification",
+      "final_answer_present": true
+    }
+  ],
+  "live_list_search_read": [
+    {
+      "case": "allow",
+      "pass": false,
+      "provider": "controlled",
+      "call_count": 4,
+      "diagnostics_masked": null,
+      "failure": "AssertionError [ERR_ASSERTION]: live model did not choose list_page_resources",
+      "chosen_tools": [
+        [
+          "search_page_resources"
+        ],
+        [
+          "read_page_resource"
+        ]
+      ],
+      "upstream_statuses": [
+        200,
+        200,
+        200,
+        200
+      ],
+      "tool_results": [
+        {
+          "tool": "search_page_resources",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "supplied_count": 4,
+            "total_count": 4,
+            "complete": false,
+            "truncated": false
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 10515,
+            "supplied_count": 10515,
+            "total_count": 10515,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        }
+      ],
+      "revision_scope": "Earlier 0.1.98 exploratory build; not final source-only system prompt qualification",
+      "final_answer_present": true
+    }
+  ],
+  "live_pagination_budget": [
+    {
+      "case": "allow",
+      "pass": false,
+      "provider": "controlled",
+      "call_count": 13,
+      "diagnostics_masked": null,
+      "failure": "AssertionError [ERR_ASSERTION]: live final answer missing",
+      "chosen_tools": [
+        [
+          "list_page_resources"
+        ],
+        [
+          "search_page_resources"
+        ],
+        [
+          "search_page_resources"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ],
+        [
+          "read_page_resource"
+        ]
+      ],
+      "upstream_statuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "tool_results": [
+        {
+          "tool": "list_page_resources",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "total_count": 28,
+            "supplied_count": 28,
+            "complete": true,
+            "truncated": false
+          }
+        },
+        {
+          "tool": "search_page_resources",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "supplied_count": 8,
+            "total_count": 28,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": "search_page_resources",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "supplied_count": 8,
+            "total_count": 28,
+            "complete": false,
+            "truncated": true
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        },
+        {
+          "tool": "read_page_resource",
+          "status": "AVAILABLE",
+          "code": null,
+          "coverage": {
+            "complete": true,
+            "collected_count": 28,
+            "supplied_count": 28,
+            "total_count": 28,
+            "truncated": false,
+            "reason": "CHUNK_COMPLETE",
+            "byte_space": "masked_utf8"
+          }
+        }
+      ],
+      "revision_scope": "Earlier 0.1.98 exploratory build; not final source-only system prompt qualification",
+      "final_answer_present": false
+    }
+  ],
+  "final_live_attempt": [
+    {
+      "case": "allow",
+      "pass": false,
+      "provider": "controlled",
+      "call_count": 1,
+      "diagnostics_masked": null,
+      "failure": "AssertionError [ERR_ASSERTION]: source consent UI not shown\n\nfalse !== true\n",
+      "chosen_tools": [],
+      "upstream_statuses": [
+        429
+      ],
+      "tool_results": [],
+      "revision_scope": "After source-only prompt, before final diagnostic-only masking patch; HTTP 429 at classifier; source flow not executed",
+      "final_answer_present": false
+    }
+  ]
+}

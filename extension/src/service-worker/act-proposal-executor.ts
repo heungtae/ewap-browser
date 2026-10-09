@@ -1,4 +1,5 @@
 import { fail } from "../security/validation.js";
+import { toHarnessRevision } from "../page-act-harness/act-entry-bridge.js";
 import { assertRequestActive } from "./request-context.js";
 import {
   gatePermission,
@@ -62,6 +63,9 @@ type Dependencies = {
     session: ActSession,
     proposal: ActProposal,
   ): Promise<Record<string, unknown>>;
+  continueAfterClarification?: (
+    session: ActSession,
+  ) => Promise<Record<string, unknown>>;
   endSession(session: ActSession): void;
 };
 
@@ -192,12 +196,22 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       session.continueAfterApproval = true;
       session.autoExecutionCount = 1;
     }
+    // PAH-9: bind the approved value proposal to its requesting revision.
+    // A clear LLM value executes without an extra card; a missing value in
+    // the harness path was already rejected before approval, so the legacy
+    // card here only serves pre-harness callers.
+    const expectedRevision = session.harnessCapabilities
+      ? session.requestContext
+        ? toHarnessRevision(session.requestContext.generation)
+        : session.harnessCapabilities.request_revision
+      : undefined;
     const prepared = prepareActProposal(
       dependencies,
       session,
       run,
       proposal,
       target,
+      expectedRevision,
     );
     if ("response" in prepared) return prepared.response;
     const ready: ReadyExecution = prepared.ready;
@@ -221,6 +235,11 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
     evidence: dependencies.evidence,
     getRun: dependencies.getRun,
     execute: dependencies.execute,
+    ...(dependencies.continueAfterClarification
+      ? {
+          continueAfterClarification: dependencies.continueAfterClarification,
+        }
+      : {}),
     complete: (session, run, proposal, executed, summaries) =>
       completeActProposal(
         dependencies,

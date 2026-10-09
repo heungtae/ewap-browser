@@ -71,3 +71,53 @@ describe("OpenAI-compatible adapter", () => {
     });
   });
 });
+
+it("encodes assistant tool calls for a Chat Completions clarification continuation", () => {
+  const messages = [
+    {
+      role: "assistant" as const,
+      content: "",
+      tool_calls: [
+        {
+          id: "clarification-1",
+          name: "request_clarification",
+          arguments: '{"question":"Which value?","value_kind":"text"}',
+        },
+      ],
+    },
+    {
+      role: "tool" as const,
+      tool_call_id: "clarification-1",
+      content: '{"answer":"synthetic value","request_revision":1}',
+    },
+    {
+      role: "user" as const,
+      content: "User clarification answer (revision 1): synthetic value",
+    },
+  ];
+  const plan = openAiCompatibleAdapter.plan({
+    wire_api: "chat_completions",
+    model: "fixture",
+    stream: true,
+    messages,
+  });
+  expect(plan.body.messages).toEqual([
+    {
+      role: "assistant",
+      content: "",
+      tool_calls: [
+        {
+          id: "clarification-1",
+          type: "function",
+          function: {
+            name: "request_clarification",
+            arguments: messages[0]!.tool_calls![0]!.arguments,
+          },
+        },
+      ],
+    },
+    messages[1],
+    messages[2],
+  ]);
+  expect(messages[0]!.tool_calls![0]!).not.toHaveProperty("function");
+});

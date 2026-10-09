@@ -84,7 +84,25 @@ export const openAiCompatibleAdapter: ProviderAdapter = {
             path: "/chat/completions",
             body: {
               model: request.model,
-              messages: request.messages,
+              messages: request.messages.map((message) => ({
+                role: message.role,
+                content: message.content,
+                ...(message.tool_call_id
+                  ? { tool_call_id: message.tool_call_id }
+                  : {}),
+                ...(message.tool_calls?.length
+                  ? {
+                      tool_calls: message.tool_calls.map((call) => ({
+                        id: call.id,
+                        type: "function",
+                        function: {
+                          name: call.name,
+                          arguments: call.arguments,
+                        },
+                      })),
+                    }
+                  : {}),
+              })),
               ...(request.tools ? { tools: request.tools } : {}),
               stream: request.stream,
             },

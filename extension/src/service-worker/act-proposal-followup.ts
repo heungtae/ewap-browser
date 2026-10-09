@@ -1,4 +1,7 @@
 import { fail } from "../security/validation.js";
+import { traceDecision } from "../diagnostics/method-trace.js";
+import { toHarnessRevision } from "../page-act-harness/act-entry-bridge.js";
+import { validateClarificationAnswer } from "../page-act-harness/value-binding.js";
 import type { Capability } from "../policy/permission-manager.js";
 import type {
   EnterprisePolicyDecision,
@@ -32,6 +35,12 @@ type Dependencies = {
     origin: string,
   ): Promise<Record<string, unknown>>;
   complete: Complete;
+  // PAH-9 clarification continuation: after a clarification answer, the same
+  // conversation continues with a new model proposal. Wired to the step
+  // runner in product; absent in unit paths (answer is then only recorded).
+  continueAfterClarification?: (
+    session: ActSession,
+  ) => Promise<Record<string, unknown>>;
 };
 
 const capabilityFor = (
@@ -64,6 +73,67 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
     session: ActSession,
     value: string,
   ): Promise<Record<string, unknown>> => {
+    // PAH-9 clarification answers take precedence: they return into the same
+    // model conversation for a new proposal instead of executing directly.
+    // Single-use and revision-bound; Stop/navigation/restart discards without
+    // reuse and never dispatches a mutation.
+    const clarification = session.awaitingClarification;
+    if (clarification) {
+      const run = dependencies.getRun(clarification.runId);
+      if (!run || run.phase === "TERMINAL") {
+        delete session.awaitingClarification;
+        return fail("VALUE_BINDING_INVALID");
+      }
+      if (session.requestContext?.signal.aborted) {
+        delete session.awaitingClarification;
+        return fail("POLICY_DENIED");
+      }
+      const expectedRevision = session.harnessCapabilities
+        ? session.requestContext
+          ? toHarnessRevision(session.requestContext.generation)
+          : session.harnessCapabilities.request_revision
+        : clarification.requestRevision;
+      if (
+        expectedRevision !== clarification.requestRevision ||
+        (session.harnessCapabilities !== undefined &&
+          clarification.requestRevision !== expectedRevision)
+      ) {
+        delete session.awaitingClarification;
+        return fail("VALUE_BINDING_INVALID");
+      }
+      let answer: string;
+      try {
+        answer = validateClarificationAnswer(value, clarification.valueKind);
+      } catch {
+        return fail("VALUE_BINDING_INVALID");
+      }
+      // Consume first: duplicate or late answers never re-enter the loop.
+      const toolCallId = clarification.toolCallId;
+      const questionLength = [...clarification.question].length;
+      delete session.awaitingClarification;
+      traceDecision("page-act-harness.clarification.answered", {
+        answer_length: [...answer].length,
+        question_length: questionLength,
+        value_kind: clarification.valueKind,
+        request_revision: clarification.requestRevision,
+      });
+      session.messages.push({
+        role: "tool",
+        tool_call_id: toolCallId,
+        content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({
+          clarification_id: clarification.clarificationId,
+          request_revision: clarification.requestRevision,
+          answer,
+        })}\n[/UNTRUSTED_TOOL_RESULT]`,
+      });
+      session.messages.push({
+        role: "user",
+        content: `User clarification answer (revision ${clarification.requestRevision}): ${answer}`,
+      });
+      if (dependencies.continueAfterClarification)
+        return dependencies.continueAfterClarification(session);
+      return { ok: true, state: "CLARIFICATION_ANSWERED" };
+    }
     const awaiting = session.awaitingValue;
     const proposal = session.proposal;
     const run = awaiting ? dependencies.getRun(awaiting.runId) : undefined;

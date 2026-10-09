@@ -14,6 +14,7 @@ import { isOpaqueId } from "../page-act-harness/contracts.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import {
   genericActSystemPrompt,
+  sourceReadSystemPrompt,
   type ActSession,
 } from "./act-session-types.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
@@ -171,7 +172,7 @@ export const createActChatStart =
     )
       return fail("PAGE_SCOPE_STALE");
     const route = await dependencies.route(value.prompt, active, context);
-    if (route !== "ACTION_REQUIRED")
+    if (route !== "ACTION_REQUIRED" && route !== "SOURCE_READ_REQUIRED")
       return dependencies.runReadOnly(value, context, {
         analysisRequested: route === "ANALYSIS_READ_REQUIRED",
         ...(options?.analysisSelection
@@ -226,11 +227,20 @@ export const createActChatStart =
       const session: ActSession = {
         ...(context ? { requestContext: context } : {}),
         id: dependencies.createId(),
+        ...(route === "SOURCE_READ_REQUIRED"
+          ? { sourceReadOnly: true as const }
+          : {}),
         tabId: active.tabId,
         origin: active.origin,
         prompt: value.prompt,
         messages: [
-          { role: "system", content: genericActSystemPrompt },
+          {
+            role: "system",
+            content:
+              route === "SOURCE_READ_REQUIRED"
+                ? sourceReadSystemPrompt
+                : genericActSystemPrompt,
+          },
           { role: "user", content: `User execution request: ${value.prompt}` },
         ],
         profile,
@@ -243,10 +253,17 @@ export const createActChatStart =
         session,
         value.prompt,
         active,
-        selected.definitions.map((definition) => definition.tool),
+        route === "SOURCE_READ_REQUIRED"
+          ? []
+          : selected.definitions.map((definition) => definition.tool),
         dependencies,
         context,
       );
+      if (route === "SOURCE_READ_REQUIRED") {
+        dependencies.sessions.set(session.id, session);
+        dependencies.finishActivity(activityId, "COMPLETED");
+        return dependencies.runStep(session);
+      }
       if (requestsCollectionAnalysis(value.prompt)) {
         const analysisScope = dependencies.pageScope(active);
         const analysisData = await dependencies.collectAnalysisData?.(

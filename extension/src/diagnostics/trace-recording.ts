@@ -63,13 +63,24 @@ export const append = (
   if (rank[eventLevel] > rank[level]) return;
   try {
     const dataCallback =
-      /(?:collection|analysis-data|page-api-read)/.test(method) &&
-      /(?:callback|cell|record)/i.test(method.split(":")[2] ?? "");
+      /(?:collection|analysis-data|page-api-read|page-resources|page-resource-|resource-reader|resource-inventory)/.test(
+        method,
+      ) && /(?:callback|cell|record)/i.test(method.split(":")[2] ?? "");
     const sensitiveData =
       dataCallback &&
       typeof input !== "boolean" &&
       typeof input !== "number" &&
       (event === "method.input" || event === "method.result");
+    // PAH-9/R2: validators in page-act-harness/value-binding.ts return the
+    // raw user-supplied value, and traceMethod records method.result
+    // verbatim. A bare string carries no sensitive field name for the masker,
+    // so wrap it as { value } here: the `value` key hits the sensitive_field
+    // rule and only the length survives. Lengths/kinds/revisions stay in the
+    // traceDecision records these validators already emit.
+    const valueBindingStringResult =
+      /page-act-harness\/value-binding/.test(method) &&
+      event === "method.result" &&
+      typeof input === "string";
     const entry: RecordEntry = {
       sequence: ++sequence,
       timestamp_ms: Date.now(),
@@ -80,7 +91,10 @@ export const append = (
       ...(context.parent ? { parent_call_id: context.parent.call_id } : {}),
       ...(duration === undefined ? {} : { duration_ms: duration }),
       detail: maskTraceValue(
-        sensitiveData ||
+        ((event === "method.input" || event === "method.result") &&
+          typeof input === "string") ||
+          sensitiveData ||
+          valueBindingStringResult ||
           /(?:insertText|typeText|screenshot|captureVisibleTab|submitValue)/i.test(
             method,
           )

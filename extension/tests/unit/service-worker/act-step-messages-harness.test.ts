@@ -41,4 +41,51 @@ describe("act step messages harness block", () => {
       ),
     ).toBe(false);
   });
+
+  it("keeps_clarification_answers_in_workflow_payloads", () => {
+    // R3: the fixed-step instruction must not drop the question/answer
+    // conversation — the retry turn needs the user's answer.
+    const session = {
+      ...sessionBase(),
+      workflow: {
+        declaration: { title: "Preview", steps: [{}, {}, {}] },
+        step: {},
+        count: 1,
+      },
+      messages: [
+        { role: "system", content: "system" },
+        {
+          role: "assistant",
+          content: "",
+          tool_calls: [
+            {
+              id: "call-clarify-abcdefgh",
+              name: "request_clarification",
+              arguments: "{}",
+            },
+          ],
+        },
+        {
+          role: "tool",
+          tool_call_id: "call-clarify-abcdefgh",
+          content:
+            "[UNTRUSTED_TOOL_RESULT]\n{clarification:1,answer:amber-moss-review}\n[/UNTRUSTED_TOOL_RESULT]",
+        },
+        {
+          role: "user",
+          content: "User clarification answer (revision 1): amber-moss-review",
+        },
+      ],
+    };
+    const payload = actStepMessages({
+      session,
+      profileContext: undefined,
+      projection:
+        "[UNTRUSTED_PAGE_PROJECTION]\ntext\n[/UNTRUSTED_PAGE_PROJECTION]",
+      threadContext: [],
+    } as never);
+    const text = JSON.stringify(payload);
+    expect(text).toContain("call-clarify-abcdefgh");
+    expect(text).toContain("amber-moss-review");
+  });
 });

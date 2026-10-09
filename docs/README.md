@@ -16,6 +16,10 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [Sprint 개발 계획](sprint-development-plan.md)
 - [Sprint 검증 계획](sprint-verification-plan.md)
 - [Sprint 진행 상태](sprint-progress.md)
+- [S15 / PAH-9 구현·검증 결과](evidence/s15-pah-9-closure-2026-10-08.md)
+- [S16 페이지 script 도구 구현·검증 결과](evidence/s16-script-tool-loop-2026-10-08.md)
+- [S16 Nemotron live Provider 재검증 — 2026-10-09](evidence/s16-live-nemotron-2026-10-09.md)
+- [S16 live 실패 수정·완료 검증 — 2026-10-09](evidence/s16-live-tool-loop-fix-2026-10-09.md)
 - [구현 실행 명세](12-low-cost-agent-implementation-spec.md)
 - [사이트 도구 및 모델 계약](13-site-tool-contract.md)
 - [Semantic Projection 계약](14-semantic-projection-fingerprint.md)
@@ -38,6 +42,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [Act 요청 처리 현재 구현 경로](31-act-request-execution-current-implementation.md)
 - [Ask/Act 분석 데이터 수집 통합 설계 — Proposed](32-ask-act-analysis-data-acquisition-design.md)
 - [Ask 요청 처리 현재 구현 경로](33-ask-request-execution-current-implementation.md)
+- [현재 페이지의 문맥 수집과 LLM 기반 Act Harness 상세 설계](34-page-act-context-harness-design.md)
 
 ## 비규범 참고자료
 

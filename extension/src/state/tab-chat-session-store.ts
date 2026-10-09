@@ -37,6 +37,7 @@ const persistent = (event: ChatEvent): boolean =>
   ![
     "action_review_required",
     "permission_required",
+    "source_consent_required",
     "value_required",
     "confirmation_required",
   ].includes(event.type);
@@ -92,6 +93,7 @@ const diagnosticEvent = (event: ChatEvent): Record<string, unknown> => {
       return { ...base, capability: event.capability };
     case "value_required":
       return { ...base, value_kind: event.value_kind };
+    case "source_consent_required":
     case "confirmation_required":
     case "page_scope_changed":
       return base;
