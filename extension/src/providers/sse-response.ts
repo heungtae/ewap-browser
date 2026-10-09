@@ -19,6 +19,7 @@ export const parseSseProviderBody = (
   allowEmpty = false,
 ): unknown => {
   let content = "";
+  let finishReason: string | undefined;
   const calls = new Map<string, StreamedCall>();
   for (const line of body.split(/\r?\n/)) {
     if (!line.startsWith("data:")) continue;
@@ -32,7 +33,16 @@ export const parseSseProviderBody = (
     }
     rejectBrowserAuthority(event);
     if (!isPlainObject(event)) continue;
+    if (
+      event.type === "response.incomplete" &&
+      isPlainObject(event.response) &&
+      isPlainObject(event.response.incomplete_details) &&
+      event.response.incomplete_details.reason === "max_output_tokens"
+    )
+      finishReason = "length";
     const choice = Array.isArray(event.choices) ? event.choices[0] : undefined;
+    if (isPlainObject(choice) && typeof choice.finish_reason === "string")
+      finishReason = choice.finish_reason;
     const delta =
       isPlainObject(choice) && isPlainObject(choice.delta)
         ? choice.delta
@@ -91,11 +101,17 @@ export const parseSseProviderBody = (
   const toolCalls = [...calls.values()].filter(
     (call) => call.name && call.arguments,
   );
-  if (!content && toolCalls.length === 0 && !allowEmpty)
+  if (
+    !content &&
+    toolCalls.length === 0 &&
+    !allowEmpty &&
+    finishReason !== "length"
+  )
     return fail("PROVIDER_UNAVAILABLE");
   return {
     choices: [
       {
+        ...(finishReason ? { finish_reason: finishReason } : {}),
         message: {
           content,
           ...(toolCalls.length

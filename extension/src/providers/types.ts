@@ -66,6 +66,7 @@ export type ProviderMessage = {
   tool_call_id?: string;
 };
 export type ProviderChatResponse = {
+  finish_reason?: string;
   content: string;
   tool_calls: ProviderToolCall[];
 };

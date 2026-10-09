@@ -6,6 +6,8 @@ export const userMessage: Record<ErrorCode, string> = {
   WORKFLOW_DISCOVERY_TIMEOUT: "워크플로우 확인 제한 시간이 초과되었습니다.",
   PROVIDER_BODY_IDLE_TIMEOUT: "AI 응답 수신이 지연되어 중단했습니다.",
   REQUEST_TIMEOUT: "작업 제한 시간이 초과되었습니다.",
+  GOAL_INCOMPLETE:
+    "동작은 검증됐지만 요청한 목표에 남은 작업이 있습니다. 다음 작업을 지정해 주세요.",
   INVALID_ARGUMENT: "작업 요청 형식이 올바르지 않습니다.",
   DOCUMENT_NOT_REGISTERED:
     "페이지가 다시 준비되는 중입니다. 잠시 후 다시 확인해 주세요.",
@@ -99,6 +101,11 @@ export type FailureHelp = {
 };
 export const failureHelp = (code?: string): FailureHelp => {
   switch (code) {
+    case "GOAL_INCOMPLETE":
+      return {
+        guidance:
+          "검증된 동작은 반복하지 않습니다. 이어서 수행할 작업을 새 요청으로 알려 주세요.",
+      };
     case "PROVIDER_NOT_CONFIGURED":
     case "PROVIDER_PLUGIN_NOT_FOUND":
     case "PROVIDER_PLUGIN_INCOMPATIBLE":

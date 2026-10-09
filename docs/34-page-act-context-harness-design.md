@@ -446,6 +446,18 @@ value card는 LLM이 값이 없거나 모호하다고 판단하여 추가 입력
 
 `propose_set_text`를 비롯한 관련 입력 제안 계약은 LLM이 판단한 대상과 실제 적용할
 값, 값의 출처인 사용자 request/clarification revision을 함께 전달할 수 있어야 한다.
+긴 원문을 모델이 반복 생성하지 않도록 내부 `propose_set_text`는 `value` 대신
+`value_span: {source_id, start, end}`를 선택할 수 있다. 256 UTF-16 code units보다 긴
+원래 요청에만 turn-local opaque source ID와 문자 경계 근거를 제공한다. offset은 UTF-16,
+end는 exclusive이며 모델이 대상과 범위를 선택한다. core는 업무 의미를 추출하지 않고
+현재 source ID·request revision·정수 범위·Unicode 경계·4096자 한도를 확인해 substring을
+복원한다. literal과 span의 동시 제출, 이전 turn의 ID, stale revision은 거부한다.
+복원된 전체 값은 기존 parser·민감값 정책·계획 결속·승인 카드·dispatch 검증을 그대로
+통과해야 한다. 원문과 경계 문자 배열은 영구 transcript·trace·ZIP에 남기지 않는다.
+provider `finish_reason:length` 및 invalid JSON은 실행하지 않고 동일 call ID 오류로
+한 번만 재제출을 요청한다. 여러 mutation 제안을 한 응답에 제출해도 임의로 선택하거나
+실행하지 않고 검토할 계획을 요청한다. 두 번째 계약 오류와 취소는 종료한다.
+
 계획 검토·승인 화면에서 적용할 대상과 값을 확인할 수 있게 하되 민감값은 기존 표시
 경계를 따른다. 명확한 값의 자동 입력은 기존 계획·동작 승인과 permission 확인 이후에
 수행하며, 값 제공 자체를 실행 승인으로 취급하지 않는다.

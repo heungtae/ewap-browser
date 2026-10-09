@@ -1,11 +1,23 @@
 # PAH-9 — LLM의 입력값 판단·자동 입력·추가 질문
 
-상태: In Progress. 추가일: 2026-10-06. 의존성: PAH-3의 모델 continuation,
+상태: Completed (Browser-local, 지정 fixture·OpenAI 모델 범위). 추가일: 2026-10-06. 의존성: PAH-3의 모델 continuation,
 PAH-6의 승인·실행 연결. 기준: [상세 설계 9.1절](../34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속).
 2026-10-08: 구현·단위/계약·통제 Provider+Chrome 6건 및 실제 진단 ZIP 검증을 수행했다.
 실제 Provider의 질문 도구 선택·continuation 종료·holdout 완료가 아직 일관되게 통과하지
 않아 Completed는 보류한다. [최신 검증 기록](../evidence/s15-pah-9-closure-2026-10-08.md)과
 [안전한 실행 요약](../evidence/s15-pah-9-validation-2026-10-08.json)을 참고한다.
+
+2026-10-09 수정 전: OpenAI `gpt-6-luna`로 기본 live 4/6 PASS, clarification 종료·긴 값 FAIL.
+입력만 명시한 보조 질문은 PASS이며 긴 값은 8192 output tokens에서도 잘린 JSON으로 거부됐다.
+당시 자동 테스트 669개와 통제 Chrome 6/6 PASS이나 **In Progress로 기록했다**.
+[수정 전 OpenAI 검증](../evidence/s15-live-openai-verification-2026-10-09.md)을 따른다.
+
+2026-10-09 수정 후: 기본 live 6/6, 입력만 요청한 별도 질문 1/1, 통제 Chrome 6/6 PASS.
+자동 테스트 679개와 S10·S17 회귀 PASS. 긴 값은 turn-local 원문 범위 참조로 승인·정확한
+입력·목표 확인을 통과했다. 기존 검색 의도 질문은 입력 검증 후 남은 검색 목표를
+`INCOMPLETE`로 명시하며 성공으로 승격하지 않는다. 위 실패 기록은 수정 전 이력이다.
+[수정·최종 검증 기록](../evidence/s15-live-fix-2026-10-09.md)을 따른다.
+운영 사이트·다른 모델·Platform/Enterprise S15·릴리스 완료를 뜻하지 않는다.
 
 ## 목표
 
@@ -21,6 +33,8 @@ PAH-6의 승인·실행 연결. 기준: [상세 설계 9.1절](../34-page-act-co
 - `act-tools.ts`의 `propose_set_text`, `act-proposal-parser.ts`, harness plan/approval 계약에
   값과 사용자 request/clarification 출처 revision을 전달하는 내부 계약을 추가한다.
   tool schema·parser·실제 executor가 같은 계약을 사용하고 provider별 호환성을 검증한다.
+  긴 원문은 모델이 `value_span`을 선택하고 core가 현재 ID/revision·Unicode 경계·길이를
+  검증해 전체 승인값으로 복원한다. literal 경로와 기존 parser/executor 정책은 유지한다.
 - 명확한 값을 포함한 제안은 `act-proposal-readiness.ts`와 value slot/executor 경로에서
   승인된 제안에 결속한다. 요청에 값이 있어도 항상 value card로 빠지는 현행 경로를 전환한다.
 - LLM의 clarification을 sidepanel value card로 표시하고 응답을 같은 conversation에

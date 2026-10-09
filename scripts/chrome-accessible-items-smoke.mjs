@@ -64,13 +64,13 @@ const cert = await mkdtemp(join(tmpdir(), "contextpilot-accessible-cert-"));
 let current;
 const calls = [];
 const results = [];
-const stream = (response, delta) => {
+const stream = (response, delta, finishReason) => {
   response.writeHead(200, {
     "content-type": "text/event-stream",
     "access-control-allow-origin": "*",
   });
   response.end(
-    `data: ${JSON.stringify({ choices: [{ delta }] })}\n\ndata: [DONE]\n\n`,
+    `data: ${JSON.stringify({ choices: [{ delta, ...(finishReason ? { finish_reason: finishReason } : {}) }] })}\n\ndata: [DONE]\n\n`,
   );
 };
 const fixture = await createS1Fixture(
@@ -136,7 +136,7 @@ const fixture = await createS1Fixture(
       secret: JSON.stringify(body).includes("not-projected"),
     });
     const callRecord = calls.at(-1);
-    if (s17Suite) {
+    if (s15Suite || s17Suite) {
       const block = [...(body.messages ?? [])]
         .reverse()
         .find((message) =>
@@ -196,21 +196,50 @@ const fixture = await createS1Fixture(
         const result = await upstream.json();
         callRecord.upstreamElapsedMs = Date.now() - upstreamStarted;
         callRecord.model = result.model;
+        callRecord.finishReason = result.choices[0].finish_reason;
         callRecord.responseText = result.choices[0].message.content;
         callRecord.responseTools =
           result.choices[0].message.tool_calls?.map((c) => c.function.name) ??
           [];
-        if (s17Suite) {
+        callRecord.responseCallIds =
+          result.choices[0].message.tool_calls?.map((call) => call.id) ?? [];
+        const goalCall = result.choices[0].message.tool_calls?.find(
+          (call) => call.function.name === "report_goal_status",
+        );
+        if (goalCall) {
+          try {
+            callRecord.goalStatus = JSON.parse(
+              goalCall.function.arguments,
+            ).status;
+          } catch {
+            callRecord.goalStatus = "invalid-json";
+          }
+        }
+        if (s15Suite || s17Suite) {
           callRecord.proposalFacts = (
             result.choices[0].message.tool_calls ?? []
           )
             .filter((call) => call.function.name.startsWith("propose_"))
             .map((call) => {
-              const args = JSON.parse(call.function.arguments);
+              let args;
+              try {
+                args = JSON.parse(call.function.arguments);
+              } catch {
+                return {
+                  validJson: false,
+                  argumentLength: call.function.arguments.length,
+                };
+              }
               return {
+                validJson: true,
                 keys: Object.keys(args),
                 approvalScope: args.approval_scope,
                 valueType: typeof args.value,
+                valueLength:
+                  typeof args.value === "string"
+                    ? args.value.length
+                    : undefined,
+                sourceRevisionType: typeof args.value_source_revision,
                 valueMatchesRequest: args.value === current.value,
                 callIdLength: call.id.length,
               };
@@ -247,7 +276,11 @@ const fixture = await createS1Fixture(
           console.log(
             `S17 live tools: ${callRecord.responseTools.join(",") || "answer"}`,
           );
-        return stream(res, result.choices[0].message);
+        return stream(
+          res,
+          result.choices[0].message,
+          result.choices[0].finish_reason,
+        );
       } catch (error) {
         callRecord.upstreamError = String(error);
         if (s17Suite) console.log(`S17 live upstream failure: ${error.name}`);
@@ -779,6 +812,13 @@ try {
     },
     { ...cases.find((c) => c.id === "deny") },
   ];
+  if (process.env.S15_INPUT_CLARIFICATION_CASE === "1")
+    s15Cases.push({
+      ...s15Cases.find((item) => item.id === "clarification"),
+      id: "clarification-input",
+      prompt:
+        "Search query 입력란에 검색어를 입력해줘. 검색 실행은 하지 말고 값 입력만 요청해.",
+    });
   const s17DocumentCase = {
     ...cases.find((item) => item.id === "states-link"),
     id: "document-link",
@@ -827,6 +867,7 @@ try {
       current.prompt +=
         " 먼저 submit_plan으로 전체 요청의 단계와 정확한 입력값을 검토하도록 제출해줘. 계획 승인 이후에도 각 동작의 승인을 기다리고, 마지막 실행 결과와 최신 관찰을 받은 뒤 report_goal_status로 원래 요청 전체의 완료 여부를 판단해줘.";
     let evidence;
+    let clarificationBeforeAnswer;
     try {
       await send({ kind: "CANCEL" });
       await send({ kind: "CHAT_CLEAR" });
@@ -861,6 +902,7 @@ try {
       );
       let acted = false;
       let approvalCount = 0;
+      let planApprovalCount = 0;
       let planReviewObserved = false;
       let dismissed = false;
       let selected = false;
@@ -881,12 +923,15 @@ try {
             `[...document.querySelectorAll('.event-card[data-kind=review]')].some(e=>e.textContent.includes(${JSON.stringify(current.value)}))`,
           );
         }
-        if (s17Suite)
+        if (s15Suite || s17Suite)
           planReviewObserved ||= await evaluate(
             panel,
             "[...document.querySelectorAll('.event-card[data-kind=review]')].some(e=>e.dataset.testSeen!=='1' && e.textContent.includes('이 승인은 동작을 실행하지 않습니다'))",
           );
-        if (s17Suite && (await button("계획 승인"))) approvalCount++;
+        if ((s15Suite || s17Suite) && (await button("계획 승인"))) {
+          approvalCount++;
+          planApprovalCount++;
+        }
         if (await button("이번 단계 실행")) {
           acted = true;
           approvalCount++;
@@ -928,6 +973,15 @@ try {
             "Explicit value must not require reentry",
           );
         }
+        if (
+          current.clarify &&
+          !value &&
+          (await evaluate(
+            panel,
+            "[...document.querySelectorAll('.event-card[data-kind=value]')].some(e=>e.dataset.testSeen!=='1')",
+          ))
+        )
+          clarificationBeforeAnswer = await state();
         if (current.value && !value)
           value = await evaluate(
             panel,
@@ -953,7 +1007,31 @@ try {
             panel,
             `document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length>${goalFeedbackBefore} || [...document.querySelectorAll('.event-card[data-kind=error]')].some(e=>e.dataset.testSeen!=='1')`,
           ));
-        if (done && !pending && workflowDone && s17Finished && i > 20) break;
+        const s15LiveFinished =
+          !s15Suite ||
+          !liveModel ||
+          current.deny ||
+          (await evaluate(
+            panel,
+            "[...document.querySelectorAll('.event-card[data-kind=error]')].some(e=>e.dataset.testSeen!=='1')",
+          )) ||
+          calls
+            .slice(start)
+            .some(
+              (call) =>
+                call.executionOutcomes?.length === (current.multiple ? 2 : 1) &&
+                (call.responseTools?.length === 0 ||
+                  call.responseTools?.includes("report_goal_status")),
+            );
+        if (
+          done &&
+          !pending &&
+          workflowDone &&
+          s17Finished &&
+          s15LiveFinished &&
+          i > 20
+        )
+          break;
       }
       let diagnosticZipRedacted;
       if (s15Suite) {
@@ -995,8 +1073,17 @@ try {
         after,
         acted,
         approvalCount,
-        ...(s17Suite ? { planReviewObserved } : {}),
+        ...(s15Suite || s17Suite
+          ? { planReviewObserved, planApprovalCount }
+          : {}),
         valueCardAnswered: value,
+        ...(clarificationBeforeAnswer
+          ? {
+              clarificationBeforeAnswerUnchanged:
+                JSON.stringify(clarificationBeforeAnswer) ===
+                JSON.stringify(before),
+            }
+          : {}),
         fullReviewObserved,
         diagnosticZipRedacted,
         ...(s17Suite
@@ -1022,6 +1109,23 @@ try {
         ui,
       };
       evidence = result;
+      if (s15Suite && liveModel && current.clarify) {
+        assert.equal(result.clarificationBeforeAnswerUnchanged, true);
+        const question = result.calls.find((call) =>
+          call.responseTools?.includes("request_clarification"),
+        );
+        assert.ok(question, "Live clarification tool missing");
+        assert.ok(
+          result.calls.some(
+            (call) =>
+              call.clarificationAnswerPresent &&
+              question.responseCallIds.some((id) =>
+                call.resultCallIds?.includes(id),
+              ),
+          ),
+          "Clarification result must return under the same call ID",
+        );
+      }
       if (s15Suite)
         assert.equal(
           diagnosticZipRedacted,
@@ -1048,6 +1152,34 @@ try {
           "Goal completion UI missing",
         );
       }
+      if (
+        s15Suite &&
+        liveModel &&
+        result.calls.some((call) => call.goalStatus === "incomplete")
+      ) {
+        assert.ok(
+          result.eventSummary.some(
+            (event) =>
+              event.type === "run_terminal" && event.code === "GOAL_INCOMPLETE",
+          ),
+          "Incomplete goal must retain its typed reason",
+        );
+        assert.ok(
+          result.calls.some(
+            (call) =>
+              call.executionOutcomes?.length > 0 &&
+              call.executionOutcomes.every((outcome) => outcome === "VERIFIED"),
+          ),
+          "Incomplete goal must not hide failed execution",
+        );
+        assert.ok(
+          ui.cards.some(
+            (item) =>
+              item.kind === "info" && item.title.includes("목표에 남은 작업"),
+          ),
+          "Remaining goal must be visible",
+        );
+      }
       const blocked = ["disabled-preview", "disabled-action"].includes(
         current.id,
       );
@@ -1069,10 +1201,12 @@ try {
           ),
         search: () => after.search === current.value,
         multiple: () =>
-          approvalCount === (s17Suite ? 3 : 2) &&
+          approvalCount === 2 + planApprovalCount &&
           after.search === "first ⟪holdout⟫" &&
           after.notes === "second 'quoted'",
         clarification: () => value && acted && after.search === current.value,
+        "clarification-input": () =>
+          value && acted && after.search === current.value,
         "long-value": () =>
           fullReviewObserved && after.search === current.value,
         notes: () => after.notes === current.value,
@@ -1130,7 +1264,7 @@ try {
       if (ui.busy !== "send")
         await evaluate(panel, "document.querySelector('#chat-send').click()");
     } catch (e) {
-      if ((current.workflow || s17Suite) && output) {
+      if ((current.workflow || s15Suite || s17Suite) && output) {
         const diagnostics = await evaluate(
           panel,
           `chrome.runtime.sendMessage(${JSON.stringify({ kind: "PANEL_REQUEST", window_id: panelWindowId, payload: { schema_version: 1, kind: "DIAGNOSTICS_BUNDLE_EXPORT" } })})`,

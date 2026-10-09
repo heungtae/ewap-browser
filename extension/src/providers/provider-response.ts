@@ -78,16 +78,32 @@ export const parseChatResponse = (response: unknown): ProviderChatResponse => {
     const content = typeof message.content === "string" ? message.content : "";
     const toolCalls = parseToolCalls(message.tool_calls);
     if (content.length > maxProviderAssistantChars) providerResponseTooLarge();
-    if (content || toolCalls.length > 0)
-      return { content, tool_calls: toolCalls };
+    const finishReason =
+      isPlainObject(first) && typeof first.finish_reason === "string"
+        ? first.finish_reason
+        : undefined;
+    if (content || toolCalls.length > 0 || finishReason === "length")
+      return {
+        content,
+        tool_calls: toolCalls,
+        ...(finishReason ? { finish_reason: finishReason } : {}),
+      };
   }
+  const incomplete =
+    object.status === "incomplete" &&
+    isPlainObject(object.incomplete_details) &&
+    object.incomplete_details.reason === "max_output_tokens";
   const output =
     typeof object.output_text === "string"
       ? object.output_text
       : responseOutputText(object.output);
   const responseCalls = parseToolCalls(object.output);
   if (output.length > maxProviderAssistantChars) providerResponseTooLarge();
-  if (output || responseCalls.length > 0)
-    return { content: output, tool_calls: responseCalls };
+  if (output || responseCalls.length > 0 || incomplete)
+    return {
+      content: output,
+      tool_calls: responseCalls,
+      ...(incomplete ? { finish_reason: "length" } : {}),
+    };
   return fail("PROVIDER_UNAVAILABLE");
 };

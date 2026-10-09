@@ -1,0 +1,1327 @@
+{
+  "date": "2026-10-09",
+  "status": "Completed",
+  "scope": "Browser-local S15 / PAH-9; specified controlled fixture and OpenAI model only",
+  "baseline_commit": "61596c76e48dbe90661579ee64d8793a39ac0ea7",
+  "uncommitted_changes": true,
+  "version": "0.1.98",
+  "chrome": "147.0.7727.15",
+  "provider": "OpenAI",
+  "model": "gpt-6-luna",
+  "credential_environment": "OPENAI_API_KEY",
+  "credential_shell_file": "~/.bashrc",
+  "reasoning_effort": "none",
+  "max_completion_tokens": 2048,
+  "goal_scope_note": "Original search intent: input VERIFIED, original goal INCOMPLETE with GOAL_INCOMPLETE; input-only clarification separately completed. Six basic input-binding passes do not mean six completed goals.",
+  "reports": [
+    {
+      "kind": "live_basic",
+      "report": "/tmp/s15-fix-live-qualified.json",
+      "sha256": "bdf8374b869a3252b773e67083c6cae89967f2c51094e1c7b1f72f2ff2e64d35",
+      "passed": 6,
+      "total": 6,
+      "provider_calls": 23,
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_Jcp2nGvN6onTZ6cBuRiK9LYr"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 12,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "report_goal_status"
+              ],
+              "goalStatus": "completed",
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_C1Tjxh0wjmD1mPiaEbOn4o5j"
+              ],
+              "resultCallIds": [
+                "call_Jcp2nGvN6onTZ6cBuRiK9LYr"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "notes",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_o4OssbeEjxREdmYFjinLjqBA"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 17,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "read_semantic_projection"
+              ],
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_SPyVuIW9HIaoeOBcT3J1Bki4"
+              ],
+              "resultCallIds": [
+                "call_o4OssbeEjxREdmYFjinLjqBA"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "report_goal_status"
+              ],
+              "goalStatus": "completed",
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_5qv7S3NGhN4P8TbnxZfE5qYg"
+              ],
+              "resultCallIds": [
+                "call_o4OssbeEjxREdmYFjinLjqBA",
+                "call_SPyVuIW9HIaoeOBcT3J1Bki4"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "clarification",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": true,
+          "clarificationBeforeAnswerUnchanged": true,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "request_clarification"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_Gz7UiYp5RJtNVwBU65YsB0Ui"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_t66FRs13JJKiug11LC8wfsdz"
+              ],
+              "resultCallIds": [
+                "call_Gz7UiYp5RJtNVwBU65YsB0Ui"
+              ],
+              "clarificationAnswerPresent": true,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 15,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "read_semantic_projection"
+              ],
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_jXEpd0JlOsCVMkaKwtP42K3h"
+              ],
+              "resultCallIds": [
+                "call_Gz7UiYp5RJtNVwBU65YsB0Ui",
+                "call_t66FRs13JJKiug11LC8wfsdz"
+              ],
+              "clarificationAnswerPresent": true,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "report_goal_status"
+              ],
+              "goalStatus": "incomplete",
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_RhnAiuGqbitecbFza3F5FiHC"
+              ],
+              "resultCallIds": [
+                "call_Gz7UiYp5RJtNVwBU65YsB0Ui",
+                "call_t66FRs13JJKiug11LC8wfsdz",
+                "call_jXEpd0JlOsCVMkaKwtP42K3h"
+              ],
+              "clarificationAnswerPresent": true,
+              "proposalFacts": []
+            }
+          ],
+          "terminal_codes": [
+            "GOAL_INCOMPLETE"
+          ]
+        },
+        {
+          "id": "long-value",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": true,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_x8JRLBcP7cDKoa4GEoiCfPCO"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value_span",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "undefined",
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": false,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "read_semantic_projection"
+              ],
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_BTHdEZRz7jmgX4SuDJ4cQgA6"
+              ],
+              "resultCallIds": [
+                "call_x8JRLBcP7cDKoa4GEoiCfPCO"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "report_goal_status"
+              ],
+              "goalStatus": "completed",
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_By05NrMETnshOtq7uZQEjNhW"
+              ],
+              "resultCallIds": [
+                "call_x8JRLBcP7cDKoa4GEoiCfPCO",
+                "call_BTHdEZRz7jmgX4SuDJ4cQgA6"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "multiple",
+          "pass": true,
+          "approvalCount": 3,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "submit_plan"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_5CHrCWgFlKvxXKCpRi7cz0TB"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "responseCallIds": [
+                "call_EmTcqmTwq8t5TjZTAe52yPJk"
+              ],
+              "resultCallIds": [
+                "call_5CHrCWgFlKvxXKCpRi7cz0TB"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 15,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": false,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "responseCallIds": [
+                "call_zRerIKqhw0SkmzqcExd05EVt"
+              ],
+              "resultCallIds": [
+                "call_5CHrCWgFlKvxXKCpRi7cz0TB",
+                "call_EmTcqmTwq8t5TjZTAe52yPJk"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 15,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": false,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "report_goal_status"
+              ],
+              "goalStatus": "completed",
+              "executionOutcomes": [
+                "VERIFIED",
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 2,
+              "responseCallIds": [
+                "call_2JAC8O6c1GgFTwg6IIGLQdnW"
+              ],
+              "resultCallIds": [
+                "call_5CHrCWgFlKvxXKCpRi7cz0TB",
+                "call_EmTcqmTwq8t5TjZTAe52yPJk",
+                "call_zRerIKqhw0SkmzqcExd05EVt"
+              ],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "deny",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_sbPJjKZ1oDFv8nYuC7YVMbW1"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 9,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            }
+          ],
+          "terminal_codes": []
+        }
+      ]
+    },
+    {
+      "kind": "live_input_only",
+      "report": "/tmp/s15-fix-live-scoped.json",
+      "sha256": "1297db92ab7f81e4ea4db6f552d7972c655fd28d1a17cd8c914841ba75f10826",
+      "passed": 1,
+      "total": 1,
+      "provider_calls": 5,
+      "cases": [
+        {
+          "id": "clarification-input",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": true,
+          "clarificationBeforeAnswerUnchanged": true,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "gpt-6-luna",
+          "calls": [
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "stop",
+              "responseTools": [],
+              "responseCallIds": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "request_clarification"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_Bavpr3G9IHeB9UN0Q16Sh6ho"
+              ],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "propose_set_text"
+              ],
+              "executionOutcomes": [],
+              "responseCallIds": [
+                "call_kEtIC4EYorr76zPzBjVdLmD4"
+              ],
+              "resultCallIds": [
+                "call_Bavpr3G9IHeB9UN0Q16Sh6ho"
+              ],
+              "clarificationAnswerPresent": true,
+              "proposalFacts": [
+                {
+                  "validJson": true,
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueLength": 15,
+                  "sourceRevisionType": "number",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "read_semantic_projection"
+              ],
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_ElMIip0mypzwARyzCLztiLJF"
+              ],
+              "resultCallIds": [
+                "call_Bavpr3G9IHeB9UN0Q16Sh6ho",
+                "call_kEtIC4EYorr76zPzBjVdLmD4"
+              ],
+              "clarificationAnswerPresent": true,
+              "proposalFacts": []
+            },
+            {
+              "upstreamStatus": 200,
+              "upstreamProvider": "openai",
+              "finishReason": "tool_calls",
+              "responseTools": [
+                "report_goal_status"
+              ],
+              "goalStatus": "completed",
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "responseCallIds": [
+                "call_Zzd3lyGx1Cr3R0b4Gx4TH0jj"
+              ],
+              "resultCallIds": [
+                "call_Bavpr3G9IHeB9UN0Q16Sh6ho",
+                "call_kEtIC4EYorr76zPzBjVdLmD4",
+                "call_ElMIip0mypzwARyzCLztiLJF"
+              ],
+              "clarificationAnswerPresent": true,
+              "proposalFacts": []
+            }
+          ],
+          "terminal_codes": []
+        }
+      ]
+    },
+    {
+      "kind": "controlled_s15",
+      "report": "/tmp/s15-fix-controlled-final.json",
+      "sha256": "babaebb414af4eb7bcdb04dbf143ac71331eb5617c842e0963e0a764fa4ed1e5",
+      "passed": 6,
+      "total": 6,
+      "provider_calls": 19,
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "controlled",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "test-proposal-2-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "notes",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "controlled",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "test-proposal-5-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "clarification",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": true,
+          "clarificationBeforeAnswerUnchanged": true,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "controlled",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [
+                "test-question-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": true
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "test-question-abcdefghijkl",
+                "test-proposal-9-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": true
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "long-value",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": true,
+          "diagnosticZipRedacted": true,
+          "provider": "controlled",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "test-proposal-12-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "multiple",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "controlled",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "test-proposal-15-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED",
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "test-proposal-15-abcdefghijkl",
+                "test-proposal-16-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "deny",
+          "pass": true,
+          "approvalCount": 1,
+          "planApprovalCount": 0,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "controlled",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        }
+      ]
+    },
+    {
+      "kind": "controlled_s17",
+      "report": "/tmp/s15-fix-s17-regression.json",
+      "sha256": "70e5f13cf0b3d4539393b94031e5ea1df75c1f65a37237a78769d88ef9c0494f",
+      "passed": 8,
+      "total": 8,
+      "provider_calls": 32,
+      "cases": [
+        {
+          "id": "document-link",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-3-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "async-preview",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-7-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "search",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-11-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "multiple",
+          "pass": true,
+          "approvalCount": 3,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-15-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED",
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 2,
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-15-abcdefghijkl",
+                "test-proposal-16-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "deny",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "preview",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-23-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "controls-link",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-27-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        },
+        {
+          "id": "states-link",
+          "pass": true,
+          "approvalCount": 2,
+          "planApprovalCount": 1,
+          "valueCardAnswered": false,
+          "fullReviewObserved": false,
+          "diagnosticZipRedacted": true,
+          "provider": "",
+          "calls": [
+            {
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "resultCallIds": [],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "resultCallIds": [
+                "s17-submit_plan-1"
+              ],
+              "clarificationAnswerPresent": false
+            },
+            {
+              "executionOutcomes": [
+                "VERIFIED"
+              ],
+              "resultCallIds": [
+                "s17-submit_plan-1",
+                "test-proposal-31-abcdefghijkl"
+              ],
+              "clarificationAnswerPresent": false
+            }
+          ],
+          "terminal_codes": []
+        }
+      ]
+    }
+  ],
+  "validation": {
+    "test_files": 144,
+    "tests": 679,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "version_preserving_build_and_package": "PASS",
+    "module_boundaries": 284,
+    "method_trace": {
+      "documented_modules": 41,
+      "methods_callbacks": 1642,
+      "runtime_modules": 185
+    },
+    "chrome_s10": "PASS: reviewed read and mutation paths, permission/approval, Stop/scope/restart/replay/redaction",
+    "source_size": "Not rerun; existing oversized modules remain"
+  },
+  "intermediate_attempts": [
+    {
+      "report": "/tmp/s15-fix-first.json",
+      "result": "Clarification input verified but final goal incomplete; long input still demanded reentry after retry-only change. No PASS claim for long input."
+    },
+    {
+      "report": "/tmp/s15-fix-span.json",
+      "result": "Long value PASS, 4 HTTP 200 calls; model selected value_span."
+    },
+    {
+      "report": "/tmp/s15-fix-live-final.json",
+      "result": "5/6 PASS; multiple FAIL because model batched two mutation proposals; zero selected/executed from that batch."
+    }
+  ],
+  "source_sha256": {
+    "extension/src/service-worker/act-provider-turn.ts": "4cccf5501a73af5cf63f0b1ede93b8e62dcddfe8a2b0ef767b45db7d8d37400f",
+    "extension/src/service-worker/act-value-source.ts": "64720cafa26224c2b937e4d9b04abb3f8b0e0cb1c4ea6eafe49797cfce7a5ecc",
+    "extension/src/service-worker/act-step-runner.ts": "05ee7a31ec0a3b23a166bef1883ffbc2ba0ae77c771a21a9b596c8511ccf2cfd",
+    "extension/src/service-worker/act-goal-feedback.ts": "110b9132fc600f495178f3e4ea8ea8972357485d472a4527470b025980c5a12d",
+    "extension/src/providers/provider-response.ts": "00a76d626855e1ebaf08bfc781c298668212ccf3e587b19a6e7c280ced82c13c",
+    "extension/src/providers/sse-response.ts": "cd8e107716240b32a11a7bfef2e3bd59163505f526e8b2b1bae11458ffb3e482",
+    "extension/src/diagnostics/trace-mask.ts": "c30944a5a3513f57b667f6e256d8b39841251409ce80fd033d801c69d8032769",
+    "extension/src/diagnostics/trace-recording.ts": "66f3918e3275d7dd4db50082b75e563e050d6416a641ec596c45876236e8966f",
+    "extension/src/sidepanel/panel.ts": "19b8a4fc547b8e23b4134d6d148bd6a3aa0f930c7284991a6bb561355b2cbefc",
+    "extension/src/sidepanel/entry.ts": "58280fe7d3ff5fc9d117228df86a645323f7cebaa102073a64c2dc2c15c0b96d",
+    "scripts/chrome-accessible-items-smoke.mjs": "31d1cc8e4c64c10c9b4f996b7619ee25418323662b6b96f708516c8c567bcf3a"
+  },
+  "excluded": "API key values, raw prompts, resolved input values, raw provider arguments/responses, unmasked traces"
+}

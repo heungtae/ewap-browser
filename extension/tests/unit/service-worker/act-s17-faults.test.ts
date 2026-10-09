@@ -189,6 +189,7 @@ describe("S17 fault and terminal boundaries", () => {
     ).toMatchObject({
       terminal: "INCOMPLETE",
       reason: "GOAL_UNMET",
+      code: "GOAL_INCOMPLETE",
       outcome: "UNKNOWN",
     });
   });

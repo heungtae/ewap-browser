@@ -96,6 +96,40 @@ S16_REPORT="/tmp/s16-controlled-$(date +%Y%m%d-%H%M%S).json" \
 pnpm test:chrome-s16
 ```
 
+## S15 / PAH-9 입력값·추가 질문 검증
+
+OpenAI 대체 설정은 위 절을 따른다. 기본 6개는 명확한 값, label·DOM ID·Unicode holdout,
+값 없는 질문, 긴 값, 두 필드, 권한 거부다. 제품 코드는 요청값이나 질문 필요성을
+판단하지 않으며 실제 모델의 도구 호출과 승인 UI를 검사한다.
+
+```bash
+LIVE_PROVIDER=openai S15_LIVE_MODEL=gpt-6-luna \
+CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome \
+ACCESSIBLE_ITEMS_REPORT="/tmp/s15-live-openai-$(date +%Y%m%d-%H%M%S).json" \
+pnpm test:chrome-s15
+```
+
+질문 전 페이지 불변, 실제 `request_clarification`, 사용자 응답의 동일 call ID 반환,
+명확한 값의 추가 입력 폼 부재, 각 동작 승인, 정확한 DOM 값, 최종 피드백과 ZIP 마스킹을 검사한다.
+계획이 제출되면 계획 승인과 동작 승인을 별도로 처리하며 중간 idle을 최종 종료로 보지 않는다.
+
+입력만 명시한 값 없는 요청의 보조 재현은
+`S15_INPUT_CLARIFICATION_CASE=1 ACCESSIBLE_ITEMS_CASES=clarification-input`을 추가한다.
+이 보조 사례의 PASS로 기본 `clarification` 실패를 대체하지 않는다.
+`LIVE_MAX_OUTPUT_TOKENS`는 기본 2048, 허용 범위 512~16384다.
+긴 값에서 `finish_reason:length`와 잘린 인자가 나오면 8192로 진단 재실행하고
+기본 한도 결과와 구분한다. 모델의 인자·입력값을 코드에서 복구하거나 만들어 넣지 않는다.
+
+[수정 전 실패 기록](evidence/s15-live-openai-verification-2026-10-09.md)과
+[수정 후 live 검증](evidence/s15-live-fix-2026-10-09.md)을 따른다.
+
+긴 원래 요청은 모델이 `value_span`의 opaque source ID·UTF-16 시작/끝 위치를 선택할 수 있다.
+제품은 해당 원문 범위만 복원하고 전체 값 승인·revision·DOM verifier를 그대로 적용한다.
+잘린 응답·invalid JSON·여러 동작 제안은 실행하지 않고 동일 call ID의 오류로 한 번만 재요청한다.
+기본 `clarification`은 검색값 질문→정확한 입력을 검사한다. 검색 실행까지 요청한 원래 목표가
+남으면 `INCOMPLETE / GOAL_INCOMPLETE`와 남은 작업 안내를 검사하며 목표 완료로 간주하지 않는다.
+입력만 요청한 `clarification-input`은 별도 사례로 `completed`까지 확인한다.
+
 ## S17 계획·실행 결과 피드백 테스트
 
 S16과 같은 OpenRouter 모델 `nvidia/nemotron-3.5-lightning:free`와 환경 변수

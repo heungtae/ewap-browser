@@ -133,7 +133,11 @@ export const finishGoalFeedback = async (opts: {
   const executionCode = actions.find(
     (action) => action.outcome !== "VERIFIED" && action.code,
   )?.code;
-  const code = isErrorCode(executionCode) ? executionCode : undefined;
+  const code = isErrorCode(executionCode)
+    ? executionCode
+    : terminal.kind === "INCOMPLETE"
+      ? "GOAL_INCOMPLETE"
+      : undefined;
   dependencies.coordinator.runs.terminal(run.id, outcome, code);
   dependencies.publish(run.id, { type: "assistant_delta", text: message });
   dependencies.publish(run.id, {

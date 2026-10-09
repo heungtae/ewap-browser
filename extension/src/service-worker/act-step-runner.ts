@@ -1,3 +1,5 @@
+import { actValueSource } from "./act-value-source.js";
+import { completeActProviderTurn } from "./act-provider-turn.js";
 import { actExecutionInventory } from "./act-execution-inventory.js";
 import { runPlanSubmissionTurns } from "./act-plan-turns.js";
 import { unavailableActFeedback } from "./act-feedback-unavailable.js";
@@ -296,6 +298,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       const requestRevision = session.requestContext
         ? toHarnessRevision(session.requestContext.generation)
         : (session.harnessCapabilities?.request_revision ?? 1);
+      const valueSource =
+        session.harnessCapabilities && session.prompt.length > 256
+          ? actValueSource(session.prompt, requestRevision)
+          : undefined;
+      if (valueSource) {
+        messages.push({ role: "user", content: valueSource.context });
+        tools.splice(0, tools.length, ...valueSource.tools(tools));
+      }
       const actionTools = [...tools];
       if (!session.sourceReadOnly) {
         messages.push({
@@ -453,18 +463,22 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         offered: ProviderToolDefinition[],
         thread: ProviderMessage[] = messages,
       ) =>
-        dependencies.provider.chat(
-          {
-            messages: thread,
-            ...(offered.length > 0 ? { tools: offered } : {}),
-          },
-          session.requestContext
-            ? {
-                signal: session.requestContext.signal,
-                onProgress: () =>
-                  session.requestContext?.progress?.("PROVIDER_BODY"),
-              }
-            : {},
+        completeActProviderTurn(thread, () =>
+          dependencies.provider.chat(
+            {
+              messages: thread,
+              ...(offered.length > 0
+                ? { tools: valueSource ? valueSource.tools(offered) : offered }
+                : {}),
+            },
+            session.requestContext
+              ? {
+                  signal: session.requestContext.signal,
+                  onProgress: () =>
+                    session.requestContext?.progress?.("PROVIDER_BODY"),
+                }
+              : {},
+          ),
         );
       const readTranscriptStart = messages.length;
       let response: { content: string; tool_calls: ProviderToolCall[] };
@@ -701,7 +715,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           targetCall.name === "propose_page_api"
             ? parsePageApiProposal(targetCall, pageApiActions, active.origin)
             : parseActProposal(
-                targetCall,
+                valueSource ? valueSource.resolve(targetCall) : targetCall,
                 currentModel.resolve,
                 active.snapshot,
                 session.definitions,

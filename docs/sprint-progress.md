@@ -309,3 +309,28 @@ OpenAI `gpt-6-luna`와 `OPENAI_API_KEY` 환경 변수로 전환했다. 단일·�
 [최종 live 증거](evidence/s17-live-openai-luna-2026-10-09.md)를 따른다.
 OpenRouter 실패는 이력으로 유지하고 운영 사이트·임의 모델·live Page API/navigation/workflow
 일반화·배포는 별도다. S18~S20은 Planned를 유지한다.
+
+### S15 / PAH-9 OpenAI 검증 — 2026-10-09
+
+**In Progress 유지.** `gpt-6-luna`의 기본 live 행렬은 4 PASS / 2 FAIL이다.
+clarification의 질문·응답 전 불변·동일 call ID 반환·정확한 입력은 성공했지만 최종 오류가 남았다.
+긴 값은 기본 2048와 진단 8192 output tokens 모두 잘린 JSON으로 실행 전에 거부됐다.
+입력만 명시한 보조 clarification은 PASS이며 기본 실패를 대체하지 않는다.
+현재 자동 테스트 669개·통제 Chrome S15 6개·S17 driver 회귀 2개 PASS.
+제품 runtime과 버전 0.1.98은 유지했다.
+[상세 검증 기록](evidence/s15-live-openai-verification-2026-10-09.md)을 따른다.
+
+
+### S15 / PAH-9 수정·Browser-local 완료 — 2026-10-09
+
+잘린 응답 종료 사유를 보존하고 invalid JSON·여러 mutation 제안을 실행 전에 동일 call ID
+오류로 반환해 한 번만 재요청한다. 긴 값은 모델이 선택한 turn-local 원문 범위를 복원해
+기존 전체 값 승인·revision·DOM 검증에 연결한다. `INCOMPLETE`는 내부 오류 대신
+`GOAL_INCOMPLETE`와 남은 작업 안내로 표시하며 typed 결과를 성공으로 덮어쓰지 않는다.
+
+OpenAI `gpt-6-luna`, 기본 2048 tokens에서 기본 live 6/6 PASS (23 calls, 전부 HTTP 200).
+검색 의도 질문의 입력 검증과 남은 전체 목표를 구분하며, 입력만 요청한 별도 질문 1/1은
+목표 완료까지 PASS (5 calls). 통제 S15 6/6, S17 8/8, S10 read/mutation 회귀,
+자동 테스트 679개 PASS. [최종 증거](evidence/s15-live-fix-2026-10-09.md)를 따른다.
+Browser-local S15 / PAH-9는 해당 검증 범위에서 Completed로 기록한다.
+Enterprise S15, 운영 사이트·다른 모델·Platform·릴리스 및 S18~S20은 별도다.

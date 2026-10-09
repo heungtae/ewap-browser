@@ -282,6 +282,7 @@ const message = (role: "user" | "assistant", text: string): HTMLElement => {
 };
 const card = (
   kind:
+    | "info"
     | "tool"
     | "review"
     | "permission"
@@ -455,14 +456,20 @@ const showFailure = (code?: string): void => {
       : "작업을 안전하게 완료하지 못했습니다.";
   const help = failureHelp(code);
   const title =
-    code === "UNSUPPORTED_COMPLETION"
-      ? "작업을 실행하지 않았습니다"
-      : code === "POSTCONDITION_UNVERIFIED"
-        ? "작업은 실행됐지만 결과를 확인하지 못했습니다"
-        : code === "NAVIGATION_UNVERIFIED"
-          ? "페이지 이동 결과를 확인하지 못했습니다"
-          : "작업 결과를 확인할 수 없습니다";
-  const item = card("error", title, detail);
+    code === "GOAL_INCOMPLETE"
+      ? "목표에 남은 작업이 있습니다"
+      : code === "UNSUPPORTED_COMPLETION"
+        ? "작업을 실행하지 않았습니다"
+        : code === "POSTCONDITION_UNVERIFIED"
+          ? "작업은 실행됐지만 결과를 확인하지 못했습니다"
+          : code === "NAVIGATION_UNVERIFIED"
+            ? "페이지 이동 결과를 확인하지 못했습니다"
+            : "작업 결과를 확인할 수 없습니다";
+  const item = card(
+    code === "GOAL_INCOMPLETE" ? "info" : "error",
+    title,
+    detail,
+  );
   const guidance = document.createElement("p");
   guidance.className = "failure-guidance";
   guidance.textContent = help.guidance;

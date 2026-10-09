@@ -7,6 +7,13 @@ export const liveProviderConfig = (model, env = process.env) => {
     provider === "openai" ? "OPENAI_API_KEY" : "OPENROUTER_API_KEY";
   if (model && !env[keyEnvironment])
     throw Error(`${keyEnvironment} is required for live tests`);
+  const maxOutputTokens = Number(env.LIVE_MAX_OUTPUT_TOKENS ?? 2048);
+  if (
+    !Number.isSafeInteger(maxOutputTokens) ||
+    maxOutputTokens < 512 ||
+    maxOutputTokens > 16384
+  )
+    throw Error("LIVE_MAX_OUTPUT_TOKENS must be an integer from 512 to 16384");
   return {
     provider,
     endpoint:
@@ -19,7 +26,7 @@ export const liveProviderConfig = (model, env = process.env) => {
     },
     parameters:
       provider === "openai"
-        ? { max_completion_tokens: 2048, reasoning_effort: "none" }
-        : { max_tokens: 2048 },
+        ? { max_completion_tokens: maxOutputTokens, reasoning_effort: "none" }
+        : { max_tokens: maxOutputTokens },
   };
 };

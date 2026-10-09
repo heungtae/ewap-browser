@@ -3,7 +3,7 @@
 - 작성일: 2026-10-04
 - 계획 추가: 2026-10-06. LLM 판단에 따른 입력값 자동 결속·추가 질문을 PAH-9로 등록.
 - 후속 단계 추가: 2026-10-06. 34번 설계 16절의 도구 연결 완성을 Browser Act S16~S20으로 등록.
-- 상태: PAH-9 In Progress. [2026-10-08 검증](evidence/s15-pah-9-closure-2026-10-08.md). PAH-0~8의 표·절별 상태는 최초 계획 기록이며, 이후 실행 증거는
+- 상태: PAH-9 Completed (Browser-local, 지정 fixture·OpenAI 모델). [2026-10-09 수정·live 검증](evidence/s15-live-fix-2026-10-09.md). PAH-0~8의 표·절별 상태는 최초 계획 기록이며, 이후 실행 증거는
   [구현 기록](evidence/pah-implementation-record.md)과 후속 검증 문서에서 확인한다.
 - 기준: [상세 설계](34-page-act-context-harness-design.md)
 - 문서 동기화 승인 전 목록: [기존 문서 검토](page-act-context-harness-document-sync-review.md)
@@ -42,7 +42,7 @@ WebMCP 구현·실험 예제는 이 계획에 포함하지 않는다.
 | PAH-6 | 계획 승인→실행→관찰→동작/목표 검증 연결 | PAH-5 | Planned |
 | PAH-7 | Stop·재시작·문맥 압축·budget·전체 진단 보강 | PAH-6. 기본 취소/마스킹은 앞 Sprint부터 적용 | Planned |
 | PAH-8 | holdout·실제 LLM·Chrome 검증과 호환성·배포 준비 | PAH-4, PAH-7 | Planned |
-| PAH-9 | LLM이 입력값·대상·질문 필요성을 판단하고 제공된 값은 승인 후 자동 입력 | PAH-3의 모델 continuation, PAH-6의 승인·실행 연결 | Planned |
+| PAH-9 | LLM이 입력값·대상·질문 필요성을 판단하고 제공된 값은 승인 후 자동 입력 | PAH-3의 모델 continuation, PAH-6의 승인·실행 연결 | Completed (Browser-local, 지정 fixture·OpenAI 모델) |
 
 워크플로우 세 출처의 적합성 검토를 먼저 고정한 뒤 읽기 도구를 뒤늦게 붙이지 않는다.
 PAH-1~3에서 모델이 필요한 근거를 구하는 능력을 먼저 만든다.
@@ -312,7 +312,7 @@ PAH-9로 추적하며, 기존 card 경로의 PASS를 새 자동 결속 동작의
 
 ## 10.1 PAH-9 — LLM의 입력값 판단·자동 입력·추가 질문
 
-상태: In Progress. [2026-10-08 검증](evidence/s15-pah-9-closure-2026-10-08.md). 추가일: 2026-10-06. 의존성: PAH-3의 모델 continuation,
+상태: Completed (Browser-local, 지정 fixture·OpenAI 모델). [2026-10-09 수정·검증](evidence/s15-live-fix-2026-10-09.md). 추가일: 2026-10-06. 의존성: PAH-3의 모델 continuation,
 PAH-6의 승인·실행 연결.
 
 값 제공 여부·대상과 값의 대응·추가 질문 필요성은 LLM이 판단한다. 명확한 값은
@@ -420,7 +420,8 @@ Browser / Platform / workspace·통합 수행 여부와 이유:
 
 이 계획의 최초 작성 상태는 `PAH-0~8: Planned`이며, 이후 구현·검증 증거는
 [구현 기록](evidence/pah-implementation-record.md)과 후속 검증 문서에서 확인한다.
-2026-10-06에 추가한 `PAH-9`는 Planned이며 기존 PAH-0~8의 증거로 완료 처리하지 않는다.
+2026-10-06에 추가한 `PAH-9`는 최초 Planned였다. 2026-10-09의 별도 구현·live 증거로
+Browser-local 범위에서 완료했으며 기존 PAH-0~8의 증거로 완료 처리한 것은 아니다.
 후속 Browser Act S16~S20의 최초 등록 상태도 Planned였다. 현재 S16은 Browser-local Completed이며
 [2026-10-09 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md)을 따른다.
 S17은 [OpenAI live 증거](evidence/s17-live-openai-luna-2026-10-09.md) 기준 Browser-local Completed이며 S18~S20은 Planned다. 단계별 문서는 docs/sprints에 저장하며
