@@ -1,3 +1,4 @@
+import { s17ProviderReply } from "./chrome-s17-provider-fixture.mjs";
 import { spawn } from "node:child_process";
 import { mkdtemp, writeFile, readFile, cp, rm } from "node:fs/promises";
 import {
@@ -18,8 +19,18 @@ import {
   checkReading,
 } from "./chrome-example-request-cases.mjs";
 const documented = await exampleRequests();
+const s17Suite = process.env.S17_SUITE === "1";
 const s15Suite = process.env.S15_SUITE === "1";
 const liveModel = process.env.S15_LIVE_MODEL;
+const upstreamTimeout = s17Suite
+  ? Number(process.env.S17_UPSTREAM_TIMEOUT_MS ?? 60000)
+  : 60000;
+if (
+  !Number.isSafeInteger(upstreamTimeout) ||
+  upstreamTimeout < 1000 ||
+  upstreamTimeout > 120000
+)
+  throw Error("Invalid S17_UPSTREAM_TIMEOUT_MS");
 const readingSuite = process.env.EXAMPLE_REQUEST_SUITE === "reading";
 const root = resolve(".");
 const executable = process.env.CHROME_FOR_TESTING_BIN;
@@ -123,6 +134,24 @@ const fixture = await createS1Fixture(
       secret: JSON.stringify(body).includes("not-projected"),
     });
     const callRecord = calls.at(-1);
+    if (s17Suite) {
+      const block = [...(body.messages ?? [])]
+        .reverse()
+        .find((message) =>
+          message.content?.startsWith("[UNTRUSTED_EXECUTION_INVENTORY]"),
+        );
+      const inventory = block
+        ? JSON.parse(block.content.split("\n")[1])
+        : undefined;
+      callRecord.planApproved = inventory?.plan?.approved;
+      callRecord.planCompletedSteps = inventory?.plan?.completed_steps;
+      callRecord.executionOutcomes = inventory?.execution_evidence?.map(
+        (item) => item.outcome,
+      );
+      callRecord.resultCallIds = body.messages
+        ?.filter((message) => message.role === "tool")
+        .map((message) => message.tool_call_id);
+    }
     if (liveModel) {
       try {
         const upstream = await fetch(
@@ -136,13 +165,26 @@ const fixture = await createS1Fixture(
             body: JSON.stringify({
               ...body,
               model: liveModel,
+              ...(s17Suite && process.env.S17_LIVE_REASONING === "off"
+                ? { reasoning: { enabled: false } }
+                : {}),
               max_tokens: 2048,
               stream: false,
             }),
-            signal: AbortSignal.timeout(60000),
+            signal: AbortSignal.timeout(upstreamTimeout),
           },
         );
+        if (s17Suite)
+          callRecord.reasoningMode =
+            process.env.S17_LIVE_REASONING === "off"
+              ? "disabled"
+              : "provider-default";
+        if (s17Suite) callRecord.upstreamTimeoutMs = upstreamTimeout;
         callRecord.upstreamStatus = upstream.status;
+        if (s17Suite)
+          console.log(
+            `S17 live request ${calls.length}: HTTP ${upstream.status}`,
+          );
         if (!upstream.ok) {
           const failure = await upstream.json().catch(() => ({}));
           callRecord.upstreamReason = failure.error?.message;
@@ -155,12 +197,48 @@ const fixture = await createS1Fixture(
         callRecord.responseTools =
           result.choices[0].message.tool_calls?.map((c) => c.function.name) ??
           [];
+        if (
+          s17Suite &&
+          result.choices[0].message.tool_calls?.[0]?.function.name ===
+            "submit_plan"
+        ) {
+          const args = JSON.parse(
+            result.choices[0].message.tool_calls[0].function.arguments,
+          );
+          const invBlock = [...body.messages]
+            .reverse()
+            .find((message) =>
+              message.content?.startsWith("[UNTRUSTED_EXECUTION_INVENTORY]"),
+            );
+          const inv = invBlock
+            ? JSON.parse(invBlock.content.split("\n")[1])
+            : undefined;
+          callRecord.planSchemaFacts = {
+            revisionType: typeof args.request_revision,
+            revisionMatches: args.request_revision === inv?.request_revision,
+            evidenceMatches: args.evidence_ids?.includes(inv?.observation_id),
+            scopeAccepted: args.approval_scope === "single_step",
+            stepCount: args.steps?.length,
+            capabilitiesOffered: args.steps?.map((step) =>
+              inv?.actions.some((action) => action.name === step.capability),
+            ),
+          };
+        }
+        if (s17Suite)
+          console.log(
+            `S17 live tools: ${callRecord.responseTools.join(",") || "answer"}`,
+          );
         return stream(res, result.choices[0].message);
       } catch (error) {
         callRecord.upstreamError = String(error);
+        if (s17Suite) console.log(`S17 live upstream failure: ${error.name}`);
         res.writeHead(502, { "content-type": "application/json" });
         return res.end(JSON.stringify({ error: String(error) }));
       }
+    }
+    if (s17Suite) {
+      const reply = s17ProviderReply(body, current);
+      if (reply) return stream(res, reply);
     }
     if (current.clarify && current.proposed)
       return stream(res, { content: "Fixture action complete" });
@@ -208,7 +286,12 @@ const fixture = await createS1Fixture(
       });
     if (
       !current.workflow &&
-      body.messages?.some((m) => m.role === "tool") &&
+      body.messages?.some(
+        (m) =>
+          m.role === "tool" &&
+          (!s17Suite ||
+            m.content?.includes("ACTION_RESULT_NOT_GOAL_COMPLETION")),
+      ) &&
       !current.clarify &&
       !current.multiple
     ) {
@@ -305,7 +388,7 @@ const fixture = await createS1Fixture(
     stream(res, {
       tool_calls: [
         {
-          id: "test-proposal-abcdefghijkl",
+          id: `test-proposal-${calls.length}-abcdefghijkl`,
           type: "function",
           function: { name: current.tool, arguments: JSON.stringify(args) },
         },
@@ -428,7 +511,7 @@ try {
         api_key: "",
         api_key_header: "none",
         headers: [],
-        timeout_ms: liveModel ? 90000 : 15000,
+        timeout_ms: liveModel ? upstreamTimeout + 30000 : 15000,
         enabled: true,
       },
     },
@@ -677,17 +760,53 @@ try {
     },
     { ...cases.find((c) => c.id === "deny") },
   ];
-  const suiteCases = s15Suite
-    ? s15Cases
-    : readingSuite
-      ? documented.reading
-      : cases;
+  const s17DocumentCase = {
+    ...cases.find((item) => item.id === "states-link"),
+    id: "document-link",
+    prepare: async () => {
+      await evaluate(
+        page,
+        "(()=>{const link=[...document.querySelectorAll('a')].find(item=>item.textContent.trim()==='State examples');link.href='/next';scrollTo(0,0);return true})()",
+      );
+    },
+  };
+  const s17AsyncCase = {
+    ...cases.find((item) => item.id === "preview"),
+    id: "async-preview",
+    prepare: async () => {
+      await cases.find((item) => item.id === "preview").prepare();
+      await evaluate(
+        page,
+        "(()=>{document.querySelector('#preview').addEventListener('click',event=>{event.stopImmediatePropagation();setTimeout(()=>{document.querySelector('#result').textContent='Preview generated for Detailed.'},400)},true);return true})()",
+      );
+    },
+  };
+  const s17Cases = [
+    s17DocumentCase,
+    s17AsyncCase,
+    ...s15Cases.filter((item) =>
+      ["search", "multiple", "deny"].includes(item.id),
+    ),
+    ...cases.filter((item) =>
+      ["controls-link", "states-link", "preview"].includes(item.id),
+    ),
+  ];
+  const suiteCases = s17Suite
+    ? s17Cases
+    : s15Suite
+      ? s15Cases
+      : readingSuite
+        ? documented.reading
+        : cases;
   const selectedCases = process.env.ACCESSIBLE_ITEMS_CASES
     ? suiteCases.filter((item) =>
         process.env.ACCESSIBLE_ITEMS_CASES.split(",").includes(item.id),
       )
     : suiteCases;
   for (current of selectedCases) {
+    if (s17Suite && liveModel)
+      current.prompt +=
+        " 먼저 submit_plan으로 전체 요청의 단계와 정확한 입력값을 검토하도록 제출해줘. 계획 승인 이후에도 각 동작의 승인을 기다리고, 마지막 실행 결과와 최신 관찰을 받은 뒤 report_goal_status로 원래 요청 전체의 완료 여부를 판단해줘.";
     let evidence;
     try {
       await send({ kind: "CANCEL" });
@@ -709,6 +828,12 @@ try {
         panel,
         "document.querySelectorAll('.event-card').forEach(e=>e.dataset.testSeen='1')",
       );
+      const goalFeedbackBefore = s17Suite
+        ? await evaluate(
+            panel,
+            "document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length",
+          )
+        : 0;
       const before = await state();
       const start = calls.length;
       await evaluate(
@@ -717,6 +842,7 @@ try {
       );
       let acted = false;
       let approvalCount = 0;
+      let planReviewObserved = false;
       let dismissed = false;
       let selected = false;
       let value = false;
@@ -736,6 +862,12 @@ try {
             `[...document.querySelectorAll('.event-card[data-kind=review]')].some(e=>e.textContent.includes(${JSON.stringify(current.value)}))`,
           );
         }
+        if (s17Suite)
+          planReviewObserved ||= await evaluate(
+            panel,
+            "[...document.querySelectorAll('.event-card[data-kind=review]')].some(e=>e.dataset.testSeen!=='1' && e.textContent.includes('이 승인은 동작을 실행하지 않습니다'))",
+          );
+        if (s17Suite && (await button("계획 승인"))) approvalCount++;
         if (await button("이번 단계 실행")) {
           acted = true;
           approvalCount++;
@@ -835,9 +967,18 @@ try {
         after,
         acted,
         approvalCount,
+        ...(s17Suite ? { planReviewObserved } : {}),
         valueCardAnswered: value,
         fullReviewObserved,
         diagnosticZipRedacted,
+        ...(s17Suite
+          ? {
+              goalFeedbackVisible: await evaluate(
+                panel,
+                `document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length>${goalFeedbackBefore}`,
+              ),
+            }
+          : {}),
         eventSummary: recovered?.events?.map((e) => ({
           type: e.type,
           run: e.run_id,
@@ -859,6 +1000,26 @@ try {
           true,
           current.id + ": raw value in diagnostic ZIP",
         );
+      if (s17Suite && !current.deny) {
+        assert.ok(result.planReviewObserved, "Plan approval UI missing");
+        assert.ok(
+          result.calls.some((call) => call.planApproved === true),
+          "Plan approval did not return to model",
+        );
+        assert.ok(
+          result.calls.some(
+            (call) =>
+              call.tools.includes("report_goal_status") &&
+              call.executionOutcomes?.length === (current.multiple ? 2 : 1),
+          ),
+          "Final execution feedback missing",
+        );
+        assert.equal(
+          result.goalFeedbackVisible,
+          true,
+          "Goal completion UI missing",
+        );
+      }
       const blocked = ["disabled-preview", "disabled-action"].includes(
         current.id,
       );
@@ -880,7 +1041,7 @@ try {
           ),
         search: () => after.search === current.value,
         multiple: () =>
-          approvalCount === 2 &&
+          approvalCount === (s17Suite ? 3 : 2) &&
           after.search === "first ⟪holdout⟫" &&
           after.notes === "second 'quoted'",
         clarification: () => value && acted && after.search === current.value,
@@ -889,6 +1050,10 @@ try {
         notes: () => after.notes === current.value,
         scope: () => after.scope === "detailed",
         checkbox: () => after.checked === true,
+        "document-link": async () =>
+          (await evaluate(page, "location.pathname")) === "/next",
+        "async-preview": () =>
+          after.result === "Preview generated for Detailed.",
         preview: () => after.result === "Preview generated for Detailed.",
         workflow: () =>
           selected &&

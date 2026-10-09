@@ -283,3 +283,17 @@ continuation 인자와 누적 검색 진행 수, 빈 부분 검색의 답변 재
 [최종 수정·검증 증거](evidence/s16-live-tool-loop-fix-2026-10-09.md)를 따른다.
 이전 실패는 이력으로 유지한다. 운영 사이트·임의 Provider·배포 검증은 별도이며
 S15 / PAH-9의 별도 상태와 S17~S20 Planned는 유지한다.
+
+## Browser Act S17 — 2026-10-09
+
+**In Progress — Browser-local 구현 완료, live qualification 미완료.**
+실제 `submit_plan` schema/store와 계획 승인 UI, revision 결속, 실행 수단 inventory를
+연결했다. DOM·등록 Page API·workflow 마지막 단계·같은 origin navigation 결과를
+같은 conversation에 반환하고 최신 관찰에 대한 `report_goal_status`를 받는다.
+동작 검증과 전체 목표 완료를 구분하며 실패·UNKNOWN은 모델 설명으로 성공 승격하지 않는다.
+
+자동 테스트 669개 PASS. 통제 Chrome과 기존 S10/S15/S16 회귀 결과는
+[구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md)에 기록한다.
+지정 OpenRouter 모델은 timeout·미지원 계획 단계·분류 응답 형식 문제를 보였고,
+마지막 재실행은 무료 모델 일일 한도 HTTP 429로 실행 전 종료했다.
+따라서 S17을 Completed로 변경하지 않는다. 버전 0.1.98을 유지하며 S18 이후는 Planned다.

@@ -41,6 +41,7 @@
     "test:chrome-accessible-items": "node --experimental-websocket scripts/chrome-accessible-items-smoke.mjs",
     "check:method-trace": "node scripts/test-method-trace-instrumentation.mjs && node scripts/check-method-trace-coverage.mjs",
     "test:chrome-s15": "node scripts/chrome-s15-value-binding-smoke.mjs",
+    "test:chrome-s17": "node scripts/chrome-s17-plan-feedback-smoke.mjs",
     "test:chrome-s16": "node --experimental-websocket scripts/chrome-s16-script-tools-smoke.mjs"
   },
   "devDependencies": {

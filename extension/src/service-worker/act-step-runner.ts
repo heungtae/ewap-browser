@@ -1,3 +1,9 @@
+import { actExecutionInventory } from "./act-execution-inventory.js";
+import { runPlanSubmissionTurns } from "./act-plan-turns.js";
+import { unavailableActFeedback } from "./act-feedback-unavailable.js";
+import { submitPlanTool, goalCheckTool } from "./act-plan-schema.js";
+import { assertApprovedPlan } from "./act-plan-store.js";
+import { finishGoalFeedback } from "./act-goal-feedback.js";
 import { requestSourceConsent } from "./source-consent.js";
 import type {
   ProviderMessage,
@@ -38,7 +44,7 @@ import { actStepMessages } from "./act-step-messages.js";
 import { assertRequestActive } from "./request-context.js";
 import { pageApiRegistry } from "../page-api/registry.js";
 import type { PageApiActionRef } from "../contracts/page-api-types.js";
-import { opaqueId } from "../security/canonical.js";
+import { digestCanonical, opaqueId } from "../security/canonical.js";
 import { analysisDataForScope } from "./analysis-data-scope.js";
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
   const runStep = async (
@@ -49,8 +55,32 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       session.requestContext ?? dependencies.requestContext?.(session.tabId);
     if (context) session.requestContext = context;
     assertRequestActive(session.requestContext);
-    const active = await dependencies.readActive(undefined, session.tabId);
+    const active = await dependencies
+      .readActive(undefined, session.tabId)
+      .catch((error) => {
+        if (session.executionEvidence?.length) return undefined;
+        throw error;
+      });
+    if (!active) return unavailableActFeedback(dependencies, session);
     assertRequestActive(session.requestContext);
+    if (session.navigationFeedback) {
+      // Only a verified same-origin transition can rebind. No old approval,
+      // source cursor, action reference or workflow target survives it.
+      if (active.tabId !== session.tabId || active.origin !== session.origin)
+        return unavailableActFeedback(dependencies, session);
+      delete session.navigationFeedback;
+      delete session.plan;
+      delete session.pageApiActions;
+      delete session.pageApiScope;
+      delete session.continueAfterApproval;
+      delete session.awaitingExpandedMenuSelection;
+      if (session.workflow) session.workflowCompleted = true;
+      if (session.requestContext?.documentEpoch)
+        session.requestContext = {
+          ...session.requestContext,
+          documentEpoch: active.snapshot.document_epoch,
+        };
+    }
     if (
       session.requestContext?.documentEpoch &&
       active.snapshot.document_epoch !== session.requestContext.documentEpoch
@@ -82,6 +112,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         );
     session.runId = run.id;
     try {
+      session.lastObservationScope = dependencies.pageScope(active);
       dependencies.bindRun(
         run.id,
         active.tabId,
@@ -104,7 +135,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         stage: "PREPARING_PAGE",
       });
       let targetRefId: string | undefined;
-      if (session.workflow) {
+      if (session.workflow && !session.workflowCompleted) {
         const candidate = workflowActionDefinitions(
           active.snapshot,
           session.workflow.step,
@@ -250,21 +281,49 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             )
           : [];
       }
-      const tools = session.sourceReadOnly
-        ? []
-        : genericActTools(
-            session.definitions,
-            model.snapshot,
-            active.snapshot,
-            targetRefId ? new Set([targetRefId]) : undefined,
-            session.pageApiActions,
+      const tools =
+        session.sourceReadOnly || session.feedbackOnly
+          ? []
+          : genericActTools(
+              session.definitions,
+              model.snapshot,
+              active.snapshot,
+              targetRefId ? new Set([targetRefId]) : undefined,
+              session.pageApiActions,
+            );
+      const observationId = opaqueId();
+      const observationDigest = digestCanonical(active.snapshot);
+      const requestRevision = session.requestContext
+        ? toHarnessRevision(session.requestContext.generation)
+        : (session.harnessCapabilities?.request_revision ?? 1);
+      const actionTools = [...tools];
+      if (!session.sourceReadOnly) {
+        messages.push({
+          role: "user",
+          content: `[UNTRUSTED_EXECUTION_INVENTORY]\n${dependencies.serialise(actExecutionInventory({ session, observationId, requestRevision, documentEpoch: active.snapshot.document_epoch, actionTools, readTools: harnessReads }))}\n[/UNTRUSTED_EXECUTION_INVENTORY]`,
+        });
+        if (!session.feedbackOnly)
+          tools.push(
+            submitPlanTool(
+              actionTools
+                .filter(
+                  (tool) => tool.function.name !== "request_clarification",
+                )
+                .map((tool) => tool.function.name),
+              requestRevision,
+              [observationId],
+            ),
           );
+        if (session.executionEvidence?.length)
+          tools.push(goalCheckTool(observationId));
+      }
       // Workflow suitability review gate: a session started from a user
       // selection reviews fit (original request + current page + candidate
       // facts, with reads) BEFORE any step tool is offered. mismatch and
       // needs_context end in a user clarification with zero mutations.
       if (
         session.workflow &&
+        !session.workflowCompleted &&
         session.harnessReview?.status === "PENDING_REVIEW"
       ) {
         // Raw product generations convert exactly once here; an already
@@ -337,7 +396,11 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           return { ok: true, state: "CLARIFICATION", message: gate.message };
         }
       }
-      if (session.harnessCapabilities && !session.sourceReadOnly) {
+      if (
+        session.harnessCapabilities &&
+        !session.sourceReadOnly &&
+        !session.feedbackOnly
+      ) {
         // No silent narrowing: a declared entry tool dropped while its
         // targets are still visible fails loudly on the generic path. A
         // workflow step intentionally scopes tools (the review gate owns that
@@ -403,6 +466,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               }
             : {},
         );
+      const readTranscriptStart = messages.length;
       let response: { content: string; tool_calls: ProviderToolCall[] };
       if (harnessReads.length === 0 || !harnessExecutor) {
         response = await chatOnce(tools);
@@ -512,6 +576,40 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         }
         response = { content: loop.content, tool_calls: loop.calls };
       }
+      for (const message of messages.slice(readTranscriptStart)) {
+        if (message.role === "assistant" || message.role === "tool")
+          session.messages.push(message);
+      }
+      const planTurn = await runPlanSubmissionTurns({
+        dependencies,
+        session,
+        active,
+        run,
+        requestRevision,
+        observationId,
+        actionTools,
+        tools,
+        messages,
+        response,
+        chatOnce,
+      });
+      if ("review" in planTurn) return planTurn.review;
+      response = planTurn.response;
+      if (
+        session.executionEvidence?.length &&
+        (session.feedbackOnly ||
+          response.tool_calls.length === 0 ||
+          response.tool_calls[0]?.name === "report_goal_status")
+      ) {
+        return await finishGoalFeedback({
+          dependencies,
+          session,
+          run,
+          response,
+          observationId,
+          observationDigest,
+        });
+      }
       assertRequestActive(session.requestContext);
       if (session.analysisData) {
         const current = await dependencies
@@ -576,7 +674,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           outcome: "VERIFIED",
         });
         dependencies.endSession(session);
-        return { ok: true, state: "ANSWER", message: response.content };
+        return {
+          ok: true,
+          state: "ANSWER",
+          terminal: terminal.kind,
+          message: response.content,
+        };
       }
       // PAH-9/R4: a recoverable proposal contract error (missing value or
       // schema shape) is returned to the model as that call's result for one
@@ -752,6 +855,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           assertRequestActive(session.requestContext);
         }
       }
+      assertApprovedPlan(
+        session,
+        proposal,
+        active.snapshot.document_epoch,
+        requestRevision,
+      );
       if (session.awaitingExpandedMenuSelection) {
         const target =
           "refId" in proposal
@@ -812,10 +921,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     session: ActSession,
     proposal: ActProposal,
   ): Promise<Record<string, unknown>> => {
-    if (proposal.tool === "call_page_api")
-      return fail("WORKFLOW_STATE_MISMATCH");
+    if (
+      session.feedbackOnly ||
+      session.navigationFeedback ||
+      proposal.tool === "call_page_api"
+    )
+      return runStep(session);
     const workflow = session.workflow;
-    if (!workflow) return runStep(session);
+    if (!workflow || session.workflowCompleted) return runStep(session);
     if (workflow.count >= 11) return fail("WORKFLOW_STEP_LIMIT");
     assertRequestActive(session.requestContext);
     const active = await dependencies.readActive(undefined, session.tabId);
@@ -831,8 +944,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     if (!next) {
       if (workflow.step.branches?.length && !workflow.step.next)
         return fail("WORKFLOW_STATE_MISMATCH");
-      dependencies.endSession(session);
-      return { ok: true, outcome: "VERIFIED", workflow_complete: true };
+      session.workflowCompleted = true;
+      delete session.continueAfterApproval;
+      session.messages.push({
+        role: "user",
+        content:
+          "The declared workflow has no remaining steps. Inspect its actual final result and the current observation to judge the original user goal; workflow termination is not goal success.",
+      });
+      return runStep(session);
     }
     session.workflow = {
       declaration: workflow.declaration,

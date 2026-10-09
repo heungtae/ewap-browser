@@ -12,6 +12,8 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [배포](05-deployment-operations.md)
 - [데이터, 감사 및 개인정보 경계](06-data-audit-and-privacy.md)
 - [검증](07-verification-and-release.md)
+- [테스트 실행 가이드](test.md)
+- [S17 계획·실행 결과 피드백 구현·검증](evidence/s17-plan-feedback-2026-10-09.md)
 - [Sprint 설계 인덱스](sprint-design.md)
 - [Sprint 개발 계획](sprint-development-plan.md)
 - [Sprint 검증 계획](sprint-verification-plan.md)

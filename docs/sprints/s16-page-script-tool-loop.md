@@ -23,14 +23,14 @@ LLM이 최초 요청에서 script의 위치를 몰라도 목록→검색→부�
 
 ## 구현 카드와 순서
 
-| 카드 | 수정 영역과 산출물 | 종료 조건 |
-| --- | --- | --- |
-| S16-C1 | 공통 registry: name/description/parameters/result schema, executor, mode/phase, 동의/binding/budget | callable schema·capability·dispatch가 같은 등록을 사용. executor 부재는 미지원으로 표시 |
-| S16-C2 | content/service-worker의 실제 페이지 resource 수집과 bootstrap inventory 연결 | opaque ID/revision을 가진 설명·inline/external script 목록을 최초 context와 목록 도구로 제공 |
-| S16-C3 | list_page_resources/search_page_resources/read_page_resource function schema·parser·executor | 목록 pagination, 검색 hit/range, bounded chunk와 continuation을 실제 DOM/source에 대해 반환 |
-| S16-C4 | 기존 source 전달 동의·host/fetch/마스킹 경계를 새 읽기 경로에 연결 | CONSENT_REQUIRED→실제 승인→동일 call 결과 또는 DENIED. 동의 전 본문 전달 없음 |
-| S16-C5 | act-harness-turns의 공통 결과·오류·취소·budget continuation | UI와 script 결과를 같은 대화에 tool_call_id로 반환하고 모델의 다음 호출 수행 |
-| S16-C6 | 계약/unit·Chrome·live Provider 검증 및 증거 | 아래 시나리오의 실제 offered schema·호출·결과·다음 turn 확인 |
+| 카드   | 수정 영역과 산출물                                                                                  | 종료 조건                                                                                    |
+| ------ | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| S16-C1 | 공통 registry: name/description/parameters/result schema, executor, mode/phase, 동의/binding/budget | callable schema·capability·dispatch가 같은 등록을 사용. executor 부재는 미지원으로 표시      |
+| S16-C2 | content/service-worker의 실제 페이지 resource 수집과 bootstrap inventory 연결                       | opaque ID/revision을 가진 설명·inline/external script 목록을 최초 context와 목록 도구로 제공 |
+| S16-C3 | list_page_resources/search_page_resources/read_page_resource function schema·parser·executor        | 목록 pagination, 검색 hit/range, bounded chunk와 continuation을 실제 DOM/source에 대해 반환  |
+| S16-C4 | 기존 source 전달 동의·host/fetch/마스킹 경계를 새 읽기 경로에 연결                                  | CONSENT_REQUIRED→실제 승인→동일 call 결과 또는 DENIED. 동의 전 본문 전달 없음                |
+| S16-C5 | act-harness-turns의 공통 결과·오류·취소·budget continuation                                         | UI와 script 결과를 같은 대화에 tool_call_id로 반환하고 모델의 다음 호출 수행                 |
+| S16-C6 | 계약/unit·Chrome·live Provider 검증 및 증거                                                         | 아래 시나리오의 실제 offered schema·호출·결과·다음 turn 확인                                 |
 
 재사용 대상은 page-act-harness/resource-inventory.ts, resource-reader.ts,
 capability-check.ts와 service-worker/act-harness-turns.ts, act-chat-start.ts다.
@@ -39,14 +39,19 @@ capability-check.ts와 service-worker/act-harness-turns.ts, act-chat-start.ts다
 
 ## 검증 행렬
 
-| ID | 시나리오 | 기대 결과 |
-| --- | --- | --- |
-| S16-R1 | 처음 보는 페이지에서 필요한 함수 위치 미상 | LLM이 목록·검색·부분 읽기를 선택. 파일명/함수명을 제품 코드가 고르지 않음 |
-| S16-R2 | 여러 script·큰 bundle·검색/읽기 잘림 | next_cursor/range/coverage로 추가 읽기. 부분 결과를 전체 코드 검토로 표시하지 않음 |
-| S16-R3 | source 동의 필요·허용·거부 | 응답까지 대기. 승인된 범위만 읽고 결과를 원래 호출에 반환. 거부는 모델에 DENIED 반환 |
-| S16-R4 | inline/external script의 token·URL 비밀값·읽을 수 없는 source | provider egress·검색 발췌·trace/export 원문 유출 없음. 실패/미지원 상태 반환 |
-| S16-R5 | navigation·source revision 변경·Stop·worker restart | 예전 resource/cursor/동의 재사용 없음. 취소된 요청의 늦은 결과로 다음 mutation 없음 |
-| S16-R6 | 잘못된 인자·중복 call ID·budget 소진 | 계약 오류/INCOMPLETE를 명확히 표시. 빈 성공이나 다른 도구로 조용한 우회 없음 |
+| ID     | 시나리오                                                      | 기대 결과                                                                            |
+| ------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| S16-R1 | 처음 보는 페이지에서 필요한 함수 위치 미상                    | LLM이 목록·검색·부분 읽기를 선택. 파일명/함수명을 제품 코드가 고르지 않음            |
+| S16-R2 | 여러 script·큰 bundle·검색/읽기 잘림                          | next_cursor/range/coverage로 추가 읽기. 부분 결과를 전체 코드 검토로 표시하지 않음   |
+| S16-R3 | source 동의 필요·허용·거부                                    | 응답까지 대기. 승인된 범위만 읽고 결과를 원래 호출에 반환. 거부는 모델에 DENIED 반환 |
+| S16-R4 | inline/external script의 token·URL 비밀값·읽을 수 없는 source | provider egress·검색 발췌·trace/export 원문 유출 없음. 실패/미지원 상태 반환         |
+| S16-R5 | navigation·source revision 변경·Stop·worker restart           | 예전 resource/cursor/동의 재사용 없음. 취소된 요청의 늦은 결과로 다음 mutation 없음  |
+| S16-R6 | 잘못된 인자·중복 call ID·budget 소진                          | 계약 오류/INCOMPLETE를 명확히 표시. 빈 성공이나 다른 도구로 조용한 우회 없음         |
+
+## 다음 live Provider 테스트의 기본 설정
+
+Provider·모델·인증 환경 변수·빌드와 실행 명령·결과 기록 방법은
+[테스트 실행 가이드](../test.md)를 따른다.
 
 ## 완료 조건과 산출물
 

@@ -53,8 +53,8 @@ export const checkS10Actions = async ({
       fixturePage,
       "({calls:callCount,value:document.querySelector('select').value})",
     );
-  const terminal = async () =>
-    waitFor(
+  const terminal = async () => {
+    const result = await waitFor(
       async () => {
         const result = await status();
         return result.state === "TERMINAL" ? result : undefined;
@@ -62,6 +62,17 @@ export const checkS10Actions = async ({
       20000,
       "S10 request did not settle",
     );
+    await waitFor(
+      () =>
+        evaluate(
+          panel,
+          "document.querySelector('#chat-send')?.dataset.state==='send'",
+        ),
+      10000,
+      "S10 panel did not settle after goal feedback",
+    );
+    return result;
+  };
   const submit = async (mode = "normal", selected = "low") => {
     await evaluate(
       fixturePage,
@@ -76,7 +87,21 @@ export const checkS10Actions = async ({
       () => hasButton("이번 단계 실행"),
       15000,
       "S10 review absent",
-    );
+    ).catch(async (error) => {
+      throw Error(
+        error.message +
+          JSON.stringify({
+            status: await status(),
+            text: await evaluate(
+              panel,
+              "document.querySelector('#chat-messages').textContent",
+            ),
+            offered: captures
+              .slice(-3)
+              .map((body) => body.tools?.map((tool) => tool.function.name)),
+          }),
+      );
+    });
     assert.equal(
       (await counts()).calls,
       baseline.calls,

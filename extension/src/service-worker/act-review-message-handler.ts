@@ -6,6 +6,7 @@ import type { BrowserSender } from "./browser-api.js";
 type Respond = (response: unknown) => void;
 type Session = {
   proposal?: { id: string };
+  plan?: { reviewId: string; approved: boolean };
   awaitingClarification?: { clarificationId: string };
 };
 type Result = { ok?: boolean };
@@ -38,6 +39,9 @@ export const createActReviewMessageHandler = (dependencies: Dependencies) => {
     typeof (message as { proposal_id?: unknown }).proposal_id === "string" &&
     (session?.proposal?.id ===
       (message as { proposal_id: string }).proposal_id ||
+      (session?.plan?.approved === false &&
+        session.plan.reviewId ===
+          (message as { proposal_id: string }).proposal_id) ||
       // PAH-9 clarification answers reuse the value-card channel: the card
       // carries the clarification id, not an execution proposal id.
       session?.awaitingClarification?.clarificationId ===

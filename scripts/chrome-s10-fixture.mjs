@@ -34,26 +34,60 @@ export const createS10Fixture = async (directory, captures) => {
         const tool = parsed.tools?.find(
           (item) => item.function.name === "propose_page_api",
         );
-        const message = tool
+        const inventoryBlock = [...(parsed.messages ?? [])]
+          .reverse()
+          .find((message) =>
+            message.content?.startsWith("[UNTRUSTED_EXECUTION_INVENTORY]"),
+          );
+        const inventory = inventoryBlock
+          ? JSON.parse(inventoryBlock.content.split("\n")[1])
+          : undefined;
+        const feedback = inventory?.execution_evidence?.length
           ? {
               tool_calls: [
                 {
-                  id: "s10-call-abcdefghijklmnop",
+                  id: "s17-page-api-goal",
                   type: "function",
                   function: {
-                    name: "propose_page_api",
+                    name: "report_goal_status",
                     arguments: JSON.stringify({
-                      action_ref:
-                        tool.function.parameters.properties.action_ref.enum[0],
-                      option_id: "high",
-                      approval_scope: "single_step",
-                      approval_reason: "선택 상태를 확인합니다.",
+                      status: inventory.execution_evidence.every(
+                        (item) => item.outcome === "VERIFIED",
+                      )
+                        ? "completed"
+                        : "unknown",
+                      summary:
+                        "Registered API typed outcome reviewed against current observation",
+                      observation_id: inventory.observation_id,
                     }),
                   },
                 },
               ],
             }
-          : { content: '{"route":"ACTION_REQUIRED"}' };
+          : undefined;
+        const message =
+          feedback ??
+          (tool
+            ? {
+                tool_calls: [
+                  {
+                    id: "s10-call-abcdefghijklmnop",
+                    type: "function",
+                    function: {
+                      name: "propose_page_api",
+                      arguments: JSON.stringify({
+                        action_ref:
+                          tool.function.parameters.properties.action_ref
+                            .enum[0],
+                        option_id: "high",
+                        approval_scope: "single_step",
+                        approval_reason: "선택 상태를 확인합니다.",
+                      }),
+                    },
+                  },
+                ],
+              }
+            : { content: '{"route":"ACTION_REQUIRED"}' });
         response.writeHead(200, { "content-type": "application/json" });
         response.end(JSON.stringify({ choices: [{ message }] }));
         return;

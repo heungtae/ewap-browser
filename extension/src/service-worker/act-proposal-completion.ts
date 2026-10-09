@@ -1,5 +1,5 @@
+import { recordActExecution } from "./act-execution-feedback.js";
 import type { ChatEventPayload } from "../contracts/chat-events.js";
-import { safeChatText } from "../state/tab-chat-session-store.js";
 import type { Run } from "../state/run-coordinator.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
 
@@ -23,49 +23,24 @@ export const completeActProposal = async (
   executed: Execution,
   summaries: { success: string; failure: string; unknown?: string },
 ): Promise<Record<string, unknown>> => {
-  if (!executed.ok) {
-    const code = typeof executed.code === "string" ? executed.code : undefined;
-    const outcome: Outcome =
-      executed.outcome === "UNKNOWN" ? "UNKNOWN" : "FAILED";
-    dependencies.publish(run.id, {
-      type: "tool_finished",
-      tool_use_id: proposal.toolCallId,
-      result: {
-        outcome,
-        summary:
-          outcome === "UNKNOWN"
-            ? (summaries.unknown ?? summaries.failure)
-            : summaries.failure,
-        ...(code ? { code } : {}),
-      },
-    });
-    dependencies.publishTerminal(run, outcome, code);
-    dependencies.endSession(session);
-    return executed;
-  }
+  const evidence = recordActExecution(session, proposal, executed);
   dependencies.publish(run.id, {
     type: "tool_finished",
     tool_use_id: proposal.toolCallId,
-    result: { outcome: "VERIFIED", summary: summaries.success },
+    result: {
+      outcome: evidence.outcome,
+      summary:
+        evidence.outcome === "VERIFIED"
+          ? summaries.success
+          : evidence.outcome === "UNKNOWN"
+            ? (summaries.unknown ?? summaries.failure)
+            : summaries.failure,
+      ...(evidence.code ? { code: evidence.code } : {}),
+    },
   });
-  dependencies.publishTerminal(run, "VERIFIED");
-  session.messages.push({
-    role: "tool",
-    tool_call_id: proposal.toolCallId,
-    content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({
-      outcome: "VERIFIED",
-      tool: proposal.tool,
-      target_name: safeChatText(proposal.targetName),
-    })}\n[/UNTRUSTED_TOOL_RESULT]`,
-  });
-  delete session.proposal;
-  if (
-    proposal.tool === "navigate" ||
-    proposal.tool === "call_page_api" ||
-    executed.navigation === true
-  ) {
-    dependencies.endSession(session);
-    return { ok: true, outcome: "VERIFIED" };
-  }
+  // Keep the request alive until the model receives the result and observation.
+  // Failed terminal events abort the request, so publish them after feedback.
+  if (evidence.outcome === "VERIFIED")
+    dependencies.publishTerminal(run, "VERIFIED");
   return dependencies.continueWorkflow(session, proposal);
 };

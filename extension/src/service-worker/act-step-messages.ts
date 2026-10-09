@@ -19,7 +19,7 @@ export const actStepMessages = ({
   analysisContext,
   harnessBlock,
 }: Input): ProviderMessage[] =>
-  session.workflow
+  session.workflow && !session.workflowCompleted
     ? [
         session.messages.at(0)!,
         ...(profileContext

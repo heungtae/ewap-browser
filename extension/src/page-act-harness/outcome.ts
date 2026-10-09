@@ -10,6 +10,7 @@ export type ActionResult = {
   dispatched: boolean;
   observed: boolean;
   verifier: "satisfied" | "failed" | "pending";
+  alreadySatisfied?: boolean;
 };
 
 export type GoalCheck = {
@@ -25,6 +26,7 @@ export const classifyOutcome = (opts: {
   actions: ActionResult[];
   goal?: GoalCheck;
   budget_exhausted?: boolean;
+  remaining_work?: boolean;
   unknown_mutation?: boolean;
   binding_current?: boolean;
   unsupported_steps?: number;
@@ -83,13 +85,17 @@ export const classifyOutcome = (opts: {
       if (opts.unknown_mutation === true)
         return done("UNKNOWN", "UNOBSERVED_MUTATION");
       const unverified = opts.actions.filter(
-        (a) => !a.dispatched || !a.observed || a.verifier !== "satisfied",
+        (a) =>
+          (!a.dispatched && !a.alreadySatisfied) ||
+          !a.observed ||
+          a.verifier !== "satisfied",
       );
       if (unverified.length > 0) return done("UNKNOWN", "UNOBSERVED_ACTION");
       // Budget exhaustion preserves remaining work: it outranks a would-be
       // VERIFIED/GOAL promotion but never hides a FAILED/UNKNOWN above.
       if (opts.budget_exhausted === true)
         return done("INCOMPLETE", "BUDGET_EXHAUSTED");
+      if (opts.remaining_work === true) return done("INCOMPLETE", "GOAL_UNMET");
       if (opts.actions.length === 0) return done("ANSWER_ONLY", "READS_ONLY");
       // Step success never auto-promotes to goal success; goal counts are
       // cross-checked against the satisfied actions (no subset success).

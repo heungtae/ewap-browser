@@ -126,8 +126,8 @@ sequenceDiagram
 | 7.3 dispatch                              | `extension/src/service-worker/act-execution-runtime.ts`의 `executeBounded`, `executeContent`; `runtime-execution.ts`                                               | click/key/text는 bounded CDP로, navigate/select/checked는 Content Script `CONTENT_EXECUTE_R1`로 보낸다. 실행 직전 active request와 page registration을 확인한다.                                                                                                  | Implemented, bounded             |
 | 7.4 완료 판정                             | `extension/src/service-worker/act-postcondition-verifier.ts`의 `verify`, `evaluate`, `waitForPageTransition`; `act-proposal-completion.ts`의 `completeActProposal` | 최대 15초, 200ms 간격으로 semantic evidence를 관측한다. DOM 교체는 유일한 role/name 재식별만 허용한다. navigation은 URL 변화만으로 확정하지 않고 새 scope와 fresh snapshot을 요구한다.                                                                            | Implemented, evidence-limited    |
 | 7.4.1 결과 증거 snapshot 반복 수집        | `act-postcondition-verifier.ts`의 `verify`, `evaluate`, `waitForPageTransition` → `readActiveSnapshot("all_dom")`                                                  | dispatch 뒤 최대 15초 동안 200ms 간격으로 all-dom snapshot을 반복 수집한다. semantic state/UI relation/유일한 재식별 또는 navigation의 새 scope와 fresh snapshot을 확인하며, Provider에는 전달하지 않는다.                                                        | Implemented, bounded observation |
-| 7.5 후속 단계·정리                        | `act-proposal-completion.ts`의 `completeActProposal`; `act-step-runner.ts`의 `continueWorkflow`; `runtime-chat.ts`의 `endSession`                                  | 성공한 non-navigation action만 다음 workflow step 또는 bounded session continuation으로 진행할 수 있다. session 자동 continuation은 최대 12회이며, navigation/Page API/실패/UNKNOWN은 세션과 권한을 정리한다.                                                     | Implemented                      |
-| 7.5.1 후속 step fresh projection 재수집   | `act-step-runner.ts`의 `continueWorkflow` → `runStep` → 단계 6.4.1                                                                                                 | 성공한 non-navigation action만 이전 projection을 재사용하지 않고 단계 6.4.1의 fresh Provider projection 수집으로 다시 시작한다. navigation/Page API/실패/취소/`UNKNOWN`은 이 경로로 이어지지 않고 세션을 종료한다.                                                | Implemented, conditional         |
+| 7.5 실행 결과 피드백 | `act-proposal-completion.ts`의 `completeActProposal`; `act-execution-feedback.ts`의 `recordActExecution`; `act-step-runner.ts`의 `continueWorkflow` | DOM/Page API와 workflow 마지막 결과를 원래 call ID로 반환한다. typed FAILED/UNKNOWN은 읽기·목표 점검만 허용하고 mutation을 재시도하지 않는다. | Implemented, Browser-local evidence |
+| 7.5.1 최신 관찰과 목표 판단 | `act-step-runner.ts`의 `runStep`; `act-goal-feedback.ts`의 `finishGoalFeedback`; `act-feedback-unavailable.ts`의 `unavailableActFeedback` | 승인된 같은 origin 이동은 이전 plan/ref/승인을 폐기한 새 document에서 관찰한다. 관찰 ID·snapshot digest와 typed 결과를 교차 검사해 목표 판단을 분리한다. 안전한 새 관찰 불가는 UNKNOWN이다. | Implemented, live qualification separate |
 
 ### 3.1 route 결정 계약 — 실행 단계 3.1
 
@@ -291,3 +291,21 @@ debug에는 호출·종료·조건식/판정값·처리된 예외·route 결정�
 `ANSWER_ONLY_NO_PAGE_ACTION`은 답변 완료이며 페이지 변경 성공이 아니다.
 마스킹 정보, 메서드 목록 검증, UI/ZIP 위치와 보관 한계는
 [메서드 진단 기록](reference/method-execution-diagnostics.md)을 따른다.
+
+## S17 계획 제출과 종료 계약 (2026-10-09)
+
+`act-plan-schema.ts`의 `submitPlanTool`/`goalCheckTool`은 현재 revision·evidence ID를
+schema enum으로 제공한다. `act-plan-turns.ts`의 `runPlanSubmissionTurns`와
+`act-plan-store.ts`의 `storeSubmittedPlan`은 미지원 단계를 삭제하지 않고 기술 오류를
+같은 call ID에 반환한다. 승인되지 않은 plan은 실행되지 않으며, 계획 카드는 실행 카드와
+구분된다. `approveSubmittedPlan`과 `assertApprovedPlan`이 문서·request/plan revision,
+현재 단계·입력값·single_step 승인을 검사한다. 각 실제 동작은 기존 permission/executor를 따른다.
+
+`act-execution-inventory.ts`의 `actExecutionInventory`는 실제 offered action schema,
+등록된 옵션 전용 Page API, 읽기 수단과 미지원 arbitrary function/arguments를 제공한다.
+계획은 의미·대상·순서를 제품 코드가 대신 고르지 않는다. 기존 workflow는 원본을 유지한다.
+
+내부 응답에는 ANSWER_ONLY/VERIFIED/GOAL_VERIFIED/FAILED/UNKNOWN/INCOMPLETE를 구분한다.
+기존 chat event와 저장된 terminal outcome wire는 VERIFIED/FAILED/UNKNOWN 계약을 유지한다.
+GOAL_VERIFIED는 typed 실행 근거와 최신 관찰 이후의 모델 판단이며 범용 의미 정확성 보장이 아니다.
+[실행 방법](test.md)과 [검증 범위](evidence/s17-plan-feedback-2026-10-09.md)를 따른다.

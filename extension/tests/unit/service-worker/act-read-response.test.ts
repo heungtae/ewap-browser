@@ -67,6 +67,7 @@ describe("Act read response", () => {
     await expect(runner.runStep(session)).resolves.toEqual({
       ok: true,
       state: "ANSWER",
+      terminal: "ANSWER_ONLY",
       message: "이 페이지는 Remote Development using SSH를 설명합니다.",
     });
     expect(endSession).toHaveBeenCalledWith(session);

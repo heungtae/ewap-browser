@@ -1,0 +1,550 @@
+{
+  "date": "2026-10-09",
+  "status": "In Progress",
+  "scope": "Browser-local implementation; live qualification incomplete",
+  "version": "0.1.98",
+  "automated": {
+    "files": 142,
+    "tests": 669,
+    "result": "PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "module_boundaries": 282,
+    "method_trace": {
+      "documented_modules": 41,
+      "methods_callbacks": 1631,
+      "runtime_modules": 183
+    },
+    "build_and_package": "PASS",
+    "source_size": "FAIL: 80 oversized files; all seven new production modules below 200 lines"
+  },
+  "live_provider": {
+    "provider": "OpenRouter",
+    "model": "nvidia/nemotron-3.5-lightning:free",
+    "key_environment": "OPENROUTER_API_KEY",
+    "result": "FAIL",
+    "attempts": [
+      {
+        "attempt": "s17-live-nemotron",
+        "notes": "partial approved input; follow-up body timeout; no plan",
+        "cases": [
+          {
+            "id": "multiple",
+            "pass": false,
+            "acted": true,
+            "approvalCount": 1,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": true,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 200
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan"
+                ],
+                "resultCallIds": [],
+                "executionOutcomes": [],
+                "upstreamStatus": 200
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "resultCallIds": ["call-c0c84508-e6b4-43a0-a62a-304b6935ed5e"],
+                "executionOutcomes": ["VERIFIED"],
+                "upstreamStatus": 200
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attempt": "s17-live-nemotron-retry",
+        "notes": "classifier body timeout",
+        "cases": [
+          {
+            "id": "multiple",
+            "pass": false,
+            "acted": false,
+            "approvalCount": 0,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": true,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 200,
+                "upstreamError": "TimeoutError: The operation was aborted due to timeout"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attempt": "s17-live-nemotron-no-reasoning",
+        "notes": "action turn body timeout",
+        "cases": [
+          {
+            "id": "multiple",
+            "pass": false,
+            "acted": false,
+            "approvalCount": 0,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": true,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan"
+                ],
+                "resultCallIds": [],
+                "executionOutcomes": [],
+                "upstreamStatus": 200,
+                "upstreamError": "TimeoutError: The operation was aborted due to timeout",
+                "reasoningMode": "disabled"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attempt": "s17-live-nemotron-long-timeout",
+        "notes": "invalid plan and read continuation; no approval",
+        "cases": [
+          {
+            "id": "multiple",
+            "pass": false,
+            "acted": false,
+            "approvalCount": 0,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": true,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan"
+                ],
+                "resultCallIds": [],
+                "executionOutcomes": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              },
+              {
+                "tools": [
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan"
+                ],
+                "resultCallIds": ["call-7bfd9996-8b35-4d0e-b4aa-d5375414ff6b"],
+                "executionOutcomes": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              },
+              {
+                "tools": [
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification"
+                ],
+                "resultCallIds": [
+                  "call-7bfd9996-8b35-4d0e-b4aa-d5375414ff6b",
+                  "call-79a1f508-16f5-4a25-8196-7bfc17c8b92d"
+                ],
+                "executionOutcomes": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attempt": "s17-live-nemotron-bound-schema",
+        "notes": "unsupported action steps rejected twice",
+        "cases": [
+          {
+            "id": "search",
+            "pass": false,
+            "acted": false,
+            "approvalCount": 0,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": true,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan"
+                ],
+                "resultCallIds": [],
+                "executionOutcomes": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000,
+                "planSchemaFacts": {
+                  "revisionType": "number",
+                  "revisionMatches": true,
+                  "evidenceMatches": true,
+                  "scopeAccepted": true,
+                  "stepCount": 3,
+                  "capabilitiesOffered": [true, false, false]
+                }
+              },
+              {
+                "tools": [
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan"
+                ],
+                "resultCallIds": ["call-511800f5-b6db-4428-862d-d22654de9ee3"],
+                "executionOutcomes": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000,
+                "planSchemaFacts": {
+                  "revisionType": "number",
+                  "revisionMatches": true,
+                  "evidenceMatches": true,
+                  "scopeAccepted": true,
+                  "stepCount": 3,
+                  "capabilitiesOffered": [true, false, false]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attempt": "s17-live-nemotron-action-plan",
+        "notes": "invalid classifier extra keys; Ask fallback; diagnostic input echo detected",
+        "cases": [
+          {
+            "id": "search",
+            "pass": false,
+            "acted": false,
+            "approvalCount": 0,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": false,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "screenshot",
+                  "zoom",
+                  "tabs_context",
+                  "read_batch"
+                ],
+                "resultCallIds": [],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "screenshot",
+                  "zoom",
+                  "tabs_context",
+                  "read_batch"
+                ],
+                "resultCallIds": ["call-e24552d5-7e5b-4ced-8cef-eb467851946b"],
+                "upstreamStatus": 200,
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "attempt": "s17-live-nemotron-final",
+        "notes": "HTTP 429 free-model daily quota before classification or action",
+        "cases": [
+          {
+            "id": "search",
+            "pass": false,
+            "acted": false,
+            "approvalCount": 0,
+            "planReviewObserved": false,
+            "diagnosticZipRedacted": true,
+            "goalFeedbackVisible": false,
+            "calls": [
+              {
+                "tools": [],
+                "resultCallIds": [],
+                "upstreamStatus": 429,
+                "upstreamError": "Error: LIVE_PROVIDER_HTTP_429",
+                "reasoningMode": "disabled",
+                "upstreamTimeoutMs": 120000
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "sha256": {
+    "dist-extension/js/service-worker.js": "71e559c6e0905e649f5cd342f218d175d55c0f389659d741fcfaab2de8df2b64",
+    "dist-extension/manifest.json": "7bee0156961f5f51287f058e20f5fbbf52be48a60e17d1de886e13352a52418c",
+    "extension/src/diagnostics/trace-mask.ts": "1247deca4f93c87c3a0b2178e1021f293112049776cd15d0a5078ffef43fbd0e",
+    "extension/src/page-act-harness/outcome.ts": "c8cb2f7410918122a30d9a2d1912d3830d25007715294ac92298d52f80a9a9ac",
+    "extension/src/service-worker/act-execution-feedback.ts": "92e269ae9c3b34600bd1c826951342b3b21773368a930ee637221d6cd49f9daa",
+    "extension/src/service-worker/act-execution-inventory.ts": "4444ed5c977758c3f659c0d3c95549b7eddbc6a5cec8d6d6ab8439c7b9452e06",
+    "extension/src/service-worker/act-execution-runtime.ts": "871271c29d16e555e96de56afb277afb4d96a5682d49de0394464369c07375aa",
+    "extension/src/service-worker/act-feedback-unavailable.ts": "c97896c29e0531be98e5276c7f66ccd29c32bf925cc300a6cbe21edb07bcc615",
+    "extension/src/service-worker/act-goal-feedback.ts": "e1b20bd69c85af94f0761c7726194236fc2043c819d3ac2765c87523c18be8cb",
+    "extension/src/service-worker/act-plan-schema.ts": "4f22b8686664d6a070103dc967be6c128a4b0a3ae5d043c8b3cc6b5839e85dc0",
+    "extension/src/service-worker/act-plan-store.ts": "e8feb6d450ab142826b5206d2d3f093e124cc2bf23e53eddcd832d6a99bbeddf",
+    "extension/src/service-worker/act-plan-turns.ts": "a37d63f28e3d8525b6b21c53da658ce6635d773ab27b6fb71953017b644e0128",
+    "extension/src/service-worker/act-proposal-completion.ts": "5cb5d1fe11262d9fbbc3206aacc83d003caf87139f4fac1115169c744bac9a6a",
+    "extension/src/service-worker/act-proposal-executor.ts": "f90c876bdaafbcbd6341d1ebb7418a906d3d9a47603d874383298e52e6b1b4d3",
+    "extension/src/service-worker/act-review-message-handler.ts": "3f6bff95dd74a2d123469e72401184896720cc499aa142ad33ecc20fee9b3827",
+    "extension/src/service-worker/act-session-types.ts": "ccf6f4306dfc0c9e3ecd323b6b8661d9347732fe679851d85a1a5ea6b5bbfa37",
+    "extension/src/service-worker/act-step-messages.ts": "dfc6a84d969f68ada7ef89bd431bad7d485a5f30ad82a81c405af4d4577c441c",
+    "extension/src/service-worker/act-step-runner.ts": "31af06b81869d303601fd64df9b0294f589dd7a356b1627aa88e2bead8fcb49b",
+    "extension/src/service-worker/ask-act-intent-router.ts": "fa682693a05b388cb19eac6e23226cac16b46b9197143e6cbe7478702639ba43",
+    "extension/src/service-worker/runtime-chat.ts": "1d9e3370a0461e857c4a093a2256e7ec60c3ec89e92cc58ffbd424050e9b1d84",
+    "extension/src/sidepanel/entry.ts": "69d17b8574ec51555255afce74800d45c38696e6877bcedea81997d753bf0a2d",
+    "extension/tests/unit/service-worker/act-proposal-completion.test.ts": "7ad9ca0fdbe404bda794390183a693edf297c7519627a72a6fdaa0aac47a09ab",
+    "extension/tests/unit/service-worker/act-read-response.test.ts": "768cb185fbf76b0e91ff5f7d15c3a6e8dc0d8f2bf26c245ca5896b5aafe1e708",
+    "extension/tests/unit/service-worker/ask-act-intent-router.test.ts": "4995415ab28d27b42267103f6e8e6eedc8268bde65f5799f482d674f736f7a38",
+    "package.json": "621f6d99a1e6cc0a25eb50a91decaf81e27f0ebdc4a9040290ad43a346f01d08",
+    "scripts/chrome-accessible-items-smoke.mjs": "205c3ca81bd6622590cc769c0fbaa4a1220ece4c7d416452192c01102d230667",
+    "scripts/chrome-s10-actions.mjs": "fd42cfe7118b4fecab51950e6f04daa7ff420e63b23fad4f328e768942c85779",
+    "scripts/chrome-s10-fixture.mjs": "6c0f419008fb5a45183480621b82210d7417ecb7fa9f260fd45e64ea28b9682c",
+    "scripts/chrome-s17-plan-feedback-smoke.mjs": "eee23a6ca66a6a191c45c8569457ba65b5f7081d6313a1773b7210745e2df099",
+    "scripts/chrome-s17-provider-fixture.mjs": "ef010c11bcd1c0182bab8d9256f75a464f8ec90f5a4f7da7d245546c0ab9ce0d"
+  },
+  "chrome": {
+    "s17": {
+      "result": "PASS",
+      "cases": [
+        {
+          "id": "document-link",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "async-preview",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "search",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "multiple",
+          "pass": true,
+          "approvalCount": 3,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "deny",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": false,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "preview",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "controls-link",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "states-link",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true
+        }
+      ]
+    },
+    "s15": {
+      "result": "PASS",
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "approvalCount": 1,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "notes",
+          "pass": true,
+          "approvalCount": 1,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "clarification",
+          "pass": true,
+          "approvalCount": 1,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "long-value",
+          "pass": true,
+          "approvalCount": 1,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "multiple",
+          "pass": true,
+          "approvalCount": 2,
+          "diagnosticZipRedacted": true
+        },
+        {
+          "id": "deny",
+          "pass": true,
+          "approvalCount": 1,
+          "diagnosticZipRedacted": true
+        }
+      ]
+    },
+    "s10": {
+      "result": "PASS",
+      "log": "/tmp/s17-final-s10.log",
+      "scope": "Page API and read-only adapter actual Chrome regressions"
+    },
+    "s16": {
+      "result": "PASS",
+      "cases": 6,
+      "log": "/tmp/s17-final-s16.log"
+    }
+  }
+}

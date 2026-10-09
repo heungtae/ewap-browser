@@ -1,3 +1,4 @@
+import { approveSubmittedPlan, assertApprovedPlan } from "./act-plan-store.js";
 import { fail } from "../security/validation.js";
 import { toHarnessRevision } from "../page-act-harness/act-entry-bridge.js";
 import { assertRequestActive } from "./request-context.js";
@@ -63,6 +64,7 @@ type Dependencies = {
     session: ActSession,
     proposal: ActProposal,
   ): Promise<Record<string, unknown>>;
+  continueAfterPlan?: (session: ActSession) => Promise<Record<string, unknown>>;
   continueAfterClarification?: (
     session: ActSession,
   ) => Promise<Record<string, unknown>>;
@@ -87,10 +89,38 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
     session: ActSession,
   ): Promise<Record<string, unknown>> => {
     assertRequestActive(session.requestContext);
+    if (session.plan && !session.plan.approved) {
+      const active = await dependencies.readActive(undefined, session.tabId);
+      assertRequestActive(session.requestContext);
+      if (active.tabId !== session.tabId || active.origin !== session.origin)
+        return fail("TARGET_STALE");
+      if (!dependencies.continueAfterPlan) return fail("INVALID_ARGUMENT");
+      approveSubmittedPlan(
+        session,
+        active.snapshot.document_epoch,
+        session.requestContext
+          ? toHarnessRevision(session.requestContext.generation)
+          : (session.harnessCapabilities?.request_revision ?? 1),
+      );
+      if (session.runId) {
+        dependencies.coordinator.runs.terminal(session.runId, "VERIFIED");
+        const completed = dependencies.getRun(session.runId);
+        if (completed) dependencies.publishTerminal(completed, "VERIFIED");
+      }
+      return dependencies.continueAfterPlan(session);
+    }
     const proposal = session.proposal;
     const run = session.runId ? dependencies.getRun(session.runId) : undefined;
     if (!proposal || !run || run.phase === "TERMINAL")
       return fail("INVALID_ARGUMENT");
+    assertApprovedPlan(
+      session,
+      proposal,
+      run.documentEpoch,
+      session.requestContext
+        ? toHarnessRevision(session.requestContext.generation)
+        : (session.harnessCapabilities?.request_revision ?? 1),
+    );
     const capability = capabilityFor(proposal);
     const pageApi = proposal.tool === "call_page_api";
     const risk = pageApi ? "R1" : proposal.definition.risk;
@@ -164,7 +194,12 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
         session,
         run,
         proposal,
-        { ...executed, ok: outcome === "VERIFIED", outcome },
+        {
+          ...executed,
+          ok: outcome === "VERIFIED",
+          outcome,
+          already_satisfied: executed.outcome === "ALREADY_SATISFIED",
+        },
         {
           success:
             executed.outcome === "ALREADY_SATISFIED"

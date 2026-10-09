@@ -49,18 +49,26 @@ describe("Act proposal completion", () => {
     expect(endSession).not.toHaveBeenCalled();
     expect(continueWorkflow).toHaveBeenCalledWith(session, proposal);
     expect(session.proposal).toBeUndefined();
-    expect(session.messages).toContainEqual({
+    expect(session.messages[0]).toMatchObject({
       role: "tool",
-      tool_call_id: "tool-call-abcdefghijkl",
-      content:
-        '[UNTRUSTED_TOOL_RESULT]\n{"outcome":"VERIFIED","tool":"click_by_ref","target_name":"Open SSH guide"}\n[/UNTRUSTED_TOOL_RESULT]',
+      tool_call_id: proposal.toolCallId,
+    });
+    expect(session.messages[0]?.content).toContain(
+      '"verification_meaning":"ACTION_RESULT_NOT_GOAL_COMPLETION"',
+    );
+    expect(session.executionEvidence?.[0]).toMatchObject({
+      outcome: "VERIFIED",
+      observed: true,
     });
   });
 
-  it("ends_the_session_after_a_terminal_execution_failure", async () => {
+  it("returns_typed_failure_for_feedback_without_aborting_the_request", async () => {
     const publish = vi.fn();
     const publishTerminal = vi.fn();
-    const continueWorkflow = vi.fn();
+    const continueWorkflow = vi.fn(async () => ({
+      ok: true,
+      state: "FEEDBACK",
+    }));
     const endSession = vi.fn();
     const session = { messages: [], proposal } as unknown as ActSession;
 
@@ -73,17 +81,22 @@ describe("Act proposal completion", () => {
         { ok: false, code: "TARGET_STALE" },
         { success: "작업 결과를 확인했습니다.", failure: "작업 실패" },
       ),
-    ).resolves.toMatchObject({ ok: false, code: "TARGET_STALE" });
+    ).resolves.toMatchObject({ ok: true, state: "FEEDBACK" });
 
-    expect(publishTerminal).toHaveBeenCalledWith(run, "FAILED", "TARGET_STALE");
-    expect(endSession).toHaveBeenCalledWith(session);
-    expect(continueWorkflow).not.toHaveBeenCalled();
+    expect(publishTerminal).not.toHaveBeenCalled();
+    expect(endSession).not.toHaveBeenCalled();
+    expect(continueWorkflow).toHaveBeenCalledWith(session, proposal);
+    expect(session.feedbackOnly).toBe(true);
+    expect(session.messages[0]?.content).toContain("TARGET_STALE");
   });
 
-  it("ends_the_session_after_a_verified_click_changes_the_page", async () => {
+  it("returns_verified_navigation_to_the_model_for_fresh_observation", async () => {
     const publish = vi.fn();
     const publishTerminal = vi.fn();
-    const continueWorkflow = vi.fn();
+    const continueWorkflow = vi.fn(async () => ({
+      ok: true,
+      state: "FEEDBACK",
+    }));
     const endSession = vi.fn();
     const session = { messages: [], proposal } as unknown as ActSession;
 
@@ -96,9 +109,10 @@ describe("Act proposal completion", () => {
         { ok: true, navigation: true },
         { success: "작업 결과를 확인했습니다.", failure: "작업 실패" },
       ),
-    ).resolves.toEqual({ ok: true, outcome: "VERIFIED" });
+    ).resolves.toEqual({ ok: true, state: "FEEDBACK" });
 
-    expect(endSession).toHaveBeenCalledWith(session);
-    expect(continueWorkflow).not.toHaveBeenCalled();
+    expect(endSession).not.toHaveBeenCalled();
+    expect(continueWorkflow).toHaveBeenCalledWith(session, proposal);
+    expect(session.navigationFeedback).toBe(true);
   });
 });
