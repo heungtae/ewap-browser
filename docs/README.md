@@ -14,6 +14,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [검증](07-verification-and-release.md)
 - [테스트 실행 가이드](test.md)
 - [S17 계획·실행 결과 피드백 구현·검증](evidence/s17-plan-feedback-2026-10-09.md)
+- [S17 OpenAI live 검증](evidence/s17-live-openai-luna-2026-10-09.md)
 - [Sprint 설계 인덱스](sprint-design.md)
 - [Sprint 개발 계획](sprint-development-plan.md)
 - [Sprint 검증 계획](sprint-verification-plan.md)

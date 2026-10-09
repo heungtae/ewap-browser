@@ -1,3 +1,4 @@
+import { liveProviderConfig } from "./live-provider-config.mjs";
 import { spawn } from "node:child_process";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -22,6 +23,7 @@ const calls = [];
 const results = [];
 let current;
 const liveModel = process.env.S16_LIVE_MODEL;
+const live = liveProviderConfig(liveModel);
 const prompt =
   process.env.S16_PROMPT ??
   "페이지의 전체 script 리소스 목록을 빠짐없이 먼저 확인하고, script 검색과 필요한 부분 읽기를 통해 unfamiliarReportTransform을 찾아 어떤 계산인지 설명해줘. 소스는 실행하지 마.";
@@ -71,23 +73,18 @@ const fixture = await createS1Fixture(
     if (liveModel) {
       const started = Date.now();
       try {
-        const response = await fetch(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            },
-            body: JSON.stringify({
-              ...body,
-              model: liveModel,
-              max_tokens: 2048,
-              stream: false,
-            }),
-            signal: AbortSignal.timeout(60_000),
-          },
-        );
+        const response = await fetch(live.endpoint, {
+          method: "POST",
+          headers: live.headers,
+          body: JSON.stringify({
+            ...body,
+            model: liveModel,
+            ...live.parameters,
+            stream: false,
+          }),
+          signal: AbortSignal.timeout(60_000),
+        });
+        record.upstream_provider = live.provider;
         record.upstream_status = response.status;
         record.upstream_headers_ms = Date.now() - started;
         console.log(

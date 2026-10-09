@@ -15,7 +15,7 @@ Browser가 사용법과 실행 수단을 제공하고 LLM이 탐색·입력·계
 
 최초 계획은 S16~S20 Planned였다. 현재 S16은
 [2026-10-09 live 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md) 기준
-Browser-local Completed이며 S17은 [구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md) 기준 In Progress이며 S18~S20은 Planned다.
+Browser-local Completed이며 S17은 [OpenAI live 증거](evidence/s17-live-openai-luna-2026-10-09.md) 기준 Browser-local Completed이며 S18~S20은 Planned다.
 
 ## Community 우선 출시와 Enterprise 후속 단계 (2026-10-04)
 

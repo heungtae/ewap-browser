@@ -2,7 +2,7 @@
 
 ## 상태와 진입 조건
 
-**In Progress — 2026-10-09.** 의존성: [S16](s16-page-script-tool-loop.md)의 registry·결과 반환,
+**Completed — Browser-local, 2026-10-09.** 의존성: [S16](s16-page-script-tool-loop.md)의 registry·결과 반환,
 [S15 / PAH-9](s15-pah-9-llm-input-value-binding.md)의 입력값·질문 계약.
 기준은 [34번 설계](../34-page-act-context-harness-design.md)의 6.2·9·16.5절이다.
 Browser-local 계획이며 기존 Enterprise 배포 Sprint와 구분한다.
@@ -12,10 +12,12 @@ C1~C6의 Browser-local 구현과 계약/통제 Chrome 검증을 연결했다.
 DOM·Page API·workflow 마지막 단계·승인된 같은 origin 이동 결과를 최신 관찰과 함께
 같은 conversation에 반환한다. 안전한 후속 관찰이 불가능하면 UNKNOWN이다.
 단순 동작 성공과 모델 목표 판단을 분리하며 기존 terminal wire는 유지한다.
-지정 모델의 live 경로는 미통과이며 마지막 호출은 무료 모델 일일 한도 HTTP 429다.
-통제 PASS만으로 Completed로 변경하지 않는다.
-[실행 방법](../test.md#s17-계획실행-결과-피드백-테스트)과
-[구현·검증 증거](../evidence/s17-plan-feedback-2026-10-09.md)를 따른다.
+OpenRouter 일일 quota 이후 사용자 지정 OpenAI `gpt-6-luna`로 단일·다중 입력의
+실제 계획·승인·실행·최신 관찰·목표 판단과 진단 ZIP 경로를 통과했다.
+[실행 방법](../test.md#s17-계획실행-결과-피드백-테스트),
+[구현·통제 증거](../evidence/s17-plan-feedback-2026-10-09.md),
+[최종 OpenAI live 증거](../evidence/s17-live-openai-luna-2026-10-09.md)를 따른다.
+운영 사이트·live Page API/navigation/workflow 일반화·배포는 별도 검증이다.
 
 ## 목표와 경계
 

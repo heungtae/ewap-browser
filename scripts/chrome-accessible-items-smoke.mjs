@@ -1,3 +1,4 @@
+import { liveProviderConfig } from "./live-provider-config.mjs";
 import { s17ProviderReply } from "./chrome-s17-provider-fixture.mjs";
 import { spawn } from "node:child_process";
 import { mkdtemp, writeFile, readFile, cp, rm } from "node:fs/promises";
@@ -22,6 +23,7 @@ const documented = await exampleRequests();
 const s17Suite = process.env.S17_SUITE === "1";
 const s15Suite = process.env.S15_SUITE === "1";
 const liveModel = process.env.S15_LIVE_MODEL;
+const live = liveProviderConfig(liveModel);
 const upstreamTimeout = s17Suite
   ? Number(process.env.S17_UPSTREAM_TIMEOUT_MS ?? 60000)
   : 60000;
@@ -153,33 +155,33 @@ const fixture = await createS1Fixture(
         .map((message) => message.tool_call_id);
     }
     if (liveModel) {
+      const upstreamStarted = Date.now();
       try {
-        const upstream = await fetch(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            method: "POST",
-            headers: {
-              "content-type": "application/json",
-              authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-            },
-            body: JSON.stringify({
-              ...body,
-              model: liveModel,
-              ...(s17Suite && process.env.S17_LIVE_REASONING === "off"
-                ? { reasoning: { enabled: false } }
-                : {}),
-              max_tokens: 2048,
-              stream: false,
-            }),
-            signal: AbortSignal.timeout(upstreamTimeout),
-          },
-        );
+        const upstream = await fetch(live.endpoint, {
+          method: "POST",
+          headers: live.headers,
+          body: JSON.stringify({
+            ...body,
+            model: liveModel,
+            ...(live.provider === "openrouter" &&
+            s17Suite &&
+            process.env.S17_LIVE_REASONING === "off"
+              ? { reasoning: { enabled: false } }
+              : {}),
+            ...live.parameters,
+            stream: false,
+          }),
+          signal: AbortSignal.timeout(upstreamTimeout),
+        });
         if (s17Suite)
           callRecord.reasoningMode =
-            process.env.S17_LIVE_REASONING === "off"
-              ? "disabled"
-              : "provider-default";
+            live.provider === "openai"
+              ? "none"
+              : process.env.S17_LIVE_REASONING === "off"
+                ? "disabled"
+                : "provider-default";
         if (s17Suite) callRecord.upstreamTimeoutMs = upstreamTimeout;
+        callRecord.upstreamProvider = live.provider;
         callRecord.upstreamStatus = upstream.status;
         if (s17Suite)
           console.log(
@@ -192,11 +194,28 @@ const fixture = await createS1Fixture(
           throw Error(`LIVE_PROVIDER_HTTP_${upstream.status}`);
         }
         const result = await upstream.json();
+        callRecord.upstreamElapsedMs = Date.now() - upstreamStarted;
         callRecord.model = result.model;
         callRecord.responseText = result.choices[0].message.content;
         callRecord.responseTools =
           result.choices[0].message.tool_calls?.map((c) => c.function.name) ??
           [];
+        if (s17Suite) {
+          callRecord.proposalFacts = (
+            result.choices[0].message.tool_calls ?? []
+          )
+            .filter((call) => call.function.name.startsWith("propose_"))
+            .map((call) => {
+              const args = JSON.parse(call.function.arguments);
+              return {
+                keys: Object.keys(args),
+                approvalScope: args.approval_scope,
+                valueType: typeof args.value,
+                valueMatchesRequest: args.value === current.value,
+                callIdLength: call.id.length,
+              };
+            });
+        }
         if (
           s17Suite &&
           result.choices[0].message.tool_calls?.[0]?.function.name ===
@@ -925,7 +944,16 @@ try {
         const workflowDone =
           !current.workflow ||
           (await state()).result === "Preview generated for Detailed.";
-        if (done && !pending && workflowDone && i > 20) break;
+        // A plan approval closes one run before its next provider turn starts.
+        // The transient idle state is not the S17 request's final feedback.
+        const s17Finished =
+          !s17Suite ||
+          current.deny ||
+          (await evaluate(
+            panel,
+            `document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length>${goalFeedbackBefore} || [...document.querySelectorAll('.event-card[data-kind=error]')].some(e=>e.dataset.testSeen!=='1')`,
+          ));
+        if (done && !pending && workflowDone && s17Finished && i > 20) break;
       }
       let diagnosticZipRedacted;
       if (s15Suite) {
@@ -1102,7 +1130,7 @@ try {
       if (ui.busy !== "send")
         await evaluate(panel, "document.querySelector('#chat-send').click()");
     } catch (e) {
-      if (current.workflow && output) {
+      if ((current.workflow || s17Suite) && output) {
         const diagnostics = await evaluate(
           panel,
           `chrome.runtime.sendMessage(${JSON.stringify({ kind: "PANEL_REQUEST", window_id: panelWindowId, payload: { schema_version: 1, kind: "DIAGNOSTICS_BUNDLE_EXPORT" } })})`,
@@ -1136,7 +1164,7 @@ try {
     ),
   );
   console.log(
-    `${readingSuite ? "Example reading" : "Accessible items"}: all ${selectedCases.length} real Chrome Side Panel cases passed (controlled provider)`,
+    `${readingSuite ? "Example reading" : "Accessible items"}: all ${selectedCases.length} real Chrome Side Panel cases passed (${liveModel ? `live ${live.provider}/${liveModel}` : "controlled provider"})`,
   );
 } finally {
   child.kill("SIGTERM");

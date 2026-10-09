@@ -52,6 +52,37 @@ HTTP 성공만으로 PASS를 판정하지 않으며, 실패와 재시도도 기�
 기존 PASS를 새 실행 결과로 재사용하지 않는다. 마지막 비교 기준은
 [2026-10-09 최종 live 증거](evidence/s16-live-tool-loop-fix-2026-10-09.md)다.
 
+## OpenRouter 사용 제한 시 OpenAI 대체 테스트
+
+2026-10-09 사용자 지정: OpenRouter의 quota/인증/가용성 제한으로 live 테스트를
+진행할 수 없으면 OpenAI `gpt-6-luna`와 환경 변수 `OPENAI_API_KEY`를 사용한다.
+키 값은 저장하지 않는다. `LIVE_PROVIDER=openai`를 명시하면 테스트 proxy가
+`https://api.openai.com/v1/chat/completions`로 요청한다. 기본값은 `openrouter`다.
+진행 중인 요청의 Provider를 바꾸지 않고 새 Chrome profile·새 report로 재실행한다.
+
+Chat Completions 함수 호출을 위해 `reasoning_effort: "none"`과
+`max_completion_tokens: 2048`을 사용한다.
+[공식 GPT-6 Luna 계약](https://developers.openai.com/api/docs/models/gpt-6-luna)을 따른다.
+이 설정은 테스트 proxy에 적용하며 제품의 Provider 기본 설정을 변경하지 않는다.
+
+키가 `~/.bashrc`에만 export되어 있으면 그 설정을 읽은 대화형 셸에서 실행한다.
+앞 절의 버전 보존 빌드 후 다음 명령을 사용한다.
+
+```bash
+test -n "${OPENAI_API_KEY:-}" || { echo 'OPENAI_API_KEY is required'; exit 1; }
+LIVE_PROVIDER=openai S17_LIVE_MODEL=gpt-6-luna \
+ACCESSIBLE_ITEMS_CASES=search,multiple \
+CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome \
+ACCESSIBLE_ITEMS_REPORT="/tmp/s17-live-openai-$(date +%Y%m%d-%H%M%S).json" \
+pnpm test:chrome-s17
+```
+
+S16도 `LIVE_PROVIDER=openai S16_LIVE_MODEL=gpt-6-luna`와 기존 S16 명령을 사용한다.
+S15는 `LIVE_PROVIDER=openai S15_LIVE_MODEL=gpt-6-luna`와 `pnpm test:chrome-s15`를 사용한다.
+통제 테스트는 live model 변수를 생략하므로 실제 Provider 요청을 하지 않는다.
+OpenAI 결과는 OpenRouter 결과와 구분하고, HTTP 성공뿐 아니라 해당 Sprint의
+tool call·승인·관찰·정확한 요청값·진단 ZIP 기준을 모두 검사한다.
+
 ## 통제 Chrome 테스트
 
 live 모델 없이 승인·거부·Stop·source 변경·navigation·worker restart를 검증한다.
@@ -109,7 +140,8 @@ HTTP 200뿐 아니라 유효한 `submit_plan`, 실제 계획 카드, 동작별 �
 Page API의 성공·이미 만족됨·throw·timeout·Stop·scope 변경·restart·replay 차단은
 `pnpm test:chrome-s10`으로 회귀 검증한다. S15 입력과 S16 source 경계도 각각
 `pnpm test:chrome-s15`, `pnpm test:chrome-s16`으로 확인한다.
-최신 결과와 실패 이력은 [S17 구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md)를 따른다.
+구현과 실패 이력은 [S17 구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md),
+최종 OpenAI 결과는 [live 검증 증거](evidence/s17-live-openai-luna-2026-10-09.md)를 따른다.
 
 ## 결과 기록과 한계
 

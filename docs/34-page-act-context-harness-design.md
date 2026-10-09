@@ -664,7 +664,8 @@ Codex의 파일 목록→검색→부분 읽기→결과 반환→다음 판단�
 [2026-10-09 live 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md)으로
 Browser-local 완료를 확인했다. S17의 계획 제출·실행 수단 inventory·실행 결과/관찰·
 모델 목표 점검은 이후 [2026-10-09 구현·검증](evidence/s17-plan-feedback-2026-10-09.md)으로
-연결했다. live 완료 여부는 그 증거의 판정을 따른다. S18~S20 자료 도구와 종합 검증은 별도다.
+연결했다. 이후 [OpenAI live 단일·다중 입력 검증](evidence/s17-live-openai-luna-2026-10-09.md)으로
+Browser-local 완료를 확인했다. S18~S20 자료 도구와 종합 검증은 별도다.
 
 최초 provider 요청은 원래 요청, 최신 UI synopsis, coverage, 자료 inventory의 첫 페이지,
 실행 수단 metadata와 실제 callable function definitions를 함께 제공한다. script 본문,

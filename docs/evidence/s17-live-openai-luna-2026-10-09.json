@@ -1,0 +1,637 @@
+{
+  "date": "2026-10-09",
+  "scope": "Browser-local synthetic HTTPS fixture with actual OpenAI model",
+  "status": "PASS",
+  "provider": "OpenAI",
+  "model": "gpt-6-luna",
+  "key_environment": "OPENAI_API_KEY",
+  "wire_api": "chat_completions",
+  "reasoning_effort": "none",
+  "max_completion_tokens": 2048,
+  "version": "0.1.98",
+  "attempts": [
+    {
+      "report": "s17-live-openai-luna-search",
+      "meaning": "test prematurely accepted transient idle after plan approval",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "approvalCount": 1,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": false,
+          "diagnosticZipRedacted": true,
+          "calls": [
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": [],
+              "tools": [],
+              "resultCallIds": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["submit_plan"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": [],
+              "executionOutcomes": [],
+              "planSchemaFacts": {
+                "revisionType": "number",
+                "revisionMatches": true,
+                "evidenceMatches": true,
+                "scopeAccepted": true,
+                "stepCount": 1,
+                "capabilitiesOffered": [true]
+              }
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["propose_set_text"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": ["call_VD4tKVCoGq6i199nw9M29nni"],
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "s17-live-openai-luna-retry",
+      "meaning": "same harness race; proposal parsed successfully in masked trace",
+      "cases": [
+        {
+          "id": "search",
+          "pass": false,
+          "approvalCount": 1,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": false,
+          "diagnosticZipRedacted": true,
+          "calls": [
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1948,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": [],
+              "tools": [],
+              "resultCallIds": [],
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 3080,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["submit_plan"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": [],
+              "executionOutcomes": [],
+              "planSchemaFacts": {
+                "revisionType": "number",
+                "revisionMatches": true,
+                "evidenceMatches": true,
+                "scopeAccepted": true,
+                "stepCount": 1,
+                "capabilitiesOffered": [true]
+              },
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 2921,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["propose_set_text"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": ["call_t1r6qZHwkeW22WWZg6O33SeM"],
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "proposalFacts": [
+                {
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "report": "s17-live-openai-luna-final",
+      "meaning": "final feedback awaited; single and multiple input PASS",
+      "cases": [
+        {
+          "id": "search",
+          "pass": true,
+          "approvalCount": 2,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true,
+          "calls": [
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1459,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": [],
+              "tools": [],
+              "resultCallIds": [],
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 4877,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["submit_plan"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": [],
+              "executionOutcomes": [],
+              "planSchemaFacts": {
+                "revisionType": "number",
+                "revisionMatches": true,
+                "evidenceMatches": true,
+                "scopeAccepted": true,
+                "stepCount": 1,
+                "capabilitiesOffered": [true]
+              },
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1447,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["read_semantic_projection"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": ["call_dWXOmv2glLzTYCZxhT12HZ7k"],
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 2483,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["propose_set_text"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": [
+                "call_dWXOmv2glLzTYCZxhT12HZ7k",
+                "call_5dFaNpjtslNlyimKhD4l2AR0"
+              ],
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "proposalFacts": [
+                {
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueMatchesRequest": true,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1209,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["read_semantic_projection"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan",
+                "report_goal_status"
+              ],
+              "resultCallIds": [
+                "call_dWXOmv2glLzTYCZxhT12HZ7k",
+                "call_5dFaNpjtslNlyimKhD4l2AR0",
+                "call_yHfM84i0NTNonQbG9gcF5DdH"
+              ],
+              "executionOutcomes": ["VERIFIED"],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 2156,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["report_goal_status"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan",
+                "report_goal_status"
+              ],
+              "resultCallIds": [
+                "call_dWXOmv2glLzTYCZxhT12HZ7k",
+                "call_5dFaNpjtslNlyimKhD4l2AR0",
+                "call_yHfM84i0NTNonQbG9gcF5DdH",
+                "call_CA5MedC3w1q4v6YSbKPJFKeL"
+              ],
+              "executionOutcomes": ["VERIFIED"],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "proposalFacts": []
+            }
+          ]
+        },
+        {
+          "id": "multiple",
+          "pass": true,
+          "approvalCount": 3,
+          "planReviewObserved": true,
+          "goalFeedbackVisible": true,
+          "diagnosticZipRedacted": true,
+          "calls": [
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1647,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": [],
+              "tools": [],
+              "resultCallIds": [],
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 3985,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["submit_plan"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": [],
+              "executionOutcomes": [],
+              "planSchemaFacts": {
+                "revisionType": "number",
+                "revisionMatches": true,
+                "evidenceMatches": true,
+                "scopeAccepted": true,
+                "stepCount": 2,
+                "capabilitiesOffered": [true, true]
+              },
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1651,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["propose_set_text"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan"
+              ],
+              "resultCallIds": ["call_QkPAEmIlSGDlq0xhYgKVS6kE"],
+              "executionOutcomes": [],
+              "planApproved": true,
+              "planCompletedSteps": 0,
+              "proposalFacts": [
+                {
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueMatchesRequest": false,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1933,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["propose_set_text"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan",
+                "report_goal_status"
+              ],
+              "resultCallIds": [
+                "call_QkPAEmIlSGDlq0xhYgKVS6kE",
+                "call_sIXU9z3eSaKrDzQNB4TqlUfP"
+              ],
+              "executionOutcomes": ["VERIFIED"],
+              "planApproved": true,
+              "planCompletedSteps": 1,
+              "proposalFacts": [
+                {
+                  "keys": [
+                    "target",
+                    "value",
+                    "value_source_revision",
+                    "approval_scope",
+                    "approval_reason"
+                  ],
+                  "approvalScope": "single_step",
+                  "valueType": "string",
+                  "valueMatchesRequest": false,
+                  "callIdLength": 29
+                }
+              ]
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1365,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["read_semantic_projection"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan",
+                "report_goal_status"
+              ],
+              "resultCallIds": [
+                "call_QkPAEmIlSGDlq0xhYgKVS6kE",
+                "call_sIXU9z3eSaKrDzQNB4TqlUfP",
+                "call_dsSSJyADC8T6XVZjmFRbkYLP"
+              ],
+              "executionOutcomes": ["VERIFIED", "VERIFIED"],
+              "planApproved": true,
+              "planCompletedSteps": 2,
+              "proposalFacts": []
+            },
+            {
+              "upstreamProvider": "openai",
+              "upstreamStatus": 200,
+              "upstreamElapsedMs": 1766,
+              "model": "gpt-6-luna",
+              "reasoningMode": "none",
+              "responseTools": ["report_goal_status"],
+              "tools": [
+                "read_semantic_projection",
+                "read_page",
+                "get_page_text",
+                "find",
+                "list_page_resources",
+                "search_page_resources",
+                "read_page_resource",
+                "propose_click",
+                "propose_set_text",
+                "propose_set_checked",
+                "propose_select_option",
+                "request_clarification",
+                "submit_plan",
+                "report_goal_status"
+              ],
+              "resultCallIds": [
+                "call_QkPAEmIlSGDlq0xhYgKVS6kE",
+                "call_sIXU9z3eSaKrDzQNB4TqlUfP",
+                "call_dsSSJyADC8T6XVZjmFRbkYLP",
+                "call_NYGoABnbuZNORT3kztbcNm4F"
+              ],
+              "executionOutcomes": ["VERIFIED", "VERIFIED"],
+              "planApproved": true,
+              "planCompletedSteps": 2,
+              "proposalFacts": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "prior_implementation_validation": {
+    "tests": 669,
+    "controlled_s17_cases": 8,
+    "s10_s15_s16_regressions": "PASS; see prior S17 evidence"
+  },
+  "current_validation": {
+    "provider_config_selection_and_missing_key_guard": "PASS",
+    "lint": "PASS",
+    "controlled_s17": {
+      "result": "PASS",
+      "cases": 8,
+      "report": "/tmp/s17-openai-final-controlled.json"
+    },
+    "controlled_s16": {
+      "result": "PASS",
+      "passed_cases": 6,
+      "report": "/tmp/s16-openai-proxy-controlled.log"
+    }
+  },
+  "sha256": {
+    "scripts/live-provider-config.mjs": "16a74c8dcca59a3b2e8ffeb839d5873bf16fa6d4d444eac15bb0046b0a333236",
+    "scripts/chrome-accessible-items-smoke.mjs": "390320406accd9b68b400c362892e5f80eaa4b194d5c306d868489ec6cd0d313",
+    "scripts/chrome-s16-script-tools-smoke.mjs": "b5bc7fa893a81d375ac0481cc5a1ada5e0fb496d7e9e0291b1baad0e22dd1c2c",
+    "dist-extension/js/service-worker.js": "71e559c6e0905e649f5cd342f218d175d55c0f389659d741fcfaab2de8df2b64",
+    "dist-extension/manifest.json": "7bee0156961f5f51287f058e20f5fbbf52be48a60e17d1de886e13352a52418c"
+  }
+}

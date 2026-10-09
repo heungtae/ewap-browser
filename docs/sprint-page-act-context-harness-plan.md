@@ -22,7 +22,7 @@ S15 파일명의 PAH-9 다음 개발 단계는 Browser Act S16~S20을 사용한�
 현재 작업 트리의 PAH-9 코드 존재를 완료 증거로 간주하지 않는다. 기존 구현 증거는 유지하고
 2026-10-08 사용자 요청으로 S16을 구현했다. 검증 상태는 [S16 증거](evidence/s16-script-tool-loop-2026-10-08.md)와
 [10월 9일 live 실패 수정·완료 증거](evidence/s16-live-tool-loop-fix-2026-10-09.md)를 따른다.
-S16은 Browser-local Completed이며 S17은 [구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md) 기준 In Progress이며 S18~S20은 Planned다.
+S16은 Browser-local Completed이며 S17은 [OpenAI live 증거](evidence/s17-live-openai-luna-2026-10-09.md) 기준 Browser-local Completed이며 S18~S20은 Planned다.
 
 각 Sprint는 작은 end-to-end 경로를 먼저 증명한 뒤 범위를 넓힌다. 현재 permission,
 credential 차단, document binding, opaque ref, typed verifier를 유지한다.
@@ -57,7 +57,7 @@ PAH-4는 데이터 읽기가 필요한 계획의 공통 기반이며 단순 입�
 | --- | --- | --- | --- | --- |
 | 선행 | [S15 / PAH-9](sprints/s15-pah-9-llm-input-value-binding.md) | LLM의 입력값·추가 질문 판단 | 기존 모델 continuation·승인 연결 | 기존 계획 상태·실행 증거로 추적 |
 | 1 | [S16](sprints/s16-page-script-tool-loop.md) | registry와 script 발견·검색·부분 읽기·동의 | 현재 UI read loop/request binding | Completed — Browser-local |
-| 2 | [S17](sprints/s17-act-plan-execution-feedback.md) | 계획·실행 수단 metadata·관찰·목표 판단 | S16, S15 입력값 계약 | In Progress — live 검증 분리 |
+| 2 | [S17](sprints/s17-act-plan-execution-feedback.md) | 계획·실행 수단 metadata·관찰·목표 판단 | S16, S15 입력값 계약 | Completed — Browser-local |
 | 3 | [S18](sprints/s18-workflow-resource-tools.md) | 후보 목록·원본 읽기·세 출처 검토 | S16, S17 | Planned |
 | 4 | [S19](sprints/s19-component-data-tools.md) | component descriptor·채널별 데이터·Act vision | 순차 S18 이후, 기술 의존 S16/S17 | Planned |
 | 5 | [S20](sprints/s20-act-tool-loop-live-qualification.md) | 전체 경로 holdout/live·호환성·fault 검증 | S15~S19 연결 기능과 단계별 증거 | Planned |
@@ -423,7 +423,7 @@ Browser / Platform / workspace·통합 수행 여부와 이유:
 2026-10-06에 추가한 `PAH-9`는 Planned이며 기존 PAH-0~8의 증거로 완료 처리하지 않는다.
 후속 Browser Act S16~S20의 최초 등록 상태도 Planned였다. 현재 S16은 Browser-local Completed이며
 [2026-10-09 실패 수정·검증](evidence/s16-live-tool-loop-fix-2026-10-09.md)을 따른다.
-S17은 [구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md) 기준 In Progress이며 S18~S20은 Planned다. 단계별 문서는 docs/sprints에 저장하며
+S17은 [OpenAI live 증거](evidence/s17-live-openai-luna-2026-10-09.md) 기준 Browser-local Completed이며 S18~S20은 Planned다. 단계별 문서는 docs/sprints에 저장하며
 설계·Markdown 검사를 실제 tool 연결이나 live 실행 증거로 사용하지 않는다.
 과거 build·unit·Chrome 결과와 이번 설계 문서의 Markdown 검사를 신규 Sprint 구현 증거로
 채우지 않는다. 기존 문서의 동기화 목록은

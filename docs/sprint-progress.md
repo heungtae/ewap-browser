@@ -297,3 +297,15 @@ S15 / PAH-9의 별도 상태와 S17~S20 Planned는 유지한다.
 지정 OpenRouter 모델은 timeout·미지원 계획 단계·분류 응답 형식 문제를 보였고,
 마지막 재실행은 무료 모델 일일 한도 HTTP 429로 실행 전 종료했다.
 따라서 S17을 Completed로 변경하지 않는다. 버전 0.1.98을 유지하며 S18 이후는 Planned다.
+
+### S17 OpenAI live 재검증·완료 — 2026-10-09
+
+**Completed — Browser-local.** OpenRouter 일일 quota 이후 사용자 지정
+OpenAI `gpt-6-luna`와 `OPENAI_API_KEY` 환경 변수로 전환했다. 단일·다중 입력의
+실제 모델 호출 12개가 모두 HTTP 200이며 계획 승인·각 동작 승인·정확한 요청값·
+동일 call ID 결과 반환·최신 관찰 기반 목표 판단·진단 ZIP 마스킹을 통과했다.
+계획 승인 직후 일시적인 idle을 완료로 처리하던 테스트 조건을 수정했다.
+제품 runtime과 버전 0.1.98은 유지한다.
+[최종 live 증거](evidence/s17-live-openai-luna-2026-10-09.md)를 따른다.
+OpenRouter 실패는 이력으로 유지하고 운영 사이트·임의 모델·live Page API/navigation/workflow
+일반화·배포는 별도다. S18~S20은 Planned를 유지한다.
