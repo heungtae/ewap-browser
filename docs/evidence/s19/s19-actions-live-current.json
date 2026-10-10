@@ -1,0 +1,1581 @@
+[
+  {
+    "id": "tree-expand-action",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "tree-expand-action",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_4b7nP0zm0mxSAkgG5AYakD89"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "call_4b7nP0zm0mxSAkgG5AYakD89",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "sPUomMIjCAbaI1yAU_AMsLMldPal81e0IaPUtFVmoWk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "submit_plan"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_wksAF0fMIY2BTIqboNKxOphx"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "call_4b7nP0zm0mxSAkgG5AYakD89",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "sPUomMIjCAbaI1yAU_AMsLMldPal81e0IaPUtFVmoWk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_wksAF0fMIY2BTIqboNKxOphx",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "propose_click"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_44dX0ULycRDcA4lmmJwey3UW"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "call_4b7nP0zm0mxSAkgG5AYakD89",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "sPUomMIjCAbaI1yAU_AMsLMldPal81e0IaPUtFVmoWk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_wksAF0fMIY2BTIqboNKxOphx",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_44dX0ULycRDcA4lmmJwey3UW",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component",
+          "read_semantic_projection"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_Nf9Jdx5RT7mWdH0xz3DQqPjy",
+          "call_9IL9BDUyen5c5SUCBFBOEks6"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "call_4b7nP0zm0mxSAkgG5AYakD89",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "sPUomMIjCAbaI1yAU_AMsLMldPal81e0IaPUtFVmoWk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_wksAF0fMIY2BTIqboNKxOphx",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_44dX0ULycRDcA4lmmJwey3UW",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "call_Nf9Jdx5RT7mWdH0xz3DQqPjy",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "MDe6iRxwWVbi_e0zT4W8oEy19cWmSFAoFgdnvItBnvE",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 2,
+              "logical_count": 2,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_9IL9BDUyen5c5SUCBFBOEks6",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_SlupgNTnRpwvTEvP7NhN4VOz"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "call_4b7nP0zm0mxSAkgG5AYakD89",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "sPUomMIjCAbaI1yAU_AMsLMldPal81e0IaPUtFVmoWk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_wksAF0fMIY2BTIqboNKxOphx",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_44dX0ULycRDcA4lmmJwey3UW",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "call_Nf9Jdx5RT7mWdH0xz3DQqPjy",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "EktI015usRTNegYk9peH3IZpcyjQBJEY",
+              "binding_revision": "MDe6iRxwWVbi_e0zT4W8oEy19cWmSFAoFgdnvItBnvE",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 2,
+              "logical_count": 2,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_9IL9BDUyen5c5SUCBFBOEks6",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_SlupgNTnRpwvTEvP7NhN4VOz",
+            "status": "AVAILABLE",
+            "channel": "subtree",
+            "coverage": {
+              "scope": "subtree",
+              "complete": false,
+              "collected_count": 2,
+              "supplied_count": 2,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            },
+            "execution": false,
+            "action_data_observed": true
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "report_goal_status"
+        ],
+        "goalStatus": [
+          "incomplete"
+        ],
+        "responseCallIds": [
+          "call_vJm6aTEfAMBF2oMXp4834eCj"
+        ]
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "paging-action",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "paging-action",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_k8VIDBTSHhuSlIlauVdOc2eu"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "list_page_resources"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_MckWDHEnLerrJQSWooYafdDT"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_MckWDHEnLerrJQSWooYafdDT",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component",
+          "read_semantic_projection"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_QwVuiGUlf4lOy97In1r0m0z2",
+          "call_BCoaQhXU4lqHNUt5hqeMurTG"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_MckWDHEnLerrJQSWooYafdDT",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_QwVuiGUlf4lOy97In1r0m0z2",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "mEFgHI-3XFUhsdF7PiSlYEQhSWeS1HWWDTKhWG_UWSI",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_BCoaQhXU4lqHNUt5hqeMurTG",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "submit_plan"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_XZ17nYTfi7xTuivQa1TB6ORh"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_MckWDHEnLerrJQSWooYafdDT",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_QwVuiGUlf4lOy97In1r0m0z2",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "mEFgHI-3XFUhsdF7PiSlYEQhSWeS1HWWDTKhWG_UWSI",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_BCoaQhXU4lqHNUt5hqeMurTG",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_XZ17nYTfi7xTuivQa1TB6ORh",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "propose_click"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_83J2YJAod6yZKkhbIxvL5TJr"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_MckWDHEnLerrJQSWooYafdDT",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_QwVuiGUlf4lOy97In1r0m0z2",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "mEFgHI-3XFUhsdF7PiSlYEQhSWeS1HWWDTKhWG_UWSI",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_BCoaQhXU4lqHNUt5hqeMurTG",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_XZ17nYTfi7xTuivQa1TB6ORh",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_83J2YJAod6yZKkhbIxvL5TJr",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_9zjVaPR1Yv10eZ4iA753ncQd"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_MckWDHEnLerrJQSWooYafdDT",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_QwVuiGUlf4lOy97In1r0m0z2",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "mEFgHI-3XFUhsdF7PiSlYEQhSWeS1HWWDTKhWG_UWSI",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_BCoaQhXU4lqHNUt5hqeMurTG",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_XZ17nYTfi7xTuivQa1TB6ORh",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_83J2YJAod6yZKkhbIxvL5TJr",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "call_9zjVaPR1Yv10eZ4iA753ncQd",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "BuARBjk4Qr1mSJ2u0bDxOUMbVY2TRSMxl7sBg4S4Xgw",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "call_7sOT95T3LeouhTLEMcAuzMjY"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "call_k8VIDBTSHhuSlIlauVdOc2eu",
+            "status": "STALE",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_MckWDHEnLerrJQSWooYafdDT",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_QwVuiGUlf4lOy97In1r0m0z2",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "mEFgHI-3XFUhsdF7PiSlYEQhSWeS1HWWDTKhWG_UWSI",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_BCoaQhXU4lqHNUt5hqeMurTG",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_XZ17nYTfi7xTuivQa1TB6ORh",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_83J2YJAod6yZKkhbIxvL5TJr",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "call_9zjVaPR1Yv10eZ4iA753ncQd",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Nw8PUhC-30L_SXLOExIi5Vmd7CA7M9Ak",
+              "binding_revision": "BuARBjk4Qr1mSJ2u0bDxOUMbVY2TRSMxl7sBg4S4Xgw",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "call_7sOT95T3LeouhTLEMcAuzMjY",
+            "status": "AVAILABLE",
+            "channel": "visible_rows",
+            "coverage": {
+              "scope": "visible_rows",
+              "complete": true,
+              "collected_count": 8,
+              "supplied_count": 8,
+              "total_count": 8,
+              "truncated": false,
+              "reason": "CHANNEL_COMPLETE",
+              "eof_observed": true,
+              "window_offset": 0
+            },
+            "execution": false,
+            "action_data_observed": true
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "report_goal_status"
+        ],
+        "goalStatus": [
+          "completed"
+        ],
+        "responseCallIds": [
+          "call_XSi9CwjVYMjGNCbwpQclpqep"
+        ]
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  }
+]

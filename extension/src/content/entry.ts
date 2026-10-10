@@ -1,3 +1,4 @@
+import { sensitiveComponentElement } from "./component-sensitive-element.js";
 import { createPageResourceCollector } from "./page-resources.js";
 import {
   methodTraceSnapshot,
@@ -253,11 +254,11 @@ const actionableRef = (refId: string): HTMLElement | undefined => {
 const isSensitiveElement = (element: Element): boolean =>
   (element instanceof HTMLInputElement &&
     (element.type === "password" ||
-      /password|secret|otp|mfa|인증|비밀번호|token|recovery/i.test(
+      /password|secret|otp|mfa|인증|비밀번호|token|recovery|api.?key|credential/i.test(
         nameFor(element),
       ) ||
       /one-time-code/i.test(element.autocomplete))) ||
-  /password|secret|otp|mfa|인증|비밀번호|token|recovery/i.test(
+  /password|secret|otp|mfa|인증|비밀번호|token|recovery|api.?key|credential/i.test(
     nameFor(element),
   );
 const refFor = (element: Element, role: string, name: string): string => {
@@ -342,6 +343,7 @@ const boundedTextContent = (
       !(skipControls && parent?.closest("input,select,textarea,button")) &&
       (!skipNonContent ||
         (parent &&
+          !sensitiveComponentElement(parent) &&
           !parent.closest(
             "script,style,noscript,template,[hidden],[aria-hidden=true]",
           ) &&
@@ -663,9 +665,13 @@ runtime?.onMessage.addListener((message, sender, respond) => {
   if (
     typeof message === "object" &&
     message !== null &&
-    ["CONTENT_PAGE_RESOURCES", "CONTENT_PAGE_RESOURCE_READ"].includes(
-      String((message as { kind?: unknown }).kind),
-    )
+    [
+      "CONTENT_PAGE_RESOURCES",
+      "CONTENT_PAGE_RESOURCE_READ",
+      "CONTENT_COMPONENT_DESCRIBE",
+      "CONTENT_COMPONENT_COLLECTION",
+      "CONTENT_COMPONENT_VISION_CHECK",
+    ].includes(String((message as { kind?: unknown }).kind))
   ) {
     if (
       sender.id !== runtime.id ||

@@ -1,0 +1,942 @@
+[
+  {
+    "id": "document-link",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "v_w2Sxh8Rta7Zk58uVf8tjCyLKP-wx9M"
+      },
+      {
+        "type": "activity_progress",
+        "run": "v_w2Sxh8Rta7Zk58uVf8tjCyLKP-wx9M"
+      },
+      {
+        "type": "activity_progress",
+        "run": "v_w2Sxh8Rta7Zk58uVf8tjCyLKP-wx9M"
+      },
+      {
+        "type": "activity_finished",
+        "run": "v_w2Sxh8Rta7Zk58uVf8tjCyLKP-wx9M"
+      },
+      {
+        "type": "user_message",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "run_started",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "activity_started",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "activity_progress",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "activity_finished",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "run_terminal",
+        "run": "f8dbd31c-8f86-4fec-b393-7237206a5e64"
+      },
+      {
+        "type": "run_started",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "activity_started",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "activity_progress",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "activity_finished",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "tool_started",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "tool_started",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "tool_finished",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "run_terminal",
+        "run": "4afd21aa-1b00-44ef-a753-fa95f9a0d69f"
+      },
+      {
+        "type": "page_scope_changed",
+        "run": "page-scope"
+      },
+      {
+        "type": "run_started",
+        "run": "7a5a6335-1d5d-46a7-93a6-f27c359b9877"
+      },
+      {
+        "type": "activity_started",
+        "run": "7a5a6335-1d5d-46a7-93a6-f27c359b9877"
+      },
+      {
+        "type": "activity_progress",
+        "run": "7a5a6335-1d5d-46a7-93a6-f27c359b9877"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "7a5a6335-1d5d-46a7-93a6-f27c359b9877"
+      },
+      {
+        "type": "activity_finished",
+        "run": "7a5a6335-1d5d-46a7-93a6-f27c359b9877"
+      },
+      {
+        "type": "run_terminal",
+        "run": "7a5a6335-1d5d-46a7-93a6-f27c359b9877"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "async-preview",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "M54-Nt2ZJT8kEpDES1p-8R89k7H8_xc3"
+      },
+      {
+        "type": "activity_progress",
+        "run": "M54-Nt2ZJT8kEpDES1p-8R89k7H8_xc3"
+      },
+      {
+        "type": "activity_progress",
+        "run": "M54-Nt2ZJT8kEpDES1p-8R89k7H8_xc3"
+      },
+      {
+        "type": "activity_finished",
+        "run": "M54-Nt2ZJT8kEpDES1p-8R89k7H8_xc3"
+      },
+      {
+        "type": "user_message",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "run_started",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "activity_started",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "activity_progress",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "activity_finished",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "run_terminal",
+        "run": "a28e5435-a139-4eea-a378-94d71227fb6f"
+      },
+      {
+        "type": "run_started",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "activity_started",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "activity_progress",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "activity_finished",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "tool_started",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "tool_started",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "activity_progress",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "tool_finished",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "run_terminal",
+        "run": "60edeb78-34cb-46dc-abaf-32e1273531db"
+      },
+      {
+        "type": "run_started",
+        "run": "40c64104-8374-4c19-a651-3b514c9ca887"
+      },
+      {
+        "type": "activity_started",
+        "run": "40c64104-8374-4c19-a651-3b514c9ca887"
+      },
+      {
+        "type": "activity_progress",
+        "run": "40c64104-8374-4c19-a651-3b514c9ca887"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "40c64104-8374-4c19-a651-3b514c9ca887"
+      },
+      {
+        "type": "activity_finished",
+        "run": "40c64104-8374-4c19-a651-3b514c9ca887"
+      },
+      {
+        "type": "run_terminal",
+        "run": "40c64104-8374-4c19-a651-3b514c9ca887"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "search",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "sXfxij8dO-JlDvFlUsexg54iS0NDal1R"
+      },
+      {
+        "type": "activity_progress",
+        "run": "sXfxij8dO-JlDvFlUsexg54iS0NDal1R"
+      },
+      {
+        "type": "activity_progress",
+        "run": "sXfxij8dO-JlDvFlUsexg54iS0NDal1R"
+      },
+      {
+        "type": "activity_finished",
+        "run": "sXfxij8dO-JlDvFlUsexg54iS0NDal1R"
+      },
+      {
+        "type": "user_message",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "run_started",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "activity_started",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "activity_progress",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "activity_finished",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "run_terminal",
+        "run": "d0b41474-59b4-434c-80cc-f4392b866154"
+      },
+      {
+        "type": "run_started",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "activity_started",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "activity_progress",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "activity_finished",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "tool_started",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "tool_started",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "activity_progress",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "tool_finished",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "run_terminal",
+        "run": "19ac009d-a45f-46fb-a95a-251fa1626053"
+      },
+      {
+        "type": "run_started",
+        "run": "c6f84326-b878-4ae4-bce1-9bc70b7458e0"
+      },
+      {
+        "type": "activity_started",
+        "run": "c6f84326-b878-4ae4-bce1-9bc70b7458e0"
+      },
+      {
+        "type": "activity_progress",
+        "run": "c6f84326-b878-4ae4-bce1-9bc70b7458e0"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "c6f84326-b878-4ae4-bce1-9bc70b7458e0"
+      },
+      {
+        "type": "activity_finished",
+        "run": "c6f84326-b878-4ae4-bce1-9bc70b7458e0"
+      },
+      {
+        "type": "run_terminal",
+        "run": "c6f84326-b878-4ae4-bce1-9bc70b7458e0"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "multiple",
+    "acted": true,
+    "approvalCount": 3,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "qZGJ1NNOq--rmzFlCEc_DRtQES46-6SC"
+      },
+      {
+        "type": "activity_progress",
+        "run": "qZGJ1NNOq--rmzFlCEc_DRtQES46-6SC"
+      },
+      {
+        "type": "activity_progress",
+        "run": "qZGJ1NNOq--rmzFlCEc_DRtQES46-6SC"
+      },
+      {
+        "type": "activity_finished",
+        "run": "qZGJ1NNOq--rmzFlCEc_DRtQES46-6SC"
+      },
+      {
+        "type": "user_message",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "run_started",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "activity_started",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "activity_progress",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "activity_finished",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "run_terminal",
+        "run": "623dc209-2090-4024-8c55-6108905c91a3"
+      },
+      {
+        "type": "run_started",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "activity_started",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "activity_progress",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "activity_finished",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "tool_started",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "tool_started",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "activity_progress",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "tool_finished",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "run_terminal",
+        "run": "0177d66a-0527-444e-b131-7841d8e08eba"
+      },
+      {
+        "type": "run_started",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "activity_started",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "activity_progress",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "activity_finished",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "tool_started",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "activity_progress",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "tool_finished",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "run_terminal",
+        "run": "92cd69d3-14f9-4b1a-9477-1e58524ffba0"
+      },
+      {
+        "type": "run_started",
+        "run": "69e42d2a-5a50-4308-b726-e082a273d484"
+      },
+      {
+        "type": "activity_started",
+        "run": "69e42d2a-5a50-4308-b726-e082a273d484"
+      },
+      {
+        "type": "activity_progress",
+        "run": "69e42d2a-5a50-4308-b726-e082a273d484"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "69e42d2a-5a50-4308-b726-e082a273d484"
+      },
+      {
+        "type": "activity_finished",
+        "run": "69e42d2a-5a50-4308-b726-e082a273d484"
+      },
+      {
+        "type": "run_terminal",
+        "run": "69e42d2a-5a50-4308-b726-e082a273d484"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "deny",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": false,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "LbEv9fvuGS9oLJrWx9jZsvLaZAD3OFS8"
+      },
+      {
+        "type": "activity_progress",
+        "run": "LbEv9fvuGS9oLJrWx9jZsvLaZAD3OFS8"
+      },
+      {
+        "type": "activity_progress",
+        "run": "LbEv9fvuGS9oLJrWx9jZsvLaZAD3OFS8"
+      },
+      {
+        "type": "activity_finished",
+        "run": "LbEv9fvuGS9oLJrWx9jZsvLaZAD3OFS8"
+      },
+      {
+        "type": "user_message",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "run_started",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "activity_started",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "activity_progress",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "activity_finished",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "run_terminal",
+        "run": "4463e1eb-0f3c-49c0-a0a3-aab368f6cb88"
+      },
+      {
+        "type": "run_started",
+        "run": "3ce4b41a-9a0a-4048-bbf5-d833c129b140"
+      },
+      {
+        "type": "activity_started",
+        "run": "3ce4b41a-9a0a-4048-bbf5-d833c129b140"
+      },
+      {
+        "type": "activity_progress",
+        "run": "3ce4b41a-9a0a-4048-bbf5-d833c129b140"
+      },
+      {
+        "type": "activity_finished",
+        "run": "3ce4b41a-9a0a-4048-bbf5-d833c129b140"
+      },
+      {
+        "type": "tool_started",
+        "run": "3ce4b41a-9a0a-4048-bbf5-d833c129b140"
+      },
+      {
+        "type": "run_terminal",
+        "run": "3ce4b41a-9a0a-4048-bbf5-d833c129b140"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "preview",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "MZFfmthZObGDI6RFKAsCj3mWkd6vIJvj"
+      },
+      {
+        "type": "activity_progress",
+        "run": "MZFfmthZObGDI6RFKAsCj3mWkd6vIJvj"
+      },
+      {
+        "type": "activity_progress",
+        "run": "MZFfmthZObGDI6RFKAsCj3mWkd6vIJvj"
+      },
+      {
+        "type": "activity_finished",
+        "run": "MZFfmthZObGDI6RFKAsCj3mWkd6vIJvj"
+      },
+      {
+        "type": "user_message",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "run_started",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "activity_started",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "activity_progress",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "activity_finished",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "run_terminal",
+        "run": "7ec17aa8-90f6-4525-98fe-463c691a1d47"
+      },
+      {
+        "type": "run_started",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "activity_started",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "activity_progress",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "activity_finished",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "tool_started",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "tool_started",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "activity_progress",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "tool_finished",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "run_terminal",
+        "run": "3af26081-dc12-476c-97ff-3c0698bf4847"
+      },
+      {
+        "type": "run_started",
+        "run": "1884a0da-cc06-47b6-ae20-cd8a79e6dccc"
+      },
+      {
+        "type": "activity_started",
+        "run": "1884a0da-cc06-47b6-ae20-cd8a79e6dccc"
+      },
+      {
+        "type": "activity_progress",
+        "run": "1884a0da-cc06-47b6-ae20-cd8a79e6dccc"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "1884a0da-cc06-47b6-ae20-cd8a79e6dccc"
+      },
+      {
+        "type": "activity_finished",
+        "run": "1884a0da-cc06-47b6-ae20-cd8a79e6dccc"
+      },
+      {
+        "type": "run_terminal",
+        "run": "1884a0da-cc06-47b6-ae20-cd8a79e6dccc"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "controls-link",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "IYvwCrdwQhM8XjKjJeXhJDYJz80mV0cI"
+      },
+      {
+        "type": "activity_progress",
+        "run": "IYvwCrdwQhM8XjKjJeXhJDYJz80mV0cI"
+      },
+      {
+        "type": "activity_progress",
+        "run": "IYvwCrdwQhM8XjKjJeXhJDYJz80mV0cI"
+      },
+      {
+        "type": "activity_finished",
+        "run": "IYvwCrdwQhM8XjKjJeXhJDYJz80mV0cI"
+      },
+      {
+        "type": "user_message",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "run_started",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "activity_started",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "activity_progress",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "activity_finished",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "run_terminal",
+        "run": "13efbc55-b687-4070-9476-4ea74d934e3d"
+      },
+      {
+        "type": "run_started",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "activity_started",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "activity_progress",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "activity_finished",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "tool_started",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "tool_started",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "tool_finished",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "run_terminal",
+        "run": "a8494336-5497-4c78-950e-c82227dec497"
+      },
+      {
+        "type": "page_scope_changed",
+        "run": "page-scope"
+      },
+      {
+        "type": "run_started",
+        "run": "54f7e1a3-e0d4-4825-9cf8-75ac5194f445"
+      },
+      {
+        "type": "activity_started",
+        "run": "54f7e1a3-e0d4-4825-9cf8-75ac5194f445"
+      },
+      {
+        "type": "activity_progress",
+        "run": "54f7e1a3-e0d4-4825-9cf8-75ac5194f445"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "54f7e1a3-e0d4-4825-9cf8-75ac5194f445"
+      },
+      {
+        "type": "activity_finished",
+        "run": "54f7e1a3-e0d4-4825-9cf8-75ac5194f445"
+      },
+      {
+        "type": "run_terminal",
+        "run": "54f7e1a3-e0d4-4825-9cf8-75ac5194f445"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  },
+  {
+    "id": "states-link",
+    "acted": true,
+    "approvalCount": 2,
+    "planReviewObserved": true,
+    "planApprovalCount": 1,
+    "diagnosticZipRedacted": true,
+    "goalFeedbackVisible": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "7sJLkMAt9206G3kW2Mr2apxzEzcUDreq"
+      },
+      {
+        "type": "activity_progress",
+        "run": "7sJLkMAt9206G3kW2Mr2apxzEzcUDreq"
+      },
+      {
+        "type": "activity_progress",
+        "run": "7sJLkMAt9206G3kW2Mr2apxzEzcUDreq"
+      },
+      {
+        "type": "activity_finished",
+        "run": "7sJLkMAt9206G3kW2Mr2apxzEzcUDreq"
+      },
+      {
+        "type": "user_message",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "run_started",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "activity_started",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "activity_progress",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "activity_finished",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "run_terminal",
+        "run": "c39d6ea6-efcd-4277-8df4-753dac860f9d"
+      },
+      {
+        "type": "run_started",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "activity_started",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "activity_progress",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "activity_finished",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "tool_started",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "tool_started",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "tool_finished",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "run_terminal",
+        "run": "0f385fca-b1e1-4882-8118-c2cdcc7c861f"
+      },
+      {
+        "type": "page_scope_changed",
+        "run": "page-scope"
+      },
+      {
+        "type": "run_started",
+        "run": "bd31f83b-bf3e-47f1-bd64-9b847c653a1d"
+      },
+      {
+        "type": "activity_started",
+        "run": "bd31f83b-bf3e-47f1-bd64-9b847c653a1d"
+      },
+      {
+        "type": "activity_progress",
+        "run": "bd31f83b-bf3e-47f1-bd64-9b847c653a1d"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "bd31f83b-bf3e-47f1-bd64-9b847c653a1d"
+      },
+      {
+        "type": "activity_finished",
+        "run": "bd31f83b-bf3e-47f1-bd64-9b847c653a1d"
+      },
+      {
+        "type": "run_terminal",
+        "run": "bd31f83b-bf3e-47f1-bd64-9b847c653a1d"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": false,
+    "pass": true
+  }
+]

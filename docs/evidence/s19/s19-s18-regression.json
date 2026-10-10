@@ -1,0 +1,440 @@
+[
+  {
+    "id": "s18-saved-match",
+    "acted": true,
+    "approvalCount": 1,
+    "planReviewObserved": false,
+    "planApprovalCount": 0,
+    "diagnosticZipRedacted": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "AHq9fvqLC3qjysJ2biBu0cWKKx8Gi3ys"
+      },
+      {
+        "type": "activity_progress",
+        "run": "AHq9fvqLC3qjysJ2biBu0cWKKx8Gi3ys"
+      },
+      {
+        "type": "activity_progress",
+        "run": "AHq9fvqLC3qjysJ2biBu0cWKKx8Gi3ys"
+      },
+      {
+        "type": "activity_finished",
+        "run": "AHq9fvqLC3qjysJ2biBu0cWKKx8Gi3ys"
+      },
+      {
+        "type": "user_message",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "run_started",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "activity_started",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "activity_progress",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "activity_finished",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "tool_started",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "tool_started",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "activity_progress",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "tool_finished",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "run_terminal",
+        "run": "bb2d1c0e-b129-4a9a-8fe0-ecfa4a004b77"
+      },
+      {
+        "type": "run_started",
+        "run": "d9892900-f4ca-4a64-b37b-52903595ef87"
+      },
+      {
+        "type": "activity_started",
+        "run": "d9892900-f4ca-4a64-b37b-52903595ef87"
+      },
+      {
+        "type": "activity_progress",
+        "run": "d9892900-f4ca-4a64-b37b-52903595ef87"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "d9892900-f4ca-4a64-b37b-52903595ef87"
+      },
+      {
+        "type": "activity_finished",
+        "run": "d9892900-f4ca-4a64-b37b-52903595ef87"
+      },
+      {
+        "type": "run_terminal",
+        "run": "d9892900-f4ca-4a64-b37b-52903595ef87"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": true,
+    "pass": true
+  },
+  {
+    "id": "s18-saved-mismatch",
+    "acted": false,
+    "approvalCount": 0,
+    "planReviewObserved": false,
+    "planApprovalCount": 0,
+    "diagnosticZipRedacted": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "hIo-3hNpq_UgTzI7cRm8bomAgmG7CaD_"
+      },
+      {
+        "type": "activity_progress",
+        "run": "hIo-3hNpq_UgTzI7cRm8bomAgmG7CaD_"
+      },
+      {
+        "type": "activity_progress",
+        "run": "hIo-3hNpq_UgTzI7cRm8bomAgmG7CaD_"
+      },
+      {
+        "type": "activity_finished",
+        "run": "hIo-3hNpq_UgTzI7cRm8bomAgmG7CaD_"
+      },
+      {
+        "type": "user_message",
+        "run": "658d1d6a-c42d-4348-9f59-e8086be08d11"
+      },
+      {
+        "type": "run_started",
+        "run": "658d1d6a-c42d-4348-9f59-e8086be08d11"
+      },
+      {
+        "type": "activity_started",
+        "run": "658d1d6a-c42d-4348-9f59-e8086be08d11"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "658d1d6a-c42d-4348-9f59-e8086be08d11"
+      },
+      {
+        "type": "activity_finished",
+        "run": "658d1d6a-c42d-4348-9f59-e8086be08d11"
+      },
+      {
+        "type": "run_terminal",
+        "run": "658d1d6a-c42d-4348-9f59-e8086be08d11"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": true,
+    "pass": true
+  },
+  {
+    "id": "s18-profile-match",
+    "acted": true,
+    "approvalCount": 1,
+    "planReviewObserved": false,
+    "planApprovalCount": 0,
+    "diagnosticZipRedacted": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "Co0RU8JY3jz1eFyR_4N0jyNF2kW_JyGw"
+      },
+      {
+        "type": "activity_progress",
+        "run": "Co0RU8JY3jz1eFyR_4N0jyNF2kW_JyGw"
+      },
+      {
+        "type": "activity_progress",
+        "run": "Co0RU8JY3jz1eFyR_4N0jyNF2kW_JyGw"
+      },
+      {
+        "type": "activity_finished",
+        "run": "Co0RU8JY3jz1eFyR_4N0jyNF2kW_JyGw"
+      },
+      {
+        "type": "user_message",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "run_started",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "activity_started",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "activity_progress",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "activity_finished",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "tool_started",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "tool_started",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "activity_progress",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "tool_finished",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "run_terminal",
+        "run": "14ac040b-25aa-4969-9b0d-06d10ecd8475"
+      },
+      {
+        "type": "run_started",
+        "run": "f413486f-dcb9-4f7a-b452-1ae186562ec7"
+      },
+      {
+        "type": "activity_started",
+        "run": "f413486f-dcb9-4f7a-b452-1ae186562ec7"
+      },
+      {
+        "type": "activity_progress",
+        "run": "f413486f-dcb9-4f7a-b452-1ae186562ec7"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "f413486f-dcb9-4f7a-b452-1ae186562ec7"
+      },
+      {
+        "type": "activity_finished",
+        "run": "f413486f-dcb9-4f7a-b452-1ae186562ec7"
+      },
+      {
+        "type": "run_terminal",
+        "run": "f413486f-dcb9-4f7a-b452-1ae186562ec7"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": true,
+    "pass": true
+  },
+  {
+    "id": "s18-profile-mismatch",
+    "acted": false,
+    "approvalCount": 0,
+    "planReviewObserved": false,
+    "planApprovalCount": 0,
+    "diagnosticZipRedacted": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "JJAyO4NpTTqq2T-tUdY-dCJE6aV5lWid"
+      },
+      {
+        "type": "activity_progress",
+        "run": "JJAyO4NpTTqq2T-tUdY-dCJE6aV5lWid"
+      },
+      {
+        "type": "activity_progress",
+        "run": "JJAyO4NpTTqq2T-tUdY-dCJE6aV5lWid"
+      },
+      {
+        "type": "activity_finished",
+        "run": "JJAyO4NpTTqq2T-tUdY-dCJE6aV5lWid"
+      },
+      {
+        "type": "user_message",
+        "run": "7e67bd8c-7f80-406c-9a72-0aa24ee6f9d0"
+      },
+      {
+        "type": "run_started",
+        "run": "7e67bd8c-7f80-406c-9a72-0aa24ee6f9d0"
+      },
+      {
+        "type": "activity_started",
+        "run": "7e67bd8c-7f80-406c-9a72-0aa24ee6f9d0"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "7e67bd8c-7f80-406c-9a72-0aa24ee6f9d0"
+      },
+      {
+        "type": "activity_finished",
+        "run": "7e67bd8c-7f80-406c-9a72-0aa24ee6f9d0"
+      },
+      {
+        "type": "run_terminal",
+        "run": "7e67bd8c-7f80-406c-9a72-0aa24ee6f9d0"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": true,
+    "pass": true
+  },
+  {
+    "id": "s18-page_generated-match",
+    "acted": true,
+    "approvalCount": 1,
+    "planReviewObserved": false,
+    "planApprovalCount": 0,
+    "diagnosticZipRedacted": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "1ppCiakkb5DnK72uoZ8fVzksvj7gMFqZ"
+      },
+      {
+        "type": "activity_progress",
+        "run": "1ppCiakkb5DnK72uoZ8fVzksvj7gMFqZ"
+      },
+      {
+        "type": "activity_progress",
+        "run": "1ppCiakkb5DnK72uoZ8fVzksvj7gMFqZ"
+      },
+      {
+        "type": "activity_finished",
+        "run": "1ppCiakkb5DnK72uoZ8fVzksvj7gMFqZ"
+      },
+      {
+        "type": "user_message",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "run_started",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "activity_started",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "activity_progress",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "activity_finished",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "tool_started",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "tool_started",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "activity_progress",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "tool_finished",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "run_terminal",
+        "run": "32ef1b83-eb84-4e2b-9803-809962759d90"
+      },
+      {
+        "type": "run_started",
+        "run": "111639ba-ca99-4f00-861d-58d65ddb0387"
+      },
+      {
+        "type": "activity_started",
+        "run": "111639ba-ca99-4f00-861d-58d65ddb0387"
+      },
+      {
+        "type": "activity_progress",
+        "run": "111639ba-ca99-4f00-861d-58d65ddb0387"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "111639ba-ca99-4f00-861d-58d65ddb0387"
+      },
+      {
+        "type": "activity_finished",
+        "run": "111639ba-ca99-4f00-861d-58d65ddb0387"
+      },
+      {
+        "type": "run_terminal",
+        "run": "111639ba-ca99-4f00-861d-58d65ddb0387"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": true,
+    "pass": true
+  },
+  {
+    "id": "s18-page_generated-mismatch",
+    "acted": false,
+    "approvalCount": 0,
+    "planReviewObserved": false,
+    "planApprovalCount": 0,
+    "diagnosticZipRedacted": true,
+    "eventSummary": [
+      {
+        "type": "activity_started",
+        "run": "LZ7hFu3znsw9rFEHaqhIAd-n3blDjal0"
+      },
+      {
+        "type": "activity_progress",
+        "run": "LZ7hFu3znsw9rFEHaqhIAd-n3blDjal0"
+      },
+      {
+        "type": "activity_progress",
+        "run": "LZ7hFu3znsw9rFEHaqhIAd-n3blDjal0"
+      },
+      {
+        "type": "activity_finished",
+        "run": "LZ7hFu3znsw9rFEHaqhIAd-n3blDjal0"
+      },
+      {
+        "type": "user_message",
+        "run": "45c77853-fe90-4bac-bdec-8a5530929079"
+      },
+      {
+        "type": "run_started",
+        "run": "45c77853-fe90-4bac-bdec-8a5530929079"
+      },
+      {
+        "type": "activity_started",
+        "run": "45c77853-fe90-4bac-bdec-8a5530929079"
+      },
+      {
+        "type": "assistant_delta",
+        "run": "45c77853-fe90-4bac-bdec-8a5530929079"
+      },
+      {
+        "type": "activity_finished",
+        "run": "45c77853-fe90-4bac-bdec-8a5530929079"
+      },
+      {
+        "type": "run_terminal",
+        "run": "45c77853-fe90-4bac-bdec-8a5530929079"
+      }
+    ],
+    "provider": "",
+    "workflowSelected": true,
+    "pass": true
+  }
+]

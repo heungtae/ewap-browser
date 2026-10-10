@@ -84,8 +84,15 @@ export const actExecutionInventory = (opts: {
         tool.function.name === "read_page_resource" ||
         tool.function.name === "search_page_resources"
           ? "source_disclosure_consent"
-          : "page_read",
-      side_effect: "none",
+          : tool.function.name === "read_component_data"
+            ? "channel-dependent collection approval or vision consent"
+            : ["screenshot", "zoom"].includes(tool.function.name)
+              ? "vision policy and consent"
+              : "page_read",
+      side_effect:
+        tool.function.name === "read_component_data"
+          ? "channel-dependent bounded scroll; separate approved UI paging/expansion"
+          : "none",
       binding: "request-document",
     })),
     plan: opts.session.plan

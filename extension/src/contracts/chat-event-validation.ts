@@ -53,7 +53,7 @@ const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   permission_required: ["request_id", "action", "capability", "host"],
   value_required: ["action", "value_kind"],
   confirmation_required: ["action", "confirmation_id", "confirmation_nonce"],
-  source_consent_required: ["request_id", "resource_count", "host"],
+  source_consent_required: ["request_id", "resource_count", "host", "purpose"],
   run_terminal: ["outcome", "code"],
 };
 export const hasExactChatEventKeys = (

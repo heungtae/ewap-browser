@@ -1,7 +1,7 @@
 import type { PageResourceInventory } from "../contracts/page-resource-types.js";
 import type { BrowserTabs } from "./browser-api.js";
 import { isPlainObject } from "../security/validation.js";
-import { isOpaqueId } from "../page-act-harness/contracts.js";
+import { isPageResourceInventory } from "./page-resource-inventory-validation.js";
 import { opaqueId } from "../security/canonical.js";
 import { maskSourceChunk } from "../page-act-harness/resource-inventory.js";
 import type { SourceStore } from "../page-act-harness/resource-reader.js";
@@ -41,27 +41,7 @@ export const createPageResourceStore = (opts: PageResourceOptions) => {
       throw new Error("SOURCE_ACCESS_DENIED");
     if (isPlainObject(value) && value.status === "FAILED")
       throw new Error("SOURCE_COLLECTION_FAILED");
-    if (
-      !isPlainObject(value) ||
-      value.document_epoch !== opts.documentEpoch ||
-      typeof value.revision !== "string" ||
-      !Array.isArray(value.items) ||
-      value.items.length > 257 ||
-      typeof value.total_count !== "number" ||
-      typeof value.truncated !== "boolean" ||
-      value.items.some(
-        (item) =>
-          !isPlainObject(item) ||
-          typeof item.resource_id !== "string" ||
-          !isOpaqueId(item.resource_id) ||
-          typeof item.revision !== "string" ||
-          typeof item.readable !== "boolean" ||
-          (item.byte_length !== null && typeof item.byte_length !== "number") ||
-          !["page_description", "inline_script", "external_script"].includes(
-            String(item.kind),
-          ),
-      )
-    )
+    if (!isPageResourceInventory(value, opts.documentEpoch))
       throw new Error("RESOURCE_INVENTORY_INVALID");
     const fresh = value as PageResourceInventory;
     if (inventory && inventory.revision !== fresh.revision) {
@@ -96,7 +76,8 @@ export const createPageResourceStore = (opts: PageResourceOptions) => {
           (item) =>
             item.resource_id === id &&
             item.readable &&
-            item.kind !== "page_description",
+            item.kind !== "page_description" &&
+            item.kind !== "component",
         ) && !grants.has(id),
     );
     if (pending.length) {
@@ -111,6 +92,7 @@ export const createPageResourceStore = (opts: PageResourceOptions) => {
       if (
         !meta ||
         !meta.readable ||
+        meta.kind === "component" ||
         (stores.has(id) && meta.kind !== "external_script") ||
         (meta.kind !== "page_description" && grants.get(id) !== true)
       )
@@ -162,7 +144,7 @@ export const createPageResourceStore = (opts: PageResourceOptions) => {
     const meta = inventory?.items.find((item) => item.resource_id === id);
     return !meta
       ? "NOT_FOUND"
-      : !meta.readable
+      : !meta.readable || meta.kind === "component"
         ? "UNSUPPORTED"
         : grants.get(id) === false
           ? "DENIED"
@@ -177,7 +159,7 @@ export const createPageResourceStore = (opts: PageResourceOptions) => {
           ...item,
           state: !item.readable
             ? "UNSUPPORTED"
-            : item.kind === "page_description"
+            : item.kind === "page_description" || item.kind === "component"
               ? "AVAILABLE"
               : "CONSENT_REQUIRED",
         })),

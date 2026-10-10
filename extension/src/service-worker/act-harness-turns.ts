@@ -1,3 +1,6 @@
+import { approvedVisionRead, visionReadMessages } from "./act-vision-read.js";
+import { createComponentToolExecutor } from "./component-tools.js";
+import { componentToolSchemas } from "./component-tool-schemas.js";
 import {
   createWorkflowResourceExecutor,
   workflowResourceToolSchemas,
@@ -48,20 +51,25 @@ import { ContractError, fail } from "../security/validation.js";
 export const ACT_HARNESS_READ_TOOL_NAMES: string[] = listActReadTools();
 
 // The exact Ask read schemas, reused so the model sees tool definitions
-// identical to the Ask path. Only text tools: no screenshot/zoom,
-// tabs_context, or business tools are offered in Act harness reads.
+// identical to the Ask path. Vision is executor/policy/consent gated;
+// tabs_context and business tools are excluded from Act harness reads.
 export const actHarnessReadTools = (): ProviderToolDefinition[] => {
   const names = new Set(ACT_HARNESS_READ_TOOL_NAMES);
   return [
     ...askReadTools,
     ...pageResourceToolSchemas,
     ...workflowResourceToolSchemas,
+    ...componentToolSchemas,
   ].filter((tool) => names.has(tool.function.name));
 };
 
 export type ActHarnessReadAssist = {
   tabs: BrowserTabs;
   redactTitle(value: string | undefined): string;
+  allowCollection?(runId: string, origin: string): boolean;
+  visionEnabled?(): boolean;
+  capture?(runId: string, id: string): VisionCapture | undefined;
+  remember?(runId: string, capture: VisionCapture): void;
 };
 
 export type ActReadCall = { name: string; args: string };
@@ -74,6 +82,7 @@ export const createActHarnessReadExecutor = (opts: {
   assist: ActHarnessReadAssist;
   workflows?: WorkflowResourceOptions;
   resources?: {
+    origin?: string;
     documentEpoch: string;
     requestRevision: number;
     current(): boolean;
@@ -85,10 +94,11 @@ export const createActHarnessReadExecutor = (opts: {
     tabId: opts.tabId,
     runId: opts.runId,
     ...(opts.signal ? { signal: opts.signal } : {}),
-    screenshotEnabled: false,
+    screenshotEnabled: opts.assist.visionEnabled?.() ?? false,
     tabs: opts.assist.tabs,
-    capture: (_id: string): VisionCapture | undefined => undefined,
-    remember: (_capture: VisionCapture): void => undefined,
+    capture: (id: string) => opts.assist.capture?.(opts.runId, id),
+    remember: (capture: VisionCapture) =>
+      opts.assist.remember?.(opts.runId, capture),
     callBusiness: async () => fail("BUSINESS_MCP_NOT_CONFIGURED"),
     businessBindings: [],
     redactTitle: opts.assist.redactTitle,
@@ -104,8 +114,38 @@ export const createActHarnessReadExecutor = (opts: {
   const workflows = opts.workflows
     ? createWorkflowResourceExecutor(opts.workflows)
     : undefined;
+  const components = opts.resources
+    ? createComponentToolExecutor({
+        tabs: opts.assist.tabs,
+        tabId: opts.tabId,
+        runId: opts.runId,
+        ...opts.resources,
+        ...(opts.signal ? { signal: opts.signal } : {}),
+        allowCollection: () =>
+          opts.assist.allowCollection?.(
+            opts.runId,
+            opts.resources!.origin ?? "",
+          ) ?? false,
+        visionEnabled: opts.assist.visionEnabled?.() ?? false,
+        readVisual: () =>
+          approvedVisionRead(
+            {
+              tabs: opts.assist.tabs,
+              tabId: opts.tabId,
+              ...opts.resources!,
+              ...(opts.signal ? { signal: opts.signal } : {}),
+              enabled: () => opts.assist.visionEnabled?.() ?? false,
+            },
+            () => executor.execute({ name: "screenshot", arguments: "{}" }),
+          ),
+      })
+    : undefined;
   const registry = createActReadToolRegistry(
     actHarnessReadTools().map((schema) => {
+      const component = componentToolSchemas.some(
+        (tool) => tool.function.name === schema.function.name,
+      );
+      const vision = ["screenshot", "zoom"].includes(schema.function.name);
       const source = pageResourceToolSchemas.some(
         (tool) => tool.function.name === schema.function.name,
       );
@@ -116,7 +156,7 @@ export const createActHarnessReadExecutor = (opts: {
         schema,
         version: 1,
         resultSchema:
-          source || workflow
+          source || workflow || component
             ? {
                 type: "object",
                 required: ["status"],
@@ -147,17 +187,46 @@ export const createActHarnessReadExecutor = (opts: {
             : "none",
         binding: "request-document",
         budget: "read",
-        ...((workflow ? workflows : !source || resources)
+        ...((
+          component
+            ? components
+            : vision
+              ? opts.resources && opts.assist.visionEnabled?.()
+              : workflow
+                ? workflows
+                : !source || resources
+        )
           ? {
-              execute: (args: string) =>
-                workflow
+              execute: async (args: string) => {
+                if (component)
+                  return components!.execute({
+                    name: schema.function.name,
+                    args,
+                  });
+                if (vision)
+                  return approvedVisionRead(
+                    {
+                      tabs: opts.assist.tabs,
+                      tabId: opts.tabId,
+                      ...opts.resources!,
+                      ...(opts.signal ? { signal: opts.signal } : {}),
+                      enabled: () => opts.assist.visionEnabled?.() ?? false,
+                    },
+                    () =>
+                      executor.execute({
+                        name: schema.function.name,
+                        arguments: args,
+                      }),
+                  );
+                return workflow
                   ? workflows!.execute({ name: schema.function.name, args })
                   : source
                     ? resources!.execute({ name: schema.function.name, args })
                     : executor.execute({
                         name: schema.function.name,
                         arguments: args,
-                      }),
+                      });
+              },
             }
           : {}),
       };
@@ -366,6 +435,7 @@ export const runHarnessReadTurns = async (opts: {
             arguments: call.arguments,
           })),
         );
+        const imageMessages: ProviderMessage[] = [];
         for (const batch of batches) {
           for (const call of batch) {
             let result: unknown;
@@ -385,13 +455,16 @@ export const runHarnessReadTurns = async (opts: {
             if (opts.isCancelled?.()) throw fail("TARGET_STALE");
             sourceGuard?.observe(call.name, call.arguments, result);
             reads += 1;
+            const visual = visionReadMessages(call.name, result);
             opts.messages.push({
               role: "tool",
               tool_call_id: call.tool_call_id,
-              content: `[UNTRUSTED_TOOL_RESULT]\n${opts.serialise(result)}\n[/UNTRUSTED_TOOL_RESULT]`,
+              content: `[UNTRUSTED_TOOL_RESULT]\n${opts.serialise(visual.result)}\n[/UNTRUSTED_TOOL_RESULT]`,
             });
+            if (visual.image) imageMessages.push(visual.image);
           }
         }
+        opts.messages.push(...imageMessages);
         traceDecision("page-act-harness.read_loop.round", {
           rounds,
           reads,

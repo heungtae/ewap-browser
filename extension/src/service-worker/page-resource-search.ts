@@ -29,9 +29,20 @@ export const executePageResourceSearch = async (
     args.cursor === undefined
       ? ((args.offset as number | undefined) ?? 0)
       : position(args.cursor, name, key);
-  const page = data.items.slice(offset, offset + size);
+  const truncated = search
+    ? (data.source_truncated ?? data.truncated)
+    : data.truncated;
+  const items = search
+    ? data.items.filter((item) => item.kind !== "component")
+    : data.items;
+  const totalCount = search
+    ? (data.source_total_count ??
+      data.total_count -
+        data.items.filter((item) => item.kind === "component").length)
+    : data.total_count;
+  const page = items.slice(offset, offset + size);
   const next =
-    offset + page.length < data.items.length
+    offset + page.length < items.length
       ? cursor(name, offset + page.length, key)
       : null;
   const continuation = next
@@ -55,6 +66,7 @@ export const executePageResourceSearch = async (
         state: !item.readable
           ? "UNSUPPORTED"
           : item.kind === "page_description" ||
+              item.kind === "component" ||
               grants.get(item.resource_id) === true
             ? "AVAILABLE"
             : grants.get(item.resource_id) === false
@@ -67,14 +79,14 @@ export const executePageResourceSearch = async (
         data.revision,
         key,
         page.map((item) => ({ ...item, available: true })),
-        data.total_count,
-        data.truncated,
+        totalCount,
+        truncated,
       ),
       coverage: {
-        total_count: data.total_count,
+        total_count: totalCount,
         supplied_count: page.length,
-        complete: offset === 0 && !next && !data.truncated,
-        truncated: Boolean(next) || data.truncated,
+        complete: offset === 0 && !next && !truncated,
+        truncated: Boolean(next) || truncated,
       },
     };
   await load(
@@ -121,15 +133,15 @@ export const executePageResourceSearch = async (
         resource_id: item.resource_id,
         available: stores.has(item.resource_id),
       })),
-      data.total_count,
-      data.truncated,
+      totalCount,
+      truncated,
     ),
     coverage: {
       scope: "first_match_per_resource",
       supplied_count: page.length,
-      total_count: data.total_count,
-      complete: offset === 0 && !next && !data.truncated && !unavailable.length,
-      truncated: Boolean(next) || data.truncated,
+      total_count: totalCount,
+      complete: offset === 0 && !next && !truncated && !unavailable.length,
+      truncated: Boolean(next) || truncated,
     },
   };
 };

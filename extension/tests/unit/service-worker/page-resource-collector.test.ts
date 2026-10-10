@@ -13,6 +13,7 @@ const setup = (src = "") => {
     baseURI: "https://fixture.test/view",
     title: "Report",
     querySelector: () => null,
+    querySelectorAll: () => [],
   };
   const collector = createPageResourceCollector(
     doc as unknown as Document,

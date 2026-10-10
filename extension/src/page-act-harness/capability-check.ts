@@ -16,6 +16,10 @@ export const ACT_READ_TOOLS = [
   "list_page_resources",
   "search_page_resources",
   "read_page_resource",
+  "describe_component",
+  "read_component_data",
+  "screenshot",
+  "zoom",
   "list_workflow_resources",
   "read_workflow_resource",
 ] as const;

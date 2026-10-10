@@ -1,0 +1,88 @@
+[
+  {
+    "id": "tree-expand-action",
+    "pass": false,
+    "error": "AssertionError [ERR_ASSERTION]: request did not settle\n\n'stop' !== 'send'\n",
+    "calls": [
+      {
+        "case": "tree-expand-action",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [],
+        "images": 0,
+        "responseTools": [
+          "submit_plan"
+        ],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-1-abcdefghijkl"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "paging-action",
+    "pass": false,
+    "error": "AssertionError [ERR_ASSERTION]: request did not settle\n\n'stop' !== 'send'\n",
+    "calls": [
+      {
+        "case": "paging-action",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [],
+        "images": 0,
+        "responseTools": [
+          "submit_plan"
+        ],
+        "responseCallIds": [
+          "s19-action-paging-action-1-abcdefghijkl"
+        ]
+      }
+    ]
+  }
+]

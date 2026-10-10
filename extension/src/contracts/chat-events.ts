@@ -170,6 +170,10 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
     };
   if (value.type === "source_consent_required") {
     if (
+      (value.purpose !== undefined &&
+        !["source", "component-scroll", "component-vision"].includes(
+          String(value.purpose),
+        )) ||
       typeof value.request_id !== "string" ||
       typeof value.host !== "string" ||
       !Number.isInteger(value.resource_count) ||
@@ -183,6 +187,14 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       request_id: opaque(value.request_id),
       host: string(value.host, 255),
       resource_count: value.resource_count as number,
+      ...(value.purpose === undefined
+        ? {}
+        : {
+            purpose: value.purpose as
+              | "source"
+              | "component-scroll"
+              | "component-vision",
+          }),
     };
   }
   if (value.type === "permission_required") {

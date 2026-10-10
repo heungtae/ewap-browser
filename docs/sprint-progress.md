@@ -350,3 +350,15 @@ partial/mismatch/needs_context는 설명·질문으로 종료하며 원본 첫 �
 OpenRouter 도구 미제안, 충돌한 fixture 안내문, 통제 report 누락과 재실행 결과는
 [S18 증거](evidence/s18-workflow-resources-2026-10-10.md)에 구분해 기록했다.
 운영 사이트·Platform·릴리스·전 출처 partial/needs_context live 일반화는 별도이며 S19/S20은 Planned다.
+
+## Browser Act S19 — 2026-10-10
+
+**Completed (Browser-local).** component 목록·descriptor·typed 채널 읽기와 실제
+Act vision 전송을 연결했다. 민감값·binding·EOF·continuation과 bounded scroll 승인·복구를
+검증했다. Unit 699건, fixture/E2E 각 1건, 통제 Chrome 전체 21건과 앞선 OpenAI live
+10건이 통과했다. 펼침·페이지 이동은 최신 통제/live 각 2건에서 승인·VERIFIED·변경 데이터
+읽기·실제 최종 판단 UI를 확인했다. live tree의 incomplete를 전체 완료로 바꾸지 않았다.
+
+초기 승인 후 재개 실패는 테스트의 조기 종료와 미지원 fixture 완료 조건을 수정해 해결했다.
+[구현·실행 결과·실패와 해결](evidence/s19-component-tools-2026-10-10.md)을 따른다.
+확장 버전은 0.1.98이며 S20·Platform·운영 사이트·릴리스 판정은 별도다.

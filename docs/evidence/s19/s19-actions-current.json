@@ -1,0 +1,883 @@
+[
+  {
+    "id": "tree-expand-action",
+    "pass": true,
+    "provider": "controlled",
+    "model": "fixture",
+    "consent": false,
+    "calls": [
+      {
+        "case": "tree-expand-action",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "responseTools": [],
+        "goalStatus": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [],
+        "images": 0,
+        "responseTools": [
+          "submit_plan"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-1-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-tree-expand-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "propose_click"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-2-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-tree-expand-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "list_page_resources"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-3-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-tree-expand-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-3-abcdefghijkl",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "describe_component"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-4-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-tree-expand-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-3-abcdefghijkl",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-4-abcdefghijkl",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "HzZk-GjEhdnfvVf3TMWEa4diTdXKKT4l",
+              "binding_revision": "Rq2TT060uMTlFZ6u_-BriPqzsionsmbzfjRnUefA2Jk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 2,
+              "logical_count": 2,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-5-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "tree-expand-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-tree-expand-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-3-abcdefghijkl",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-4-abcdefghijkl",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "HzZk-GjEhdnfvVf3TMWEa4diTdXKKT4l",
+              "binding_revision": "Rq2TT060uMTlFZ6u_-BriPqzsionsmbzfjRnUefA2Jk",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 2,
+              "logical_count": 2,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-tree-expand-action-5-abcdefghijkl",
+            "status": "AVAILABLE",
+            "channel": "subtree",
+            "coverage": {
+              "scope": "subtree",
+              "complete": false,
+              "collected_count": 2,
+              "supplied_count": 2,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            },
+            "execution": false,
+            "action_data_observed": true
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "report_goal_status"
+        ],
+        "goalStatus": [
+          "completed"
+        ],
+        "responseCallIds": [
+          "s19-action-tree-expand-action-6-abcdefghijkl"
+        ]
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "paging-action",
+    "pass": true,
+    "provider": "controlled",
+    "model": "fixture",
+    "consent": false,
+    "calls": [
+      {
+        "case": "paging-action",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "responseTools": [],
+        "goalStatus": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [],
+        "images": 0,
+        "responseTools": [
+          "submit_plan"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-paging-action-1-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-paging-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "propose_click"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-paging-action-2-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-paging-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "list_page_resources"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-paging-action-3-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-paging-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-3-abcdefghijkl",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "describe_component"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-paging-action-4-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-paging-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-3-abcdefghijkl",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-4-abcdefghijkl",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "wfwv9y2WD0AEjFMI5W51Kg6b-4E6M_Zz",
+              "binding_revision": "B5VL1pQC0m1H4sMBVSyqWLFVmsiMmZJWqyC84AruIV0",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "goalStatus": [],
+        "responseCallIds": [
+          "s19-action-paging-action-5-abcdefghijkl"
+        ]
+      },
+      {
+        "case": "paging-action",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data",
+          "propose_click",
+          "submit_plan",
+          "report_goal_status"
+        ],
+        "returned": [
+          {
+            "id": "s19-action-paging-action-1-abcdefghijkl",
+            "status": "PLAN_APPROVED",
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-2-abcdefghijkl",
+            "execution": true,
+            "outcome": "VERIFIED",
+            "observed": true,
+            "dispatched": true,
+            "verifier": "satisfied",
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-3-abcdefghijkl",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-4-abcdefghijkl",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "wfwv9y2WD0AEjFMI5W51Kg6b-4E6M_Zz",
+              "binding_revision": "B5VL1pQC0m1H4sMBVSyqWLFVmsiMmZJWqyC84AruIV0",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            },
+            "execution": false,
+            "action_data_observed": false
+          },
+          {
+            "id": "s19-action-paging-action-5-abcdefghijkl",
+            "status": "AVAILABLE",
+            "channel": "subtree",
+            "coverage": {
+              "scope": "subtree",
+              "complete": true,
+              "collected_count": 8,
+              "supplied_count": 8,
+              "total_count": 8,
+              "truncated": false,
+              "reason": "CHANNEL_COMPLETE",
+              "eof_observed": true,
+              "window_offset": 0
+            },
+            "execution": false,
+            "action_data_observed": true
+          }
+        ],
+        "images": 0,
+        "responseTools": [
+          "report_goal_status"
+        ],
+        "goalStatus": [
+          "completed"
+        ],
+        "responseCallIds": [
+          "s19-action-paging-action-6-abcdefghijkl"
+        ]
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  }
+]

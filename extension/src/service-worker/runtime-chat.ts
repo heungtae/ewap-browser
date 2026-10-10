@@ -1,3 +1,4 @@
+import { allowsModelScreenshot } from "../policy/permission-mode.js";
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import { actionView } from "./act-review-presentation.js";
 import { createActTerminalPublisher } from "./act-terminal-evidence.js";
@@ -201,6 +202,18 @@ const actStepRunner = createActStepRunner({
         readAssist: {
           tabs: chromeApi.tabs,
           redactTitle: redactedTabTitle,
+          allowCollection: (runId: string, origin: string) => {
+            const run = coordinator.runs.byId(runId);
+            return (
+              !!run &&
+              permissions.check("collection_read", origin, runId) !== "DENY"
+            );
+          },
+          visionEnabled: () =>
+            allowsModelScreenshot(agentPreferences.screenshot_policy),
+          capture: (runId: string, id: string) =>
+            visionCaptures.get(`${runId}:${id}`),
+          remember: chatRunLifecycle.rememberVision,
         },
       }
     : {}),

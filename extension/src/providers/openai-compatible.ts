@@ -1,3 +1,4 @@
+import { providerImageContent } from "./provider-image-content.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import type {
   NormalizedProviderRequest,
@@ -62,7 +63,12 @@ const responseInput = (
         ? message.content
           ? [{ role: "assistant", content: message.content }]
           : []
-        : [{ role: message.role, content: message.content }];
+        : [
+            {
+              role: message.role,
+              content: providerImageContent(message, "responses"),
+            },
+          ];
     const toolCalls =
       message.role === "assistant"
         ? (message.tool_calls ?? []).map((call) => ({
@@ -86,7 +92,7 @@ export const openAiCompatibleAdapter: ProviderAdapter = {
               model: request.model,
               messages: request.messages.map((message) => ({
                 role: message.role,
-                content: message.content,
+                content: providerImageContent(message, "chat_completions"),
                 ...(message.tool_call_id
                   ? { tool_call_id: message.tool_call_id }
                   : {}),

@@ -219,6 +219,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                 }
               : {}),
             resources: {
+              origin: active.origin,
               documentEpoch: active.snapshot.document_epoch,
               requestRevision: session.requestContext
                 ? toHarnessRevision(session.requestContext.generation)
@@ -248,6 +249,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                       type: "source_consent_required",
                       request_id: requestId,
                       resource_count: resources.length,
+                      purpose:
+                        resources[0] === "component-scroll"
+                          ? "component-scroll"
+                          : resources[0] === "component-vision"
+                            ? "component-vision"
+                            : "source",
                       host: new URL(active.origin).host,
                     }),
                 });
@@ -549,7 +556,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             ? toHarnessRevision(session.requestContext.generation)
             : (session.harnessCapabilities?.request_revision ?? 1),
           maxRounds: 12,
-          sourceReadOnly: session.sourceReadOnly === true,
+          sourceReadOnly:
+            session.sourceReadOnly === true && !session.componentReadOnly,
           isCancelled: () =>
             dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL",
         });

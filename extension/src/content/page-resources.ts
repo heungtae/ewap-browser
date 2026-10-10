@@ -1,8 +1,10 @@
+import { createComponentResourceCollector } from "./component-resources.js";
 import { digestCanonical, opaqueId } from "../security/canonical.js";
 import type { PageResourceInventory } from "../contracts/page-resource-types.js";
 
 // Static source only. URLs never leave this content-local inventory.
 export const createPageResourceCollector = (doc: Document, epoch: string) => {
+  const components = createComponentResourceCollector(doc, epoch);
   const ids = new WeakMap<HTMLScriptElement, string>();
   const descriptionId = opaqueId();
   const encoder = new TextEncoder();
@@ -66,9 +68,11 @@ export const createPageResourceCollector = (doc: Document, epoch: string) => {
       },
       ...records,
     ];
+    const componentData = await components.collect();
     const revision = await digestCanonical({
       epoch,
       total: scripts.length,
+      components: componentData.entries.map((entry) => entry.metadata),
       entries: entries.map(({ resource_id, revision }) => ({
         resource_id,
         revision,
@@ -77,14 +81,21 @@ export const createPageResourceCollector = (doc: Document, epoch: string) => {
     const inventory: PageResourceInventory = {
       document_epoch: epoch,
       revision,
-      items: entries.map(({ body: _body, src: _src, ...metadata }) => metadata),
-      total_count: scripts.length + 1,
-      truncated: scripts.length > 256,
+      items: [
+        ...entries.map(({ body: _body, src: _src, ...metadata }) => metadata),
+        ...componentData.entries.map((entry) => entry.metadata),
+      ],
+      total_count: scripts.length + 1 + componentData.total_count,
+      truncated: scripts.length > 256 || componentData.truncated,
+      source_truncated: scripts.length > 256,
+      source_total_count: scripts.length + 1,
     };
     return { inventory, entries };
   };
   return {
     async handle(message: Record<string, unknown>): Promise<unknown> {
+      if (String(message.kind).startsWith("CONTENT_COMPONENT_"))
+        return components.handle(message);
       if (message.document_epoch !== epoch) return { status: "STALE" };
       const before = await collect();
       if (message.kind === "CONTENT_PAGE_RESOURCES") return before.inventory;

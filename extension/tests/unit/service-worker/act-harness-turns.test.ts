@@ -433,11 +433,15 @@ describe("act harness turns", () => {
       "read_page",
       "get_page_text",
       "find",
+      "screenshot",
+      "zoom",
       "list_page_resources",
       "search_page_resources",
       "read_page_resource",
       "list_workflow_resources",
       "read_workflow_resource",
+      "describe_component",
+      "read_component_data",
     ]);
   });
 

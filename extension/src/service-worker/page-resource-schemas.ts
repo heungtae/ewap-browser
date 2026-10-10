@@ -17,7 +17,7 @@ export const pageResourceToolSchemas: ProviderToolDefinition[] = [
     function: {
       name: "list_page_resources",
       description:
-        "List current static page description and inline/external scripts with opaque IDs and revision. First call: {}. No source body. To continue, copy continuation.arguments exactly. progress counts all distinct pages inspected; partial inventory is not a complete review.",
+        "List current component metadata, static page description and inline/external scripts with opaque IDs and revision. First call: {}. No source body. Use component IDs/revisions with describe_component and read_component_data. To continue, copy continuation.arguments exactly. progress counts all distinct pages inspected; partial inventory is not a complete review.",
       parameters: {
         type: "object",
         properties: {

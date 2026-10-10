@@ -172,7 +172,11 @@ export const createActChatStart =
     )
       return fail("PAGE_SCOPE_STALE");
     const route = await dependencies.route(value.prompt, active, context);
-    if (route !== "ACTION_REQUIRED" && route !== "SOURCE_READ_REQUIRED")
+    if (
+      route !== "ACTION_REQUIRED" &&
+      route !== "SOURCE_READ_REQUIRED" &&
+      route !== "COMPONENT_READ_REQUIRED"
+    )
       return dependencies.runReadOnly(value, context, {
         analysisRequested: route === "ANALYSIS_READ_REQUIRED",
         ...(options?.analysisSelection
@@ -227,8 +231,13 @@ export const createActChatStart =
       const session: ActSession = {
         ...(context ? { requestContext: context } : {}),
         id: dependencies.createId(),
-        ...(route === "SOURCE_READ_REQUIRED"
-          ? { sourceReadOnly: true as const }
+        ...(["SOURCE_READ_REQUIRED", "COMPONENT_READ_REQUIRED"].includes(route)
+          ? {
+              sourceReadOnly: true as const,
+              ...(route === "COMPONENT_READ_REQUIRED"
+                ? { componentReadOnly: true as const }
+                : {}),
+            }
           : {}),
         tabId: active.tabId,
         origin: active.origin,
@@ -239,7 +248,9 @@ export const createActChatStart =
             content:
               route === "SOURCE_READ_REQUIRED"
                 ? sourceReadSystemPrompt
-                : genericActSystemPrompt,
+                : route === "COMPONENT_READ_REQUIRED"
+                  ? `${genericActSystemPrompt} This request is component-read-only. No plan submission or page action is available; only supported component reads, separately approved bounded scrolling and consent-gated visual evidence may run.`
+                  : genericActSystemPrompt,
           },
           { role: "user", content: `User execution request: ${value.prompt}` },
         ],
@@ -253,13 +264,13 @@ export const createActChatStart =
         session,
         value.prompt,
         active,
-        route === "SOURCE_READ_REQUIRED"
+        ["SOURCE_READ_REQUIRED", "COMPONENT_READ_REQUIRED"].includes(route)
           ? []
           : selected.definitions.map((definition) => definition.tool),
         dependencies,
         context,
       );
-      if (route === "SOURCE_READ_REQUIRED") {
+      if (["SOURCE_READ_REQUIRED", "COMPONENT_READ_REQUIRED"].includes(route)) {
         dependencies.sessions.set(session.id, session);
         dependencies.finishActivity(activityId, "COMPLETED");
         return dependencies.runStep(session);

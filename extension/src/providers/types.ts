@@ -64,6 +64,7 @@ export type ProviderMessage = {
   content: string;
   tool_calls?: ProviderToolCall[];
   tool_call_id?: string;
+  image_data_urls?: string[];
 };
 export type ProviderChatResponse = {
   finish_reason?: string;

@@ -2,7 +2,11 @@
 
 ## 상태와 진입 조건
 
-**Planned — 2026-10-06.** 순차 진입은 [S18](s18-workflow-resource-tools.md) 이후이며,
+**Completed (Browser-local) — 2026-10-10.**
+[구현·검증 증거](../evidence/s19-component-tools-2026-10-10.md): 지원 채널·bounded scroll과
+펼침·페이지 이동의 기존 계획·동작 승인 후 재개를 검증했다. 통제 Chrome 21/21,
+승인 후 재개 최신 통제/live 각 2/2가 통과했다. partial·미지원 채널의 한계는 유지한다.
+순차 진입은 [S18](s18-workflow-resource-tools.md) 이후이며,
 기술 의존성은 [S16](s16-page-script-tool-loop.md)의 resource registry와
 [S17](s17-act-plan-execution-feedback.md)의 실행·관찰 계약이다.
 기준은 [34번 설계](../34-page-act-context-harness-design.md)의 7·16절이다.

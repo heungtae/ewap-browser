@@ -1,4 +1,8 @@
 import {
+  requestVisionPermission,
+  type VisionPermissions,
+} from "./vision-permission.js";
+import {
   type ChatActionView,
   type ChatEvent,
   validateChatEvent,
@@ -44,6 +48,7 @@ type BrowserTabs = {
 const chromeApi = (
   globalThis as typeof globalThis & {
     chrome?: {
+      permissions?: VisionPermissions;
       runtime: BrowserRuntime;
       tabs?: BrowserTabs;
       windows?: { getCurrent(): Promise<{ id?: number }> };
@@ -1533,8 +1538,16 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     lockDecisionCards(event.run_id, "처리됨");
     const item = card(
       "permission",
-      "페이지 소스 전달 동의",
-      `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
+      event.purpose === "component-scroll"
+        ? "Component 스크롤 읽기 승인"
+        : event.purpose === "component-vision"
+          ? "화면 이미지 전달 동의"
+          : "페이지 소스 전달 동의",
+      event.purpose === "component-scroll"
+        ? `${event.host}의 선택한 component를 제한된 스크롤로 읽고 원래 위치로 복구합니다. 수집 범위와 복구 결과를 확인합니다.`
+        : event.purpose === "component-vision"
+          ? `${event.host}의 현재 화면 이미지를 모델에 전달합니다. Chrome 화면 캡처 권한도 요청합니다. 민감한 화면은 지원하지 않으며 이미지를 동작 좌표로 사용하지 않습니다.`
+          : `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
     );
     const row = actionRow(item);
     let selected = false;
@@ -1544,6 +1557,8 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
       for (const control of row.querySelectorAll<HTMLButtonElement>("button"))
         control.disabled = true;
       try {
+        if (allowed && event.purpose === "component-vision")
+          allowed = await requestVisionPermission(chromeApi?.permissions);
         await sendRuntime({
           kind: "SOURCE_CONSENT_DECISION",
           request_id: event.request_id,
@@ -1552,7 +1567,9 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
         });
         item.dataset.decision = allowed ? "once" : "deny";
         setStatus(
-          allowed ? "소스를 확인하는 중입니다." : "소스 전달을 거부했습니다.",
+          allowed
+            ? "승인한 자료를 확인하는 중입니다."
+            : "자료 읽기를 거부했습니다.",
         );
       } catch (error) {
         showFailure(error instanceof Error ? error.message : undefined);

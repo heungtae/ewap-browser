@@ -1,0 +1,2883 @@
+[
+  {
+    "id": "table",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "table",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "table",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_vDldsFyRF23EBWP4usWEW26W"
+        ]
+      },
+      {
+        "case": "table",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_vDldsFyRF23EBWP4usWEW26W",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "UoPxGwv0APyvygvQ_cgUWFIfpGNvbjr1",
+              "binding_revision": "5JnRctkLMVEAlZJeOKya3261U_YRFCCMbdX_S1hgp8I",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_iXoFqPv6rZiOxpCcRjtbiDPD"
+        ]
+      },
+      {
+        "case": "table",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_vDldsFyRF23EBWP4usWEW26W",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "UoPxGwv0APyvygvQ_cgUWFIfpGNvbjr1",
+              "binding_revision": "5JnRctkLMVEAlZJeOKya3261U_YRFCCMbdX_S1hgp8I",
+              "observed_hint": "table",
+              "hint_basis": "tag:table;role:unclassified",
+              "visible_count": 8,
+              "logical_count": 8,
+              "total_count": 8,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_iXoFqPv6rZiOxpCcRjtbiDPD",
+            "status": "AVAILABLE",
+            "channel": "subtree",
+            "coverage": {
+              "scope": "subtree",
+              "complete": true,
+              "collected_count": 8,
+              "supplied_count": 8,
+              "total_count": 8,
+              "truncated": false,
+              "reason": "CHANNEL_COMPLETE",
+              "eof_observed": true,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "list",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "list",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "list",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_jkgoDbpH2DbZOyjA5W4mBmfs"
+        ]
+      },
+      {
+        "case": "list",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_jkgoDbpH2DbZOyjA5W4mBmfs",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Owuv-KZcvIrMagBCg6f3diP-8RkhwR1n",
+              "binding_revision": "QL8UQ4T26d4aftUN1nzOQo2Qz5Ztt83PxbXoGSFi6bc",
+              "observed_hint": "list",
+              "hint_basis": "tag:ul;role:unclassified",
+              "visible_count": 3,
+              "logical_count": 3,
+              "total_count": 3,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_YZ3njz4HxZyL9vdO7ZvUECWm"
+        ]
+      },
+      {
+        "case": "list",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_jkgoDbpH2DbZOyjA5W4mBmfs",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "Owuv-KZcvIrMagBCg6f3diP-8RkhwR1n",
+              "binding_revision": "QL8UQ4T26d4aftUN1nzOQo2Qz5Ztt83PxbXoGSFi6bc",
+              "observed_hint": "list",
+              "hint_basis": "tag:ul;role:unclassified",
+              "visible_count": 3,
+              "logical_count": 3,
+              "total_count": 3,
+              "has_eof": true,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_YZ3njz4HxZyL9vdO7ZvUECWm",
+            "status": "AVAILABLE",
+            "channel": "visible_rows",
+            "coverage": {
+              "scope": "visible_rows",
+              "complete": true,
+              "collected_count": 3,
+              "supplied_count": 3,
+              "total_count": 3,
+              "truncated": false,
+              "reason": "CHANNEL_COMPLETE",
+              "eof_observed": true,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "tree",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "tree",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "tree",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_FdSKL2nqQE8I1wZhitxGcXvn"
+        ]
+      },
+      {
+        "case": "tree",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_FdSKL2nqQE8I1wZhitxGcXvn",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "oUrpOd5LwJCdodNTvt9zhkAFgvMe_2uj",
+              "binding_revision": "6bj94DwZpDjfUI2wGXC43wXv_fQ6J7dpOcwL4CtyVU8",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_Ll7Yzr3mijXa0AlMcZJTrFrC"
+        ]
+      },
+      {
+        "case": "tree",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_FdSKL2nqQE8I1wZhitxGcXvn",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "oUrpOd5LwJCdodNTvt9zhkAFgvMe_2uj",
+              "binding_revision": "6bj94DwZpDjfUI2wGXC43wXv_fQ6J7dpOcwL4CtyVU8",
+              "observed_hint": "tree",
+              "hint_basis": "tag:div;role:tree",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_Ll7Yzr3mijXa0AlMcZJTrFrC",
+            "status": "AVAILABLE",
+            "channel": "visible_rows",
+            "coverage": {
+              "scope": "visible_rows",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "chart",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "chart",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "chart",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component",
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_x8AUlSCpp4y8qYWp5hFJMuLQ",
+          "call_oJuDOC0qptAMTZ0LdNLvAJu3"
+        ]
+      },
+      {
+        "case": "chart",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_x8AUlSCpp4y8qYWp5hFJMuLQ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "fwv9q_ctIdSZYKPa7WQ_JFnqVyGrNF9S",
+              "binding_revision": "DYUvE-MsxQCFUFa5wQDN2rAg5ozh89UNvuMe4G_obx0",
+              "observed_hint": "chart",
+              "hint_basis": "tag:figure;role:img",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_oJuDOC0qptAMTZ0LdNLvAJu3",
+            "status": "STALE"
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_EscY0fb1BnWf7cVjOxMeQ1YJ"
+        ]
+      },
+      {
+        "case": "chart",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_x8AUlSCpp4y8qYWp5hFJMuLQ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "fwv9q_ctIdSZYKPa7WQ_JFnqVyGrNF9S",
+              "binding_revision": "DYUvE-MsxQCFUFa5wQDN2rAg5ozh89UNvuMe4G_obx0",
+              "observed_hint": "chart",
+              "hint_basis": "tag:figure;role:img",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_oJuDOC0qptAMTZ0LdNLvAJu3",
+            "status": "STALE"
+          },
+          {
+            "id": "call_EscY0fb1BnWf7cVjOxMeQ1YJ",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_VtrrWgMb7zqLuvHuIbRI8ag6"
+        ]
+      },
+      {
+        "case": "chart",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_x8AUlSCpp4y8qYWp5hFJMuLQ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "fwv9q_ctIdSZYKPa7WQ_JFnqVyGrNF9S",
+              "binding_revision": "DYUvE-MsxQCFUFa5wQDN2rAg5ozh89UNvuMe4G_obx0",
+              "observed_hint": "chart",
+              "hint_basis": "tag:figure;role:img",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_oJuDOC0qptAMTZ0LdNLvAJu3",
+            "status": "STALE"
+          },
+          {
+            "id": "call_EscY0fb1BnWf7cVjOxMeQ1YJ",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          },
+          {
+            "id": "call_VtrrWgMb7zqLuvHuIbRI8ag6",
+            "status": "AVAILABLE",
+            "channel": "visible_rows",
+            "coverage": {
+              "scope": "visible_rows",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "svg",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "svg",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "svg",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_EjdHMtDI72XZJZXBo2bdkA16"
+        ]
+      },
+      {
+        "case": "svg",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_EjdHMtDI72XZJZXBo2bdkA16",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "RHBoiBYfg-yI2tFhh9XdoCh5cI7o1Ozq",
+              "binding_revision": "4aj7hUbbESto3aOL_oCVCpv1ucY15TspkWUs-84Vrzw",
+              "observed_hint": "svg",
+              "hint_basis": "tag:svg;role:graphics-document",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_H8k0FZXcCRJnvJI0encBRR1u"
+        ]
+      },
+      {
+        "case": "svg",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_EjdHMtDI72XZJZXBo2bdkA16",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "RHBoiBYfg-yI2tFhh9XdoCh5cI7o1Ozq",
+              "binding_revision": "4aj7hUbbESto3aOL_oCVCpv1ucY15TspkWUs-84Vrzw",
+              "observed_hint": "svg",
+              "hint_basis": "tag:svg;role:graphics-document",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_H8k0FZXcCRJnvJI0encBRR1u",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_Y7vXrzPtswD5O1996FN8fjQb"
+        ]
+      },
+      {
+        "case": "svg",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_EjdHMtDI72XZJZXBo2bdkA16",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "RHBoiBYfg-yI2tFhh9XdoCh5cI7o1Ozq",
+              "binding_revision": "4aj7hUbbESto3aOL_oCVCpv1ucY15TspkWUs-84Vrzw",
+              "observed_hint": "svg",
+              "hint_basis": "tag:svg;role:graphics-document",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_H8k0FZXcCRJnvJI0encBRR1u",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          },
+          {
+            "id": "call_Y7vXrzPtswD5O1996FN8fjQb",
+            "status": "AVAILABLE",
+            "channel": "visible_rows",
+            "coverage": {
+              "scope": "visible_rows",
+              "complete": false,
+              "collected_count": 1,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "canvas",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "canvas",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "canvas",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_QoRmQy8FHO0o8C7l5YaZrlyI"
+        ]
+      },
+      {
+        "case": "canvas",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_QoRmQy8FHO0o8C7l5YaZrlyI",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "6ug00XcfgFxpVJcaWXl3YdvYd9xLwxKU",
+              "binding_revision": "K_4bKi0VutE_zWL1pA6_CgJSdO2Eo7CU2EHxwE3ckII",
+              "observed_hint": "canvas",
+              "hint_basis": "tag:canvas;role:unclassified",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_4HwmH6sDNy6tfKt6lqS3hrKC"
+        ]
+      },
+      {
+        "case": "canvas",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_QoRmQy8FHO0o8C7l5YaZrlyI",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "6ug00XcfgFxpVJcaWXl3YdvYd9xLwxKU",
+              "binding_revision": "K_4bKi0VutE_zWL1pA6_CgJSdO2Eo7CU2EHxwE3ckII",
+              "observed_hint": "canvas",
+              "hint_basis": "tag:canvas;role:unclassified",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_4HwmH6sDNy6tfKt6lqS3hrKC",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 0,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "unclassified",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "unclassified",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "unclassified",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "list_page_resources"
+        ],
+        "responseCallIds": [
+          "call_OJy0nrR8fqAdol4OSP9Mdp3r"
+        ]
+      },
+      {
+        "case": "unclassified",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_OJy0nrR8fqAdol4OSP9Mdp3r",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_eEuFkgV88pzGs63tgS1OuoW0"
+        ]
+      },
+      {
+        "case": "unclassified",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_OJy0nrR8fqAdol4OSP9Mdp3r",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            }
+          },
+          {
+            "id": "call_eEuFkgV88pzGs63tgS1OuoW0",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "l9yD1E1-vzfDDzhtTOx2dTNgfN7uOXA_",
+              "binding_revision": "zonqi9GVcPE0CV2_X73NxVZw0z5MoFNqKpJVvmpkeW4",
+              "observed_hint": "unclassified",
+              "hint_basis": "tag:section;role:region",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_oDpMytrJ0LDdTElm3MLKIr8o"
+        ]
+      },
+      {
+        "case": "unclassified",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_OJy0nrR8fqAdol4OSP9Mdp3r",
+            "status": "AVAILABLE",
+            "coverage": {
+              "total_count": 10,
+              "supplied_count": 10,
+              "complete": true,
+              "truncated": false
+            }
+          },
+          {
+            "id": "call_eEuFkgV88pzGs63tgS1OuoW0",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "l9yD1E1-vzfDDzhtTOx2dTNgfN7uOXA_",
+              "binding_revision": "zonqi9GVcPE0CV2_X73NxVZw0z5MoFNqKpJVvmpkeW4",
+              "observed_hint": "unclassified",
+              "hint_basis": "tag:section;role:region",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_oDpMytrJ0LDdTElm3MLKIr8o",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 0,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "alternative",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": false,
+    "calls": [
+      {
+        "case": "alternative",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "alternative",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_csPDI3c5gPVlUs1I9eaF7vWG"
+        ]
+      },
+      {
+        "case": "alternative",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_csPDI3c5gPVlUs1I9eaF7vWG",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "5SULJCrSlvSuJeRnHZ-M2qLd-Iqpjm1O",
+              "binding_revision": "fBms2psWbsiD0Y5Y7hvmnju8qCZUahj2lPEIn-k5aeQ",
+              "observed_hint": "chart",
+              "hint_basis": "tag:figure;role:img",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": true,
+                  "reason": "EXPLICIT_DOM_ASSOCIATION_NOT_VALUE_CORROBORATION"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_4ROwkgTRKEHqDBKUo9ErGEKC"
+        ]
+      },
+      {
+        "case": "alternative",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_csPDI3c5gPVlUs1I9eaF7vWG",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "5SULJCrSlvSuJeRnHZ-M2qLd-Iqpjm1O",
+              "binding_revision": "fBms2psWbsiD0Y5Y7hvmnju8qCZUahj2lPEIn-k5aeQ",
+              "observed_hint": "chart",
+              "hint_basis": "tag:figure;role:img",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": true,
+                  "reason": "EXPLICIT_DOM_ASSOCIATION_NOT_VALUE_CORROBORATION"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_4ROwkgTRKEHqDBKUo9ErGEKC",
+            "status": "STALE"
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_QI1Q5VwerIv9mkarWmDc4hpq"
+        ]
+      },
+      {
+        "case": "alternative",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_csPDI3c5gPVlUs1I9eaF7vWG",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "5SULJCrSlvSuJeRnHZ-M2qLd-Iqpjm1O",
+              "binding_revision": "fBms2psWbsiD0Y5Y7hvmnju8qCZUahj2lPEIn-k5aeQ",
+              "observed_hint": "chart",
+              "hint_basis": "tag:figure;role:img",
+              "visible_count": 1,
+              "logical_count": 1,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": true,
+                  "reason": "EXPLICIT_DOM_ASSOCIATION_NOT_VALUE_CORROBORATION"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_4ROwkgTRKEHqDBKUo9ErGEKC",
+            "status": "STALE"
+          },
+          {
+            "id": "call_QI1Q5VwerIv9mkarWmDc4hpq",
+            "status": "AVAILABLE",
+            "channel": "alt_table",
+            "coverage": {
+              "scope": "alt_table",
+              "complete": true,
+              "collected_count": 8,
+              "supplied_count": 8,
+              "total_count": 8,
+              "truncated": false,
+              "reason": "CHANNEL_COMPLETE",
+              "eof_observed": true,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "scroll",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": true,
+    "calls": [
+      {
+        "case": "scroll",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "scroll",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_B025XCvSsAYR3pUprPyIOfG5"
+        ]
+      },
+      {
+        "case": "scroll",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_B025XCvSsAYR3pUprPyIOfG5",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "mwmkMTd2M21Q6Sl7p3xUJz3cx9NYxG7q",
+              "binding_revision": "jpkQSCtyPMxVbv_7y3gpJZqhIb0818cVHhycKJJIrB0",
+              "observed_hint": "grid",
+              "hint_basis": "tag:div;role:grid",
+              "visible_count": 4,
+              "logical_count": 12,
+              "total_count": 40,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": true,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "collection reader restores original scroll position",
+              "side_effect": "DOM_MUTATION_SCROLL",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_DxXJWspQWiyW9sfhZycva23N"
+        ]
+      },
+      {
+        "case": "scroll",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_B025XCvSsAYR3pUprPyIOfG5",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "mwmkMTd2M21Q6Sl7p3xUJz3cx9NYxG7q",
+              "binding_revision": "jpkQSCtyPMxVbv_7y3gpJZqhIb0818cVHhycKJJIrB0",
+              "observed_hint": "grid",
+              "hint_basis": "tag:div;role:grid",
+              "visible_count": 4,
+              "logical_count": 12,
+              "total_count": 40,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": true
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": true,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "collection reader restores original scroll position",
+              "side_effect": "DOM_MUTATION_SCROLL",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_DxXJWspQWiyW9sfhZycva23N",
+            "status": "AVAILABLE",
+            "channel": "bounded_scroll",
+            "coverage": {
+              "scope": "bounded_scroll",
+              "complete": false,
+              "collected_count": 40,
+              "supplied_count": 8,
+              "total_count": 40,
+              "truncated": true,
+              "reason": "PARTIAL_WINDOW",
+              "eof_observed": false,
+              "window_offset": 0
+            },
+            "restored": true
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  },
+  {
+    "id": "vision",
+    "pass": true,
+    "provider": "openai",
+    "model": "gpt-6-luna",
+    "consent": true,
+    "calls": [
+      {
+        "case": "vision",
+        "tools": [],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      },
+      {
+        "case": "vision",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "describe_component"
+        ],
+        "responseCallIds": [
+          "call_LJtA1kEc2DJOSOVJY1ZGyDxZ"
+        ]
+      },
+      {
+        "case": "vision",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_LJtA1kEc2DJOSOVJY1ZGyDxZ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "F8EdClNE866tN9OqHu_hXiRzfzfvT-8k",
+              "binding_revision": "SoNye9J8ZaeVwkOS8LvUDoCr7L04ce_u9e9ub7-nQmc",
+              "observed_hint": "canvas",
+              "hint_basis": "tag:canvas;role:unclassified",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_OcDWCseg1tpRMAGGGuNphxWS"
+        ]
+      },
+      {
+        "case": "vision",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_LJtA1kEc2DJOSOVJY1ZGyDxZ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "F8EdClNE866tN9OqHu_hXiRzfzfvT-8k",
+              "binding_revision": "SoNye9J8ZaeVwkOS8LvUDoCr7L04ce_u9e9ub7-nQmc",
+              "observed_hint": "canvas",
+              "hint_basis": "tag:canvas;role:unclassified",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_OcDWCseg1tpRMAGGGuNphxWS",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 0,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 0,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_4tfjJXp5LIcMXdlQoCe0jVYG"
+        ]
+      },
+      {
+        "case": "vision",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_LJtA1kEc2DJOSOVJY1ZGyDxZ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "F8EdClNE866tN9OqHu_hXiRzfzfvT-8k",
+              "binding_revision": "SoNye9J8ZaeVwkOS8LvUDoCr7L04ce_u9e9ub7-nQmc",
+              "observed_hint": "canvas",
+              "hint_basis": "tag:canvas;role:unclassified",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_OcDWCseg1tpRMAGGGuNphxWS",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 0,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          },
+          {
+            "id": "call_4tfjJXp5LIcMXdlQoCe0jVYG",
+            "status": "AVAILABLE",
+            "coverage": {
+              "scope": "viewport_image",
+              "complete": false,
+              "truncated": true,
+              "reason": "VISUAL_ESTIMATE_NOT_UNDERLYING_DATA"
+            }
+          }
+        ],
+        "images": 1,
+        "upstream_status": 200,
+        "responseTools": [
+          "read_component_data"
+        ],
+        "responseCallIds": [
+          "call_02HLETQHPeEWH7cckTthbEJB"
+        ]
+      },
+      {
+        "case": "vision",
+        "tools": [
+          "read_semantic_projection",
+          "read_page",
+          "get_page_text",
+          "find",
+          "screenshot",
+          "zoom",
+          "list_page_resources",
+          "search_page_resources",
+          "read_page_resource",
+          "list_workflow_resources",
+          "read_workflow_resource",
+          "describe_component",
+          "read_component_data"
+        ],
+        "returned": [
+          {
+            "id": "call_LJtA1kEc2DJOSOVJY1ZGyDxZ",
+            "status": "AVAILABLE",
+            "descriptor": {
+              "resource_id": "F8EdClNE866tN9OqHu_hXiRzfzfvT-8k",
+              "binding_revision": "SoNye9J8ZaeVwkOS8LvUDoCr7L04ce_u9e9ub7-nQmc",
+              "observed_hint": "canvas",
+              "hint_basis": "tag:canvas;role:unclassified",
+              "visible_count": 0,
+              "logical_count": 0,
+              "has_eof": false,
+              "channels": [
+                {
+                  "channel": "visible_rows",
+                  "available": false
+                },
+                {
+                  "channel": "description",
+                  "available": true
+                },
+                {
+                  "channel": "subtree",
+                  "available": true
+                },
+                {
+                  "channel": "bounded_scroll",
+                  "available": false,
+                  "reason": "COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "reviewed_data",
+                  "available": false,
+                  "reason": "REGISTERED_ADAPTER_AND_COLLECTION_APPROVAL_REQUIRED"
+                },
+                {
+                  "channel": "continuation",
+                  "available": false,
+                  "reason": "USE_APPROVED_UI_ACTION_FOR_PAGING_OR_EXPANSION"
+                },
+                {
+                  "channel": "alt_table",
+                  "available": false,
+                  "reason": "NO_VERIFIED_ASSOCIATION;READ_TABLE_AS_SEPARATE_COMPONENT"
+                },
+                {
+                  "channel": "visual",
+                  "available": true,
+                  "reason": "VISION_POLICY_AND_CONSENT_REQUIRED"
+                }
+              ],
+              "restoration": "none",
+              "side_effect": "none",
+              "observed_hint_note": "OBSERVED_HINT_ONLY"
+            }
+          },
+          {
+            "id": "call_OcDWCseg1tpRMAGGGuNphxWS",
+            "status": "AVAILABLE",
+            "channel": "description",
+            "coverage": {
+              "scope": "description",
+              "complete": false,
+              "collected_count": 0,
+              "supplied_count": 1,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          },
+          {
+            "id": "call_4tfjJXp5LIcMXdlQoCe0jVYG",
+            "status": "AVAILABLE",
+            "coverage": {
+              "scope": "viewport_image",
+              "complete": false,
+              "truncated": true,
+              "reason": "VISUAL_ESTIMATE_NOT_UNDERLYING_DATA"
+            }
+          },
+          {
+            "id": "call_02HLETQHPeEWH7cckTthbEJB",
+            "status": "AVAILABLE",
+            "channel": "subtree",
+            "coverage": {
+              "scope": "subtree",
+              "complete": false,
+              "collected_count": 0,
+              "supplied_count": 0,
+              "truncated": true,
+              "reason": "EOF_NOT_OBSERVED",
+              "eof_observed": false,
+              "window_offset": 0
+            }
+          }
+        ],
+        "images": 1,
+        "upstream_status": 200,
+        "responseTools": [],
+        "responseCallIds": []
+      }
+    ],
+    "zip": {
+      "entries": 10
+    }
+  }
+]

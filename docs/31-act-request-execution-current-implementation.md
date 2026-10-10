@@ -309,3 +309,16 @@ schema enum으로 제공한다. `act-plan-turns.ts`의 `runPlanSubmissionTurns`�
 기존 chat event와 저장된 terminal outcome wire는 VERIFIED/FAILED/UNKNOWN 계약을 유지한다.
 GOAL_VERIFIED는 typed 실행 근거와 최신 관찰 이후의 모델 판단이며 범용 의미 정확성 보장이 아니다.
 [실행 방법](test.md)과 [검증 범위](evidence/s17-plan-feedback-2026-10-09.md)를 따른다.
+
+## S19 Component 도구 연결 (2026-10-10)
+
+실제 inventory의 opaque ID/revision을 `describe_component`와 `read_component_data`의
+schema/executor에 연결했다. 모델이 채널을 선택하며 DOM·명시적 보조 표·등록된 reviewed
+adapter·승인된 bounded scroll·vision만 실행한다. 지원 없는 continuation은 UNSUPPORTED다.
+component read 요청은 action 계획 없는 Act read loop로 처리한다. screenshot/zoom은 실제
+정책·capture 지원 때만 제공하고 이미지 동의 후 typed image message로 Provider에 전달한다.
+
+스크롤은 기존 collection permission과 별도 동의·복구를 따른다. 민감 element와 column은
+초기 projection 및 결과에서 보호하고 민감 화면은 capture를 거부한다. chart 보조 표와
+이미지는 underlying 수치의 검증을 뜻하지 않는다. 펼침·페이지 이동의 계획·동작 승인 후 재개는
+통제/live 각 두 건에서 typed VERIFIED·변경된 component 읽기·최종 판단 표시를 확인했다. [S19 증거](evidence/s19-component-tools-2026-10-10.md).

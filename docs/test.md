@@ -209,3 +209,24 @@ partial/needs_context는 match로 바꾸지 않으며 추가 확인 없이 실�
 통제 fixture와 지정 모델의 Browser-local 연결 결과를 운영 사이트·다른 모델·Platform·배포
 완료로 확장하지 않는다. S20 전체 도구 루프의 종합 판정은
 [S20 기준](sprints/s20-act-tool-loop-live-qualification.md)을 별도로 따른다.
+
+## S19 Component·vision 테스트
+
+버전 보존 빌드 후 `pnpm test:chrome-s19`을 실행한다. 기본 전체 21건이 통과했다.
+펼침·페이지 이동은 계획 검토를 명시한 prompt로 계획·동작 승인 뒤 새 데이터 읽기와
+최종 판단 UI를 확인한다. 같은 요청의 새 feedback을 기다리며 partial 판단은 그대로 보존한다.
+지원 읽기 채널 19건만 검증할 때는 다음처럼 명시적으로 선택한다.
+
+```bash
+CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome \
+S19_CASES=table,list,tree,chart,svg,canvas,unclassified,alternative,alternative-missing,scroll,deny,stop,stale,vision,vision-deny,sensitive,vision-sensitive,paging-unsupported,tree-expansion-unsupported \
+S19_REPORT=/tmp/s19-supported.json pnpm test:chrome-s19
+```
+
+live는 `S19_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free`, `OPENROUTER_API_KEY`를 쓴다.
+가용성 실패 시 `LIVE_PROVIDER=openai S19_LIVE_MODEL=gpt-6-luna`, `OPENAI_API_KEY`로
+대체하고 실패 이력을 기록한다. `S19_CASES=table,alternative,vision`으로 선택할 수 있다.
+`S19_SCREENSHOT_DIR=/tmp`는 실제 동의 카드 screenshot을 저장한다.
+격리 test profile의 optional capture 권한 seed와 사용자 Side Panel 동의는 별개이며
+native Chrome 권한 prompt 승인까지 자동화했다는 뜻은 아니다.
+[실행 증거와 실패 해결](evidence/s19-component-tools-2026-10-10.md)을 따른다.
