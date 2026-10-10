@@ -1,7 +1,7 @@
 # 31. Act 요청 처리 현재 구현 경로
 
 - 작성일: 2026-09-21
-- 수정일: 2026-10-04
+- 수정일: 2026-10-10
 - 상태: AS-IS 구현 인벤토리
 - 범위: Side Panel에서 Act 모드 자연어 요청을 보낸 뒤, 사용자 검토·실행·결과 검증을 거쳐 종료하는 Browser 내부 경로
 - 비범위: 실제 회사 Provider 또는 특정 대상 사이트에서의 Chrome 재현 성공 판정. 이 문서는 현재 소스 코드의 호출 경로를 기록한다.
@@ -322,3 +322,19 @@ component read 요청은 action 계획 없는 Act read loop로 처리한다. scr
 초기 projection 및 결과에서 보호하고 민감 화면은 capture를 거부한다. chart 보조 표와
 이미지는 underlying 수치의 검증을 뜻하지 않는다. 펼침·페이지 이동의 계획·동작 승인 후 재개는
 통제/live 각 두 건에서 typed VERIFIED·변경된 component 읽기·최종 판단 표시를 확인했다. [S19 증거](evidence/s19-component-tools-2026-10-10.md).
+
+## S20 종합 도구 계약과 혼합 요청 (2026-10-10)
+
+사용자 요청이 source/workflow/component 탐색 뒤 승인된 실행도 요구하면 intent classifier는
+ACTION_REQUIRED를 우선한다. 읽기만 요청하거나 모든 page action을 금지한 요청은 해당
+읽기 전용 route를 유지한다. 분류 자체는 실행 승인이나 동의를 부여하지 않는다.
+
+실행 inventory의 `read_contracts`는 실제 registry의 input/result schema, version, consent,
+binding, budget와 executor 지원 여부를 제공한다. 함수명만 있는 script는 callable 도구가 아니다.
+plan `user_input`은 나중 proposal의 정확한 값에 결합하며 Page API는 표시 label 대신 option_id를
+쓴다. 목표 보고 observation_id는 현재 도구 enum을 사용하고 이전 plan evidence ID는 거부한다.
+
+혼합 두 holdout은 실제 모델의 서로 다른 도구 선택·자료 원본·승인·typed VERIFIED·새 데이터와
+incomplete UI를 확인했고, 원본 bundle의 등록 API는 completed까지 확인했다.
+[종합 증거와 최초 실패·재시도](evidence/s20-qualification-2026-10-10.md)는 공급자 가용성과
+표본의 한계를 분리한다. Browser-local qualification을 전체 live 안정성이나 배포 완료로 읽지 않는다.

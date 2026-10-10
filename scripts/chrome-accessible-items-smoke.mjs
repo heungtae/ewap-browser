@@ -1,4 +1,8 @@
 import {
+  workflowResultEvidence,
+  workflowReadEvidence,
+} from "./chrome-workflow-call-evidence.mjs";
+import {
   prepareS18,
   s18Declaration,
   s18ProviderReply,
@@ -143,6 +147,7 @@ const fixture = await createS1Fixture(
     });
     const callRecord = calls.at(-1);
     if (s18Suite) {
+      callRecord.workflowResults = workflowResultEvidence(body.messages);
       const results = body.messages
         .filter((m) => m.role === "tool")
         .flatMap((m) => {
@@ -235,6 +240,10 @@ const fixture = await createS1Fixture(
           [];
         callRecord.responseCallIds =
           result.choices[0].message.tool_calls?.map((call) => call.id) ?? [];
+        if (s18Suite)
+          callRecord.workflowReads = workflowReadEvidence(
+            result.choices[0].message.tool_calls,
+          );
         const reviewCall = result.choices[0].message.tool_calls?.find(
           (call) => call.function.name === "submit_review",
         );

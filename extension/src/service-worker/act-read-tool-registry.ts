@@ -7,7 +7,11 @@ export type ActReadRegistration = {
   resultSchema: Record<string, unknown>;
   mode: "act";
   phase: "read";
-  consent: "none" | "source-disclosure";
+  consent:
+    | "none"
+    | "source-disclosure"
+    | "vision-disclosure"
+    | "channel-dependent";
   binding: "request-document";
   budget: "read";
   execute?: (args: string) => Promise<unknown>;
@@ -23,6 +27,13 @@ export const createActReadToolRegistry = (entries: ActReadRegistration[]) => {
   }
   const callable = entries.filter((entry) => entry.execute !== undefined);
   return {
+    inventory: entries.map(({ execute, schema, ...contract }) => ({
+      ...contract,
+      name: schema.function.name,
+      inputSchema: schema.function.parameters,
+      supported: execute !== undefined,
+      ...(!execute ? { reason: "EXECUTOR_UNAVAILABLE" } : {}),
+    })),
     tools: callable.map((entry) => entry.schema),
     capabilities: callable.map((entry) => entry.schema.function.name),
     unsupported: entries

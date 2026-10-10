@@ -8,6 +8,11 @@ export const actExecutionInventory = (opts: {
   documentEpoch: string;
   actionTools: ProviderToolDefinition[];
   readTools: ProviderToolDefinition[];
+  readContracts?: Array<{
+    name: string;
+    supported: boolean;
+    [key: string]: unknown;
+  }>;
 }) => {
   const permissions: Record<string, string> = {
     propose_click: "click",
@@ -19,6 +24,7 @@ export const actExecutionInventory = (opts: {
     propose_page_api: "page_api",
   };
   return {
+    read_contracts: opts.readContracts ?? [],
     observation_id: opts.observationId,
     request_revision: opts.requestRevision,
     document_epoch: opts.documentEpoch,

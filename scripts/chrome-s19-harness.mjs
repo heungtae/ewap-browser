@@ -11,7 +11,13 @@ import {
   waitFor,
 } from "./chrome-cdp-utils.mjs";
 import { openAnalysisPanel } from "./chrome-analysis-panel.mjs";
-export const openS19Chrome = async ({ executable, fixture, liveModel }) => {
+export const openS19Chrome = async ({
+  executable,
+  fixture,
+  liveModel,
+  pageUrl,
+  hostRules,
+}) => {
   const profile = await mkdtemp(join(tmpdir(), "contextpilot-s19-profile-"));
   const port = await reservePort();
   const launch = () =>
@@ -24,7 +30,7 @@ export const openS19Chrome = async ({ executable, fixture, liveModel }) => {
         "--disable-gpu",
         "--disable-dev-shm-usage",
         "--ignore-certificate-errors",
-        "--host-resolver-rules=MAP s1.fixture.test 127.0.0.1",
+        `--host-resolver-rules=MAP s1.fixture.test 127.0.0.1${hostRules ? "," + hostRules : ""}`,
         `--user-data-dir=${profile}`,
         `--load-extension=${resolve("dist-extension")}`,
         `--disable-extensions-except=${resolve("dist-extension")}`,
@@ -92,7 +98,7 @@ export const openS19Chrome = async ({ executable, fixture, liveModel }) => {
   const fixtureTarget = await cdp(
     version.webSocketDebuggerUrl,
     "Target.createTarget",
-    { url: `https://s1.fixture.test:${fixture.fixturePort}/` },
+    { url: pageUrl ?? `https://s1.fixture.test:${fixture.fixturePort}/` },
   );
   const page = await waitFor(
     async () =>

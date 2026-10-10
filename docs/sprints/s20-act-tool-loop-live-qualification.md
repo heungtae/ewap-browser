@@ -2,9 +2,12 @@
 
 ## 상태와 진입 조건
 
-**Planned — 2026-10-06.** 의존성: S15/PAH-9와 S16~S19의 연결 기능·단계별 증거.
+**Completed (Browser-local qualification) — 2026-10-10.** 의존성: S15/PAH-9와 S16~S19의 연결 기능·단계별 증거.
 기준은 [34번 설계](../34-page-act-context-harness-design.md)의 10~12·16절이다.
 앞 단계에서도 live 검증을 수행하며, 이 Sprint는 이를 전체 요청과 오류 경로로 종합한다.
+
+[구현·검증·실패 이력](../evidence/s20-qualification-2026-10-10.md)을 기준으로 닫았다.
+기본 OpenRouter 실패와 OpenAI의 표본 검증을 구분하며 전체 live 안정성·배포 준비 완료는 주장하지 않는다.
 
 ## 목표와 경계
 

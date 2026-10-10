@@ -181,10 +181,13 @@ export const createActHarnessReadExecutor = (opts: {
             : { type: "object" },
         mode: "act",
         phase: "read",
-        consent:
-          source && schema.function.name !== "list_page_resources"
-            ? "source-disclosure"
-            : "none",
+        consent: component
+          ? "channel-dependent"
+          : vision
+            ? "vision-disclosure"
+            : source && schema.function.name !== "list_page_resources"
+              ? "source-disclosure"
+              : "none",
         binding: "request-document",
         budget: "read",
         ...((
@@ -234,6 +237,7 @@ export const createActHarnessReadExecutor = (opts: {
   );
   return Object.assign((call: ActReadCall) => registry.execute(call), {
     tools: registry.tools,
+    inventory: registry.inventory,
     bootstrap: resources?.bootstrap,
     reviewReady: workflows?.reviewReady,
   });

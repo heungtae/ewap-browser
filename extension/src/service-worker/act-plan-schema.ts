@@ -41,7 +41,12 @@ export const submitPlanTool = (
                 description: "One supplied observation evidence ID.",
                 enum: evidenceIds,
               },
-              user_input: { type: "string", maxLength: 4096 },
+              user_input: {
+                type: "string",
+                maxLength: 4096,
+                description:
+                  "Optional exact execution input, bound to the later proposal. For propose_page_api copy the registered option_id (for example high), never its display label (High). For other input actions use the exact proposed value. Omit for actions without input.",
+              },
               side_effects: {
                 type: "array",
                 maxItems: 8,
@@ -83,7 +88,11 @@ export const goalCheckTool = (
           enum: ["completed", "incomplete", "unknown"],
         },
         summary: { type: "string", minLength: 1, maxLength: 4000 },
-        observation_id: { type: "string", enum: [observationId] },
+        observation_id: {
+          type: "string",
+          enum: [observationId],
+          description: `Current feedback binding: copy exactly ${observationId}. Earlier plan evidence IDs, previous execution inventories and source/resource revisions do not identify this observation.`,
+        },
       },
       required: ["status", "summary", "observation_id"],
     },

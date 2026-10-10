@@ -230,3 +230,34 @@ live는 `S19_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free`, `OPENROUTER_API_KEY
 격리 test profile의 optional capture 권한 seed와 사용자 Side Panel 동의는 별개이며
 native Chrome 권한 prompt 승인까지 자동화했다는 뜻은 아니다.
 [실행 증거와 실패 해결](evidence/s19-component-tools-2026-10-10.md)을 따른다.
+
+## S20 종합 qualification
+
+버전 보존 build/package 후 실행한다. Chrome 경로는 실행 환경에 맞게 설정한다.
+
+```bash
+pnpm exec tsc -p tsconfig.build.json
+node scripts/build-extension.mjs
+node scripts/validate-package.mjs
+CHROME_FOR_TESTING_BIN=/path/to/chrome S20_REPORT_DIR=/tmp/s20-new-run pnpm test:chrome-s20-qualification
+```
+
+전체 통제 그룹은 api/fault/mixed/input/source/plan/workflow/component/ask다.
+`S20_GROUPS=api,fault,mixed`처럼 선택할 수 있다. 기존 출력 directory의 log를 덮어쓰지 않으므로
+매 실행에 새로운 `S20_REPORT_DIR`을 지정한다. manifest에 exit code·시간·code/build·artifact hash를 기록한다.
+개별 명령은 `test:chrome-s20`, `test:chrome-s20-fault`, `test:chrome-s20-api`다.
+
+```bash
+CHROME_FOR_TESTING_BIN=/path/to/chrome S20_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free S20_REPORT=/tmp/s20-live-new.json pnpm test:chrome-s20
+CHROME_FOR_TESTING_BIN=/path/to/chrome S20_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free S20_API_REPORT=/tmp/s20-api-new.json pnpm test:chrome-s20-api
+```
+
+기본 인증은 OPENROUTER_API_KEY이며 위의 기존 대체 규칙을 따른다. 개별 live 모델 변수와
+controlled qualifier를 혼합하지 않는다. 읽기 turn 12/read 24, 요청 시간 통제 90초/live 240초,
+upstream 60초를 테스트가 늘리지 않는다. goal UI를 실제 도구의 completed/incomplete 상태와
+연결하고, mutation·plan 승인 직후 잠깐 idle인 상태를 최종 완료로 간주하지 않는다.
+
+`scripts/collect-s20-evidence.mjs OUTPUT REPORT...`는 원문 없이 schema hash·call/result·coverage·
+typed 결과·goal·승인 metadata를 추출한다. legacy raw report를 그대로 공유하지 않는다.
+[측정 계획](evidence/s20-measurement-plan-2026-10-10.md)과
+[전체 결과와 한계](evidence/s20-qualification-2026-10-10.md)를 따른다.

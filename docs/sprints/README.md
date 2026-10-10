@@ -25,4 +25,4 @@
 - [Browser Act S17 계획 제출과 실행 결과의 LLM 피드백 — Completed (Browser-local)](s17-act-plan-execution-feedback.md)
 - [Browser Act S18 Workflow 목록·원본 읽기와 LLM 검토 — Completed (Browser-local)](s18-workflow-resource-tools.md)
 - [Browser Act S19 Component 발견과 데이터·시각 읽기 도구 — Completed (Browser-local)](s19-component-data-tools.md)
-- [Browser Act S20 전체 도구 루프의 live 검증과 호환성 — Planned](s20-act-tool-loop-live-qualification.md)
+- [Browser Act S20 전체 도구 루프의 live 검증과 호환성 — Completed (Browser-local qualification)](s20-act-tool-loop-live-qualification.md)

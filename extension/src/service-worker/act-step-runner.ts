@@ -350,7 +350,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       if (!session.sourceReadOnly) {
         messages.push({
           role: "user",
-          content: `[UNTRUSTED_EXECUTION_INVENTORY]\n${dependencies.serialise(actExecutionInventory({ session, observationId, requestRevision, documentEpoch: active.snapshot.document_epoch, actionTools, readTools: harnessReads }))}\n[/UNTRUSTED_EXECUTION_INVENTORY]`,
+          content: `[UNTRUSTED_EXECUTION_INVENTORY]\n${dependencies.serialise(actExecutionInventory({ session, observationId, requestRevision, documentEpoch: active.snapshot.document_epoch, actionTools, readTools: harnessReads, readContracts: harnessExecutor?.inventory ?? [] }))}\n[/UNTRUSTED_EXECUTION_INVENTORY]`,
         });
         if (!session.feedbackOnly)
           tools.push(
