@@ -35,6 +35,7 @@ export type ActSession = {
   origin: string;
   prompt: string;
   messages: ProviderMessage[];
+  workflowResourceCandidates?: import("./workflow-catalog-runtime.js").CandidateDefinition[];
   runId?: string;
   proposal?: ActProposal;
   // The Side Panel renders the submitted request immediately. Follow-up Act

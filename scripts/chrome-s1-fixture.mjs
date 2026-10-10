@@ -28,6 +28,7 @@ export const createS1Fixture = async (
   providerHandler,
   profileTools = [],
   businessBindings = [],
+  workflow,
 ) => {
   await run("openssl", [
     "req",
@@ -111,6 +112,7 @@ export const createS1Fixture = async (
               value: input.page.fingerprint,
             },
             tools: profileTools,
+            ...(workflow ? { workflow } : {}),
             business_mcp: businessBindings,
             authoritative_fields: [],
           }),

@@ -1,3 +1,8 @@
+import {
+  prepareS18,
+  s18Declaration,
+  s18ProviderReply,
+} from "./chrome-s18-workflow-fixture.mjs";
 import { liveProviderConfig } from "./live-provider-config.mjs";
 import { s17ProviderReply } from "./chrome-s17-provider-fixture.mjs";
 import { spawn } from "node:child_process";
@@ -20,6 +25,7 @@ import {
   checkReading,
 } from "./chrome-example-request-cases.mjs";
 const documented = await exampleRequests();
+const s18Suite = process.env.S18_SUITE === "1";
 const s17Suite = process.env.S17_SUITE === "1";
 const s15Suite = process.env.S15_SUITE === "1";
 const liveModel = process.env.S15_LIVE_MODEL;
@@ -136,6 +142,32 @@ const fixture = await createS1Fixture(
       secret: JSON.stringify(body).includes("not-projected"),
     });
     const callRecord = calls.at(-1);
+    if (s18Suite) {
+      const results = body.messages
+        .filter((m) => m.role === "tool")
+        .flatMap((m) => {
+          try {
+            return [
+              JSON.parse(
+                m.content
+                  .replace(/^\[UNTRUSTED_TOOL_RESULT\]\n/, "")
+                  .replace(/\n\[\/UNTRUSTED_TOOL_RESULT\]$/, ""),
+              ),
+            ];
+          } catch {
+            return [];
+          }
+        });
+      callRecord.workflowSources = [
+        ...new Set(
+          results.flatMap((r) => r.resources?.map((item) => item.source) ?? []),
+        ),
+      ];
+      callRecord.workflowReadComplete = results.some(
+        (r) =>
+          typeof r.source_text === "string" && r.coverage?.complete === true,
+      );
+    }
     if (s15Suite || s17Suite) {
       const block = [...(body.messages ?? [])]
         .reverse()
@@ -203,6 +235,18 @@ const fixture = await createS1Fixture(
           [];
         callRecord.responseCallIds =
           result.choices[0].message.tool_calls?.map((call) => call.id) ?? [];
+        const reviewCall = result.choices[0].message.tool_calls?.find(
+          (call) => call.function.name === "submit_review",
+        );
+        if (reviewCall) {
+          try {
+            callRecord.reviewVerdict = JSON.parse(
+              reviewCall.function.arguments,
+            ).verdict;
+          } catch {
+            callRecord.reviewVerdict = "invalid-json";
+          }
+        }
         const goalCall = result.choices[0].message.tool_calls?.find(
           (call) => call.function.name === "report_goal_status",
         );
@@ -288,6 +332,28 @@ const fixture = await createS1Fixture(
         return res.end(JSON.stringify({ error: String(error) }));
       }
     }
+    if (s18Suite) {
+      const reply = s18ProviderReply(body, current);
+      if (reply) {
+        callRecord.responseTools = reply.tool_calls.map(
+          (call) => call.function.name,
+        );
+        callRecord.responseCallIds = reply.tool_calls.map((call) => call.id);
+        const goal = reply.tool_calls.find(
+          (call) => call.function.name === "report_goal_status",
+        );
+        if (goal)
+          callRecord.goalStatus = JSON.parse(goal.function.arguments).status;
+        const review = reply.tool_calls.find(
+          (call) => call.function.name === "submit_review",
+        );
+        if (review)
+          callRecord.reviewVerdict = JSON.parse(
+            review.function.arguments,
+          ).verdict;
+        return stream(res, reply);
+      }
+    }
     if (s17Suite) {
       const reply = s17ProviderReply(body, current);
       if (reply) return stream(res, reply);
@@ -364,32 +430,15 @@ const fixture = await createS1Fixture(
         ],
       });
     }
-    if (current.workflow) {
+    if (current.workflow && !s18Suite) {
       const preview = nodes.find((n) => n.name === "Generate preview");
       const tools = body.tools ?? [];
-      // Harness suitability review turn: the runner offers read tools plus
-      // submit_review before any step tool. The controlled double answers
-      // the review from the known case fit instead of reasoning.
       if (tools.some((t) => t.function.name === "submit_review")) {
-        const fits = current.id === "workflow";
-        return stream(res, {
-          tool_calls: [
-            {
-              id: "test-review-abcdefghijkl",
-              type: "function",
-              function: {
-                name: "submit_review",
-                arguments: JSON.stringify({
-                  verdict: fits ? "match" : "mismatch",
-                  rationale: fits
-                    ? "Preview request matches the Preview workflow candidate."
-                    : "Search input request does not match the Preview workflow candidate.",
-                  missing: [],
-                }),
-              },
-            },
-          ],
-        });
+        current.s18Source ??= "page_generated";
+        current.s18Calls ??= 0;
+        current.mismatch = current.id !== "workflow";
+        const reply = s18ProviderReply(body, current);
+        if (reply) return stream(res, reply);
       }
       if (tools.some((t) => t.function.name === "propose_select_option")) {
         current.target = "Report scope";
@@ -428,6 +477,19 @@ const fixture = await createS1Fixture(
       approval_scope: "single_step",
       approval_reason: "Execute this controlled local fixture test.",
       ...current.args,
+      ...(current.tool === "propose_select_option" &&
+      current.args?.value !== undefined
+        ? {
+            value_source_revision: JSON.parse(
+              [...body.messages]
+                .reverse()
+                .find((m) =>
+                  m.content?.startsWith("[UNTRUSTED_EXECUTION_INVENTORY]"),
+                )
+                ?.content.split("\n")[1] ?? "{}",
+            ).request_revision,
+          }
+        : {}),
       ...(current.tool === "propose_set_text" && current.value !== undefined
         ? {
             value: current.value,
@@ -447,6 +509,9 @@ const fixture = await createS1Fixture(
       ],
     });
   },
+  [],
+  [],
+  s18Suite ? s18Declaration("s18-profile") : undefined,
 );
 const port = await reservePort();
 const child = spawn(
@@ -666,6 +731,36 @@ try {
       role: "combobox",
       tool: "propose_select_option",
       args: { value: "Detailed" },
+      prepare: async () => {
+        const declaration = {
+          schema_version: 1,
+          id: "legacy-preview-fixture",
+          title: "Generate local preview",
+          steps: [
+            {
+              id: "scope",
+              next: "include",
+              tool: "select_option_by_ref",
+              target: { role: "combobox", name: "Report scope" },
+            },
+            {
+              id: "include",
+              next: "preview",
+              tool: "set_checked_by_ref",
+              target: { role: "checkbox", name: "Include detailed results" },
+            },
+            {
+              id: "preview",
+              tool: "click_by_ref",
+              target: { role: "button", name: "Generate preview" },
+            },
+          ],
+        };
+        await evaluate(
+          page,
+          `(() => {const script=document.createElement('script');script.type='application/contextpilot-workflow+json';script.textContent=${JSON.stringify(JSON.stringify(declaration))};document.body.append(script);return true})()`,
+        );
+      },
       prompt: "Generate local preview 워크플로우를 실행해줘.",
     },
     {
@@ -850,13 +945,28 @@ try {
       ["controls-link", "states-link", "preview"].includes(item.id),
     ),
   ];
-  const suiteCases = s17Suite
-    ? s17Cases
-    : s15Suite
-      ? s15Cases
-      : readingSuite
-        ? documented.reading
-        : cases;
+  const s18Cases = ["saved", "profile", "page_generated"].flatMap((source) =>
+    [false, true].map((mismatch) => ({
+      ...cases.find((c) => c.id === "preview"),
+      id: `s18-${source}-${mismatch ? "mismatch" : "match"}`,
+      workflow: true,
+      s18Source: source,
+      s18Calls: 0,
+      mismatch,
+      prompt: mismatch
+        ? "Search query에 browser test를 입력해줘. Preview를 생성하지 마."
+        : "현재 페이지에서 Preview를 생성해줘.",
+    })),
+  );
+  const suiteCases = s18Suite
+    ? s18Cases
+    : s17Suite
+      ? s17Cases
+      : s15Suite
+        ? s15Cases
+        : readingSuite
+          ? documented.reading
+          : cases;
   const selectedCases = process.env.ACCESSIBLE_ITEMS_CASES
     ? suiteCases.filter((item) =>
         process.env.ACCESSIBLE_ITEMS_CASES.split(",").includes(item.id),
@@ -881,6 +991,7 @@ try {
       });
       await sleep(1000);
       if (current.prepare) await current.prepare();
+      if (s18Suite) await prepareS18(panel, page, fixture);
       await cdp(version.webSocketDebuggerUrl, "Target.activateTarget", {
         targetId: fixtureTarget.targetId,
       });
@@ -912,7 +1023,12 @@ try {
       for (let i = 0; Date.now() < deadline; i++) {
         await sleep(150);
         if (current.workflow) {
-          if (!selected) selected = await button("Generate local preview");
+          if (!selected)
+            selected = await button(
+              s18Suite
+                ? `S18 shared title · ${current.s18Source === "saved" ? "기록" : current.s18Source === "profile" ? "Profile" : "페이지 제공"}`
+                : "Generate local preview",
+            );
           else await button("분석 시작");
         } else if (!dismissed) {
           dismissed = await button("일반 한 단계 실행");
@@ -995,8 +1111,32 @@ try {
           panel,
           "[...document.querySelectorAll('.event-card')].some(e=>e.dataset.testSeen!=='1' && ['review','permission','value','confirmation'].includes(e.dataset.kind) && [...e.querySelectorAll('button')].some(b=>!b.disabled))",
         );
+        const s18ReviewTerminal =
+          s18Suite &&
+          done &&
+          calls
+            .slice(start)
+            .some((call) =>
+              ["partial", "needs_context", "mismatch"].includes(
+                call.reviewVerdict,
+              ),
+            );
+        const s18NoActionTerminal =
+          s18Suite &&
+          done &&
+          calls
+            .slice(start)
+            .some(
+              (call) =>
+                call.tools?.includes("propose_click") &&
+                call.responseTools?.length === 0 &&
+                call.executionOutcomes?.length === 0,
+            );
         const workflowDone =
+          s18ReviewTerminal ||
+          s18NoActionTerminal ||
           !current.workflow ||
+          (s18Suite && current.mismatch) ||
           (await state()).result === "Preview generated for Detailed.";
         // A plan approval closes one run before its next provider turn starts.
         // The transient idle state is not the S17 request's final feedback.
@@ -1008,7 +1148,14 @@ try {
             `document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length>${goalFeedbackBefore} || [...document.querySelectorAll('.event-card[data-kind=error]')].some(e=>e.dataset.testSeen!=='1')`,
           ));
         const s15LiveFinished =
+          s18ReviewTerminal ||
+          s18NoActionTerminal ||
           !s15Suite ||
+          (s18Suite &&
+            current.mismatch &&
+            calls
+              .slice(start)
+              .some((call) => call.reviewVerdict === "mismatch")) ||
           !liveModel ||
           current.deny ||
           (await evaluate(
@@ -1109,6 +1256,41 @@ try {
         ui,
       };
       evidence = result;
+      if (s18Suite) {
+        assert.ok(
+          result.calls.some((call) =>
+            call.workflowSources?.includes(current.s18Source),
+          ),
+          "Selected workflow source must be discovered",
+        );
+        assert.ok(
+          result.calls.some((call) => call.workflowReadComplete),
+          "Selected original must be fully read",
+        );
+        assert.ok(
+          result.calls.some(
+            (call) =>
+              call.responseTools?.includes("submit_review") &&
+              call.reviewVerdict === (current.mismatch ? "mismatch" : "match"),
+          ),
+          "Actual model review required",
+        );
+      }
+      if (s18Suite && !current.mismatch) {
+        assert.ok(
+          result.calls.some(
+            (call) =>
+              call.goalStatus === "completed" &&
+              call.executionOutcomes?.includes("VERIFIED"),
+          ),
+          "Verified execution and fresh goal completion required",
+        );
+        assert.equal(
+          approvalCount,
+          1,
+          "Workflow selection must not replace action approval",
+        );
+      }
       if (s15Suite && liveModel && current.clarify) {
         assert.equal(result.clarificationBeforeAnswerUnchanged, true);
         const question = result.calls.find((call) =>
@@ -1191,6 +1373,19 @@ try {
           current.id + ": unexpected error",
         );
       const expected = {
+        ...(s18Suite
+          ? Object.fromEntries(
+              s18Cases.map((c) => [
+                c.id,
+                () =>
+                  c.mismatch
+                    ? !acted && JSON.stringify(before) === JSON.stringify(after)
+                    : selected &&
+                      acted &&
+                      after.result === "Preview generated for Detailed.",
+              ]),
+            )
+          : {}),
         "controls-link": async () =>
           (await evaluate(page, "location.hash")) === "#controls",
         "states-link": async () =>

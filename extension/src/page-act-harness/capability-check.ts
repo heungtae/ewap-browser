@@ -16,6 +16,8 @@ export const ACT_READ_TOOLS = [
   "list_page_resources",
   "search_page_resources",
   "read_page_resource",
+  "list_workflow_resources",
+  "read_workflow_resource",
 ] as const;
 
 // Name-level agreement only: executor binding/shape/version checks belong to

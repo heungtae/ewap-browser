@@ -1,3 +1,4 @@
+import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import { actionView } from "./act-review-presentation.js";
 import { createActTerminalPublisher } from "./act-terminal-evidence.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
@@ -145,6 +146,40 @@ const proposalExecutorRef: {
 } = {};
 const actStepRunner = createActStepRunner({
   requestContext: (tabId) => chatRequests.activeContext(tabId),
+  workflowCandidates: async (active, session) => {
+    const resolved = await resolveProfileFor(active).catch(() => undefined);
+    const profile = resolved?.profile;
+    const matched =
+      profile?.resolution === "MATCHED" &&
+      profile.profile_id &&
+      profile.profile_version &&
+      profile.workflow
+        ? {
+            id: profile.profile_id,
+            version: profile.profile_version,
+            workflow: validateWorkflowDeclaration(profile.workflow),
+          }
+        : undefined;
+    const current = await workflowCatalogRuntime.collect(active, matched);
+    // Code-analysis drafts are immutable request-local originals, never installed as Profile definitions.
+    const drafts =
+      session.workflowResourceCandidates?.filter(
+        (item) =>
+          item.candidate.runtime_kind === "code-analysis" &&
+          item.candidate.origin === active.origin &&
+          item.candidate.path_prefix === active.path,
+      ) ?? [];
+    return [...current, ...drafts].map((item) => {
+      const prior = session.workflowResourceCandidates?.find(
+        (original) =>
+          original.candidate.source === item.candidate.source &&
+          original.declaration.id === item.declaration.id,
+      );
+      return prior
+        ? { ...item, candidate: { ...item.candidate, id: prior.candidate.id } }
+        : item;
+    });
+  },
   coordinator,
   provider: providerRuntime!,
   preferences: () => agentPreferences,

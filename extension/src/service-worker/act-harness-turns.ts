@@ -1,3 +1,8 @@
+import {
+  createWorkflowResourceExecutor,
+  workflowResourceToolSchemas,
+  type WorkflowResourceOptions,
+} from "./workflow-resource-tools.js";
 import { createActReadToolRegistry } from "./act-read-tool-registry.js";
 import { createSourceReadAnswerGuard } from "./source-read-answer-guard.js";
 import {
@@ -47,9 +52,11 @@ export const ACT_HARNESS_READ_TOOL_NAMES: string[] = listActReadTools();
 // tabs_context, or business tools are offered in Act harness reads.
 export const actHarnessReadTools = (): ProviderToolDefinition[] => {
   const names = new Set(ACT_HARNESS_READ_TOOL_NAMES);
-  return [...askReadTools, ...pageResourceToolSchemas].filter((tool) =>
-    names.has(tool.function.name),
-  );
+  return [
+    ...askReadTools,
+    ...pageResourceToolSchemas,
+    ...workflowResourceToolSchemas,
+  ].filter((tool) => names.has(tool.function.name));
 };
 
 export type ActHarnessReadAssist = {
@@ -65,6 +72,7 @@ export const createActHarnessReadExecutor = (opts: {
   runId: string;
   signal?: AbortSignal;
   assist: ActHarnessReadAssist;
+  workflows?: WorkflowResourceOptions;
   resources?: {
     documentEpoch: string;
     requestRevision: number;
@@ -93,37 +101,44 @@ export const createActHarnessReadExecutor = (opts: {
         ...(opts.signal ? { signal: opts.signal } : {}),
       })
     : undefined;
+  const workflows = opts.workflows
+    ? createWorkflowResourceExecutor(opts.workflows)
+    : undefined;
   const registry = createActReadToolRegistry(
     actHarnessReadTools().map((schema) => {
       const source = pageResourceToolSchemas.some(
         (tool) => tool.function.name === schema.function.name,
       );
+      const workflow = workflowResourceToolSchemas.some(
+        (tool) => tool.function.name === schema.function.name,
+      );
       return {
         schema,
         version: 1,
-        resultSchema: source
-          ? {
-              type: "object",
-              required: ["status"],
-              properties: {
-                status: {
-                  type: "string",
-                  enum: [
-                    "AVAILABLE",
-                    "CONSENT_REQUIRED",
-                    "DENIED",
-                    "STALE",
-                    "NOT_FOUND",
-                    "UNSUPPORTED",
-                    "FAILED",
-                    "CANCELLED",
-                    "INCOMPLETE",
-                  ],
+        resultSchema:
+          source || workflow
+            ? {
+                type: "object",
+                required: ["status"],
+                properties: {
+                  status: {
+                    type: "string",
+                    enum: [
+                      "AVAILABLE",
+                      "CONSENT_REQUIRED",
+                      "DENIED",
+                      "STALE",
+                      "NOT_FOUND",
+                      "UNSUPPORTED",
+                      "FAILED",
+                      "CANCELLED",
+                      "INCOMPLETE",
+                    ],
+                  },
                 },
-              },
-              additionalProperties: true,
-            }
-          : { type: "object" },
+                additionalProperties: true,
+              }
+            : { type: "object" },
         mode: "act",
         phase: "read",
         consent:
@@ -132,15 +147,17 @@ export const createActHarnessReadExecutor = (opts: {
             : "none",
         binding: "request-document",
         budget: "read",
-        ...(!source || resources
+        ...((workflow ? workflows : !source || resources)
           ? {
               execute: (args: string) =>
-                source
-                  ? resources!.execute({ name: schema.function.name, args })
-                  : executor.execute({
-                      name: schema.function.name,
-                      arguments: args,
-                    }),
+                workflow
+                  ? workflows!.execute({ name: schema.function.name, args })
+                  : source
+                    ? resources!.execute({ name: schema.function.name, args })
+                    : executor.execute({
+                        name: schema.function.name,
+                        arguments: args,
+                      }),
             }
           : {}),
       };
@@ -149,6 +166,7 @@ export const createActHarnessReadExecutor = (opts: {
   return Object.assign((call: ActReadCall) => registry.execute(call), {
     tools: registry.tools,
     bootstrap: resources?.bootstrap,
+    reviewReady: workflows?.reviewReady,
   });
 };
 
@@ -577,6 +595,7 @@ export const runWorkflowReviewGate = async (opts: {
   // page and confirms document epoch and origin. Absent (tests) means the
   // caller already failed stale bindings upstream.
   refreshBinding?: () => Promise<boolean>;
+  requireOriginalRead?: () => Promise<boolean>;
 }): Promise<WorkflowReviewGateResult> =>
   traceMethod(
     "service-worker/act-harness-turns.ts:runWorkflowReviewGate",
@@ -686,9 +705,13 @@ export const runWorkflowReviewGate = async (opts: {
       const candidateSummary = [
         `candidate ${review.candidate_id} (source ${review.source}):`,
         `workflow "${workflow.declaration.title}" with ${workflow.declaration.steps.length} step(s):`,
-        ...workflow.declaration.steps.map(
-          (step, index) => `step ${index + 1}. ${summarizeStep(step)}`,
-        ),
+        ...(opts.requireOriginalRead
+          ? [
+              "Discover this candidate with list_workflow_resources and read all chunks of read_workflow_resource before a match verdict.",
+            ]
+          : workflow.declaration.steps.map(
+              (step, index) => `step ${index + 1}. ${summarizeStep(step)}`,
+            )),
         `current step ${workflow.count + 1} proposes ${workflow.step.tool}.`,
       ].join("\n");
       const verdict: SuitabilityVerdict = await runSuitabilityReview({
@@ -724,6 +747,15 @@ export const runWorkflowReviewGate = async (opts: {
         } catch {
           bindingOk = false;
         }
+      }
+      if (
+        opts.requireOriginalRead &&
+        !(await opts.requireOriginalRead().catch(() => false))
+      ) {
+        verdict.verdict = "needs_context";
+        verdict.rationale =
+          "Selected workflow original is unread, incomplete, withheld or stale. No original step is authorized.";
+        verdict.missing = [...verdict.missing, "workflow_original"];
       }
       let recorded:
         | { verdict: ReviewVerdict; executable: boolean; missing: string[] }

@@ -334,3 +334,19 @@ OpenAI `gpt-6-luna`, 기본 2048 tokens에서 기본 live 6/6 PASS (23 calls, �
 자동 테스트 679개 PASS. [최종 증거](evidence/s15-live-fix-2026-10-09.md)를 따른다.
 Browser-local S15 / PAH-9는 해당 검증 범위에서 Completed로 기록한다.
 Enterprise S15, 운영 사이트·다른 모델·Platform·릴리스 및 S18~S20은 별도다.
+
+## Browser Act S18 — 2026-10-10
+
+**Completed — Browser-local.** 목록·원본 읽기의 실제 Provider schema/executor와 같은 call ID
+결과 반환, 선택 후보의 전체 읽기·현재 revision/UI 재검증, LLM 적합성 검토와 동작 승인을 연결했다.
+saved/Profile/page_generated의 match/mismatch는 통제 Chrome 6/6과 OpenAI `gpt-6-luna` live
+6/6 PASS이며 최종 candidate ID/provenance 보강 후 live 2/2를 다시 통과했다.
+자동 테스트 684개, typecheck/lint/module-boundaries/method-trace, 버전 보존 build/package PASS.
+S15 6/6, S17 8/8, S14 stale 재검증과 기존 다단계 workflow Chrome 회귀도 PASS.
+기존 source-size 초과 80개는 유지하며 신규 production 모듈은 각각 200줄 미만이다.
+
+원본과 request-local 변경 초안을 분리하고 기존 v1 저장·서명을 유지한다.
+partial/mismatch/needs_context는 설명·질문으로 종료하며 원본 첫 단계를 강제하지 않는다.
+OpenRouter 도구 미제안, 충돌한 fixture 안내문, 통제 report 누락과 재실행 결과는
+[S18 증거](evidence/s18-workflow-resources-2026-10-10.md)에 구분해 기록했다.
+운영 사이트·Platform·릴리스·전 출처 partial/needs_context live 일반화는 별도이며 S19/S20은 Planned다.

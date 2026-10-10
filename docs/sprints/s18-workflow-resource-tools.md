@@ -2,15 +2,41 @@
 
 ## 상태와 진입 조건
 
-**Planned — 2026-10-06.** 의존성: [S16](s16-page-script-tool-loop.md)의 registry/read loop,
+**Completed — Browser-local, 2026-10-10.** 의존성: [S16](s16-page-script-tool-loop.md)의 registry/read loop,
 [S17](s17-act-plan-execution-feedback.md)의 계획·승인·결과 피드백.
 기준은 [34번 설계](../34-page-act-context-harness-design.md)의 5.2·8·16절이다.
+
+[구현·최종 검증·실패 이력](../evidence/s18-workflow-resources-2026-10-10.md):
+자동 테스트 684개, 통제 Chrome 6/6, OpenAI live 세 출처 6/6 및 최종 보강 코드 2/2 PASS.
+운영 사이트·Platform·S19/S20 일반화는 별도이며 partial/needs_context live 전 출처 행렬은 미검증이다.
 
 ## 목표와 경계
 
 LLM이 허용된 후보를 목록으로 발견하고 필요한 원본을 읽어 사용자 요청과 현재 페이지의
 적합성을 판단한다. saved/Profile/page-generated 세 출처를 유지하며 페이지 선언은
 generated의 비신뢰 분석 자료로 취급한다. 원본 무결성은 의미 적합성을 대신하지 않는다.
+
+## 내부 계약과 실제 연결
+
+`workflow-resource-schemas/store/tools/read.ts`가 Browser 내부 읽기 계약을 제공한다.
+외부 EWAP wire와 기존 workflow v1 저장 형식은 변경하지 않는다.
+
+- 목록은 source (`saved`/`profile`/`page_generated`), cursor, page_size (1~50)를 받는다.
+  opaque ID/revision, candidate ID, 출처·카탈로그 상태·무결성·`unreviewed`, 읽기 가능 여부,
+  next_cursor와 범위별 coverage를 반환한다. 목록과 서명은 적합성/실행 승인이 아니다.
+- 원본 읽기는 먼저 발견한 resource_id와 resource_revision을 받는다. 256~16384 byte의
+  masked UTF-8 chunk와 continuation을 반환하며 기존 v1의 단계·대상·조건·expected·분기·
+  next를 보존한다. 지원하지 않는 입력/검증 필드를 추측해 추가하지 않는다.
+- 호출마다 request/document/origin/path와 최신 catalog/Profile/페이지 선언을 확인한다.
+  원본 변경·다른 cursor·취소·stale revision은 성공이 아니다. IDs/cursors는 turn-local이다.
+- stale/incomparable 원본과 민감 대상은 원문을 노출하지 않는다. 마스킹으로 의미가
+  빠졌거나 선택 원본을 끝까지 읽지 못하면 needs_context로 제한하고 실행하지 않는다.
+  원본 hash는 내부 변경 검사에만 쓰고 모델에는 opaque revision을 제공한다.
+- executor가 있는 도구만 registry에 제공한다. 읽기 결과는 원래 call ID로 같은 대화에
+  반환한다. 선택 후 원본 읽기와 현재 UI binding을 재검증하고 기존 승인을 유지한다.
+- saved 원본·Profile·페이지 선언·request-local 코드 분석 초안을 구분한다. 변경 초안을
+  Profile에 설치하거나 원본을 덮어쓰지 않는다. mismatch/partial/needs_context는 원래
+  목표를 유지한 설명·질문으로 종료하며 첫 원본 단계를 자동 실행하지 않는다.
 
 ## 구현 카드와 순서
 

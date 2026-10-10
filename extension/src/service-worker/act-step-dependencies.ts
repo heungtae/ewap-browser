@@ -12,6 +12,10 @@ export type ActStepDependencies = {
   requestContext?(
     tabId: number,
   ): import("./request-context.js").RequestContext | undefined;
+  workflowCandidates?(
+    active: ActivePage,
+    session: ActSession,
+  ): Promise<import("./workflow-catalog-runtime.js").CandidateDefinition[]>;
   coordinator: ServiceCoordinator;
   provider: ProviderRuntime;
   preferences(): AgentPreferences;

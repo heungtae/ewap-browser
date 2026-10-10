@@ -1,0 +1,4730 @@
+{
+  "date": "2026-10-10",
+  "status": "PASS - Browser-local S18 implementation and bounded live qualification",
+  "base_commit": "63e9b804b85588e966919086a57ee0e4eaa4c8a6",
+  "code_state": "uncommitted S18 changes, extension version preserved",
+  "version": "0.1.98",
+  "chrome": "147.0.7727.15",
+  "provider_settings": {
+    "openrouter": {
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "key_environment": "OPENROUTER_API_KEY"
+    },
+    "openai": {
+      "model": "gpt-6-luna",
+      "key_environment": "OPENAI_API_KEY",
+      "environment_shell": "~/.bashrc",
+      "reasoning_effort": "none",
+      "max_completion_tokens": 2048
+    }
+  },
+  "controlled_final": {
+    "temporary_report": "/tmp/s18-qualified-controlled.json",
+    "report_sha256": "10a7a364954566a34e2b9d5fb3c34068f2e80912a6b2f0547cac74479f500e10",
+    "cases": [
+      {
+        "id": "s18-saved-match",
+        "pass": true,
+        "call_count": 9,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000001"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000002"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000003"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000004"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000005"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004",
+              "s18-0000000000000005"
+            ],
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000006"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "test-proposal-8-abcdefghijkl"
+            ],
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000007"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-saved-mismatch",
+        "pass": true,
+        "call_count": 7,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000001"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000002"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000003"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000004"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000005"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004",
+              "s18-0000000000000005"
+            ],
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000006"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      },
+      {
+        "id": "s18-profile-match",
+        "pass": true,
+        "call_count": 9,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000001"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000002"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000003"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000004"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000005"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004",
+              "s18-0000000000000005"
+            ],
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000006"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "test-proposal-24-abcdefghijkl"
+            ],
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000007"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-profile-mismatch",
+        "pass": true,
+        "call_count": 7,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000001"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000002"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000003"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000004"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000005"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004",
+              "s18-0000000000000005"
+            ],
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000006"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      },
+      {
+        "id": "s18-page_generated-match",
+        "pass": true,
+        "call_count": 9,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000001"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000002"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000003"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000004"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000005"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004",
+              "s18-0000000000000005"
+            ],
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000006"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "test-proposal-40-abcdefghijkl"
+            ],
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000007"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-page_generated-mismatch",
+        "pass": true,
+        "call_count": 7,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000001"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000002"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002"
+            ],
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000003"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000004"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004"
+            ],
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000005"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile",
+              "saved",
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "s18-0000000000000001",
+              "s18-0000000000000002",
+              "s18-0000000000000003",
+              "s18-0000000000000004",
+              "s18-0000000000000005"
+            ],
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "s18-0000000000000006"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      }
+    ]
+  },
+  "live_openai_six_cases": {
+    "temporary_report": "/tmp/s18-live-openai-final.json",
+    "report_sha256": "7351c56dbea18fba1c65e6cd2616a02fd657d4c49b834dcc8decf2cc88f1fdbe",
+    "cases": [
+      {
+        "id": "s18-saved-match",
+        "pass": true,
+        "call_count": 6,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_8NwtBdQI0NkJiRCltyqrJUbx"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_8NwtBdQI0NkJiRCltyqrJUbx"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_K2MxH8dZyQjDM2c0EUNteloU"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "saved"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_8NwtBdQI0NkJiRCltyqrJUbx",
+              "call_K2MxH8dZyQjDM2c0EUNteloU"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_0DaAUDZ4OmoEltWViFkj9qxP"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "propose_click"
+            ],
+            "responseCallIds": [
+              "call_mLWhE11oe9BCPYBgcbq7kwg8"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "call_mLWhE11oe9BCPYBgcbq7kwg8"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "call_ghY2wOn9xGDbn3iSGgqXfNFF"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-saved-mismatch",
+        "pass": true,
+        "call_count": 4,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_abwTaovn60DcPnzoBUHVZ2SG"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "saved"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_abwTaovn60DcPnzoBUHVZ2SG"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_uShlw5vq4Fktk889oiHyeU0c"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "saved"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_abwTaovn60DcPnzoBUHVZ2SG",
+              "call_uShlw5vq4Fktk889oiHyeU0c"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_yOwdGVe9x6nozg66sTwCbgtF"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      },
+      {
+        "id": "s18-profile-match",
+        "pass": true,
+        "call_count": 6,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_Pg7SURa5kFMUSWrYwrKrCA9i"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_Pg7SURa5kFMUSWrYwrKrCA9i"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_tACJhcKwxNfrcQaanicxEFhT"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_Pg7SURa5kFMUSWrYwrKrCA9i",
+              "call_tACJhcKwxNfrcQaanicxEFhT"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_45uoPSLdIW6cZHioyvasw9rN"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "propose_click"
+            ],
+            "responseCallIds": [
+              "call_uMoAeedCFCCqjPJ3Trr2VmxL"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "call_uMoAeedCFCCqjPJ3Trr2VmxL"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "call_tBdBbA7vVVBmchvZsVD1Ryj7"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-profile-mismatch",
+        "pass": true,
+        "call_count": 4,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_to751BZ0ZOWgCBOR1MfFOHu8"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_to751BZ0ZOWgCBOR1MfFOHu8"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_T0TtlL74dCzbOuAYuliSJo7d"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_to751BZ0ZOWgCBOR1MfFOHu8",
+              "call_T0TtlL74dCzbOuAYuliSJo7d"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_aep8vntNFim90saspjyYWRuA"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      },
+      {
+        "id": "s18-page_generated-match",
+        "pass": true,
+        "call_count": 6,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_OrqfwmtO7vYeCY5D8l07dJnS"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_OrqfwmtO7vYeCY5D8l07dJnS"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_RnP86UwuK2hJ2q9VKS2BDJq6"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_OrqfwmtO7vYeCY5D8l07dJnS",
+              "call_RnP86UwuK2hJ2q9VKS2BDJq6"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_LzroTsohRvFt2Elm2DYCSbj3"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "propose_click"
+            ],
+            "responseCallIds": [
+              "call_Xjoeeg25F18d51aHPm0HrNRz"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "call_Xjoeeg25F18d51aHPm0HrNRz"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "call_ImCkd4HTnwx3ea4idtV4HOha"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-page_generated-mismatch",
+        "pass": true,
+        "call_count": 4,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_GB5TH0p6KfIPQ305bEe2893m"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_GB5TH0p6KfIPQ305bEe2893m"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_LexmY5O64bar91FJHgy6ylpT"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_GB5TH0p6KfIPQ305bEe2893m",
+              "call_LexmY5O64bar91FJHgy6ylpT"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_dsH8B6MPNW7I6u4zauwYo4BP"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      }
+    ]
+  },
+  "live_openai_final_candidate_binding": {
+    "temporary_report": "/tmp/s18-live-openai-current.json",
+    "report_sha256": "064953e0456cfa00ea2f7f71a8b4a9d693c7f19113119ff6e32cf2de7e49f2e9",
+    "cases": [
+      {
+        "id": "s18-profile-match",
+        "pass": true,
+        "call_count": 6,
+        "approval_count": 1,
+        "page_changed": true,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_HD0UcxFwHKqJjqP3LuFzC7vH"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_HD0UcxFwHKqJjqP3LuFzC7vH"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_43Zee7VfUvxH9Dfi6Dq4iGwq"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "profile"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_HD0UcxFwHKqJjqP3LuFzC7vH",
+              "call_43Zee7VfUvxH9Dfi6Dq4iGwq"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_ibNYmqU5sZs6laL01hovPlnh"
+            ],
+            "reviewVerdict": "match"
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "submit_plan"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [],
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "propose_click"
+            ],
+            "responseCallIds": [
+              "call_TFPezRMnUcNneeUDoCs2pwd3"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "propose_click",
+              "propose_set_text",
+              "propose_set_checked",
+              "propose_select_option",
+              "request_clarification",
+              "submit_plan",
+              "report_goal_status"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "executionOutcomes": [
+              "VERIFIED"
+            ],
+            "resultCallIds": [
+              "call_TFPezRMnUcNneeUDoCs2pwd3"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "report_goal_status"
+            ],
+            "responseCallIds": [
+              "call_25W4TJNL5CD9AJYFM7mYZ6BZ"
+            ],
+            "goalStatus": "completed"
+          }
+        ]
+      },
+      {
+        "id": "s18-page_generated-mismatch",
+        "pass": true,
+        "call_count": 4,
+        "approval_count": 0,
+        "page_changed": false,
+        "zip_redacted": true,
+        "original_read_complete": true,
+        "read_call_ids_returned": true,
+        "calls": [
+          {
+            "tools": [],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [],
+            "responseCallIds": []
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [],
+            "workflowReadComplete": false,
+            "resultCallIds": [],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "list_workflow_resources"
+            ],
+            "responseCallIds": [
+              "call_M9SSVWLxG5WNrpqyyyT577GJ"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "page_generated"
+            ],
+            "workflowReadComplete": false,
+            "resultCallIds": [
+              "call_M9SSVWLxG5WNrpqyyyT577GJ"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "read_workflow_resource"
+            ],
+            "responseCallIds": [
+              "call_q2MBVJ0LI59oRq0w5qXA8LTZ"
+            ]
+          },
+          {
+            "tools": [
+              "read_semantic_projection",
+              "read_page",
+              "get_page_text",
+              "find",
+              "list_page_resources",
+              "search_page_resources",
+              "read_page_resource",
+              "list_workflow_resources",
+              "read_workflow_resource",
+              "submit_review"
+            ],
+            "workflowSources": [
+              "page_generated"
+            ],
+            "workflowReadComplete": true,
+            "resultCallIds": [
+              "call_M9SSVWLxG5WNrpqyyyT577GJ",
+              "call_q2MBVJ0LI59oRq0w5qXA8LTZ"
+            ],
+            "upstreamProvider": "openai",
+            "upstreamStatus": 200,
+            "model": "gpt-6-luna",
+            "responseTools": [
+              "submit_review"
+            ],
+            "responseCallIds": [
+              "call_9LMv8j8AL8dm9mRc0geNgE88"
+            ],
+            "reviewVerdict": "mismatch"
+          }
+        ]
+      }
+    ]
+  },
+  "attempts": [
+    {
+      "reason": "Initial test incorrectly required discovery of all three sources despite valid model source filter; HTTP 200 and actual saved match execution completed. Failed assertion remains failed.",
+      "result": {
+        "temporary_report": "/tmp/s18-live-openrouter.json",
+        "report_sha256": "7a5c16d08f56c9f1b7aa99140f2ba5dc1969384263aea441cc1f30c80cd4fd54",
+        "cases": [
+          {
+            "id": "s18-saved-match",
+            "pass": false,
+            "call_count": 6,
+            "approval_count": 1,
+            "page_changed": true,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": true,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-f127cfec-8c88-440b-a5d5-68910db90544"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-f127cfec-8c88-440b-a5d5-68910db90544"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "read_workflow_resource"
+                ],
+                "responseCallIds": [
+                  "call-675bfdc4-37f7-4be7-bb57-4d7bf3ba33a3"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "saved"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "call-f127cfec-8c88-440b-a5d5-68910db90544",
+                  "call-675bfdc4-37f7-4be7-bb57-4d7bf3ba33a3"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "submit_review"
+                ],
+                "responseCallIds": [
+                  "call-21260f67-a6bf-477a-b69e-0d84a51d9731"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "propose_click"
+                ],
+                "responseCallIds": [
+                  "call-a2113a54-0a6d-41c0-8cd7-046bd1945ede"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [
+                  "VERIFIED"
+                ],
+                "resultCallIds": [
+                  "call-a2113a54-0a6d-41c0-8cd7-046bd1945ede"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "report_goal_status"
+                ],
+                "responseCallIds": [
+                  "call-41d0b5a9-865b-4599-9ae7-17430774b68f"
+                ],
+                "goalStatus": "completed"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "reason": "OpenRouter saved match returned plain reasoning instead of an action proposal after match. Five cases recorded; generated mismatch unrecorded after intentional interruption. HTTP 200 alone is not completion.",
+      "result": {
+        "temporary_report": "/tmp/s18-live-openrouter-matrix.json",
+        "report_sha256": "000a56633ea97a6a49dc61121e554e286432d7e7d67fa35a587de3697e858058",
+        "cases": [
+          {
+            "id": "s18-saved-match",
+            "pass": false,
+            "call_count": 5,
+            "approval_count": 0,
+            "page_changed": false,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": true,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-709f185f-6bb9-4d5c-b09a-76314350e88b"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-709f185f-6bb9-4d5c-b09a-76314350e88b"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "read_workflow_resource"
+                ],
+                "responseCallIds": [
+                  "call-53832d50-c780-445e-8414-7eb3691dfb86"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "saved"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "call-709f185f-6bb9-4d5c-b09a-76314350e88b",
+                  "call-53832d50-c780-445e-8414-7eb3691dfb86"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "submit_review"
+                ],
+                "responseCallIds": [
+                  "call-35a861ba-74de-4a19-ae52-590708cb397f"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              }
+            ]
+          },
+          {
+            "id": "s18-saved-mismatch",
+            "pass": true,
+            "call_count": 4,
+            "approval_count": 0,
+            "page_changed": false,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": true,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-524d055d-d2ed-4de2-8d35-a76a46fc6356"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-524d055d-d2ed-4de2-8d35-a76a46fc6356"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "read_workflow_resource"
+                ],
+                "responseCallIds": [
+                  "call-c9dd6173-8387-47c7-b0a2-a76d2fceba03"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "saved"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "call-524d055d-d2ed-4de2-8d35-a76a46fc6356",
+                  "call-c9dd6173-8387-47c7-b0a2-a76d2fceba03"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "submit_review"
+                ],
+                "responseCallIds": [
+                  "call-23b59d1b-79a8-4108-9257-5c375bdc958f"
+                ],
+                "reviewVerdict": "mismatch"
+              }
+            ]
+          },
+          {
+            "id": "s18-profile-match",
+            "pass": true,
+            "call_count": 6,
+            "approval_count": 1,
+            "page_changed": true,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": true,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-9cfc9f81-ae5c-4dc9-a332-7cbfda758b14"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-9cfc9f81-ae5c-4dc9-a332-7cbfda758b14"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "read_workflow_resource"
+                ],
+                "responseCallIds": [
+                  "call-3ac7c80a-3454-4b54-ae48-896f8d2d1454"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "call-9cfc9f81-ae5c-4dc9-a332-7cbfda758b14",
+                  "call-3ac7c80a-3454-4b54-ae48-896f8d2d1454"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "submit_review"
+                ],
+                "responseCallIds": [
+                  "call-e900dbe2-1b8c-4cc5-9a6e-180d94ab3f72"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "propose_click"
+                ],
+                "responseCallIds": [
+                  "call-bae75592-bf0e-43ba-9793-24226540389a"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [
+                  "VERIFIED"
+                ],
+                "resultCallIds": [
+                  "call-bae75592-bf0e-43ba-9793-24226540389a"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "report_goal_status"
+                ],
+                "responseCallIds": [
+                  "call-8139cccc-61fe-461b-b584-dabb6ada0260"
+                ],
+                "goalStatus": "completed"
+              }
+            ]
+          },
+          {
+            "id": "s18-profile-mismatch",
+            "pass": true,
+            "call_count": 5,
+            "approval_count": 0,
+            "page_changed": false,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": true,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-4eb0969e-3a01-4e46-aa91-cee419d2f92e"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-4eb0969e-3a01-4e46-aa91-cee419d2f92e"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-ad080764-0adf-4174-9f1e-946bb4f39768"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-4eb0969e-3a01-4e46-aa91-cee419d2f92e",
+                  "call-ad080764-0adf-4174-9f1e-946bb4f39768"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "read_workflow_resource"
+                ],
+                "responseCallIds": [
+                  "call-a2191b83-1994-469c-909d-ab96255f0ecd"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "call-4eb0969e-3a01-4e46-aa91-cee419d2f92e",
+                  "call-ad080764-0adf-4174-9f1e-946bb4f39768",
+                  "call-a2191b83-1994-469c-909d-ab96255f0ecd"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "submit_review"
+                ],
+                "responseCallIds": [
+                  "call-d0d03634-eea6-487f-8c37-d1d35ab433cf"
+                ],
+                "reviewVerdict": "mismatch"
+              }
+            ]
+          },
+          {
+            "id": "s18-page_generated-match",
+            "pass": true,
+            "call_count": 6,
+            "approval_count": 1,
+            "page_changed": true,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": true,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [],
+                "responseCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "list_workflow_resources"
+                ],
+                "responseCallIds": [
+                  "call-a64e8524-337a-4e68-a7ea-f9f144389923"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "call-a64e8524-337a-4e68-a7ea-f9f144389923"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "read_workflow_resource"
+                ],
+                "responseCallIds": [
+                  "call-0c7b87f1-78c0-412f-b84c-7d5384e1ebf0"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "call-a64e8524-337a-4e68-a7ea-f9f144389923",
+                  "call-0c7b87f1-78c0-412f-b84c-7d5384e1ebf0"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "submit_review"
+                ],
+                "responseCallIds": [
+                  "call-e8b53f1a-ff49-4890-befe-c29399554f4c"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": [],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "propose_click"
+                ],
+                "responseCallIds": [
+                  "call-f527e141-67cf-4e31-95f4-f2c11de6b886"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [
+                  "VERIFIED"
+                ],
+                "resultCallIds": [
+                  "call-f527e141-67cf-4e31-95f4-f2c11de6b886"
+                ],
+                "upstreamProvider": "openrouter",
+                "upstreamStatus": 200,
+                "model": "nvidia/nemotron-3.5-lightning:free",
+                "responseTools": [
+                  "report_goal_status"
+                ],
+                "responseCallIds": [
+                  "call-c2acb6f5-3c00-4905-a49b-4e3c5090b153"
+                ],
+                "goalStatus": "completed"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "reason": "First OpenAI run returned partial against conflicting fixture readiness hint; no action. Interrupted, no complete matrix. Fixture hint was aligned with actual ready controls before the final six-case run.",
+      "temporary_masked_trace": "/tmp/s18-openai-ambiguous-fixture-trace.json"
+    },
+    {
+      "reason": "Stronger goal assertion exposed missing goalStatus metadata in the controlled double report. Actual DOM execution had succeeded. Recording fixed; all six rerun successfully.",
+      "result": {
+        "temporary_report": "/tmp/s18-final-controlled.json",
+        "report_sha256": "5eb79b88260e367696015703c2e8bb34d065d2a3ad96fceb85d28169b8914b7f",
+        "cases": [
+          {
+            "id": "s18-saved-match",
+            "pass": false,
+            "call_count": 9,
+            "approval_count": 1,
+            "page_changed": true,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": false,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004",
+                  "s18-0000000000000005"
+                ],
+                "responseTools": [
+                  "submit_review"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [
+                  "VERIFIED"
+                ],
+                "resultCallIds": [
+                  "test-proposal-8-abcdefghijkl"
+                ],
+                "responseTools": [
+                  "report_goal_status"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s18-saved-mismatch",
+            "pass": true,
+            "call_count": 7,
+            "approval_count": 0,
+            "page_changed": false,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": false,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004",
+                  "s18-0000000000000005"
+                ],
+                "responseTools": [
+                  "submit_review"
+                ],
+                "reviewVerdict": "mismatch"
+              }
+            ]
+          },
+          {
+            "id": "s18-profile-match",
+            "pass": false,
+            "call_count": 9,
+            "approval_count": 1,
+            "page_changed": true,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": false,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004",
+                  "s18-0000000000000005"
+                ],
+                "responseTools": [
+                  "submit_review"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [
+                  "VERIFIED"
+                ],
+                "resultCallIds": [
+                  "test-proposal-24-abcdefghijkl"
+                ],
+                "responseTools": [
+                  "report_goal_status"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s18-profile-mismatch",
+            "pass": true,
+            "call_count": 7,
+            "approval_count": 0,
+            "page_changed": false,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": false,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004",
+                  "s18-0000000000000005"
+                ],
+                "responseTools": [
+                  "submit_review"
+                ],
+                "reviewVerdict": "mismatch"
+              }
+            ]
+          },
+          {
+            "id": "s18-page_generated-match",
+            "pass": false,
+            "call_count": 9,
+            "approval_count": 1,
+            "page_changed": true,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": false,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004",
+                  "s18-0000000000000005"
+                ],
+                "responseTools": [
+                  "submit_review"
+                ],
+                "reviewVerdict": "match"
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "submit_plan"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [],
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "propose_click",
+                  "propose_set_text",
+                  "propose_set_checked",
+                  "propose_select_option",
+                  "request_clarification",
+                  "submit_plan",
+                  "report_goal_status"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "executionOutcomes": [
+                  "VERIFIED"
+                ],
+                "resultCallIds": [
+                  "test-proposal-40-abcdefghijkl"
+                ],
+                "responseTools": [
+                  "report_goal_status"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s18-page_generated-mismatch",
+            "pass": true,
+            "call_count": 7,
+            "approval_count": 0,
+            "page_changed": false,
+            "zip_redacted": true,
+            "original_read_complete": true,
+            "read_call_ids_returned": false,
+            "calls": [
+              {
+                "tools": [],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": []
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [],
+                "workflowReadComplete": false,
+                "resultCallIds": [],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002"
+                ],
+                "responseTools": [
+                  "list_workflow_resources"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": false,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004"
+                ],
+                "responseTools": [
+                  "read_workflow_resource"
+                ]
+              },
+              {
+                "tools": [
+                  "read_semantic_projection",
+                  "read_page",
+                  "get_page_text",
+                  "find",
+                  "list_page_resources",
+                  "search_page_resources",
+                  "read_page_resource",
+                  "list_workflow_resources",
+                  "read_workflow_resource",
+                  "submit_review"
+                ],
+                "workflowSources": [
+                  "profile",
+                  "saved",
+                  "page_generated"
+                ],
+                "workflowReadComplete": true,
+                "resultCallIds": [
+                  "s18-0000000000000001",
+                  "s18-0000000000000002",
+                  "s18-0000000000000003",
+                  "s18-0000000000000004",
+                  "s18-0000000000000005"
+                ],
+                "responseTools": [
+                  "submit_review"
+                ],
+                "reviewVerdict": "mismatch"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "reason": "Isolated three-step legacy test declaration initially omitted explicit next links and failed v1 reachability validation; no selection/approval/mutation occurred. Fixture links corrected before rerun.",
+      "temporary_report": "/tmp/s18-final-legacy-workflow.json"
+    },
+    {
+      "reason": "Corrected legacy fixture read/review passed; controlled option proposal omitted required value_source_revision and was safely rejected before approval. Controlled double now copies current request revision from execution inventory; live responses unchanged.",
+      "temporary_report": "/tmp/s18-qualified-legacy-workflow.json"
+    }
+  ],
+  "checks": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "module_boundaries": "PASS, 288 TypeScript files",
+    "method_trace": "PASS, 41 documented modules, 1674 methods/callbacks in 188 runtime modules",
+    "automated_tests": "PASS, 145 files / 684 tests, unit + fixture + e2e",
+    "version_preserving_build": "PASS",
+    "package_validation": "PASS",
+    "source_size": "FAIL, existing 80 over-limit files; all four new production workflow-resource modules below 200 lines"
+  },
+  "artifact_sha256": "b5733471cd22093a2838714e3f1b0b9c68f0d705f32c5d09c3f59df6f8f3b01d",
+  "regressions": {
+    "S15": {
+      "status": "PASS",
+      "cases": 6,
+      "report_sha256": "7878f042a4afc8ac47d32138fd91a6c9e3201c0c165d5d7c76df319b441571fe"
+    },
+    "S17": {
+      "status": "PASS",
+      "cases": 8,
+      "report_sha256": "431cff32321fc67e5fd09888368108f4a14e87842cc89dc2963c19b33519da67"
+    },
+    "S14": {
+      "status": "PASS",
+      "checks": [
+        "verified",
+        "stale",
+        "incomparable",
+        "select/start stale recheck"
+      ],
+      "log_sha256": "ae0bdb2210062ef8a0160101fc5d2944f3736aafa023f5ca948c9f951eb5fe70"
+    },
+    "legacy_three_step_workflow": {
+      "status": "PASS",
+      "cases": 1,
+      "approval_count": 3,
+      "selected": true,
+      "final_preview_verified": true,
+      "report_sha256": "19ff09e116d4e83abd88bcd2c34f523ee11d5d4e12ddc32f1e5e978767e78667"
+    }
+  },
+  "limits": [
+    "Synthetic HTTPS fixture and named models only; no production-site, Platform/MCP resource discovery or release qualification.",
+    "Live three-source match/mismatch only; partial/needs_context gates, differing branches, cancellation, revisions and masking qualified by automated/controlled tests.",
+    "Six-case OpenAI run precedes final candidate-ID/provenance strengthening; final Profile match and generated mismatch rerun against the final product bundle.",
+    "Workflow v1 has no arbitrary input/expected-result fields; only actual v1 tool/target/condition/expected/branch/next semantics exposed.",
+    "Adaptation returns explanation/clarification; no automatic installation of changed originals, Profile or generated plan delta."
+  ]
+}

@@ -185,6 +185,39 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               ? { signal: session.requestContext.signal }
               : {}),
             assist: dependencies.readAssist,
+            ...(dependencies.workflowCandidates
+              ? {
+                  workflows: {
+                    requestRevision: session.requestContext
+                      ? toHarnessRevision(session.requestContext.generation)
+                      : (session.harnessCapabilities?.request_revision ?? 1),
+                    ...(session.requestContext?.signal
+                      ? { signal: session.requestContext.signal }
+                      : {}),
+                    current: () =>
+                      !session.requestContext?.signal.aborted &&
+                      dependencies.coordinator.runs.byId(run.id)?.phase !==
+                        "TERMINAL",
+                    load: async () => {
+                      assertRequestActive(session.requestContext);
+                      const latest = await dependencies.readActive(
+                        undefined,
+                        session.tabId,
+                      );
+                      assertRequestActive(session.requestContext);
+                      if (
+                        latest.tabId !== active.tabId ||
+                        latest.origin !== active.origin ||
+                        latest.path !== active.path ||
+                        latest.snapshot.document_epoch !==
+                          active.snapshot.document_epoch
+                      )
+                        throw Error("STALE");
+                      return dependencies.workflowCandidates!(latest, session);
+                    },
+                  },
+                }
+              : {}),
             resources: {
               documentEpoch: active.snapshot.document_epoch,
               requestRevision: session.requestContext
@@ -359,6 +392,16 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             ),
           session,
           projection,
+          ...(harnessExecutor?.reviewReady
+            ? {
+                requireOriginalRead: () =>
+                  harnessExecutor.reviewReady!(
+                    session.workflow!.declaration,
+                    session.harnessReview?.candidate_id,
+                  ),
+                maxRounds: 12,
+              }
+            : {}),
           serialise: dependencies.serialise,
           readTools: harnessReads,
           executeRead: harnessExecutor
@@ -384,7 +427,11 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               current !== undefined &&
               current.snapshot.document_epoch ===
                 active.snapshot.document_epoch &&
-              current.origin === active.origin
+              current.origin === active.origin &&
+              current.tabId === active.tabId &&
+              current.path === active.path &&
+              digestCanonical(current.snapshot) ===
+                digestCanonical(active.snapshot)
             );
           },
         });

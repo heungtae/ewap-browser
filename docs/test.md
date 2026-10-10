@@ -177,6 +177,29 @@ Page API의 성공·이미 만족됨·throw·timeout·Stop·scope 변경·restar
 구현과 실패 이력은 [S17 구현·검증 증거](evidence/s17-plan-feedback-2026-10-09.md),
 최종 OpenAI 결과는 [live 검증 증거](evidence/s17-live-openai-luna-2026-10-09.md)를 따른다.
 
+## S18 workflow 목록·원본·검토 테스트
+
+버전 보존 빌드 후 `pnpm test:chrome-s18`을 실행한다. 실제 Chrome에 저장 원본,
+서명된 Profile workflow, 페이지 generated 선언을 함께 제공하고 세 출처의 match/mismatch
+6개를 검증한다. 통제 Provider는 목록 pagination과 256-byte 원본 continuation을 수행한다.
+무관한 Preview 선택에서 Search 입력 목표를 바꾸거나 Preview를 실행하지 않아야 한다.
+
+```bash
+CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome \
+ACCESSIBLE_ITEMS_REPORT=/tmp/s18-controlled.json pnpm test:chrome-s18
+```
+
+live는 `S18_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free`, `OPENROUTER_API_KEY`를 사용한다.
+OpenRouter 제한 시 `LIVE_PROVIDER=openai S18_LIVE_MODEL=gpt-6-luna`, `OPENAI_API_KEY`를 쓴다.
+환경 키가 `~/.bashrc`에 있으면 해당 셸에서 실행하며 키 값은 출력하지 않는다.
+`ACCESSIBLE_ITEMS_CASES=s18-saved-match,s18-profile-mismatch`로 일부를 선택할 수 있다.
+source filter 선택은 허용한다. 선택 출처의 실제 list/read/review, coverage,
+승인·실행 결과, mismatch의 페이지 불변과 진단 ZIP을 검사한다.
+세 출처를 매번 전부 읽도록 강제하거나 미검토 후보의 적합성을 대신 결정하지 않는다.
+최종 통제/live 결과와 실패 이력은 [S18 증거](evidence/s18-workflow-resources-2026-10-10.md)를 따른다.
+fixture는 scope·checkbox·Preview 활성화 상태와 화면 안내문을 일치시킨다.
+partial/needs_context는 match로 바꾸지 않으며 추가 확인 없이 실행하지 않는다.
+
 ## 결과 기록과 한계
 
 실행 날짜, code/build revision, Chrome 버전, Provider/model, 명령, 호출·결과·후속 turn,

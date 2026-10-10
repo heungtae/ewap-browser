@@ -17,6 +17,7 @@ ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 �
 - [S15 / PAH-9 수정·최종 live 검증](evidence/s15-live-fix-2026-10-09.md)
 - [S15 / PAH-9 수정 전 OpenAI 검증](evidence/s15-live-openai-verification-2026-10-09.md)
 - [S17 OpenAI live 검증](evidence/s17-live-openai-luna-2026-10-09.md)
+- [S18 workflow 목록·원본·live 검토 증거](evidence/s18-workflow-resources-2026-10-10.md)
 - [Sprint 설계 인덱스](sprint-design.md)
 - [Sprint 개발 계획](sprint-development-plan.md)
 - [Sprint 검증 계획](sprint-verification-plan.md)

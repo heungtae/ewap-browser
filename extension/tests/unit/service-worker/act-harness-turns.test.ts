@@ -436,7 +436,34 @@ describe("act harness turns", () => {
       "list_page_resources",
       "search_page_resources",
       "read_page_resource",
+      "list_workflow_resources",
+      "read_workflow_resource",
     ]);
+  });
+
+  it("does not authorize a match before the selected original is completely and freshly read", async () => {
+    const session = baseSession();
+    const gate = await runWorkflowReviewGate({
+      chat: scriptedChat([
+        {
+          content: "",
+          tool_calls: [reviewCall("call-unread-abcdefghijkl", "match")],
+        },
+      ]),
+      session,
+      projection: PROJECTION,
+      serialise: JSON.stringify,
+      readTools: [],
+      executeRead: async () => {
+        throw Error("No read was requested");
+      },
+      expectedRevision: 1,
+      runId: "run-original-abcdefghijkl",
+      publishDelta: () => undefined,
+      requireOriginalRead: async () => false,
+    });
+    expect(gate.proceed).toBe(false);
+    expect(session.harnessReview?.verdict).toBe("needs_context");
   });
 
   it("clarifies_on_partial_without_executing_or_consuming_approval", async () => {

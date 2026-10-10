@@ -182,7 +182,7 @@ password/OTP 대상, 미승인 source 전달, 임의 JS, 임의 endpoint 호출�
 | `list_page_resources` | kind/parent/cursor로 설명·script·component 자료 metadata 발견 | 신규 |
 | `read_page_resource` | resource ID, cursor/range, max bytes로 마스킹된 발췌 읽기 | 신규 |
 | `search_page_resources` | 발견·허용된 source에서 문자열 또는 일반 구조 힌트 검색 | 신규. 검색 결과도 전체 코드 검토를 뜻하지 않음 |
-| `list_workflow_resources`, `read_workflow_resource` | 허용된 카탈로그의 전체 후보를 pagination으로 읽기 | 신규 |
+| `list_workflow_resources`, `read_workflow_resource` | 허용된 카탈로그의 후보 목록·원본을 pagination/chunk로 읽기 | S18 Browser-local 구현 |
 | `describe_component`, `read_component_data` | 구조·채널·수집 범위·continuation 확인 | 신규 facade. 기존 collection reader와 reviewed adapter 재사용 검토 |
 | `screenshot`, `zoom` | 이미지·SVG·canvas 해석의 보조 관찰 | 기존 구현 재사용 검토. 좌표 실행 권한은 제공하지 않음 |
 | `propose_*` | 현재 ref의 실행 초안과 승인 요청 생성 | 기존 tool 종류 유지 검토. 직접 실행과 구분 |
@@ -715,9 +715,17 @@ callable schema에 넣지 않고 UNSUPPORTED와 사유를 capability에 표시�
 | read_page_resource | 특정 자료의 제한된 범위를 동의 후 정적 텍스트로 읽기 | resource_id 필수, cursor 또는 range와 max_bytes 선택. cursor/range 동시 지정 금지 | ReadEvidence, 마스킹된 chunk, coverage, continuation |
 | submit_plan | 근거를 가진 목표·순서·입력·부작용·검증 계획 제출. 호출은 승인/실행이 아님 | request_revision/goal/evidence_ids/steps/approval_scope 필수, 원본 reference/delta 선택 | 검토 가능한 plan ID/revision, 기술 검증 결과, 승인 대기 또는 계약 오류 |
 | list_workflow_resources | 허용된 saved/Profile 후보와 generated 초안의 metadata 탐색 | source/cursor/page_size 선택 | 후보 ID/revision/provenance/적용 상태, 미검토 상태, next_cursor |
-| read_workflow_resource | 후보의 원본 단계·입력·조건·분기·검증 정의를 근거로 읽기 | resource_id 필수, cursor/max_bytes 선택 | 손실 없는 원본의 제한된 부분, coverage, continuation, 출처/무결성 metadata |
+| read_workflow_resource | 후보의 원본 단계·입력·조건·분기·검증 정의를 근거로 읽기 | resource_id/resource_revision 필수, cursor/max_bytes 선택 | masked UTF-8 원본 chunk, coverage, continuation, 출처/무결성 metadata |
 | describe_component | 관찰한 component의 구조·읽기 채널·범위·복구/side effect 설명 | resource_id 필수 | descriptor, 채널별 availability, visible/logical/total count, continuation |
 | read_component_data | LLM이 선택한 지원 채널로 bounded 데이터 읽기 | resource_id/channel 필수, cursor/limit 선택 및 채널별 typed 인자 | typed data, masking, coverage/EOF, continuation, 복구 결과 |
+
+S18 Browser-local 구현은 [S18 증거](evidence/s18-workflow-resources-2026-10-10.md)를 따른다.
+목록과 원본의 opaque ID/revision/cursor는 request-local이며 실제 executor가 있는 경우에만
+Provider에 노출한다. source filter의 coverage는 선택 범위에 한정한다. 원본 마스킹으로
+의미가 빠지거나 선택 후보를 끝까지 읽지 못하면 needs_context로 제한한다.
+선택 후 최신 catalog/Profile/페이지 binding을 다시 확인하며 원본 hash는 모델에 노출하지 않는다.
+기존 v1 저장·서명 계약을 유지하고 변경 초안을 원본이나 Profile에 설치하지 않는다.
+이 구현 증거가 아래 S19/S20의 Proposed 계약까지 완료함을 뜻하지 않는다.
 
 ### 16.4 공통 호출·결과 반환·동의 처리
 
