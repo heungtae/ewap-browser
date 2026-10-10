@@ -14,7 +14,7 @@
 
 ## 비교 기준
 
-- 우리 설계: 2026-08-17 현재 작업 트리의 `docs/01-architecture.md`, `docs/02-security-policy.md`, `docs/04-llm-provider-plugin.md`, `docs/06-data-audit-and-privacy.md`
+- 우리 설계: 2026-08-17 현재 작업 트리의 [docs/01-architecture.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/01-architecture.md), [docs/02-security-policy.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/02-security-policy.md), [docs/04-llm-provider-plugin.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/04-llm-provider-plugin.md), [docs/06-data-audit-and-privacy.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/06-data-audit-and-privacy.md)
 - WebBrain: 로컬 `webbrain` 링크가 가리키는 upstream checkout의 commit `70271912921afa4c208a62b1408f99a0b9e7d7f1`
 - 비교 대상: 사용자 인증, LLM provider 인증, 제품 계정, 웹사이트 세션, 행동 인가, credential 보관과 이동
 
@@ -120,10 +120,10 @@ WebBrain은 다음 제품 기능을 우선한다.
 
 우리 설계:
 
-- `docs/01-architecture.md`
-- `docs/02-security-policy.md`
-- `docs/04-llm-provider-plugin.md`
-- `docs/06-data-audit-and-privacy.md`
+- [docs/01-architecture.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/01-architecture.md)
+- [docs/02-security-policy.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/02-security-policy.md)
+- [docs/04-llm-provider-plugin.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/04-llm-provider-plugin.md)
+- [docs/06-data-audit-and-privacy.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/06-data-audit-and-privacy.md)
 - `docs/sprint-progress.md`
 
 WebBrain checkout:

@@ -1,56 +1,37 @@
-# EWAP Browser / ContextPilot 설계서
+# ContextPilot 문서 안내
 
-ContextPilot은 한 사용자가 자신의 Chrome profile에 설치해 현재 로그인 세션을 대상으로 Ask/Act 작업을 실행하는 로컬 우선 MV3 확장이다. 현재 검증된 제품 계정/SSO/조직 RBAC/Cloud Sync는 없으며 managed PDP/evidence 연결은 부분 구현이다. LLM 연결은 사용자가 설치·선택하는 provider plugin과 로컬 설정으로 구성한다.
+현재 동작의 SSOT는 [구현 코드](../extension/src), [런타임 계약](../extension/src/contracts),
+[manifest](../extension/manifest.json)와 설정이다. 구현을 확인할 때는
+[코드 탐색 안내](source-guide.md)에서 실제 진입점·schema·executor를 따라간다.
+[테스트](../extension/tests)는 실행 가능한 검증이고, [증거](evidence/README.md)는
+기록된 revision·환경·시나리오의 결과다.
 
-[Platform alignment](platform-alignment.md)는 2026-09-06의 실제 구현 인벤토리, AS-IS/TO-BE, 계약 충돌과 후속 과제의 기준이다. 공유 EWAP 계약이 최우선이며 Platform 설계의 Proposed 기능을 현재 Browser 지원으로 읽지 않는다. 과거 sprint·참고자료는 당시 기록이며 최신 통합 상태를 대체하지 않는다.
+## 사용하는 문서
 
-- [Platform 정렬과 AS-IS/TO-BE](platform-alignment.md)
-- [아키텍처](01-architecture.md)
-- [보안 및 행동 정책](02-security-policy.md)
-- [확장 설계](03-extension-design.md)
-- [LLM provider plugin과 인증](04-llm-provider-plugin.md)
-- [배포](05-deployment-operations.md)
-- [데이터, 감사 및 개인정보 경계](06-data-audit-and-privacy.md)
-- [검증](07-verification-and-release.md)
-- [테스트 실행 가이드](test.md)
-- [S17 계획·실행 결과 피드백 구현·검증](evidence/s17-plan-feedback-2026-10-09.md)
-- [S15 / PAH-9 수정·최종 live 검증](evidence/s15-live-fix-2026-10-09.md)
-- [S15 / PAH-9 수정 전 OpenAI 검증](evidence/s15-live-openai-verification-2026-10-09.md)
-- [S17 OpenAI live 검증](evidence/s17-live-openai-luna-2026-10-09.md)
-- [S18 workflow 목록·원본·live 검토 증거](evidence/s18-workflow-resources-2026-10-10.md)
-- [Sprint 설계 인덱스](sprint-design.md)
-- [Sprint 개발 계획](sprint-development-plan.md)
-- [Sprint 검증 계획](sprint-verification-plan.md)
-- [Sprint 진행 상태](sprint-progress.md)
-- [S15 / PAH-9 구현·검증 결과](evidence/s15-pah-9-closure-2026-10-08.md)
-- [S16 페이지 script 도구 구현·검증 결과](evidence/s16-script-tool-loop-2026-10-08.md)
-- [S16 Nemotron live Provider 재검증 — 2026-10-09](evidence/s16-live-nemotron-2026-10-09.md)
-- [S16 live 실패 수정·완료 검증 — 2026-10-09](evidence/s16-live-tool-loop-fix-2026-10-09.md)
-- [S20 Browser-local 종합 검증과 live 실패·재실행 증거](evidence/s20-qualification-2026-10-10.md)
-- [구현 실행 명세](12-low-cost-agent-implementation-spec.md)
-- [사이트 도구 및 모델 계약](13-site-tool-contract.md)
-- [Semantic Projection 계약](14-semantic-projection-fingerprint.md)
-- [Level 2 Bounded CDP adapter](15-bounded-cdp-adapter.md)
-- [Accessible items 데모](16-accessible-items-demo.md)
-- [로컬 예제별 Side Panel 요청 메시지](../examples/example-request-messages.md)
-- [Claude 브라우저 기능 채택 설계](17-claude-browser-capability-adoption-design.md)
-- [Claude 브라우저 기능 채택 검증계획](18-claude-browser-capability-verification-plan.md)
-- [탭 범위 Chat Session과 LLM 문맥 설계](19-tab-scoped-chat-session-design.md)
-- [안정성 중심 구조 리팩터링 설계](20-stability-refactoring-design.md)
-- [선언형 다단계 Act Workflow 설계](21-declarative-act-workflow-design.md)
-- [Page Profile 배포·신뢰·MCP 설계](22-page-profile-provider-design.md)
-- [Service Worker composition 리팩터링 계획](23-service-worker-composition-refactoring-plan.md)
-- [Act 실행 정지 방지와 개발용 실행 추적 설계](24-act-liveness-and-diagnostics-design.md)
-- [Act 완료 조건과 비동기 화면 갱신 검증](25-act-completion-conditions.md)
-- [화면 변경 후 Act 결과 미확인 개선 설계](26-act-result-observation-design.md)
-- [페이지 내부 함수·공개 API 실행 설계 — 구현 인계](27-page-api-execution-design.md)
-- [객체 특성별 Collection Reading 설계 — Planned](28-collection-reading-strategy-design.md)
-- [Page API Discovery 설계 — Planned](29-page-api-discovery-design.md)
-- [Act 요청 처리 현재 구현 경로](31-act-request-execution-current-implementation.md)
-- [Ask/Act 분석 데이터 수집 통합 설계 — Proposed](32-ask-act-analysis-data-acquisition-design.md)
-- [Ask 요청 처리 현재 구현 경로](33-ask-request-execution-current-implementation.md)
-- [현재 페이지의 문맥 수집과 LLM 기반 Act Harness 상세 설계](34-page-act-context-harness-design.md)
+| 목적                                | 문서                                                                                                                        |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 기능의 실제 구현 위치               | [코드 탐색 안내](source-guide.md)                                                                                           |
+| 로컬 설치·업데이트·복구             | [Community 설치](community-installation.md)                                                                                 |
+| 개발·통제 Chrome·live Provider 검증 | [테스트 실행 가이드](test.md)                                                                                               |
+| 로컬 예제 실행                      | [Accessible items 데모](accessible-items-demo.md), [Collection Reading 데모](../examples/collection-reading-demo/README.md) |
+| 예제별 요청과 재현                  | [요청 메시지](../examples/example-request-messages.md), [Chrome 요청 테스트](../examples/chrome-request-tests.md)           |
+| 진단 추적 확인                      | [메서드 실행 진단](reference/method-execution-diagnostics.md)                                                               |
+| 실행 결과와 미검증 범위             | [검증 증거](evidence/README.md)                                                                                             |
+| 개발 이력·배포 후속 작업            | [Sprint 목록](sprints/README.md), [진행 기록](sprint-progress.md)                                                           |
+| 교차 저장소 계약 후속 과제          | [Platform 정렬 backlog](platform-alignment.md)                                                                              |
+| 외부 제품 비교 배경                 | [비규범 참고자료](references/README.md)                                                                                     |
 
-## 비규범 참고자료
+## 문서 유지 기준
 
-- [읽기 전용 참고자료](references/README.md) — 배경 이해와 비교 검토에만 사용하며 요구사항, 설계 결정, 구현 또는 검증 근거로 사용하지 않는다.
+구현 동작·도구 목록·TypeScript 계약을 설계서에 복제하지 않는다. 모듈이 이동하면
+코드 안내의 링크를 갱신하고, 동작을 바꾸면 해당 테스트와 필요한 실행 증거를 갱신한다.
+새 문서는 설치·운영·검증에 필요한 설명이나 구현 전 남은 작업을 담을 때 추가한다.
+미구현 작업은 backlog로 표시하고 현재 지원으로 소개하지 않는다.
+
+Sprint와 날짜가 붙은 검증 기록은 당시 상태를 보존한다. 과거 PASS는 현재 revision의
+실행 결과가 아니며, 통제 fixture·live Provider·Platform 통합·실제 배포는 각각의
+증거 범위로 읽는다. 완료 여부를 확인할 때는 코드와 해당 범위의 실행 결과를 함께 본다.
+
+중복 설계·구현 인벤토리·과거 실행 계획은 작업 트리에서 제거했다. 과거 기록이
+참조하는 설계는 삭제 전 Git revision으로 연결하며 `git show REVISION:PATH`로도
+확인할 수 있다. Git 이력이 과거 설계를 보관하므로 별도 archive 사본을 만들지 않는다.

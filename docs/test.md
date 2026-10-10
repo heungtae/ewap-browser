@@ -2,8 +2,10 @@
 
 ## 범위와 사전 검증
 
-S16 페이지 script 탐색과 S17 계획·실행 결과 피드백의 통제 Chrome/live Provider 테스트 기준이다.
-명령은 저장소 루트에서 실행한다. 의존성은 `pnpm install --frozen-lockfile`로 설치한다.
+개발 검사와 통제 Chrome/live Provider 테스트를 실행하는 가이드다.
+명령과 실제 지원 옵션의 SSOT는 [package.json](../package.json)과 [scripts](../scripts)다.
+명령은 저장소 루트에서 실행하고 고정된 `pnpm@9.15.4`를 사용한다.
+의존성은 `pnpm install --frozen-lockfile`로 설치한다.
 현재 변경 범위에 맞춰 다음 검사를 실행하고 결과를 기록한다.
 
 ```bash
@@ -17,6 +19,19 @@ pnpm test:e2e
 `pnpm build`와 `pnpm test`는 extension 버전을 증가시킨다.
 검증만 수행할 때는 아래 버전 보존 빌드를 사용한다.
 
+```bash
+pnpm exec tsc -p tsconfig.build.json
+node scripts/build-extension.mjs
+pnpm validate:package
+pnpm check:method-trace
+pnpm test:release
+```
+
+모듈 경계를 변경한 경우 `pnpm check:module-boundaries`를 추가한다.
+로컬 ZIP은 `pnpm package:local`로 만들고 설치·업데이트·복구는
+[설치 가이드](community-installation.md)를 따른다. 빌드·패키지 검사 통과는
+Chrome·live Provider·Platform 통합이나 실제 배포의 성공과 별도로 기록한다.
+
 ## Live Provider 기본 설정
 
 2026-10-09 사용자가 지정한 아래 설정을 다음 live 테스트에도 사용한다.
@@ -27,7 +42,7 @@ pnpm test:e2e
 | Provider    | OpenRouter, `https://openrouter.ai/api/v1/chat/completions`                                      |
 | 모델        | `nvidia/nemotron-3.5-lightning:free`                                                             |
 | 인증        | 실행 환경의 `OPENROUTER_API_KEY` 사용. 키 값은 문서·Git·로그·evidence에 저장하지 않음            |
-| 실행 도구   | `npm run test:chrome-s16`                                                                        |
+| 실행 도구   | `pnpm test:chrome-s16`                                                                           |
 | live 활성화 | `S16_LIVE_MODEL`에 위 모델을 명시. 생략하면 통제 Provider 테스트이므로 live 결과로 기록하지 않음 |
 | Chrome      | 설치된 Chrome for Testing 실행 파일을 `CHROME_FOR_TESTING_BIN`으로 지정                          |
 | 결과        | `S16_REPORT`에 실행별 새 경로를 지정하고, 비밀값·소스 원문을 제외한 요약을 evidence로 기록       |
@@ -37,11 +52,11 @@ pnpm test:e2e
 
 ```bash
 test -n "${OPENROUTER_API_KEY:-}" || { echo 'OPENROUTER_API_KEY is required'; exit 1; }
-npx tsc -p tsconfig.build.json && node scripts/build-extension.mjs && node scripts/validate-package.mjs
+pnpm exec tsc -p tsconfig.build.json && node scripts/build-extension.mjs && node scripts/validate-package.mjs
 CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome \
 S16_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free \
 S16_REPORT="/tmp/s16-live-nemotron-$(date +%Y%m%d-%H%M%S).json" \
-npm run test:chrome-s16
+pnpm test:chrome-s16
 ```
 
 판정은 [S16 검증 행렬](sprints/s16-page-script-tool-loop.md#검증-행렬)의 S16-R1~R6을 따른다. live 실행에서는 실제 offered schema,
@@ -212,7 +227,7 @@ partial/needs_context는 match로 바꾸지 않으며 추가 확인 없이 실�
 
 ## S19 Component·vision 테스트
 
-버전 보존 빌드 후 `pnpm test:chrome-s19`을 실행한다. 기본 전체 21건이 통과했다.
+버전 보존 빌드 후 `pnpm test:chrome-s19`을 실행한다. 기본 전체 실행은 21건을 검증한다.
 펼침·페이지 이동은 계획 검토를 명시한 prompt로 계획·동작 승인 뒤 새 데이터 읽기와
 최종 판단 UI를 확인한다. 같은 요청의 새 feedback을 기다리며 partial 판단은 그대로 보존한다.
 지원 읽기 채널 19건만 검증할 때는 다음처럼 명시적으로 선택한다.

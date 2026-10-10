@@ -1,9 +1,12 @@
 # Browser Act S20 — 전체 도구 루프의 live 검증과 호환성
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 상태와 진입 조건
 
 **Completed (Browser-local qualification) — 2026-10-10.** 의존성: S15/PAH-9와 S16~S19의 연결 기능·단계별 증거.
-기준은 [34번 설계](../34-page-act-context-harness-design.md)의 10~12·16절이다.
+기준은 [34번 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md)의 10~12·16절이다.
 앞 단계에서도 live 검증을 수행하며, 이 Sprint는 이를 전체 요청과 오류 경로로 종합한다.
 
 [구현·검증·실패 이력](../evidence/s20-qualification-2026-10-10.md)을 기준으로 닫았다.
@@ -61,7 +64,7 @@ Provider와 Chrome에서 증명한다. Browser-local, 통제 Provider, live reas
 
 ## 관련 문서
 
-- [전체 PAH 계획](../sprint-page-act-context-harness-plan.md)
+- [전체 PAH 계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-page-act-context-harness-plan.md)
 - [S15 / PAH-9](s15-pah-9-llm-input-value-binding.md)
 - [S16 Script 탐색](s16-page-script-tool-loop.md)
 - [S17 계획·실행 피드백](s17-act-plan-execution-feedback.md)

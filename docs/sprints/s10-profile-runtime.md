@@ -1,5 +1,8 @@
 # S10 — Browser 로컬 Page Profile 수락 (Completed)
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 완료 범위
 
 현행 Browser `schema_version: 1` compact ES256 JWS Profile의 검증과
@@ -26,11 +29,11 @@ Profile version 1→2 수락 후 Worker를 재시작하고 version 1을 거부�
 SignedRelease의 소비를 뜻하지 않는다. release 활성/철회 확인,
 `semanticId`의 현재 Semantic Projection binding, Platform trust endpoint는
 현행 Browser에 구현되지 않았다. 그 요구는
-[Page Profile 배포·신뢰 설계](../22-page-profile-provider-design.md)의 목표
+[Page Profile 배포·신뢰 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/22-page-profile-provider-design.md)의 목표
 계약으로 남으며 이 S10의 완료 항목이나 검증 주장에 포함하지 않는다.
 Community Ask/Act의 Profile 미설정 fallback도 유지한다.
 
 ## 관련 문서
 
-- [Sprint 검증 계획](../sprint-verification-plan.md)
+- [Sprint 검증 계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-verification-plan.md)
 - [기존 Page API/Discovery Browser 계획](s10-page-api-discovery-handoff.md)

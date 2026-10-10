@@ -1,5 +1,8 @@
 # S12 — 진단 다운로드 ZIP
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 > 이 문서는 과거 Browser 진단 ZIP의 S12-C1~C6 계획이다. 현재 Sprint 원장의
 > S12는 [Browser 로컬 managed policy 경계](s12-managed-policy-boundary.md)이며,
 > 이 카드의 미검증 항목을 S12 `Completed` 근거로 사용하지 않는다.
@@ -51,4 +54,4 @@ Windows 및 live provider 검증은 이 종료 범위에 포함하지 않는다.
 
 ## 참고 문서
 
-- [30. 진단 다운로드 ZIP 설계](../30-diagnostics-download-design.md)
+- [30. 진단 다운로드 ZIP 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/30-diagnostics-download-design.md)

@@ -1,5 +1,8 @@
 # S10-R — Browser Page API 취소·요청 바인딩 보강
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 상태와 우선순위
 
 **Completed — 2026-10-01. Browser 로컬 fixture 범위.** 기존 Browser
@@ -84,8 +87,8 @@ R-06, 정상 승인·권한 경로를 실제 UI로 검증한다. 지연과 호�
 
 - [Sprint 진행 상태](../sprint-progress.md)
 - [기존 S10 검증 증거](../evidence/s10-page-api-closure-2026-10-01.md)
-- [Page API 실행 설계](../27-page-api-execution-design.md)
-- [Act 요청 처리 현재 구현 경로](../31-act-request-execution-current-implementation.md)
+- [Page API 실행 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/27-page-api-execution-design.md)
+- [Act 요청 처리 현재 구현 경로](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/31-act-request-execution-current-implementation.md)
 
 ## 구현 결과
 

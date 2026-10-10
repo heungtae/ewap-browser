@@ -1,9 +1,12 @@
 # Browser Act S16 — 페이지 script 탐색과 도구 결과 반환
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 상태와 진입 조건
 
 **Completed — 2026-10-09.** Browser-local Act 후속 개발 단계다.
-기준은 [34번 설계 16절](../34-page-act-context-harness-design.md#16-도구-사용법-제공과-llm-탐색실행-루프의-완성)이다.
+기준은 [34번 설계 16절](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md#16-도구-사용법-제공과-llm-탐색실행-루프의-완성)이다.
 현재 Act의 UI 읽기 loop와 request/document 결속을 재사용한다. 입력 요청 회귀는
 [S15 / PAH-9](s15-pah-9-llm-input-value-binding.md)의 변경 계약을 따른다.
 구현과 검증은 [2026-10-08 증거](../evidence/s16-script-tool-loop-2026-10-08.md)를 따른다.
@@ -63,4 +66,4 @@ Provider·모델·인증 환경 변수·빌드와 실행 명령·결과 기록 �
 - evidence에 명령·provider/model/prompt/artifact revision, 호출·범위·실패·미검증 항목을 기록한다.
 
 다음 단계는 [S17](s17-act-plan-execution-feedback.md)이다. 문서 작성만으로 완료하거나
-다음 개발을 자동 시작하지 않는다. 전체 단계는 [PAH 계획](../sprint-page-act-context-harness-plan.md)에 연결한다.
+다음 개발을 자동 시작하지 않는다. 전체 단계는 [PAH 계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-page-act-context-harness-plan.md)에 연결한다.

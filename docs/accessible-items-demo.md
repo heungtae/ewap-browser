@@ -32,7 +32,7 @@ scripts/run-examples.sh accessible-items-demo
 ## Chrome 자동 회귀 검증
 
 ```bash
-CHROME_FOR_TESTING_BIN=/path/to/chrome npm run test:chrome-accessible-items
+CHROME_FOR_TESTING_BIN=/path/to/chrome pnpm test:chrome-accessible-items
 ```
 
 새 임시 Chrome profile과 local HTTPS Provider fixture로 17개 케이스를 실행한다.

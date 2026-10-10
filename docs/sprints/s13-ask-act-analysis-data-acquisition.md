@@ -1,5 +1,8 @@
 # S13 — Ask/Act 분석 데이터 수집 연결 (Completed)
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 > Browser 분석 수집 S13-C1~C8은 2026-10-04 실제 Chrome과 통제 HTTPS
 > Provider fixture 범위에서 Completed다. Enterprise 전환 원장의
 > [Browser 로컬 Act evidence](s13-runtime-evidence-browser.md)와 별도 판정이다.
@@ -84,6 +87,6 @@ proposal을 표시하거나 실행하지 않는다.
 
 ## 참고 문서
 
-- [31. Act 요청 처리 현재 구현](../31-act-request-execution-current-implementation.md)
-- [32. Ask/Act 분석 데이터 수집 통합 설계](../32-ask-act-analysis-data-acquisition-design.md)
-- [33. Ask 요청 처리 현재 구현](../33-ask-request-execution-current-implementation.md)
+- [31. Act 요청 처리 현재 구현](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/31-act-request-execution-current-implementation.md)
+- [32. Ask/Act 분석 데이터 수집 통합 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/32-ask-act-analysis-data-acquisition-design.md)
+- [33. Ask 요청 처리 현재 구현](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/33-ask-request-execution-current-implementation.md)

@@ -1,5 +1,8 @@
 # S12 — Browser 로컬 managed policy 경계 (Completed)
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 완료 범위
 
 현행 Browser의 선택적 `chrome.storage.managed` 설정과 Act proposal PDP

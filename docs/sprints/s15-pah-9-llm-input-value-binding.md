@@ -1,7 +1,10 @@
 # PAH-9 — LLM의 입력값 판단·자동 입력·추가 질문
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 상태: Completed (Browser-local, 지정 fixture·OpenAI 모델 범위). 추가일: 2026-10-06. 의존성: PAH-3의 모델 continuation,
-PAH-6의 승인·실행 연결. 기준: [상세 설계 9.1절](../34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속).
+PAH-6의 승인·실행 연결. 기준: [상세 설계 9.1절](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속).
 2026-10-08: 구현·단위/계약·통제 Provider+Chrome 6건 및 실제 진단 ZIP 검증을 수행했다.
 실제 Provider의 질문 도구 선택·continuation 종료·holdout 완료가 아직 일관되게 통과하지
 않아 Completed는 보류한다. [최신 검증 기록](../evidence/s15-pah-9-closure-2026-10-08.md)과
@@ -74,6 +77,6 @@ live Provider + Chrome의 값 판단 증거를 각각 기록한다. holdout에�
 
 ## 관련 문서
 
-- [전체 PAH Sprint 계획](../sprint-page-act-context-harness-plan.md)
-- [34번 상세 설계](../34-page-act-context-harness-design.md)
+- [전체 PAH Sprint 계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-page-act-context-harness-plan.md)
+- [34번 상세 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md)
 - [기존 PAH 구현 증거](../evidence/pah-implementation-record.md)

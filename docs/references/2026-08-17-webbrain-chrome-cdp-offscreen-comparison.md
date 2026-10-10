@@ -14,7 +14,7 @@
 
 ## 비교 기준
 
-- 현재 제품 설계: 2026-08-17 작업 트리의 `docs/01-architecture.md`, `docs/03-extension-design.md`, `docs/sprint-progress.md`, `docs/15-bounded-cdp-adapter.md`
+- 현재 제품 설계: 2026-08-17 작업 트리의 [docs/01-architecture.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/01-architecture.md), [docs/03-extension-design.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/03-extension-design.md), `docs/sprint-progress.md`, [docs/15-bounded-cdp-adapter.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/15-bounded-cdp-adapter.md)
 - 현재 제품 구현: `extension/manifest.json`, `extension/src/content/`, `extension/src/service-worker/`
 - WebBrain 구현: 로컬 `webbrain` 링크가 가리키는 checkout의 commit `70271912921afa4c208a62b1408f99a0b9e7d7f1`
 - WebBrain 근거: `src/chrome/manifest.json`, `src/chrome/src/cdp/`, `src/chrome/src/offscreen/`, `src/chrome/src/agent/agent.js`, `src/chrome/ARCHITECTURE.md`
@@ -22,7 +22,7 @@
 
 현재 제품의 Sprint 상태는 모두 `Planned`다. 따라서 아래에서는 규범 설계, 작업 트리의 scaffold 구현과 WebBrain의 실제 구현을 같은 수준의 완성도로 간주하지 않는다.
 
-`references/company-web-agent-detailed-design(1).md`는 과거 원본 참고자료다. 현재 번호가 붙은 규범 설계는 별도 검토를 거쳐 더 좁은 action-scoped Level 2 bounded CDP를 채택했다. 과거 문서의 전체 command 범위나 run-scoped lifecycle은 현재 계약으로 해석하지 않는다. 작업 트리의 manifest와 구현은 아직 이 설계를 반영하지 않았으며 S2 상태는 `Planned`다.
+[references/company-web-agent-detailed-design(1).md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/references/company-web-agent-detailed-design%281%29.md)는 과거 원본 참고자료다. 현재 번호가 붙은 규범 설계는 별도 검토를 거쳐 더 좁은 action-scoped Level 2 bounded CDP를 채택했다. 과거 문서의 전체 command 범위나 run-scoped lifecycle은 현재 계약으로 해석하지 않는다. 작업 트리의 manifest와 구현은 아직 이 설계를 반영하지 않았으며 S2 상태는 `Planned`다.
 
 ## 수준 정의
 
@@ -218,7 +218,7 @@ WebBrain의 높은 수준은 제품 범위와 호환성을 위한 선택이고, 
 
 ## 채택된 CDP 경계와 향후 offscreen 검토
 
-CDP 항목은 `docs/15-bounded-cdp-adapter.md`의 규범 결정으로 채택됐고 구현은 S2 `Planned`다. offscreen 항목은 여전히 비규범 검토사항이다.
+CDP 항목은 [docs/15-bounded-cdp-adapter.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/15-bounded-cdp-adapter.md)의 규범 결정으로 채택됐고 구현은 S2 `Planned`다. offscreen 항목은 여전히 비규범 검토사항이다.
 
 ### 채택된 bounded CDP
 
@@ -244,7 +244,7 @@ WebBrain 전체 command surface를 복제하지 않고 Level 2 adapter를 다음
 - consumer 장애 격리, reconnect, cancellation과 stale response 처리
 - recording, model inference와 cloud bridge처럼 범위 밖 기능의 reason 선등록 금지 여부 검토
 
-Offscreen을 실제 개발 범위로 채택할 때는 `docs/01-architecture.md`, `docs/02-security-policy.md`, `docs/03-extension-design.md`, Sprint 문서와 verification plan에 계약과 negative test를 반영해야 한다.
+Offscreen을 실제 개발 범위로 채택할 때는 [docs/01-architecture.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/01-architecture.md), [docs/02-security-policy.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/02-security-policy.md), [docs/03-extension-design.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/03-extension-design.md), Sprint 문서와 verification plan에 계약과 negative test를 반영해야 한다.
 
 ## 참고한 로컬 근거
 
@@ -257,11 +257,11 @@ Offscreen을 실제 개발 범위로 채택할 때는 `docs/01-architecture.md`,
 - `extension/src/service-worker/entry.ts`
 - `scripts/chrome-preview-e2e.mjs`
 - `scripts/chrome-extension-smoke.mjs`
-- `docs/01-architecture.md`
-- `docs/03-extension-design.md`
+- [docs/01-architecture.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/01-architecture.md)
+- [docs/03-extension-design.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/03-extension-design.md)
 - `docs/sprint-progress.md`
-- `docs/15-bounded-cdp-adapter.md`
-- `references/company-web-agent-detailed-design(1).md`
+- [docs/15-bounded-cdp-adapter.md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/15-bounded-cdp-adapter.md)
+- [references/company-web-agent-detailed-design(1).md](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/references/company-web-agent-detailed-design%281%29.md)
 
 WebBrain checkout `70271912921afa4c208a62b1408f99a0b9e7d7f1`:
 

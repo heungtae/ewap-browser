@@ -4,7 +4,7 @@
 
 **기존 P1 두 건의 재현은 해소됐으나 P2 세 건이 남아 설계 적합성 완료 판정을 보류한다.**
 이 기록은 [최초 리뷰](s15-pah-9-design-review-2026-10-07.md)의 R1~R6 수정 재검토다.
-[34번 설계 9.1절](../34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속)과
+[34번 설계 9.1절](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속)과
 [S15 / PAH-9 완료 기준](../sprints/s15-pah-9-llm-input-value-binding.md)을 따른다.
 
 - 검토 대상: `HEAD fadab78fe4aa79ba3d50f7fadebd3cd4c07e2a77` 위의 수정된

@@ -1,57 +1,61 @@
-# Community 0.1.88 설치와 지원 범위
+# Community 설치·업데이트·복구
 
-Community는 Platform과 EWAP 제품 계정 없이 사용한다. 모델 Provider는 사용자가
-직접 준비한다. Provider 비용과 사용 가능 여부는 해당 서비스에 따른다.
-현재 검증 범위는 Linux x86_64 / Chrome for Testing 147.0.7727.15의
-로컬 ZIP을 풀어 설치하는 경로다. Windows, Chrome Web Store 설치 및 외부
-live Provider/운영 사이트는 검증하지 않았다. 대외 공개 릴리스는 아직 아니다.
+현재 빌드의 이름·버전·최소 Chrome 버전·권한은 [manifest](../extension/manifest.json),
+개발 명령은 [package.json](../package.json)에서 확인한다. 기능별 실행 경로는
+[코드 안내](source-guide.md)를 따른다. Provider 연결 정보는 사용자가 Settings에서 준비한다.
 
-## 설치
+## 빌드와 로컬 설치
 
-1. `dist/contextpilot-0.1.88.zip`을 별도 폴더에 압축 해제한다.
-2. Chrome의 `chrome://extensions`에서 개발자 모드를 켠다.
-3. **압축해제된 확장 프로그램을 로드합니다**로 해당 폴더를 선택한다.
-4. 확장 프로그램의 옵션에서 OpenAI-compatible Provider URL, 모델과 필요한
-   인증 정보를 입력하고 저장한다. 제품 계정 로그인은 필요하지 않다.
-5. 작업할 웹 페이지에서 Chrome Side Panel의 ContextPilot을 열어 Ask 또는
-   Act를 선택한다. 요청된 권한과 실행 검토를 확인한 뒤 진행한다.
+설치된 개발 의존성으로 버전을 올리지 않고 현재 코드를 빌드·패키징한다.
+처음 개발 환경을 준비할 때는 [테스트 가이드](test.md#범위와-사전-검증)를 따른다.
 
-API key는 Settings에서 저장하며 내보내기나 진단 파일에 포함되지 않는다.
-HTTP localhost/사설망 Provider는 명시적 사이트 접근 권한이 필요하다.
-권한 질문 생략은 기본값이 아니며 확인 문구가 필요하다. credential 차단,
-위험 작업 확인, 저장된 deny와 제한 페이지 정책은 유지된다.
+```bash
+pnpm exec tsc -p tsconfig.build.json
+node scripts/build-extension.mjs
+pnpm validate:package
+pnpm package:local
+```
 
-## 지원 기능과 경계
+1. 로컬 개발은 Chrome의 `chrome://extensions`에서 개발자 모드를 켜고
+   **압축해제된 확장 프로그램을 로드합니다**로 `dist-extension/`을 선택한다.
+2. ZIP 설치는 패키징 결과의 `dist/contextpilot-<version>.zip`을 별도 폴더에
+   압축 해제하고 그 폴더를 같은 방식으로 로드한다. 버전은 명령 출력에서 확인한다.
+3. 확장 옵션의 Settings에서 Provider URL·모델·인증 정보를 저장한다.
+4. 작업할 웹 페이지에서 ContextPilot Side Panel을 열고 Ask 또는 Act를 실행한다.
+   페이지·소스·vision 접근 권한과 계획·동작 검토는 실제 UI 안내를 따른다.
 
-- Ask/Act, OpenAI-compatible chat/responses, 선언형 Provider plugin 관리,
-  Settings와 권한 철회, streaming과 Stop, Panel 재연결.
-- 페이지 읽기/찾기, 허용한 screenshot/zoom, 단일 table/grid/list 읽기와
-  분석 데이터 획득. 모호하거나 지원하지 않는 데이터/adapter는 차단한다.
-- 로컬 기록 Workflow의 조회·선택 및 실행 전 페이지 재검증.
-- redacted diagnostics와 ZIP export.
-- 일반 페이지의 Act는 지원하는 페이지 기반 action/검증 경계에 한정한다.
-  임의 클릭과 모든 사이트 자동화의 성공을 보장하지 않는다. signed Profile과
-  Profile-bound MCP는 선택 기능이며 해당 Resolver/fixture 설정이 별도로 필요하다.
-- Enterprise 관리 설정이 있으면 손상·읽기 실패·PDP deny/장애를 차단한다.
-  관리 정책을 삭제하거나 Community로 자동 전환하여 우회하지 않는다.
+패키지 생성은 공개 업로드·Chrome Web Store 배포와 구분한다.
+`pnpm build`와 `pnpm test`는 patch 버전을 올리므로 위의 재생성 명령과 구분한다.
+
+## 설정과 문제 확인
+
+API key는 Settings의 secret 입력으로 저장한다. 공유용 설정·진단에는 실제 key나
+인증 header를 넣지 않는다. 설정을 수정한 뒤 Provider 연결 시험과 새 요청으로 확인한다.
+HTTP localhost·사설망 Provider는 해당 사이트 접근 권한이 필요하다.
+
+권한을 철회하거나 permission mode를 변경하면 새 요청으로 동작을 확인한다.
+managed 설정이 요구하는 외부 서비스가 실패할 때는 관리 설정을 제거해 우회하지 않는다.
+실패 원인은 Side Panel의 실행 상세·진단에서 확인하고, 재현 시 확장 버전·명령·환경과
+민감값을 제거한 결과를 기록한다. [메서드 진단](reference/method-execution-diagnostics.md)을 참조한다.
 
 ## 업데이트와 복구
 
-Chrome을 종료하고 현재 확장 폴더를 백업한다. 같은 폴더 경로에 새 ZIP 내용을
-교체한 뒤 Chrome을 재시작한다. 복구는 Chrome 종료 후 같은 경로에 이전 ZIP
-내용을 복원한다. 다른 경로에 새 확장으로 설치하면 기존 확장 ID와 저장소의
-보존을 기대할 수 없다. 현재 검증한 조합은 0.1.87 → 0.1.88 → 0.1.87이다.
-Provider 공개 설정, permission mode와 저장된 deny를 확인했다. 이전 대화는
-browser session 데이터라 Chrome 재시작 후 유지되지 않는다. 실제 credential
-보존과 다른 schema 버전 간 migration은 이번 검증에 포함되지 않는다.
+Chrome을 종료하고 현재 확장 폴더를 백업한다. 같은 경로에 새 ZIP 내용을 교체한 뒤
+Chrome을 재시작한다. 복구는 Chrome 종료 후 같은 경로에 이전 ZIP을 복원한다.
+다른 경로에 설치하면 기존 확장 ID와 저장소의 보존을 기대할 수 없다.
+대화는 browser session 데이터이므로 Chrome 재시작 후 영구 보존을 전제로 하지 않는다.
 
-## 재현
+Settings·Provider 공개 설정·실제 credential·저장된 deny·schema migration을 각각 확인한다.
+업데이트 전후의 버전·artifact digest·설치 경로·Chrome/OS·검증 결과를 남긴다.
 
-`npm run test:chrome-community`는 깨끗한 Chrome profile에서 Platform 설정
-없이 Ask/Act를 실행하고 Resolver/business 요청 0건, 승인·권한·입력값 gate,
-secret 비노출과 debugger detach를 확인한다. `CHROME_FOR_TESTING_BIN`이 필요하다.
-빌드/패키징은 `npm run build`, `npm run test:release`, `npm run package:local`이다.
-`build`는 patch 버전을 올린다. 동일 artifact 재생성에는
-`node scripts/build-extension.mjs`를 사용한다.
+## 검증 기록과 재현
 
-[현재 검증 증거](evidence/community-readiness-2026-10-04.md)를 따른다.
+[2026-10-04 Community 증거](evidence/community-readiness-2026-10-04.md)는
+Linux Chrome for Testing의 unpacked ZIP 설치와 0.1.87 → 0.1.88 → 0.1.87 검증 기록이다.
+Windows·스토어 설치·대외 업로드·실제 credential migration의 검증을 뜻하지 않는다.
+이 기록의 버전과 PASS를 새 패키지의 결과로 재사용하지 않는다.
+
+`CHROME_FOR_TESTING_BIN`을 지정하고 `pnpm test:chrome-community`로 Platform 없이
+시작하는 통제 fixture 경로를, `pnpm test:chrome-s9`로 로컬 update/rollback 경로를 검증한다.
+나머지 Chrome·live 실행은 [테스트 가이드](test.md), 실제 공개 배포·Enterprise 통합은
+[후속 backlog](sprints/community-release-enterprise-followup.md)를 따른다.

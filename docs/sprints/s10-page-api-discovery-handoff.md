@@ -1,5 +1,8 @@
 # Browser S10 — Page API 실행·Discovery 검증 및 Adapter Handoff
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 현재 Sprint 원장의 S10은 [Browser 로컬 Profile 수락](s10-profile-runtime.md)을
 뜻한다. 이 문서의 S10-C1~C5 표기는 이전 Browser 작업 카드 이름으로
 보존하며 현재 S10 완료 조건으로 해석하지 않는다.
@@ -91,5 +94,5 @@ UI generation 불일치로 폐기한다.
 
 ## 참고 문서
 
-- [27. Page API 실행 설계](../27-page-api-execution-design.md)
-- [29. Page API Discovery 설계](../29-page-api-discovery-design.md)
+- [27. Page API 실행 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/27-page-api-execution-design.md)
+- [29. Page API Discovery 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/29-page-api-discovery-design.md)

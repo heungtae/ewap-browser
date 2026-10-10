@@ -1,8 +1,11 @@
 # S6 — 현재 페이지 고급 읽기
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 목표와 종료 범위
 
-[33번 Ask 현재 경로](../33-ask-request-execution-current-implementation.md)의
+[33번 Ask 현재 경로](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/33-ask-request-execution-current-implementation.md)의
 읽기 도구를 현재 Browser build에서 검증한다. 최초 `all_dom` semantic snapshot의
 bounded 부분집합으로 `read_page`, `get_page_text`, `find`, `read_batch`를
 실행한다. `screenshot`은 정책이 허용한 경우 활성 run 탭의 viewport만
@@ -20,7 +23,7 @@ Provider host의 개별 허용 조건은 유지한다. 권한 회수는 Chrome �
 프로그램의 사이트 접근 설정에서 수행한다.
 
 S6는 virtualized/paginated 전체 collection 수집이 아니다. 새 DOM read,
-scroll, API/export adapter와 복수 source 승인은 [28번 Collection Reading](../28-collection-reading-strategy-design.md)의
+scroll, API/export adapter와 복수 source 승인은 [28번 Collection Reading](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/28-collection-reading-strategy-design.md)의
 S6-R/S13 범위다. 다중 tab group 소유권, CDP `Page.captureScreenshot`,
 optional rerank 모델, screenshot card·annotation은 33번의 현재 Ask 경로에
 없으므로 이 로컬 종료 조건에서 삭제한다. Vision에는 mutation 좌표 권한이
@@ -39,7 +42,7 @@ optional rerank 모델, screenshot card·annotation은 33번의 현재 Ask 경�
 
 ## 완료 조건
 
-- 현재 적용 가능한 [18번 READ/SEC-READ/FIND/VIS/TAB/BATCH 검증계획](../18-claude-browser-capability-verification-plan.md)을
+- 현재 적용 가능한 [18번 READ/SEC-READ/FIND/VIS/TAB/BATCH 검증계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/18-claude-browser-capability-verification-plan.md)을
   위의 33번 snapshot-only·single-tab·`chrome.tabs.captureVisibleTab`
   경계로 재판정하고 수행한 항목과 제외한 항목을 증거에 명시한다.
 - 초기 Ask와 `read_page` 기본 scope는 `all_dom`이다. hidden node는

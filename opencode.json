@@ -1,0 +1,16 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "*": "allow",
+    "external_directory": "ask",
+    "doom_loop": "ask",
+    "bash": {
+      "*": "allow",
+      "rm -rf": "ask",
+      "rm -rf *": "ask",
+      "rm -fr": "ask",
+      "rm -fr *": "ask",
+      "sudo rm *": "ask"
+    }
+  }
+}

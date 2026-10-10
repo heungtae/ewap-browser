@@ -1,11 +1,14 @@
 # S7 — 범용 Browser Act와 기존 코드 완성
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 상태: **Completed** (2026-09-26, Linux Browser 로컬 범위).
 [종료 증거](../evidence/s7-closure-2026-09-26.md).
 
 ## 목표
 
-현재 [31번 Act 경로](../31-act-request-execution-current-implementation.md)의
+현재 [31번 Act 경로](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/31-act-request-execution-current-implementation.md)의
 generic proposal, 사용자 승인, bounded CDP/Content dispatch와 semantic
 verifier를 두 개의 통제 HTTPS 일반 페이지에서 검증한다. 서명된 Profile에
 action 정의가 있으면 그 정의를 action authority로 사용한다. 정의가
@@ -60,7 +63,7 @@ Claude bundle에서 관찰한 ref-to-box, trusted input, tab lifecycle과 UI pro
 
 ## 완료 조건
 
-- 현재 [18번 ACT 검증계획](../18-claude-browser-capability-verification-plan.md)의
+- 현재 [18번 ACT 검증계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/18-claude-browser-capability-verification-plan.md)의
   적용 가능한 positive/negative 항목을 unit과 Chrome로 판정하고 제외
   범위를 증거에 명시
 - `BoundedCdpAdapter`가 실제 Act chat에서 호출된 trace

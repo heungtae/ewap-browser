@@ -1,5 +1,8 @@
 # S14 — Browser 로컬 기록 워크플로우 비교 (Completed)
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 목표와 소유권
 
 Studio Capture session/token, L0~L6 gate, baseline, Change Detector, dependency

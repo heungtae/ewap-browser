@@ -1,10 +1,13 @@
 # Browser Act S17 — 계획 제출과 실행 결과의 LLM 피드백
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 상태와 진입 조건
 
 **Completed — Browser-local, 2026-10-09.** 의존성: [S16](s16-page-script-tool-loop.md)의 registry·결과 반환,
 [S15 / PAH-9](s15-pah-9-llm-input-value-binding.md)의 입력값·질문 계약.
-기준은 [34번 설계](../34-page-act-context-harness-design.md)의 6.2·9·16.5절이다.
+기준은 [34번 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md)의 6.2·9·16.5절이다.
 Browser-local 계획이며 기존 Enterprise 배포 Sprint와 구분한다.
 
 C1~C6의 Browser-local 구현과 계약/통제 Chrome 검증을 연결했다.

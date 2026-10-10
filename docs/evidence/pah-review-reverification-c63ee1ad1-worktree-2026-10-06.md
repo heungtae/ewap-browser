@@ -6,7 +6,7 @@
 - 실제 검증 대상: **위 HEAD에 추가된 미커밋 제품 source 수정 3개 파일**
 - 판정: **이전 잔여 3건의 재현 조건은 통과했으나, 분기 조건 잘림 P1 1건이 남아 완료 판정을 보류한다.**
 - 이전 보고서: [c63ee1ad1 재검증 결과](pah-review-reverification-c63ee1ad1-2026-10-06.md)
-- 기준 문서: [상세 설계](../34-page-act-context-harness-design.md), [Sprint 계획](../sprint-page-act-context-harness-plan.md)
+- 기준 문서: [상세 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md), [Sprint 계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-page-act-context-harness-plan.md)
 
 이 보고서는 개발자 기록과 별도로 직접 실행한 결과다. 커밋된 `c63ee1ad1` 자체의
 판정과 구분하며, 이전 보고서는 해당 revision의 기록으로 유지한다.

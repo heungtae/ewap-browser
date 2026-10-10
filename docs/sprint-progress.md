@@ -1,4 +1,8 @@
-# Sprint 진행 상태
+# Sprint 진행 기록
+
+> 날짜별 개발·검증 이력을 보존한다. 각 절의 현재·Planned·Completed 표기는
+> 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
+> [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
 ## Community 출시 / Enterprise 후속 상태 (2026-10-04)
 
@@ -11,13 +15,13 @@ Windows와 대외 배포는 미검증이고 Enterprise 계약 불일치는 미�
 
 ## S0~S9 Browser 기반 종료 범위 (2026-09-26)
 
-[Sprint 설계 인덱스](sprint-design.md)의 종료 판정 범위를 따른다. 현재
+[Sprint 설계 인덱스](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-design.md)의 종료 판정 범위를 따른다. 현재
 Linux/Chrome for Testing 환경에서 실행 가능한 Browser 기반 증거로
 `Completed`를 판정한다. Windows clean-profile과 별도 release reviewer
 승인은 S0~S9 종료 조건에서 제외하며, S9 `Completed`는 Linux 로컬
-release candidate만 뜻한다. [31번](31-act-request-execution-current-implementation.md)·
-[33번](33-ask-request-execution-current-implementation.md)의 현재 Ask/Act
-경로를 판정 대상으로 삼고 [32번](32-ask-act-analysis-data-acquisition-design.md)의
+release candidate만 뜻한다. [31번](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/31-act-request-execution-current-implementation.md)·
+[33번](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/33-ask-request-execution-current-implementation.md)의 현재 Ask/Act
+경로를 판정 대상으로 삼고 [32번](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/32-ask-act-analysis-data-acquisition-design.md)의
 미완료 분석 수집 범위를 S0~S9 완료에 포함하지 않는다.
 
 - **S0: Completed** — 현재 커밋 `d3bcf552`의 clean archive에서 pnpm 9
@@ -114,7 +118,7 @@ Enterprise 기능까지 완료한 것으로 재해석하지 않는다.
     API fixture는 exact origin/path와 closed schema로 연결했다. 타입, lint/format,
     전체 unit 및 extension build도 통과했다. 외부 live provider 동작은 완료
     범위에 포함하지 않는다. [완료 증거](evidence/s6-r-closure-2026-10-01.md),
-    세부 계약과 CR-1~CR-5는 [28번](28-collection-reading-strategy-design.md)을 따른다.
+    세부 계약과 CR-1~CR-5는 [28번](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/28-collection-reading-strategy-design.md)을 따른다.
 -   Browser Diagnostics ZIP (기존 S12-C1~C6): Completed — 요청별 trace,
     closed page metadata와 truncation 표시를 보완했다. 실제 Chrome Side Panel의
     오류 카드/하단 버튼, 25×6 표, Provider 실패, navigation, Worker 재시작,

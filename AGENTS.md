@@ -4,7 +4,13 @@
 
 ContextPilot is a local-first Chrome Manifest V3 extension for Ask/Act workflows. TypeScript implementation lives in `extension/src/`: `service-worker/` coordinates requests, `content/` reads pages, `sidepanel/` implements UI, and `contracts/` defines shared messages. Keep provider, policy, security, and diagnostics logic in their corresponding modules. Assets and manifest live in `extension/assets/` and `extension/manifest.json`.
 
-Tests are organized under `extension/tests/{unit,fixture,e2e}/`. `scripts/` contains build and Chrome verification tools; `examples/` provides fixtures; `native-host/` contains the .NET host. Consult `docs/README.md`, `docs/sprints/`, and `docs/evidence/` for design and verification records. Generated output lives in `dist/` and `dist-extension/`.
+Tests are organized under `extension/tests/{unit,fixture,e2e}/`. `scripts/` contains build and Chrome verification tools; `examples/` provides fixtures; `native-host/` contains the .NET host. Start at `docs/README.md` and `docs/source-guide.md` to locate implementation and verification records. Generated output lives in `dist/` and `dist-extension/`.
+
+## Documentation and Source of Truth
+
+Code, runtime contracts, and configuration are the single source of truth for current behavior. Tests define executable checks; dated evidence records only the revision, environment, and scope actually verified. Sprint documents are historical delivery records or explicitly pending work, not a competing implementation specification.
+
+Keep documentation focused on source navigation, installation, testing, operations, and evidence. Update source links when moving modules. Do not recreate per-feature design documents that duplicate code or infer current support from a past plan. Preserve unresolved cross-repository work as a backlog with its original date and scope. Link retired designs through a pinned Git revision when needed to interpret historical evidence.
 
 ## Build, Test, and Development Commands
 

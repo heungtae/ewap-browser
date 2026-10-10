@@ -7,7 +7,7 @@
 승인 결속·대화 유지·오류 복귀·원문 비노출 조건을 충족하지 못한다.
 전체 단위 테스트 통과만으로 S15 / PAH-9를 완료로 판정할 수 없다.
 
-- 기준: [34번 설계 9.1절](../34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속),
+- 기준: [34번 설계 9.1절](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md#91-llm의-입력값-판단과-실행-결속),
   [S15 / PAH-9 개발·완료 기준](../sprints/s15-pah-9-llm-input-value-binding.md).
 - 대상: `HEAD fadab78fe4aa79ba3d50f7fadebd3cd4c07e2a77` 위의 **미커밋 변경 및
   untracked 구현 파일을 포함한 작업트리**. HEAD 단독 검증 결과가 아니다.

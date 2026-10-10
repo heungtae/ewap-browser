@@ -1,10 +1,13 @@
 # Browser Act S18 — Workflow 목록·원본 읽기와 LLM 검토
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 상태와 진입 조건
 
 **Completed — Browser-local, 2026-10-10.** 의존성: [S16](s16-page-script-tool-loop.md)의 registry/read loop,
 [S17](s17-act-plan-execution-feedback.md)의 계획·승인·결과 피드백.
-기준은 [34번 설계](../34-page-act-context-harness-design.md)의 5.2·8·16절이다.
+기준은 [34번 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md)의 5.2·8·16절이다.
 
 [구현·최종 검증·실패 이력](../evidence/s18-workflow-resources-2026-10-10.md):
 자동 테스트 684개, 통제 Chrome 6/6, OpenAI live 세 출처 6/6 및 최종 보강 코드 2/2 PASS.

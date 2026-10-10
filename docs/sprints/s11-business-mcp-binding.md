@@ -1,5 +1,8 @@
 # S11 — Browser 로컬 Business MCP binding (Completed)
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 완료 범위
 
 현행 Browser `schema_version: 1` signed Profile의 `business_mcp`는
@@ -25,7 +28,7 @@ Testing 147의 실제 Side Panel 결과를 기록했다. B3의 stale/expiry
 Platform MCP Registry의 `tools/list` discovery·health·catalog checksum,
 release freeze, 조직 policy/PDP, Gateway, enterprise auth와 철회 조회는
 구현하지 않았다. 이 기능들은
-[Page Profile·MCP 목표 설계](../22-page-profile-provider-design.md)의
+[Page Profile·MCP 목표 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/22-page-profile-provider-design.md)의
 별도 계약·서비스 작업으로 남으며 S11 완료 주장에 포함하지 않는다.
 기존 [Collection Reading S11-C1~C6](s11-collection-reading-chrome-completion.md)은
 과거 Browser 카드명으로, 현재 Sprint 원장의 S11과 별개다.

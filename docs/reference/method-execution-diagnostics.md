@@ -1,11 +1,12 @@
 # 메서드별 debug·trace 진단 기록
 
-31~33번의 실행 경로에 포함된 애플리케이션 함수·메서드·constructor·getter·callback은
-빌드 시 `scripts/method-trace-instrumentation.mjs`로 계측한다. 메서드를 추가하면
-동일한 계측이 자동 적용된다. 34번은 이번 범위에서 제외한다.
+[계측 대상 선택](../../scripts/method-trace-instrumentation.mjs)의 `isTraceSource`가
+허용하는 번들 모듈의 함수·메서드·constructor·getter·callback을 빌드 시 계측한다.
+메서드를 추가하면 동일한 계측이 자동 적용된다. 대상·제외 규칙은 코드에서 확인한다.
 `dist-extension/method-trace-coverage.json`은 파일·원본 행/열·메서드 종류별 목록이며,
-`npm run check:method-trace`는 문서에 언급된 구현 모듈의 계측 누락과
-async/constructor/getter/default callback/optional chaining 동작을 검사한다.
+`pnpm check:method-trace`는 실제 entry point의 번들 입력에서 구한 현재 메서드 목록과
+빌드 산출물을 비교하고 async/constructor/getter/default callback/optional chaining
+동작을 검사한다. 오래된 산출물·누락·추가 항목은 거부한다.
 
 - debug: `method.enter`, `method.exit`, 조건식·판정값을 포함한 `method.branch`, 명시적 route/Provider 결과 `method.decision`.
 - trace: `method.input`, `method.result`. 입력과 반환 데이터의 안전한 텍스트·구조를 보존한다.

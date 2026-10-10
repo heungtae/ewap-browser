@@ -1,5 +1,8 @@
 # Browser Act S19 — Component 발견과 데이터·시각 읽기 도구
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 상태와 진입 조건
 
 **Completed (Browser-local) — 2026-10-10.**
@@ -9,7 +12,7 @@
 순차 진입은 [S18](s18-workflow-resource-tools.md) 이후이며,
 기술 의존성은 [S16](s16-page-script-tool-loop.md)의 resource registry와
 [S17](s17-act-plan-execution-feedback.md)의 실행·관찰 계약이다.
-기준은 [34번 설계](../34-page-act-context-harness-design.md)의 7·16절이다.
+기준은 [34번 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md)의 7·16절이다.
 
 ## 목표와 경계
 

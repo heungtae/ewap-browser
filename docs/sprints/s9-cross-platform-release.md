@@ -1,5 +1,8 @@
 # S9 — Linux 로컬 release candidate
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 목표
 
 S0~S8의 package, Chat UI, hidden-DOM read, Vision, generic Act, permission modes와 provider/plugin 계약을 Linux clean Chrome profile에서 검증하고 upgrade/rollback 가능한 로컬 release candidate를 만든다. Windows 배포와 대외 출시 판정은 이 Sprint의 `Completed` 의미에 포함하지 않는다.

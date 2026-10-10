@@ -2,7 +2,7 @@
 
 ## 범위와 결과
 
-[설계 §8.1–8.2](../34-page-act-context-harness-design.md)의 후보 상태 표시를 작은 Browser-local 항목으로 구현했다. S20 이후 새 Sprint 번호를 부여하거나 전체 워크플로우 검토 설계의 완료를 선언하지 않는다.
+[설계 §8.1–8.2](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/34-page-act-context-harness-design.md)의 후보 상태 표시를 작은 Browser-local 항목으로 구현했다. S20 이후 새 Sprint 번호를 부여하거나 전체 워크플로우 검토 설계의 완료를 선언하지 않는다.
 
 선택 화면은 후보별 카탈로그 상태, 기존 검증 근거, origin/path 적용 범위를 표시한다. 카탈로그의 `verified`를 요청 적합성이나 실행 승인으로 표시하지 않는다. 현재 화면에는 선택 전 LLM 검토 결과가 없으므로 적합성은 `미검토`, 실행 가능성은 `미확인`으로 표시한다. `stale`/`incomparable` 후보의 선택 차단은 유지한다.
 

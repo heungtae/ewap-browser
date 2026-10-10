@@ -1,5 +1,8 @@
 # S11 — Collection Reading Chrome 완결
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 현재 Sprint 원장의 S11은 [Browser 로컬 Business MCP binding](s11-business-mcp-binding.md)을
 뜻한다. 이 문서의 S11-C1~C6은 이전 Browser 작업 카드명이며 현재 S11
 완료 조건으로 해석하지 않는다.
@@ -45,4 +48,4 @@
 
 ## 참고 문서
 
-- [28. Collection Reading 설계](../28-collection-reading-strategy-design.md)
+- [28. Collection Reading 설계](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/28-collection-reading-strategy-design.md)

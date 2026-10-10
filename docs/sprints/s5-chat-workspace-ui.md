@@ -1,13 +1,16 @@
 # S5 — Chat Workspace UI
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 ## 목표와 종료 범위
 
-[31번 Act](../31-act-request-execution-current-implementation.md)과
-[33번 Ask](../33-ask-request-execution-current-implementation.md)의 현재 Browser
+[31번 Act](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/31-act-request-execution-current-implementation.md)과
+[33번 Ask](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/33-ask-request-execution-current-implementation.md)의 현재 Browser
 경로에서 Service Worker가 발행한 closed `ChatEvent`만 Side Panel에 표시한다.
 중복·누락·연결 끊김을 복구하고 Stop 뒤 늦게 도착한 결과가 화면이나 승인 권한을
 되살리지 않게 한다. S0~S9의 Linux 로컬 종료 범위는
-[Sprint 설계 인덱스](../sprint-design.md)를 따른다.
+[Sprint 설계 인덱스](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/sprint-design.md)를 따른다.
 
 Screenshot payload·좌표 annotation, Claude artifact 동등성, 전체 번역 교체,
 외부 접근성 인증과 운영 Provider 결과는 현재 `ChatEvent`/31·33번 Browser
@@ -37,7 +40,7 @@ S5-C7로 표기됐던 screenshot/annotation 카드는 이 Browser 경로에 해�
 ko-KR 문구와 기존 안전한 error mapping을 사용하며 전체 en-US 번역은
 후속 UI 범위다.
 
-[18번 검증계획](../18-claude-browser-capability-verification-plan.md)의
+[18번 검증계획](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/18-claude-browser-capability-verification-plan.md)의
 UI-001~010은 아래와 같이 현재 경로에서 판정한다. UI-001은 실제 Provider,
 UI-003~004는 실제 Chrome worker/Panel, UI-002·005~010의 늦은·잘못된
 event는 실제 Panel 문서에 통제된 `ChatEvent`를 주입해 음성 검증한다.

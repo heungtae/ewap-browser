@@ -1,5 +1,8 @@
 # S8 — Permission Mode와 Permission-less Hardening
 
+> 개발·검증 이력이다. 본문의 계획·상태는 기록 당시 범위이며 현재 동작은
+> [코드 탐색 안내](../source-guide.md)와 해당 revision의 실행 결과로 확인한다.
+
 상태: **Completed** (2026-09-26, Linux Browser 로컬 범위).
 [종료 증거](../evidence/s8-closure-2026-09-26.md).
 
@@ -53,7 +56,7 @@ fixture와 unit에서 가능한 경계를 판정한다.
 
 ## 완료 조건
 
-- [검증 matrix](../18-claude-browser-capability-verification-plan.md#8-permission-mode-검증)의 현재 Browser에 적용 가능한 mode/negative 행을 unit과 Chrome로 판정하고 제외 범위를 증거에 명시
+- [검증 matrix](https://github.com/heungtae/ewap-browser/blob/bf5b15e32837f56da18828aa049bd582279354fd/docs/18-claude-browser-capability-verification-plan.md#8-permission-mode-검증)의 현재 Browser에 적용 가능한 mode/negative 행을 unit과 Chrome로 판정하고 제외 범위를 증거에 명시
 - skip mode에서 permission card 0과 normal action 성공을 함께 증명
 - skip mode에서 R2 pre-confirmation dispatch와 저장된 deny에 따른 dispatch 0을 Chrome에서 확인. R3, credential, restricted origin은 기존 S2 Chrome/단위 hard guard와 현재 unit에서 재검증
 - page/model/runtime message로 mode 변경 불가
