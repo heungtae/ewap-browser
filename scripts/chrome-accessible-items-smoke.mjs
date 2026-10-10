@@ -8,6 +8,7 @@ import {
   s18ProviderReply,
 } from "./chrome-s18-workflow-fixture.mjs";
 import { liveProviderConfig } from "./live-provider-config.mjs";
+import { verifyWorkflowCandidateEvidence } from "./chrome-workflow-candidate-evidence.mjs";
 import { s17ProviderReply } from "./chrome-s17-provider-fixture.mjs";
 import { spawn } from "node:child_process";
 import { mkdtemp, writeFile, readFile, cp, rm } from "node:fs/promises";
@@ -1026,12 +1027,16 @@ try {
       let planReviewObserved = false;
       let dismissed = false;
       let selected = false;
+      let candidateEvidenceObserved = false;
       let value = false;
       let fullReviewObserved = false;
       const deadline = Date.now() + (liveModel ? 300000 : 60000);
       for (let i = 0; Date.now() < deadline; i++) {
         await sleep(150);
         if (current.workflow) {
+          if (!selected && !candidateEvidenceObserved)
+            candidateEvidenceObserved =
+              await verifyWorkflowCandidateEvidence(panel);
           if (!selected)
             selected = await button(
               s18Suite
@@ -1261,10 +1266,16 @@ try {
           : undefined,
         provider: liveModel ?? "controlled",
         workflowSelected: selected,
+        workflowCandidateEvidenceObserved: candidateEvidenceObserved,
         calls: calls.slice(start),
         ui,
       };
       evidence = result;
+      if (current.workflow)
+        assert.ok(
+          candidateEvidenceObserved,
+          "Candidate evidence must be visible before selection",
+        );
       if (s18Suite) {
         assert.ok(
           result.calls.some((call) =>

@@ -12,6 +12,7 @@ import { failureHelp, timelineToolLabel, userMessage } from "./panel.js";
 import { shouldRenderToolTimelineCard } from "./tool-timeline-policy.js";
 import { redactForChat } from "../security/chat-redaction.js";
 import type { WorkflowCandidate } from "../contracts/workflow-catalog.js";
+import { appendWorkflowCandidateEvidence } from "./workflow-candidate-evidence.js";
 import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { connectPanel } from "./panel-connection.js";
 import { eventSequenceDecision } from "./event-sequence.js";
@@ -983,8 +984,9 @@ const renderWorkflowCandidates = (
     "워크플로우 보기",
     appendOnly
       ? "코드 분석 결과는 이번 실행에만 사용할 수 있습니다."
-      : "출처와 현재 검증 상태를 비교한 뒤 하나를 선택하세요.",
+      : "출처와 페이지 결속 상태를 확인하고 검토할 후보를 선택하세요. 요청 적합성은 아직 검토되지 않았습니다.",
   );
+  item.dataset.workflowSelectionId = selectionId;
   const divider = (): HTMLHRElement => {
     const line = document.createElement("hr");
     line.className = "workflow-divider";
@@ -1006,11 +1008,12 @@ const renderWorkflowCandidates = (
   };
   item.append(divider());
   for (const candidate of candidates) {
+    appendWorkflowCandidateEvidence(item, candidate);
     const blocked =
       candidate.status === "stale" || candidate.status === "incomparable";
     const row = actionRow(item);
     const button = actionButton(
-      `${candidate.title} · ${sourceLabel(candidate)} · ${candidate.step_count}단계 실행`,
+      `${candidate.title} · ${sourceLabel(candidate)} · ${candidate.step_count}단계 검토할 후보 선택`,
       blocked ? "" : "primary",
       async () => {
         if (blocked) return;
