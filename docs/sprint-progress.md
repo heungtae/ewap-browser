@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Act S23 — 2026-10-11
+
+**Planned — 계획 생성만 완료.**
+[S23](sprints/s23-provider-page-method-execution.md)에 Provider의 script 분석과
+adapter 없는 동적 메서드 호출·반환 데이터·후속 판단의 C1~C8/R01~R20을 기록했다.
+기존 S10/Discovery·S16~S22 및 승인/분석 경계와의 충돌·확장·보존 조건은 X01~X12로
+추적한다. 메서드 참조 수명·미확인 영향 인가·반환 데이터 전송 계약은 C1 선행 결정이다.
+기존 Sprint의 완료 범위·증거는 보존하며 이번 작업으로 제품 코드·런타임 지원을 변경하지 않는다.
+
 ## Browser Agent S22 — 2026-10-11
 
 **구현·검증 진행 중.** Options와 공통 승인 정책의 구현 및 회귀 테스트를 추가했다.

@@ -24,6 +24,9 @@
 | 요소·action·목표의 추가 판단 구현·검증 | [Browser Act S21 — 현재 자료에 기반한 LLM 추가 판단](evidence/s21-assessment-2026-10-11.md) — Browser-local 구현, qualification 제한 |
 | 외부 제품 비교 배경                    | [비규범 참고자료](references/README.md)                                                                                              |
 
+[Provider의 script 분석과 동적 메서드 호출 S23 계획](sprints/s23-provider-page-method-execution.md)은
+구현 전 Planned 작업이다. 기존 Sprint와의 충돌·전환 조건과 선행 결정·검증 행렬을 함께 기록한다.
+
 ## 문서 유지 기준
 
 구현 동작·도구 목록·TypeScript 계약을 설계서에 복제하지 않는다. 모듈이 이동하면
