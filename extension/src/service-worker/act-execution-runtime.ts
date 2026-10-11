@@ -101,10 +101,11 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       : await dependencies.verifier.bounded(run, intent);
     return { verified: semantic || bounded };
   };
-  const executeBounded = async (
+  const executeBoundedCore = async (
     run: Run,
     ready: ReadyExecution,
     origin: string,
+    receipt: { dispatch: "not_dispatched" | "dispatched" | "unknown" },
   ): Promise<Record<string, unknown>> => {
     if (!dependencies.boundedCdp)
       return dependencies.safeFailure("CDP_UNAVAILABLE");
@@ -164,7 +165,13 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       dependencies.milestone?.(run.tabId, "DISPATCH_STARTED");
       if (!dependencies.isRunActive(run.id))
         return dependencies.safeFailure("POLICY_DENIED");
+      receipt.dispatch = "unknown";
       const execution = await dependencies.boundedCdp.execute(action, input);
+      receipt.dispatch = execution.dispatched
+        ? "dispatched"
+        : execution.outcome === "UNKNOWN"
+          ? "unknown"
+          : "not_dispatched";
       dispatched = execution.dispatched;
       if (execution.outcome !== "DISPATCHED") {
         const outcome = execution.outcome === "UNKNOWN" ? "UNKNOWN" : "FAILED";
@@ -216,13 +223,17 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
     }
   };
 
-  const executeContent = async (
+  const executeContentCore = async (
     run: Run,
     ready: ReadyExecution,
     origin: string,
+    receipt: { dispatch: "not_dispatched" | "dispatched" | "unknown" },
   ): Promise<Record<string, unknown>> => {
-    if (cdpTools.has(ready.intent.tool))
-      return executeBounded(run, ready, origin);
+    if (cdpTools.has(ready.intent.tool)) {
+      const result = await executeBounded(run, ready, origin);
+      receipt.dispatch = result.dispatch;
+      return result;
+    }
     const beforeUrl =
       ready.intent.tool === "navigate"
         ? await dependencies
@@ -241,6 +252,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
     if (!dependencies.isRunActive(run.id))
       return dependencies.safeFailure("POLICY_DENIED");
     let result: unknown;
+    receipt.dispatch = "unknown";
     try {
       result = await withDeadline(
         dependencies.send(run.tabId, {
@@ -266,6 +278,9 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         outcome: "UNKNOWN",
       };
     }
+    const contentReceipt = (result as { dispatch?: unknown } | null)?.dispatch;
+    if (contentReceipt === "dispatched" || contentReceipt === "not_dispatched")
+      receipt.dispatch = contentReceipt;
     if (!dependencies.isRunActive(run.id))
       return {
         ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"),
@@ -276,13 +291,18 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       result === null ||
       !(result as { ok?: unknown }).ok
     ) {
-      dependencies.terminal(run, "FAILED");
-      const code = (result as { code?: unknown }).code;
-      return dependencies.safeFailure(
-        code === "TARGET_STALE" || code === "VALUE_BINDING_INVALID"
-          ? code
-          : "TARGET_NOT_ACTIONABLE",
-      );
+      const outcome =
+        receipt.dispatch === "not_dispatched" ? "FAILED" : "UNKNOWN";
+      dependencies.terminal(run, outcome);
+      const code = (result as { code?: unknown } | null)?.code;
+      return {
+        ...dependencies.safeFailure(
+          code === "TARGET_STALE" || code === "VALUE_BINDING_INVALID"
+            ? code
+            : "TARGET_NOT_ACTIONABLE",
+        ),
+        outcome,
+      };
     }
     const postcondition = (result as { postcondition?: unknown }).postcondition;
     if (postcondition === "navigation") {
@@ -327,14 +347,33 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
     ) {
       dependencies.terminal(run, "VERIFIED");
       dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
-      return { ok: true, outcome: "VERIFIED" };
+      return {
+        ok: true,
+        outcome: "VERIFIED",
+        already_satisfied:
+          (result as { already_satisfied?: unknown }).already_satisfied ===
+          true,
+      };
     }
     const verified = await dependencies.verifier.semantic(run, ready.intent);
-    dependencies.terminal(run, verified ? "VERIFIED" : "FAILED");
+    dependencies.terminal(run, verified ? "VERIFIED" : "UNKNOWN");
     return verified
       ? { ok: true, outcome: "VERIFIED" }
-      : dependencies.safeFailure("TARGET_NOT_ACTIONABLE");
+      : {
+          ...dependencies.safeFailure("POSTCONDITION_UNVERIFIED"),
+          outcome: "UNKNOWN",
+        };
   };
 
+  const wrap =
+    (core: typeof executeBoundedCore) =>
+    async (run: Run, ready: ReadyExecution, origin: string) => {
+      const receipt: { dispatch: "not_dispatched" | "dispatched" | "unknown" } =
+        { dispatch: "not_dispatched" };
+      const result = await core(run, ready, origin, receipt);
+      return { ...result, dispatch: receipt.dispatch };
+    };
+  const executeBounded = wrap(executeBoundedCore);
+  const executeContent = wrap(executeContentCore);
   return { executeBounded, executeContent };
 };

@@ -45,14 +45,13 @@ export const completeActProposal = async (
       ...(evidence.code ? { code: evidence.code } : {}),
     },
   });
-  // Keep the request alive until the model receives the result and observation.
-  // Failed terminal events abort the request, so publish them after feedback.
-  if (evidence.outcome === "VERIFIED")
-    dependencies.publishTerminal(
-      run,
-      "VERIFIED",
-      undefined,
-      checkingCompletion(session),
-    );
+  // End this attempt's UI run while keeping the request in checking state.
+  // Without its terminal event the Panel rejects the next assessment run.
+  dependencies.publishTerminal(
+    run,
+    evidence.outcome,
+    undefined,
+    checkingCompletion(session),
+  );
   return dependencies.continueWorkflow(session, proposal);
 };

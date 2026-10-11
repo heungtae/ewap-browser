@@ -78,6 +78,56 @@ describe("completion wire, recovery and presentation", () => {
       validateChatEvent({ ...event, completion: undefined }),
     ).toMatchObject({ outcome: "UNKNOWN" });
   });
+  it("S21 displays unresolved action assessment without claiming action completion", () => {
+    expect(
+      actCompletionView({ ...completion, action_outcome: "UNKNOWN" }),
+    ).toEqual({
+      active: false,
+      message: "작업 결과를 확인하지 못했습니다. 현재 상태를 확인해 주세요.",
+    });
+    expect(
+      actCompletionView({
+        ...completion,
+        action_outcome: "UNKNOWN",
+        goal_status: "checking",
+      }),
+    ).toMatchObject({
+      active: true,
+      message: "현재 상태를 추가로 확인하고 있습니다.",
+    });
+  });
+  it("S21 preserves bounded assessment metadata through event restore and diagnostics", () => {
+    const assessed: ActCompletion = {
+      ...completion,
+      assessment: {
+        version: 1,
+        calls: 2,
+        reads: 1,
+        confirmation: "llm_evidence",
+      },
+    };
+    const store = new TabChatSessionStore();
+    store.bindRun("run-abcdefghijklmnop", 7, scope);
+    const event = store.append("run-abcdefghijklmnop", {
+      type: "run_terminal",
+      outcome: "UNKNOWN",
+      code: "GOAL_UNVERIFIED",
+      completion: assessed,
+    });
+    expect(validateChatEvent(event)).toEqual(event);
+    const restored = new TabChatSessionStore();
+    restored.restore(store.snapshot());
+    expect(restored.recoverable(7)[0]).toMatchObject({ completion: assessed });
+    expect(JSON.stringify(restored.diagnosticSnapshot(7))).toContain(
+      "llm_evidence",
+    );
+    expect(
+      validActCompletion({
+        ...assessed,
+        assessment: { ...assessed.assessment, raw_text: "secret" },
+      }),
+    ).toBe(false);
+  });
   it("R13 preserves final goal outcome instead of interpreting ok as goal success", async () => {
     vi.useFakeTimers();
     let saved: Record<string, unknown> = {};

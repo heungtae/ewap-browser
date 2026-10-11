@@ -64,7 +64,11 @@ describe("Act execution runtime", () => {
     });
     await expect(
       runtime.executeBounded(run, ready, "https://portal.company.test"),
-    ).resolves.toEqual({ ok: false, code: "UNSUPPORTED_COMPLETION" });
+    ).resolves.toEqual({
+      ok: false,
+      code: "UNSUPPORTED_COMPLETION",
+      dispatch: "not_dispatched",
+    });
     expect(dispatched).toBe(0);
   });
 
@@ -98,6 +102,7 @@ describe("Act execution runtime", () => {
       runtime.executeBounded(run, ready, "https://portal.company.test"),
     ).resolves.toEqual({
       ok: false,
+      dispatch: "dispatched",
       code: "POSTCONDITION_UNVERIFIED",
       outcome: "UNKNOWN",
     });
@@ -134,6 +139,7 @@ describe("Act execution runtime", () => {
       runtime.executeBounded(run, ready, "https://portal.company.test"),
     ).resolves.toEqual({
       ok: false,
+      dispatch: "dispatched",
       code: "POSTCONDITION_UNVERIFIED",
       outcome: "UNKNOWN",
     });
@@ -174,6 +180,7 @@ describe("Act execution runtime", () => {
       runtime.executeBounded(run, ready, "https://portal.company.test"),
     ).resolves.toEqual({
       ok: false,
+      dispatch: "dispatched",
       code: "POSTCONDITION_UNVERIFIED",
       outcome: "UNKNOWN",
     });
@@ -216,6 +223,7 @@ describe("Act execution runtime", () => {
       ),
     ).resolves.toEqual({
       ok: false,
+      dispatch: "unknown",
       code: "NAVIGATION_UNVERIFIED",
       outcome: "UNKNOWN",
     });
@@ -262,7 +270,12 @@ describe("Act execution runtime", () => {
         { ...ready, intent: { ...ready.intent, tool: "navigate" } },
         "https://portal.company.test",
       ),
-    ).resolves.toEqual({ ok: true, outcome: "VERIFIED" });
+    ).resolves.toEqual({
+      ok: true,
+      outcome: "VERIFIED",
+      dispatch: "unknown",
+      verified_scope: undefined,
+    });
     expect(calls).toEqual(["snapshot"]);
   });
 });

@@ -88,7 +88,7 @@ try {
       harness.panel,
       "document.querySelector('#chat-messages').textContent",
     );
-    assert.equal(text.includes("모델이 목표 완료"), false);
+    assert.equal(text.includes("목표의 완료를 확인"), false);
     if (id === "budget") {
       assert.match(text, /budget을 소진/);
       assert.match(text, /목표는 아직 확인되지/);

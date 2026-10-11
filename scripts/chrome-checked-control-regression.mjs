@@ -11,8 +11,17 @@ export const checkedControlRegression = async ({
       kind: "CONTENT_EXECUTE_R1",
       intent: intent(name, "set_checked_by_ref", { checked }),
     });
-  const success = { ok: true, postcondition: "semantic" };
-  const rejected = { ok: false, code: "TARGET_NOT_ACTIONABLE" };
+  const success = {
+    ok: true,
+    postcondition: "semantic",
+    dispatch: "not_dispatched",
+    already_satisfied: true,
+  };
+  const rejected = {
+    ok: false,
+    code: "TARGET_NOT_ACTIONABLE",
+    dispatch: "not_dispatched",
+  };
   record(
     "aria-radio-already-selected-no-op",
     await execute("Custom radio", true),
@@ -58,7 +67,7 @@ export const checkedControlRegression = async ({
   record(
     "replacement-does-not-inherit-execution-authority",
     await execute("Custom radio", true),
-    { ok: false, code: "TARGET_STALE" },
+    { ok: false, code: "TARGET_STALE", dispatch: "dispatched" },
   );
   record("replacement-clicked-once", await evaluate(page, "radioClicks"), 2);
 };

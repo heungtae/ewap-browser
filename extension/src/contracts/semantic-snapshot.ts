@@ -1,3 +1,4 @@
+import { controlActionNames, type ControlAction } from "./semantic-types.js";
 import type {
   HiddenReason,
   PageReadScope,
@@ -33,7 +34,14 @@ const roles = new Set<Role>([
   "main",
   "form",
 ]);
-const stateKeys = ["disabled", "checked", "selected", "expanded", "required"];
+const stateKeys = [
+  "disabled",
+  "checked",
+  "selected",
+  "expanded",
+  "required",
+  "pressed",
+];
 const scopes = new Set<PageReadScope>([
   "all_dom",
   "visible_only",
@@ -70,6 +78,8 @@ const parseNode = (value: unknown): SemanticNode => {
     "parent_ref_id",
     "label_ref_id",
     "completion_digest",
+    "supported_actions",
+    "action_support_reason",
   ]);
   for (const required of [
     "ref_id",
@@ -115,6 +125,23 @@ const parseNode = (value: unknown): SemanticNode => {
       (node.visibility !== "hidden" || node.hidden_reason === undefined))
   )
     return fail("INVALID_ARGUMENT");
+  if (
+    node.supported_actions !== undefined &&
+    (!Array.isArray(node.supported_actions) ||
+      node.supported_actions.length > controlActionNames.length ||
+      new Set(node.supported_actions).size !== node.supported_actions.length ||
+      node.supported_actions.some(
+        (action) => !controlActionNames.includes(action as ControlAction),
+      ))
+  )
+    return fail("INVALID_ARGUMENT");
+  if (
+    node.action_support_reason !== undefined &&
+    !["SUPPORTED", "BLOCKED", "UNSUPPORTED_CONTROL"].includes(
+      String(node.action_support_reason),
+    )
+  )
+    return fail("INVALID_ARGUMENT");
   const parent =
     node.parent_ref_id === undefined ? undefined : opaque(node.parent_ref_id);
   const label =
@@ -130,6 +157,16 @@ const parseNode = (value: unknown): SemanticNode => {
       ? { hidden_reason: node.hidden_reason as HiddenReason }
       : {}),
     enabled: node.enabled,
+    ...(node.action_support_reason
+      ? {
+          action_support_reason: node.action_support_reason as NonNullable<
+            SemanticNode["action_support_reason"]
+          >,
+        }
+      : {}),
+    ...(Array.isArray(node.supported_actions)
+      ? { supported_actions: node.supported_actions as ControlAction[] }
+      : {}),
     ...(node.same_origin_link ? { same_origin_link: true } : {}),
     ...(node.cross_origin_link ? { cross_origin_link: true } : {}),
     ...(parent ? { parent_ref_id: parent } : {}),

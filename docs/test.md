@@ -276,3 +276,20 @@ upstream 60초를 테스트가 늘리지 않는다. goal UI를 실제 도구의 
 typed 결과·goal·승인 metadata를 추출한다. legacy raw report를 그대로 공유하지 않는다.
 [측정 계획](evidence/s20-measurement-plan-2026-10-10.md)과
 [전체 결과와 한계](evidence/s20-qualification-2026-10-10.md)를 따른다.
+
+## S21 추가 판단 Chrome 검증
+
+버전 변경 없는 build 후 `CHROME_FOR_TESTING_BIN`을 지정한다.
+
+```bash
+CHROME_FOR_TESTING_BIN=/path/to/chrome S21_REPORT=/tmp/s21.json pnpm test:chrome-s21
+LIVE_PROVIDER=openai S21_LIVE_MODEL=gpt-6-luna S21_CASES=normal,delayed,replacement,not-completed,already S21_REPORT=/tmp/s21-live.json pnpm test:chrome-s21
+```
+
+두 번째 명령에도 `CHROME_FOR_TESTING_BIN`과 지원 provider 자격증명이 필요하다.
+`S21_VARIANT=1|2|3`은 라벨 변경·native radio·nested ARIA DOM holdout이다.
+`S21_SCREENSHOT=/tmp/s21-ui`는 사례별 screenshot을 저장한다. `element`는 통제 모드에서
+잘못된 제안을 강제로 넣고 기존 승인까지 검사한다. live 모드에서는 모델의 정상 제안을
+강제로 잘못된 제안으로 바꾸지 않는다. 결과 JSON은 schema/hash, call ID, tool 결과,
+실제 클릭 수·상태·현재 완료 UI·latency를 보존한다. fixture의 성공은 운영 사이트 성공이 아니다.
+[실행 증거](evidence/s21-assessment-2026-10-11.md)를 참조한다.

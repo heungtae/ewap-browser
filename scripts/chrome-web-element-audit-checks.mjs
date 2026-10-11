@@ -53,7 +53,7 @@ export const runElementAuditChecks = async ({
         kind: "CONTENT_EXECUTE_R1",
         intent: intent(name, "set_checked_by_ref", { checked: true }),
       }),
-      { ok: true, postcondition: "semantic" },
+      { ok: true, postcondition: "semantic", dispatch: "dispatched" },
     );
   }
   record(
@@ -69,7 +69,7 @@ export const runElementAuditChecks = async ({
         checked: true,
       }),
     }),
-    { ok: true, postcondition: "semantic" },
+    { ok: true, postcondition: "semantic", dispatch: "dispatched" },
   );
   record(
     "native-checkbox-already-selected-no-op",
@@ -79,7 +79,12 @@ export const runElementAuditChecks = async ({
         checked: true,
       }),
     }),
-    { ok: true, postcondition: "semantic" },
+    {
+      ok: true,
+      postcondition: "semantic",
+      dispatch: "not_dispatched",
+      already_satisfied: true,
+    },
   );
   for (const name of ["ARIA disabled", "Fieldset disabled", "Read only"])
     record(
@@ -88,12 +93,12 @@ export const runElementAuditChecks = async ({
         name,
         name === "ARIA disabled" ? "propose_set_checked" : "propose_set_text",
       ),
-      name === "Read only",
+      false,
     );
   record(
     "rich-editor-offered",
     offered("Rich editor", "propose_set_text"),
-    true,
+    false,
   );
   record(
     "rich-editor-value-verification-rejected",
@@ -114,13 +119,9 @@ export const runElementAuditChecks = async ({
     record(
       `${name}-treated-as-textbox`,
       [node(name).role, offered(name, "propose_set_text")],
-      ["textbox", true],
+      [name === "Input button" ? "button" : "textbox", false],
     );
-  record(
-    "toggle-pressed-missing",
-    node("Toggle button").state.pressed === undefined,
-    true,
-  );
+  record("toggle-pressed-readable", node("Toggle button").state.pressed, false);
   record("mixed-state-not-coerced", node("Mixed checkbox").state, {});
   record(
     "multi-select-treated-as-single",
@@ -128,7 +129,7 @@ export const runElementAuditChecks = async ({
       node("Multi select").role,
       offered("Multi select", "propose_select_option"),
     ],
-    ["combobox", true],
+    ["combobox", false],
   );
   record(
     "list-option-click-offered",

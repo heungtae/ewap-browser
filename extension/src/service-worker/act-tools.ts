@@ -37,6 +37,8 @@ const eligibleTargets = (
     const source = snapshot.nodes[index];
     if (
       !source ||
+      (source.supported_actions &&
+        !source.supported_actions.includes(definition.tool)) ||
       (allowedRefIds && !allowedRefIds.has(source.ref_id)) ||
       !node.visible ||
       !node.enabled ||

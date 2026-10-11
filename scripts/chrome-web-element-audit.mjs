@@ -9,7 +9,7 @@ import { createS1Fixture } from "./chrome-s1-fixture.mjs";
 import { runElementAuditChecks } from "./chrome-web-element-audit-checks.mjs";
 
 // Internal Worker -> Content audit. It does not exercise approvals or a Provider.
-// Assertions capture current defects, so PASS means reproduced, never fixed.
+// Assertions cover supported control dispatch/read parity and safe unsupported controls.
 const executable = process.env.CHROME_FOR_TESTING_BIN;
 if (!executable) throw Error("CHROME_FOR_TESTING_BIN is required");
 const temporary = await mkdtemp(join(tmpdir(), "contextpilot-element-audit-"));

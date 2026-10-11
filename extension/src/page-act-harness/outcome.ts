@@ -11,6 +11,7 @@ export type ActionResult = {
   observed: boolean;
   verifier: "satisfied" | "failed" | "pending";
   alreadySatisfied?: boolean;
+  stateSatisfied?: boolean;
 };
 
 export type GoalCheck = {
@@ -84,7 +85,7 @@ export const classifyOutcome = (opts: {
         return done("UNKNOWN", "UNOBSERVED_MUTATION");
       const unverified = opts.actions.filter(
         (a) =>
-          (!a.dispatched && !a.alreadySatisfied) ||
+          (!a.dispatched && !a.alreadySatisfied && !a.stateSatisfied) ||
           !a.observed ||
           a.verifier !== "satisfied",
       );

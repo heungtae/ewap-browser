@@ -1,3 +1,4 @@
+import { logicalActionResults } from "./act-logical-results.js";
 import { isErrorCode } from "../contracts/error-codes.js";
 import type { ActCompletion } from "../contracts/act-completion.js";
 import {
@@ -13,7 +14,7 @@ import type { Run } from "../state/run-coordinator.js";
 export const actionOutcome = (
   session: ActSession,
 ): ActCompletion["action_outcome"] => {
-  const actions = session.executionEvidence ?? [];
+  const actions = logicalActionResults(session.executionEvidence ?? []);
   if (actions.some((a) => a.verifier === "failed" || a.outcome === "FAILED"))
     return "FAILED";
   return actions.length &&
@@ -41,7 +42,7 @@ export const finaliseGoal = (opts: {
   reason?: ActCompletion["reason"];
 }): Record<string, unknown> => {
   const { dependencies, session, run } = opts;
-  const actions = session.executionEvidence ?? [];
+  const actions = logicalActionResults(session.executionEvidence ?? []);
   const action = actionOutcome(session);
   const verified = actions.filter((a) => a.verifier === "satisfied").length;
   const terminal = classifyOutcome({
@@ -50,10 +51,10 @@ export const finaliseGoal = (opts: {
     actions,
     binding_current: opts.current,
     goal: {
-      required_actions:
-        session.plan?.input.steps.length ??
-        session.requiredGoalActions ??
-        actions.length,
+      required_actions: Math.max(
+        session.requiredGoalActions ?? 0,
+        session.plan?.input.steps.length ?? actions.length,
+      ),
       verified_actions: session.plan
         ? Math.min(verified, session.plan.completedSteps)
         : verified,
@@ -83,6 +84,22 @@ export const finaliseGoal = (opts: {
                 ? "GOAL_UNMET"
                 : "GOAL_UNCONFIRMED")),
     reassessments: opts.reassessments,
+    ...(session.assessmentBudget
+      ? {
+          assessment: {
+            version: 1 as const,
+            calls: session.assessmentBudget.calls,
+            reads: session.assessmentBudget.reads,
+            confirmation: actions.some((a) => a.confirmation === "llm_evidence")
+              ? ("llm_evidence" as const)
+              : actions.some((a) => a.confirmation === "current_state")
+                ? ("current_state" as const)
+                : actions.some((a) => a.outcome === "VERIFIED")
+                  ? ("local_verifier" as const)
+                  : ("none" as const),
+          },
+        }
+      : {}),
   };
   const label =
     completion.goal_status === "completed"

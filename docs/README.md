@@ -8,20 +8,20 @@
 
 ## 사용하는 문서
 
-| 목적                                            | 문서                                                                                                                        |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| 기능의 실제 구현 위치                           | [코드 탐색 안내](source-guide.md)                                                                                           |
-| 로컬 설치·업데이트·복구                         | [Community 설치](community-installation.md)                                                                                 |
-| 개발·통제 Chrome·live Provider 검증             | [테스트 실행 가이드](test.md)                                                                                               |
-| 로컬 예제 실행                                  | [Accessible items 데모](accessible-items-demo.md), [Collection Reading 데모](../examples/collection-reading-demo/README.md) |
-| 예제별 요청과 재현                              | [요청 메시지](../examples/example-request-messages.md), [Chrome 요청 테스트](../examples/chrome-request-tests.md)           |
-| 진단 추적 확인                                  | [메서드 실행 진단](reference/method-execution-diagnostics.md)                                                               |
-| 이슈 진행·수정·재발 및 회귀 검증                | [이슈 목록과 수정 관리](issues/README.md)                                                                                   |
-| 실행 결과와 미검증 범위                         | [검증 증거](evidence/README.md)                                                                                             |
-| 개발 이력·배포 후속 작업                        | [Sprint 목록](sprints/README.md), [진행 기록](sprint-progress.md)                                                           |
-| 교차 저장소 계약 후속 과제                      | [Platform 정렬 backlog](platform-alignment.md)                                                                              |
-| 요소·action·목표의 불명확한 상태 판단 확장 계획 | [Browser Act S21 — 현재 자료에 기반한 LLM 추가 판단](sprints/s21-act-evidence-based-llm-assessment.md) — Planned            |
-| 외부 제품 비교 배경                             | [비규범 참고자료](references/README.md)                                                                                     |
+| 목적                                   | 문서                                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 기능의 실제 구현 위치                  | [코드 탐색 안내](source-guide.md)                                                                                                    |
+| 로컬 설치·업데이트·복구                | [Community 설치](community-installation.md)                                                                                          |
+| 개발·통제 Chrome·live Provider 검증    | [테스트 실행 가이드](test.md)                                                                                                        |
+| 로컬 예제 실행                         | [Accessible items 데모](accessible-items-demo.md), [Collection Reading 데모](../examples/collection-reading-demo/README.md)          |
+| 예제별 요청과 재현                     | [요청 메시지](../examples/example-request-messages.md), [Chrome 요청 테스트](../examples/chrome-request-tests.md)                    |
+| 진단 추적 확인                         | [메서드 실행 진단](reference/method-execution-diagnostics.md)                                                                        |
+| 이슈 진행·수정·재발 및 회귀 검증       | [이슈 목록과 수정 관리](issues/README.md)                                                                                            |
+| 실행 결과와 미검증 범위                | [검증 증거](evidence/README.md)                                                                                                      |
+| 개발 이력·배포 후속 작업               | [Sprint 목록](sprints/README.md), [진행 기록](sprint-progress.md)                                                                    |
+| 교차 저장소 계약 후속 과제             | [Platform 정렬 backlog](platform-alignment.md)                                                                                       |
+| 요소·action·목표의 추가 판단 구현·검증 | [Browser Act S21 — 현재 자료에 기반한 LLM 추가 판단](evidence/s21-assessment-2026-10-11.md) — Browser-local 구현, qualification 제한 |
+| 외부 제품 비교 배경                    | [비규범 참고자료](references/README.md)                                                                                              |
 
 ## 문서 유지 기준
 

@@ -1,3 +1,5 @@
+import { ariaBooleanState } from "./boolean-state.js";
+import { controlActions, controlSupportReason } from "./control-capability.js";
 import {
   checkedState,
   controlDisabled,
@@ -122,7 +124,7 @@ const maxWorkflowDeclarationChars = 16_384;
 const maxWorkflowScriptCount = 12;
 const maxWorkflowInlineScriptChars = 256 * 1024;
 const projectionSelector =
-  "button,input,textarea,select,option,summary,dialog,a,[role],h1,h2,h3,h4,h5,h6";
+  "main,form,button,input,textarea,select,option,summary,dialog,a,[role],h1,h2,h3,h4,h5,h6";
 const workflowDeclaration = (): unknown | undefined => {
   const declarations = document.querySelectorAll(
     'script[type="application/contextpilot-workflow+json"]',
@@ -232,7 +234,8 @@ const boundedTarget = (
     !actionTokenPattern.test(request.action_token)
   )
     return undefined;
-  return actionableRef(request.ref_id);
+  const element = actionableRef(request.ref_id);
+  return element;
 };
 const actionableRef = (refId: string): HTMLElement | undefined => {
   const record = refRecords.get(refId);
@@ -305,6 +308,13 @@ const roleFor = (element: Element): string | undefined => {
   if (element.tagName === "SUMMARY") return "button";
   if (element instanceof HTMLDialogElement) return "dialog";
   if (element instanceof HTMLButtonElement) return "button";
+  if (
+    element instanceof HTMLInputElement &&
+    ["button", "submit", "reset"].includes(element.type)
+  )
+    return "button";
+  if (element.tagName === "MAIN") return "main";
+  if (element.tagName === "FORM") return "form";
   if (element instanceof HTMLInputElement)
     return element.type === "checkbox"
       ? "checkbox"
@@ -570,21 +580,18 @@ const projectionNodes = (
           const state = {
             ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
             ...checkedState(element),
+            ...ariaBooleanState(element, "pressed"),
             ...(element instanceof HTMLSelectElement
               ? { selected: element.selectedIndex >= 0 }
               : {}),
             ...(element instanceof HTMLOptionElement
               ? { selected: element.selected }
-              : element.hasAttribute("aria-selected")
-                ? { selected: element.getAttribute("aria-selected") === "true" }
-                : {}),
+              : ariaBooleanState(element, "selected")),
             ...(element.tagName === "SUMMARY" &&
             element.parentElement instanceof HTMLDetailsElement
               ? { expanded: element.parentElement.open }
               : {}),
-            ...(element.hasAttribute("aria-expanded")
-              ? { expanded: element.getAttribute("aria-expanded") === "true" }
-              : {}),
+            ...ariaBooleanState(element, "expanded"),
             ...(element.hasAttribute("required") ? { required: true } : {}),
           };
           nodes.push({
@@ -609,11 +616,30 @@ const projectionNodes = (
               ? { hidden_reason: hiddenReason }
               : {}),
             enabled: !controlDisabled(element),
+            supported_actions: controlActions(element, role),
+            action_support_reason: controlSupportReason(element, role),
             ...(navigationKind === "same-origin"
               ? { same_origin_link: true }
               : navigationKind === "cross-origin"
                 ? { cross_origin_link: true }
                 : {}),
+            ...(role !== "option"
+              ? (() => {
+                  const parent = element.parentElement?.closest(
+                    'main, form, dialog, [role="main"], [role="form"], [role="dialog"]',
+                  );
+                  const parentRole = parent && roleFor(parent);
+                  return parent && parentRole
+                    ? {
+                        parent_ref_id: refFor(
+                          parent,
+                          parentRole,
+                          nameFor(parent),
+                        ),
+                      }
+                    : {};
+                })()
+              : {}),
             ...(role === "option"
               ? (() => {
                   const parent =
@@ -643,6 +669,16 @@ const projectionNodes = (
     }
     current = walker.nextNode() as Element | null;
   }
+  const refs = new Set(
+    nodes.map((node) => (node as { ref_id: string }).ref_id),
+  );
+  for (const node of nodes) {
+    const linked = node as { parent_ref_id?: string; label_ref_id?: string };
+    if (linked.parent_ref_id && !refs.has(linked.parent_ref_id))
+      delete linked.parent_ref_id;
+    if (linked.label_ref_id && !refs.has(linked.label_ref_id))
+      delete linked.label_ref_id;
+  }
   return { nodes, truncated };
 };
 const projection = (scope: ReadScope = "all_dom"): unknown => {
@@ -668,7 +704,19 @@ const uiCompletion = createUiCompletionObserver({
   resolve: actionableRef,
 });
 const pageResources = createPageResourceCollector(document, documentEpoch);
-runtime?.onMessage.addListener((message, sender, respond) => {
+runtime?.onMessage.addListener((message, sender, sendResponse) => {
+  let dispatch: "not_dispatched" | "dispatched" | "unknown" = "not_dispatched";
+  const respond = (response: unknown) => {
+    const executing =
+      typeof message === "object" &&
+      message !== null &&
+      (message as { kind?: unknown }).kind === "CONTENT_EXECUTE_R1";
+    sendResponse(
+      executing && typeof response === "object" && response !== null
+        ? { dispatch, ...response }
+        : response,
+    );
+  };
   if (
     typeof message === "object" &&
     message !== null &&
@@ -831,21 +879,18 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     const state = {
       ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
       ...checkedState(element),
+      ...ariaBooleanState(element, "pressed"),
       ...(element instanceof HTMLSelectElement
         ? { selected: element.selectedIndex >= 0 }
         : {}),
       ...(element instanceof HTMLOptionElement
         ? { selected: element.selected }
-        : element.hasAttribute("aria-selected")
-          ? { selected: element.getAttribute("aria-selected") === "true" }
-          : {}),
+        : ariaBooleanState(element, "selected")),
       ...(element.tagName === "SUMMARY" &&
       element.parentElement instanceof HTMLDetailsElement
         ? { expanded: element.parentElement.open }
         : {}),
-      ...(element.hasAttribute("aria-expanded")
-        ? { expanded: element.getAttribute("aria-expanded") === "true" }
-        : {}),
+      ...ariaBooleanState(element, "expanded"),
       ...(element.hasAttribute("required") ? { required: true } : {}),
     };
     respond({ ok: true, state });
@@ -883,6 +928,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       !record ||
       record.stale ||
       !(element instanceof HTMLElement) ||
+      !controlActions(element, record.role).includes(
+        intent.tool as import("../contracts/semantic-types.js").ControlAction,
+      ) ||
       (intent.tool === "click_by_ref" &&
         !["button", "tab", "menuitem"].includes(record.role)) ||
       (intent.tool === "navigate" &&
@@ -911,14 +959,19 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       });
       return true;
     }
-    if (intent.tool === "click_by_ref") element.click();
-    else if (intent.tool === "navigate") {
+    if (intent.tool === "click_by_ref") {
+      dispatch = "unknown";
+      element.click();
+      dispatch = "dispatched";
+    } else if (intent.tool === "navigate") {
       if (!(element instanceof HTMLAnchorElement)) {
         respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
         return true;
       }
       const target = new URL(element.href, location.href);
+      dispatch = "unknown";
       element.click();
+      dispatch = "dispatched";
       respond({
         ok: true,
         postcondition: "navigation",
@@ -931,11 +984,13 @@ runtime?.onMessage.addListener((message, sender, respond) => {
         respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
         return true;
       }
+      dispatch = "unknown";
       element.focus();
       element.dispatchEvent(
         new KeyboardEvent("keydown", { key, bubbles: true }),
       );
       element.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true }));
+      dispatch = "dispatched";
     }
     respond({ ok: true, postcondition: "dispatch" });
     return true;
@@ -1002,10 +1057,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       visible: true,
       enabled: true,
       occluded: false,
-      editable:
-        element.isContentEditable ||
-        (element instanceof HTMLInputElement && !element.readOnly) ||
-        (element instanceof HTMLTextAreaElement && !element.readOnly),
+      editable: controlActions(element, roleFor(element) ?? "").includes(
+        "set_text_by_ref",
+      ),
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
     });
@@ -1040,10 +1094,15 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     }
     const record = refRecords.get(intent.ref_id);
     const element = record?.element;
+    if (element && controlDisabled(element)) {
+      respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
+      return true;
+    }
     if (
       !record ||
       record.stale ||
       !element?.isConnected ||
+      controlDisabled(element) ||
       roleFor(element) !== record.role ||
       nameFor(element) !== record.name ||
       (element instanceof HTMLInputElement && element.disabled) ||
@@ -1058,6 +1117,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     if (intent.tool === "select_option_by_ref") {
       if (
         !(element instanceof HTMLSelectElement) ||
+        !controlActions(element, record.role).includes(
+          "select_option_by_ref",
+        ) ||
         record.role !== "combobox" ||
         !intent.value_binding ||
         !delivery ||
@@ -1088,11 +1150,21 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       const option = [...element.options].find(
         (candidate) => candidate.text === delivery.value,
       );
-      if (!option || element.value === option.value) {
+      if (!option || option.disabled || option.closest("optgroup[disabled]")) {
         respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
         return true;
       }
+      if (element.value === option.value) {
+        respond({
+          ok: true,
+          postcondition: "exact_option_value",
+          already_satisfied: true,
+        });
+        return true;
+      }
+      dispatch = "unknown";
       element.value = option.value;
+      dispatch = "dispatched";
       element.dispatchEvent(new Event("input", { bubbles: true }));
       element.dispatchEvent(new Event("change", { bubbles: true }));
       if (element.value !== option.value) {
@@ -1192,13 +1264,15 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       !record ||
       record.stale ||
       !element?.isConnected ||
+      controlDisabled(element) ||
       !(
         element instanceof HTMLInputElement ||
         element instanceof HTMLTextAreaElement
       ) ||
       roleFor(element) !== record.role ||
       nameFor(element) !== record.name ||
-      element.disabled ||
+      controlDisabled(element) ||
+      element.readOnly ||
       element.type === "password"
     ) {
       respond({ ok: false, code: "TARGET_STALE" });
@@ -1224,7 +1298,9 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
       return true;
     }
+    dispatch = "unknown";
     setter.call(element, delivery.value);
+    dispatch = "dispatched";
     element.dispatchEvent(new Event("input", { bubbles: true }));
     element.dispatchEvent(new Event("change", { bubbles: true }));
     if (element.value !== delivery.value) {

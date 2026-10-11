@@ -111,3 +111,11 @@ ARIA button checked reader·실행·지연 상태 검증, native/ARIA no-op, boo
 checked 후보 제외, aria-disabled/disabled fieldset 후보 차단을 구현·검증했다.
 이 기록의 과거 audit 결과는 당시 관찰로 보존한다. readonly/type/editor/multiple-select,
 pressed 및 나머지 capability 불일치는 남아 있으며 전체 이슈 상태는 해결안 정리를 유지한다.
+
+## 2026-10-11 S21 구현·검증 후속
+
+supported_actions와 capability 공통 기준, readonly/unsupported type/editor/multiple-select 제외, native 클릭 지원과 정확한 boolean state reader를 구현했다.
+[소스·회귀·통제/live 증거](../../evidence/s21-assessment-2026-10-11.md)를 연결한다.
+기존 이력과 당시 실패 관찰은 보존한다. 현재 상태는 **검증 중**이다.
+원래 운영 사이트·배포는 미검증이며, controlled HTTPS와 실제 모델이 연결된 fixture
+표본을 실제 사이트 수락 조건 충족으로 대체하지 않는다.

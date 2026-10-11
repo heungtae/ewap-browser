@@ -37,3 +37,5 @@ JSON 증거는 각 기록에서 연결한다.
 이전 설계가 필요한 기록은 삭제 전 커밋에 고정된 링크를 사용한다.
 
 - [ARIA checked 컨트롤 수정 검증 — 2026-10-11](aria-checked-control-fix-2026-10-11.md): ISS-20261011-002 bounded 구현·Chrome·회귀 범위.
+
+- [S21 추가 판단 구현·검증 — 2026-10-11](s21-assessment-2026-10-11.md): dispatch·freshness·budget·승인·UI, 통제 및 실제 provider 표본과 미검증 범위.

@@ -1,3 +1,9 @@
+import { repeatedMutation } from "./act-mutation-history.js";
+import { parseElementAssessment } from "./act-element-assessment.js";
+import { runElementAssessment } from "./act-element-assessment-turn.js";
+import { goalBindingCurrent } from "./act-goal-observation.js";
+import { withDeadline } from "../security/deadline.js";
+import { assessPendingAction } from "./act-action-assessment.js";
 import { localGoalCurrent } from "./act-local-goal.js";
 import { finaliseGoal } from "./act-goal-finalizer.js";
 import { actValueSource } from "./act-value-source.js";
@@ -59,13 +65,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       session.requestContext ?? dependencies.requestContext?.(session.tabId);
     if (context) session.requestContext = context;
     assertRequestActive(session.requestContext);
-    const active = await dependencies
+    const initialActive = await dependencies
       .readActive(undefined, session.tabId)
       .catch((error) => {
         if (session.executionEvidence?.length) return undefined;
         throw error;
       });
-    if (!active) return unavailableActFeedback(dependencies, session);
+    if (!initialActive) return unavailableActFeedback(dependencies, session);
+    let active = initialActive;
     assertRequestActive(session.requestContext);
     if (session.navigationFeedback) {
       // Only a verified same-origin transition can rebind. No old approval,
@@ -140,6 +147,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         type: "activity_started",
         stage: "PREPARING_PAGE",
       });
+      await assessPendingAction(dependencies, session, run, active);
       if (localGoalCurrent(session, active, dependencies.pageScope(active)))
         return finaliseGoal({
           dependencies,
@@ -288,8 +296,11 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       const harnessReads =
         harnessExecutor?.tools.filter(
           (tool) =>
-            !session.harnessCapabilities ||
-            session.harnessCapabilities.read_tools.includes(tool.function.name),
+            !session.feedbackOnly &&
+            (!session.harnessCapabilities ||
+              session.harnessCapabilities.read_tools.includes(
+                tool.function.name,
+              )),
         ) ?? [];
       const resourceInventory = await harnessExecutor
         ?.bootstrap?.()
@@ -347,7 +358,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               targetRefId ? new Set([targetRefId]) : undefined,
               session.pageApiActions,
             );
-      const observationId = opaqueId();
+      let observationId = opaqueId();
       const observation = structuredClone(active);
       const observationScope = structuredClone(dependencies.pageScope(active));
       const requestRevision = session.requestContext
@@ -802,6 +813,15 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       let currentModel = model;
       let offeredTools = tools;
       const parseProposalCall = (targetCall: ProviderToolCall): ActProposal => {
+        if (targetCall.name === "assess_element") {
+          const assessment = parseElementAssessment(
+            targetCall,
+            observationId,
+            offeredTools,
+          );
+          if (!assessment.call) return fail("TARGET_NOT_ACTIONABLE");
+          targetCall = assessment.call;
+        }
         const parsed =
           targetCall.name === "propose_page_api"
             ? parsePageApiProposal(targetCall, pageApiActions, active.origin)
@@ -909,12 +929,48 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           };
         }
         try {
+          if (call.name === "assess_element") {
+            const assessment = parseElementAssessment(
+              call,
+              observationId,
+              offeredTools,
+            );
+            if (!assessment.call) {
+              const summary = safeChatText(assessment.summary);
+              dependencies.coordinator.runs.terminal(
+                run.id,
+                "UNKNOWN",
+                "TARGET_NOT_ACTIONABLE",
+              );
+              dependencies.publish(run.id, {
+                type: "assistant_delta",
+                text: summary,
+              });
+              dependencies.publish(run.id, {
+                type: "activity_finished",
+                stage: "COMPLETED",
+              });
+              dependencies.publish(run.id, {
+                type: "run_terminal",
+                outcome: "UNKNOWN",
+                code: "TARGET_NOT_ACTIONABLE",
+              });
+              dependencies.endSession(session);
+              return {
+                ok: true,
+                state: "UNKNOWN",
+                message: summary,
+                code: "TARGET_NOT_ACTIONABLE",
+              };
+            }
+          }
           proposal = parseProposalCall(call);
           break;
         } catch (error) {
           const recoverable =
             error instanceof ContractError &&
             (error.code === "INVALID_ARGUMENT" ||
+              error.code === "TARGET_NOT_ACTIONABLE" ||
               error.code === "VALUE_BINDING_INVALID") &&
             session.harnessCapabilities !== undefined &&
             dependencies.coordinator.runs.byId(run.id)?.phase !== "TERMINAL";
@@ -952,13 +1008,104 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             targetRefId ? new Set([targetRefId]) : undefined,
             pageApiActions,
           );
-          response = await chatOnce(offeredTools, [
+          const correctionMessages: ProviderMessage[] = [
             ...messages,
             assistantEcho,
             contractError,
-          ]);
+            {
+              role: "user",
+              content: `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(currentModel.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]`,
+            },
+          ];
+          if (error.code === "TARGET_NOT_ACTIONABLE") {
+            correctionMessages.push({
+              role: "user",
+              content: `Element assessment reason: TARGET_SUPPORT_UNCLEAR. Current observation_id: ${observationId}. Existing support and approval boundaries apply.`,
+            });
+            const assessment = await runElementAssessment({
+              dependencies,
+              session,
+              messages: correctionMessages,
+              tools: offeredTools,
+              observationId,
+              stepId: call.id,
+              refresh: async (deadline) => {
+                const latest = await withDeadline(
+                  dependencies.readActive(undefined, session.tabId),
+                  Math.max(0, deadline - Date.now()),
+                  "REQUEST_TIMEOUT",
+                );
+                assertRequestActive(session.requestContext);
+                if (
+                  !goalBindingCurrent(
+                    dependencies,
+                    session,
+                    latest,
+                    observationScope,
+                  )
+                )
+                  return fail("PAGE_SCOPE_STALE");
+                active = latest;
+                currentModel = dependencies.coordinator.modelSnapshot(
+                  run.id,
+                  latest.snapshot,
+                );
+                offeredTools = genericActTools(
+                  session.definitions,
+                  currentModel.snapshot,
+                  latest.snapshot,
+                  targetRefId ? new Set([targetRefId]) : undefined,
+                  pageApiActions,
+                );
+                return {
+                  projection: currentModel.snapshot,
+                  tools: offeredTools,
+                };
+              },
+            });
+            response = assessment.response;
+            offeredTools = assessment.tools;
+            observationId = assessment.observationId;
+          } else response = await chatOnce(offeredTools, correctionMessages);
           assertRequestActive(session.requestContext);
         }
+      }
+      if (repeatedMutation(session, proposal, active)) {
+        const call = response.tool_calls[0]!;
+        messages.push(
+          {
+            role: "assistant",
+            content: response.content,
+            tool_calls: response.tool_calls,
+          },
+          {
+            role: "tool",
+            tool_call_id: call.id,
+            content: JSON.stringify({
+              status: "MUTATION_NOT_REPEATED",
+              reason:
+                "This target already has an execution result. Assess the original goal from current evidence. No new mutation was dispatched.",
+            }),
+          },
+        );
+        return finishGoalFeedback({
+          dependencies,
+          session,
+          run,
+          response: { content: "", tool_calls: [] },
+          observationId,
+          observation,
+          observationScope,
+          modelRefs: model.snapshot.nodes.map((node) => node.model_ref),
+          messages,
+        });
+      }
+      if (session.recoveryStep) {
+        if (session.recoveryStep.attempts >= 1)
+          return fail("WORKFLOW_STEP_LIMIT");
+        session.recoveryStep.attempts++;
+        proposal.approvalScope = "single_step";
+        delete session.continueAfterApproval;
       }
       assertApprovedPlan(
         session,
@@ -984,6 +1131,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         tool_calls: response.tool_calls,
       });
       session.proposal = proposal;
+      session.assessmentBaseline = structuredClone(active);
+      session.assessmentBaselineScope = structuredClone(observationScope);
       // PAH-9/R1: a prior session approval covers only the bounded
       // session-scoped sequence it explicitly showed. A new single_step
       // proposal (text inputs always are) is never part of that approval:

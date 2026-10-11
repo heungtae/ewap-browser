@@ -1,3 +1,4 @@
+import { fail } from "../security/validation.js";
 import type { ModelActionProposal } from "../contracts/types.js";
 import type { Role } from "../contracts/core-types.js";
 import { digestCanonical } from "../security/canonical.js";
@@ -17,6 +18,7 @@ import type { ActSession } from "./act-session-types.js";
 import type { ParsedActProposal } from "./act-proposal-parser.js";
 
 type Target = {
+  supported_actions?: import("../contracts/semantic-types.js").ControlAction[];
   enabled: boolean;
   name: string;
   ref_id: string;
@@ -41,6 +43,11 @@ export const prepareActProposal = (
   target: Target,
   expectedRequestRevision?: number,
 ): Prepared => {
+  if (
+    target.supported_actions &&
+    !target.supported_actions.includes(proposal.tool)
+  )
+    return fail("TARGET_NOT_ACTIONABLE");
   // PAH-9: LLM-judged values bind to the approved proposal. A clear value
   // rides with the proposal (no extra value card); a missing value in the
   // harness path is a contract error for the model, never an automatic card.

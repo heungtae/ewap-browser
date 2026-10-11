@@ -1,3 +1,4 @@
+import { consumeAssessment } from "./act-assessment-budget.js";
 import { actExecutionInventory } from "./act-execution-inventory.js";
 import { opaqueId } from "../security/canonical.js";
 import { ContractError } from "../security/validation.js";
@@ -24,6 +25,10 @@ export const reassessGoal = async (opts: {
 }) => {
   const { dependencies, session, run } = opts;
   opts.check();
+  const assessmentDeadline = Math.min(
+    opts.deadline,
+    consumeAssessment(session, "goal"),
+  );
   const observationId = opaqueId();
   const model = dependencies.coordinator.modelSnapshot(
     run.id,
@@ -53,7 +58,7 @@ export const reassessGoal = async (opts: {
     );
   opts.messages.push({
     role: "user",
-    content: `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\nCurrent observation_id: ${observationId}. Only report_goal_status is available; action results remain unchanged.`,
+    content: `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\nCurrent observation_id: ${observationId}. Only report_goal_status is available; action results remain unchanged. You MUST call report_goal_status, even for unknown or incomplete. A plain-text answer does not confirm the goal. Use the original request and current typed execution outcome; accepted structured confirmations may resolve historical raw unknown local UI results.`,
   });
   opts.messages.push({
     role: "user",
@@ -64,7 +69,7 @@ export const reassessGoal = async (opts: {
   session.requestContext?.signal.addEventListener("abort", abort, {
     once: true,
   });
-  const timer = setTimeout(abort, Math.max(0, opts.deadline - Date.now()));
+  const timer = setTimeout(abort, Math.max(0, assessmentDeadline - Date.now()));
   try {
     const response = await Promise.race([
       dependencies.provider.chat(

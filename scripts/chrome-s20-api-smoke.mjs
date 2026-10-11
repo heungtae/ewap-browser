@@ -55,7 +55,7 @@ try {
         .some((c) => c.name === "report_goal_status") &&
       (await evaluate(
         harness.panel,
-        "document.querySelector('#chat-send').dataset.state==='send' && document.querySelector('#chat-messages').textContent.includes('모델이 목표 완료')",
+        "document.querySelector('#chat-send').dataset.state==='send' && document.querySelector('#chat-messages').textContent.includes('목표의 완료를 확인')",
       ))
     ) {
       finished = true;

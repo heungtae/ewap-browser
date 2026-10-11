@@ -77,3 +77,11 @@ Act의 읽기 경로, Act 시작·step 실행·proposal 실행이 조립된다.
 
 검증 명령은 [test.md](test.md), 결과의 revision·환경·미검증 범위는
 [evidence](evidence/README.md)에서 확인한다.
+
+S21 추가 판단은 [element turn](../extension/src/service-worker/act-element-assessment-turn.ts),
+[action assessment](../extension/src/service-worker/act-action-assessment.ts),
+[관찰·freshness](../extension/src/service-worker/act-assessment-observation.ts),
+[공유 budget](../extension/src/service-worker/act-assessment-budget.ts),
+[논리 단계](../extension/src/service-worker/act-logical-results.ts),
+[중복 mutation 차단](../extension/src/service-worker/act-mutation-history.ts),
+[컨트롤 capability](../extension/src/content/control-capability.ts)에서 확인한다.

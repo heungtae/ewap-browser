@@ -60,7 +60,7 @@ try {
       );
       const goalBefore = await evaluate(
         panel,
-        "['모델이 목표 완료','목표에 남은 작업','목표 완료로 처리하지 않습니다'].map(t=>document.querySelector('#chat-messages').textContent.split(t).length-1)",
+        "['목표의 완료를 확인','목표에 남은 작업','목표 완료로 처리하지 않습니다'].map(t=>document.querySelector('#chat-messages').textContent.split(t).length-1)",
       );
       await evaluate(
         panel,
@@ -82,7 +82,7 @@ try {
           const i = goal === "completed" ? 0 : goal === "incomplete" ? 1 : 2;
           const finished = await evaluate(
             panel,
-            `document.querySelector('#chat-messages').textContent.split(${JSON.stringify(["모델이 목표 완료", "목표에 남은 작업", "목표 완료로 처리하지 않습니다"][i])}).length-1>${goalBefore[i]} && document.querySelector('#chat-send').dataset.state==='send'`,
+            `document.querySelector('#chat-messages').textContent.split(${JSON.stringify(["목표의 완료를 확인", "목표에 남은 작업", "목표 완료로 처리하지 않습니다"][i])}).length-1>${goalBefore[i]} && document.querySelector('#chat-send').dataset.state==='send'`,
           );
           if (finished) {
             finalFeedback = true;

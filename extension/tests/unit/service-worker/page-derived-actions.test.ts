@@ -79,7 +79,10 @@ describe("page-derived Act discovery", () => {
       },
       page,
     );
-    expect(tools[0]?.function.parameters.properties.target).toMatchObject({
+    expect(
+      (tools[0]?.function.parameters.properties as Record<string, unknown>)
+        .target,
+    ).toMatchObject({
       type: "string",
       enum: [page.nodes[0]!.ref_id],
     });

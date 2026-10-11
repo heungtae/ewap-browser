@@ -73,10 +73,11 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
     dependencies.milestone?.(intent.tab_id, stage);
     dependencies.progress?.(intent.run_id, stage);
   };
-  const execute = async (
+  const executeCore = async (
     intent: PageApiIntent,
     path: string,
     context: RequestContext,
+    receipt: { dispatch: "not_dispatched" | "dispatched" | "unknown" },
   ): Promise<PageApiDispatchResult> => {
     if (
       intent.kind !== "page_api" ||
@@ -222,6 +223,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
         return { ok: false, outcome: "FAILED", code: "PAGE_SCOPE_STALE" };
       mark(intent, "PAGE_API_DISPATCH");
       dispatched = true;
+      receipt.dispatch = "unknown";
       const injected = await withDeadline(
         dependencies.scripting.executeScript({
           target: { tabId: intent.tab_id, documentIds: [intent.document_id] },
@@ -251,6 +253,7 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
               ? "PAGE_API_CONTRACT_INVALID"
               : "PAGE_API_CALL_FAILED",
         };
+      receipt.dispatch = "dispatched";
       mark(intent, "VERIFYING_RESULT");
       const after = await withDeadline(
         dependencies.observe(
@@ -287,6 +290,17 @@ export const createPageApiRunner = (dependencies: Dependencies) => {
       inFlight.delete(key);
       if (dispatched) consumed.add(key);
     }
+  };
+  const execute = async (
+    intent: PageApiIntent,
+    path: string,
+    context: RequestContext,
+  ): Promise<PageApiDispatchResult> => {
+    const receipt: { dispatch: "not_dispatched" | "dispatched" | "unknown" } = {
+      dispatch: "not_dispatched",
+    };
+    const result = await executeCore(intent, path, context, receipt);
+    return { ...result, dispatch: receipt.dispatch };
   };
   return { execute };
 };

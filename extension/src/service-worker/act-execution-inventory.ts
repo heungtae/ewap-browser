@@ -44,6 +44,10 @@ export const actExecutionInventory = (opts: {
             },
             observed: { type: "boolean" },
             dispatched: { type: "boolean" },
+            dispatch: {
+              type: "string",
+              enum: ["not_dispatched", "dispatched", "unknown"],
+            },
             alreadySatisfied: { type: "boolean" },
             verifier: {
               type: "string",

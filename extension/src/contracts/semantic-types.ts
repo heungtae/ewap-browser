@@ -1,6 +1,16 @@
+export const controlActionNames = [
+  "click_by_ref",
+  "press_key_by_ref",
+  "set_text_by_ref",
+  "set_checked_by_ref",
+  "select_option_by_ref",
+  "navigate",
+] as const;
+export type ControlAction = (typeof controlActionNames)[number];
 import type { Role } from "./core-types.js";
 
 export type SemanticState = {
+  pressed?: boolean;
   disabled?: boolean;
   checked?: boolean;
   selected?: boolean;
@@ -18,6 +28,8 @@ export type HiddenReason =
   | "zero_box"
   | "ancestor_hidden";
 export type SemanticNode = {
+  action_support_reason?: "SUPPORTED" | "BLOCKED" | "UNSUPPORTED_CONTROL";
+  supported_actions?: ControlAction[];
   ref_id: string;
   role: Role;
   name: string;

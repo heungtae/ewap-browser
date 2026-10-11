@@ -266,6 +266,8 @@ export const parseActProposal = (
   if (
     !target ||
     !target.enabled ||
+    (target.supported_actions &&
+      !target.supported_actions.includes(definition.tool)) ||
     !definition.eligible_roles.includes(target.role)
   )
     return fail("TARGET_NOT_ACTIONABLE");

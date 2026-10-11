@@ -39,6 +39,49 @@ const report = (
   ],
 });
 describe("Act goal observation reassessment", () => {
+  it("S21 accepts a visible control reference when the entire observation is unchanged", async () => {
+    const { session, dependencies } = setup();
+    dependencies.provider.chat = vi.fn(
+      async (input: Pick<NormalizedProviderRequest, "messages" | "tools">) => {
+        const projection = [...input.messages]
+          .reverse()
+          .find((message) =>
+            message.content.startsWith("[UNTRUSTED_PAGE_PROJECTION]"),
+          )!;
+        const node = JSON.parse(projection.content.split("\n")[1]!).nodes[0];
+        return report(input, 1, "completed", [node.model_ref]);
+      },
+    );
+    const result = await createActStepRunner(dependencies).runStep(session);
+    expect(result.terminal).toBe("GOAL_VERIFIED");
+    expect(dependencies.executeApprovedProposal).not.toHaveBeenCalled();
+  });
+  it("S21 unresolved action feedback offers only goal reporting without consent-expanding reads", async () => {
+    const { session, dependencies } = setup();
+    session.feedbackOnly = true;
+    Object.assign(session.executionEvidence![0]!, {
+      outcome: "UNKNOWN",
+      verifier: "pending",
+      observed: false,
+    });
+    dependencies.provider.chat = vi.fn(
+      async (input: Pick<NormalizedProviderRequest, "messages" | "tools">) => {
+        expect(input.tools!.map((tool) => tool.function.name)).toEqual([
+          "report_goal_status",
+        ]);
+        return report(input, 1, "unknown");
+      },
+    );
+    const result = await createActStepRunner({
+      ...dependencies,
+      readAssist: { tabs: {} as never, redactTitle: (value) => value ?? "" },
+    }).runStep(session);
+    expect(result.completion).toMatchObject({
+      action_outcome: "UNKNOWN",
+      goal_status: "unknown",
+    });
+    expect(dependencies.executeApprovedProposal).not.toHaveBeenCalled();
+  });
   it("R01 discards incomplete shell report, rereads pricing and completes without mutation", async () => {
     const { session, dependencies, active } = setup();
     let calls = 0;

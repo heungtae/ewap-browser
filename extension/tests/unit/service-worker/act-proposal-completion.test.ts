@@ -83,11 +83,56 @@ describe("Act proposal completion", () => {
       ),
     ).resolves.toMatchObject({ ok: true, state: "FEEDBACK" });
 
-    expect(publishTerminal).not.toHaveBeenCalled();
+    expect(publishTerminal).toHaveBeenCalledWith(
+      run,
+      "FAILED",
+      undefined,
+      expect.objectContaining({
+        action_outcome: "FAILED",
+        goal_status: "checking",
+      }),
+    );
     expect(endSession).not.toHaveBeenCalled();
     expect(continueWorkflow).toHaveBeenCalledWith(session, proposal);
     expect(session.feedbackOnly).toBe(true);
     expect(session.messages[0]?.content).toContain("TARGET_STALE");
+  });
+
+  it("S21 ends an unknown attempt before starting its assessment UI run", async () => {
+    const publishTerminal = vi.fn();
+    const continueWorkflow = vi.fn(async () => {
+      expect(publishTerminal).toHaveBeenCalledWith(
+        run,
+        "UNKNOWN",
+        undefined,
+        expect.objectContaining({
+          action_outcome: "UNKNOWN",
+          goal_status: "checking",
+        }),
+      );
+      return { ok: true };
+    });
+    const session = { messages: [], proposal } as unknown as ActSession;
+    await completeActProposal(
+      {
+        publish: vi.fn(),
+        publishTerminal,
+        continueWorkflow,
+        endSession: vi.fn(),
+      },
+      session,
+      run,
+      proposal,
+      {
+        ok: false,
+        outcome: "UNKNOWN",
+        dispatch: "dispatched",
+        code: "POSTCONDITION_UNVERIFIED",
+      },
+      { success: "verified", failure: "failed" },
+    );
+    expect(session.pendingAssessment).toBe(proposal);
+    expect(session.executionEvidence![0]!.raw_outcome).toBe("UNKNOWN");
   });
 
   it("returns_verified_navigation_to_the_model_for_fresh_observation", async () => {

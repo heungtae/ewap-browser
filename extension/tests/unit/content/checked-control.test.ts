@@ -51,8 +51,11 @@ describe("bounded checked controls", () => {
     expect(await executeChecked(element(button), true, () => true)).toEqual({
       ok: true,
       postcondition: "semantic",
+      dispatch: "dispatched",
     });
-    await executeChecked(element(button), true, () => true);
+    expect(
+      await executeChecked(element(button), true, () => true),
+    ).toMatchObject({ dispatch: "not_dispatched", already_satisfied: true });
     expect(button.click).toHaveBeenCalledTimes(1);
   });
   it("observes delayed state without repeating the click", async () => {
@@ -65,7 +68,11 @@ describe("bounded checked controls", () => {
     });
     const result = executeChecked(element(button), true, () => true);
     await vi.advanceTimersByTimeAsync(150);
-    expect(await result).toEqual({ ok: true, postcondition: "semantic" });
+    expect(await result).toEqual({
+      ok: true,
+      postcondition: "semantic",
+      dispatch: "dispatched",
+    });
     expect(button.click).toHaveBeenCalledTimes(1);
   });
   it("does not coerce mixed state, mutate disabled controls, or uncheck radio", async () => {
@@ -109,6 +116,7 @@ describe("bounded checked controls", () => {
     expect(await executeChecked(element(button), true, () => true)).toEqual({
       ok: false,
       code: "TARGET_STALE",
+      dispatch: "dispatched",
     });
     expect(button.click).toHaveBeenCalledTimes(1);
     button.isConnected = true;

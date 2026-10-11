@@ -79,7 +79,7 @@ export const goalCheckTool = (
   function: {
     name: "report_goal_status",
     description:
-      "After execution results and fresh observation, report whether the original goal is completed, incomplete or unknown. Typed FAILED/UNKNOWN cannot become success. When a supplied complete dialog/main/form region alone establishes the goal, include its model_ref in evidence_refs; otherwise omit evidence_refs and the entire observation will be checked. A heading or toast alone is not a complete result. Further actions require new approvals.",
+      "After execution results and fresh observation, report whether the original goal is completed, incomplete or unknown. Typed FAILED/UNKNOWN cannot become success through prose. Only Worker-accepted structured local UI confirmations in the current execution inventory can resolve raw UNKNOWN; preserve historical receipts and do not claim business persistence. When a supplied complete dialog/main/form region alone establishes the goal, include its model_ref in evidence_refs; otherwise omit evidence_refs and the entire observation will be checked. A heading or toast alone is not a complete result. Further actions require new approvals.",
     parameters: {
       type: "object",
       additionalProperties: false,

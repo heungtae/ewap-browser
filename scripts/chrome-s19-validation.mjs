@@ -152,7 +152,7 @@ export const validateS19Case = async ({
 export const s19FeedbackCounts = (panel) =>
   evaluate(
     panel,
-    "['모델이 목표 완료','목표에 남은 작업','목표 완료로 처리하지 않습니다'].map(text=>document.querySelector('#chat-messages').textContent.split(text).length-1)",
+    "['목표의 완료를 확인','목표에 남은 작업','목표 완료로 처리하지 않습니다'].map(text=>document.querySelector('#chat-messages').textContent.split(text).length-1)",
   );
 export const s19HasFinalFeedback = async (panel, current, own) => {
   if (!current.action) return true;

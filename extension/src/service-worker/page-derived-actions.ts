@@ -10,9 +10,19 @@ const verifier = (declarationId: string): ProfileActionTool["verifier"] => ({
   required_changes: [],
 });
 
-const visibleEnabled = (snapshot: SemanticSnapshot, role: string): boolean =>
+const visibleEnabled = (
+  snapshot: SemanticSnapshot,
+  role: string,
+  tool?: import("../contracts/semantic-types.js").ControlAction,
+): boolean =>
   snapshot.nodes.some(
-    (node) => node.role === role && node.visible && node.enabled,
+    (node) =>
+      node.role === role &&
+      node.visible &&
+      node.enabled &&
+      (!tool ||
+        !node.supported_actions ||
+        node.supported_actions.includes(tool)),
   );
 
 export const isCustomListboxOption = (
@@ -79,7 +89,7 @@ export const pageDerivedActionTools = (
       : []),
   ];
   const observedClickRoles = clickRoles.filter((role) =>
-    visibleEnabled(snapshot, role),
+    visibleEnabled(snapshot, role, "click_by_ref"),
   );
   if (observedClickRoles.length > 0)
     definitions.push({
@@ -105,7 +115,7 @@ export const pageDerivedActionTools = (
       eligible_roles: ["link", "menuitem"],
       verifier: verifier("page-derived-navigation-v1"),
     });
-  if (visibleEnabled(snapshot, "textbox"))
+  if (visibleEnabled(snapshot, "textbox", "set_text_by_ref"))
     definitions.push({
       tool: "set_text_by_ref",
       effect: "local-ui-only",
@@ -133,6 +143,8 @@ export const pageDerivedActionTools = (
     });
   const selectableTargets = snapshot.nodes.filter(
     (node) =>
+      (!node.supported_actions ||
+        node.supported_actions.includes("select_option_by_ref")) &&
       node.role === "combobox" &&
       node.visible &&
       node.enabled &&

@@ -96,6 +96,7 @@ it("API-01 pins probe and dispatch to MAIN document then verifies independently"
   expect(await s.runner.execute(s.intent, "/variant")).toEqual({
     ok: true,
     outcome: "VERIFIED",
+    dispatch: "dispatched",
   });
   expect(s.executeScript).toHaveBeenCalledTimes(2);
   expect(s.beforeDispatch).toHaveBeenCalledOnce();
@@ -111,6 +112,7 @@ it("API-02 already satisfied never invokes or writes a dispatch marker", async (
   expect(await s.runner.execute(s.intent, "/variant")).toEqual({
     ok: true,
     outcome: "ALREADY_SATISFIED",
+    dispatch: "not_dispatched",
   });
   expect(s.executeScript).toHaveBeenCalledOnce();
   expect(s.beforeDispatch).not.toHaveBeenCalled();
@@ -202,6 +204,7 @@ it("API-09 invocation errors expose no page error", async () => {
     ok: false,
     outcome: "UNKNOWN",
     code: "PAGE_API_CALL_FAILED",
+    dispatch: "unknown",
   });
 });
 it("API-10 concurrent approvals cannot pass the asynchronous probe twice", async () => {

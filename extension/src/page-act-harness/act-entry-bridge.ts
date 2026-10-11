@@ -100,7 +100,12 @@ const PROPOSE_TO_ROLES: Record<string, string[]> = {
 export const findUnjustifiedDrops = (
   declaredPropose: string[],
   offeredSchemas: Array<{ name: string }>,
-  nodes: Array<{ role: string; visible: boolean; enabled: boolean }>,
+  nodes: Array<{
+    role: string;
+    visible: boolean;
+    enabled: boolean;
+    supported_actions?: readonly string[];
+  }>,
 ): string[] =>
   traceMethod(
     "page-act-harness/act-entry-bridge.ts:findUnjustifiedDrops",
@@ -112,7 +117,21 @@ export const findUnjustifiedDrops = (
         const roles = PROPOSE_TO_ROLES[name];
         if (roles === undefined) return false;
         return nodes.some(
-          (node) => roles.includes(node.role) && node.visible && node.enabled,
+          (node) =>
+            roles.includes(node.role) &&
+            node.visible &&
+            node.enabled &&
+            (!node.supported_actions ||
+              node.supported_actions.includes(
+                {
+                  propose_click: "click_by_ref",
+                  propose_set_text: "set_text_by_ref",
+                  propose_select_option: "select_option_by_ref",
+                  propose_set_checked: "set_checked_by_ref",
+                  propose_press_key: "press_key_by_ref",
+                  propose_navigate: "navigate",
+                }[name] ?? "",
+              )),
         );
       });
       traceDecision("page-act-harness.entry.drops_checked", {

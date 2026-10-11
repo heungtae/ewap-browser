@@ -103,6 +103,11 @@ export const storeSubmittedPlan = (opts: {
     approved: false,
     completedSteps: 0,
   };
+  opts.session.requiredGoalActions = Math.max(
+    opts.session.requiredGoalActions ?? 0,
+    opts.session.plan?.input.steps.length ?? 0,
+    plan.input.steps.length,
+  );
   opts.session.plan = plan;
   delete opts.session.proposal;
   delete opts.session.continueAfterApproval;

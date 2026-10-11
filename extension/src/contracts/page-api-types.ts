@@ -54,6 +54,9 @@ export type PageApiIntent = {
   approval_digest: string;
 };
 
-export type PageApiDispatchResult =
+export type PageApiDispatchResult = {
+  dispatch?: import("./act-assessment.js").DispatchReceipt;
+} & (
   | { ok: true; outcome: "VERIFIED" | "ALREADY_SATISFIED" }
-  | { ok: false; outcome: "FAILED" | "UNKNOWN"; code: string };
+  | { ok: false; outcome: "FAILED" | "UNKNOWN"; code: string }
+);

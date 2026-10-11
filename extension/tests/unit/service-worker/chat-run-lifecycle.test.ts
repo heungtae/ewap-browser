@@ -66,48 +66,51 @@ describe("chat run lifecycle", () => {
     lifecycle.releaseVision("run-one");
     expect([...captures.keys()]).toEqual(["run-two:capture-abcdefghijklmnop"]);
   });
-  it("P1 closes the step event stream while keeping the overall request alive until final goal", () => {
-    const events = new TabChatSessionStore();
-    const lifecycle = createChatRunLifecycle({
-      chrome: undefined,
-      events,
-      panels: new Map(),
-      unboundPanels: new Set(),
-      captures: new Map(),
-      coordinator: {} as never,
-      bindings: new Map(),
-      localSessions: {} as never,
-    });
-    const terminal = vi.fn(),
-      completionObserver = vi.fn();
-    lifecycle.setTerminalObserver(terminal);
-    lifecycle.setCompletionObserver(completionObserver);
-    events.bindRun("step-abcdefghijklmnop", 7, scope);
-    lifecycle.publish("step-abcdefghijklmnop", {
-      type: "run_terminal",
-      outcome: "VERIFIED",
-      completion: {
-        action_outcome: "VERIFIED",
-        goal_status: "checking",
-        reason: "OBSERVING",
-        reassessments: 0,
-      },
-    });
-    expect(events.terminal("step-abcdefghijklmnop")).toBe(true);
-    expect(terminal).not.toHaveBeenCalled();
-    expect(completionObserver).toHaveBeenCalledTimes(1);
-    events.bindRun("goal-abcdefghijklmnop", 7, scope);
-    lifecycle.publish("goal-abcdefghijklmnop", {
-      type: "run_terminal",
-      outcome: "VERIFIED",
-      completion: {
-        action_outcome: "VERIFIED",
-        goal_status: "completed",
-        reason: "GOAL_OBSERVED",
-        reassessments: 0,
-      },
-    });
-    expect(terminal).toHaveBeenCalledWith(7, "VERIFIED", undefined);
-    expect(completionObserver).toHaveBeenCalledTimes(2);
-  });
+  it.each(["VERIFIED", "UNKNOWN", "FAILED"] as const)(
+    "P1 closes a %s step stream while retaining the checking request",
+    (outcome) => {
+      const events = new TabChatSessionStore();
+      const lifecycle = createChatRunLifecycle({
+        chrome: undefined,
+        events,
+        panels: new Map(),
+        unboundPanels: new Set(),
+        captures: new Map(),
+        coordinator: {} as never,
+        bindings: new Map(),
+        localSessions: {} as never,
+      });
+      const terminal = vi.fn(),
+        completionObserver = vi.fn();
+      lifecycle.setTerminalObserver(terminal);
+      lifecycle.setCompletionObserver(completionObserver);
+      events.bindRun("step-abcdefghijklmnop", 7, scope);
+      lifecycle.publish("step-abcdefghijklmnop", {
+        type: "run_terminal",
+        outcome,
+        completion: {
+          action_outcome: outcome,
+          goal_status: "checking",
+          reason: "OBSERVING",
+          reassessments: 0,
+        },
+      });
+      expect(events.terminal("step-abcdefghijklmnop")).toBe(true);
+      expect(terminal).not.toHaveBeenCalled();
+      expect(completionObserver).toHaveBeenCalledTimes(1);
+      events.bindRun("goal-abcdefghijklmnop", 7, scope);
+      lifecycle.publish("goal-abcdefghijklmnop", {
+        type: "run_terminal",
+        outcome: "VERIFIED",
+        completion: {
+          action_outcome: "VERIFIED",
+          goal_status: "completed",
+          reason: "GOAL_OBSERVED",
+          reassessments: 0,
+        },
+      });
+      expect(terminal).toHaveBeenCalledWith(7, "VERIFIED", undefined);
+      expect(completionObserver).toHaveBeenCalledTimes(2);
+    },
+  );
 });

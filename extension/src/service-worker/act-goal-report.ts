@@ -7,6 +7,7 @@ export const parseGoalReport = (
   session: ActSession,
   observationId: string,
   refs: string[],
+  eligibleRefs: string[] = refs,
 ): {
   status: "completed" | "incomplete" | "unknown";
   summary: string;
@@ -45,7 +46,7 @@ export const parseGoalReport = (
       (!Array.isArray(value.evidence_refs) ||
         value.evidence_refs.length > 8 ||
         value.evidence_refs.some(
-          (ref) => typeof ref !== "string" || !refs.includes(ref),
+          (ref) => typeof ref !== "string" || !eligibleRefs.includes(ref),
         )))
   )
     return fail("INVALID_ARGUMENT");

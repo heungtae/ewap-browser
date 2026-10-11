@@ -1,3 +1,4 @@
+import { logicalActionResults } from "./act-logical-results.js";
 import type { CompletionContract } from "../contracts/action-types.js";
 import type { PageScope } from "../state/tab-chat-session-store.js";
 import type { ActSession, ActProposal } from "./act-session-types.js";
@@ -46,7 +47,9 @@ export const localGoalCurrent = (
     proof.completion.goal_request_digest !== digestCanonical(session.prompt) ||
     (session.plan &&
       session.plan.completedSteps < session.plan.input.steps.length) ||
-    session.executionEvidence?.some((a) => a.outcome !== "VERIFIED")
+    logicalActionResults(session.executionEvidence ?? []).some(
+      (a) => a.outcome !== "VERIFIED",
+    )
   )
     return false;
   const completion = proof.completion;

@@ -49,7 +49,16 @@ export const finishGoalFeedback = async (opts: {
   };
   for (let reassessments = 0; ; reassessments++) {
     check();
-    const report = parseGoalReport(response, session, observationId, refs);
+    const eligibleRefs = observation.snapshot.nodes.flatMap((node, index) =>
+      node.visible ? [refs[index]!] : [],
+    );
+    const report = parseGoalReport(
+      response,
+      session,
+      observationId,
+      refs,
+      eligibleRefs,
+    );
     const active = await withDeadline(
       dependencies.readActive(undefined, session.tabId),
       Math.max(0, deadline - Date.now()),
@@ -89,7 +98,9 @@ export const finishGoalFeedback = async (opts: {
             ? "BINDING_CHANGED"
             : "OBSERVATION_UNAVAILABLE",
       );
-    if (current) {
+    const missingReport =
+      response.tool_calls.length === 0 && report.status === "unknown";
+    if (current && !missingReport) {
       if (response.tool_calls[0])
         session.messages.push(
           {
