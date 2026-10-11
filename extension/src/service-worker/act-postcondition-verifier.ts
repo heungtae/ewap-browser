@@ -1,3 +1,4 @@
+import type { CompletionContract } from "../contracts/action-types.js";
 import type { ActionIntent } from "../contracts/types.js";
 import { digestCanonical } from "../security/canonical.js";
 import { isPlainObject } from "../security/validation.js";
@@ -48,6 +49,7 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
     intent: ActionIntent,
   ): Promise<boolean> => {
     if (
+      intent.completion?.kind === "render_result" ||
       intent.tool !== "click_by_ref" ||
       intent.effect !== "local-ui-only" ||
       intent.risk !== "R1"
@@ -86,13 +88,15 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
     node.name === marker.name &&
     (!marker.state || node.state[marker.state.field] === marker.state.expected);
   const canVerify = (intent: ActionIntent, value?: string): boolean =>
-    (intent.verifier.kind === "semantic-state-transition" &&
+    intent.completion?.kind !== "render_result" &&
+    ((intent.verifier.kind === "semantic-state-transition" &&
       intent.verifier.required_changes.length > 0) ||
-    (intent.tool === "set_text_by_ref" && value !== undefined) ||
-    intent.completion?.kind === "ui_relation";
+      (intent.tool === "set_text_by_ref" && value !== undefined) ||
+      intent.completion?.kind === "ui_relation");
 
   const prepare = async (run: Run, intent: ActionIntent): Promise<boolean> => {
     const completion = intent.completion;
+    if (completion?.kind === "render_result") return false;
     if (completion?.kind !== "ui_relation") return true;
     try {
       const active = await dependencies.readAll(run.tabId);
@@ -128,6 +132,8 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
     run: Run,
     intent: ActionIntent,
   ): Promise<CompletionEvaluation> => {
+    if (intent.completion?.kind === "render_result")
+      return { status: "invalid", reason: "CONTRACT_INVALID" };
     if (uiBaselines.has(run.id)) {
       try {
         const result = await dependencies.send(run.tabId, {
@@ -360,6 +366,10 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
     origin: string,
     expectedUrl?: string,
     beforeScope?: { document_epoch: string; page_scope_epoch: string },
+    destinationMarker?: Extract<
+      CompletionContract,
+      { kind: "navigation" }
+    >["destination_marker"],
   ): Promise<boolean> => {
     let before: URL;
     try {
@@ -404,7 +414,23 @@ export const createActPostconditionVerifier = (dependencies: Dependencies) => {
           const registeredSnapshot =
             !confirmedScope ||
             active.snapshot.document_epoch === confirmedScope.document_epoch;
+          const markers = destinationMarker
+            ? active.snapshot.nodes.filter(
+                (node) =>
+                  node.visible &&
+                  node.role === destinationMarker.role &&
+                  node.name === destinationMarker.name &&
+                  (!destinationMarker.state ||
+                    node.state[destinationMarker.state.field] ===
+                      destinationMarker.state.expected),
+              )
+            : [];
           if (
+            active.tabId === run.tabId &&
+            new URL(current.url).origin === origin &&
+            (expectedUrl === undefined || current.url === expectedUrl) &&
+            (!destinationMarker ||
+              (!active.snapshot.truncated && markers.length === 1)) &&
             registeredSnapshot &&
             (freshDocument || freshScope) &&
             active.snapshot.nodes.length > 0

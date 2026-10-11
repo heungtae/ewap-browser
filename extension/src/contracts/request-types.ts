@@ -1,5 +1,6 @@
 import type { ErrorCode, Outcome } from "./core-types.js";
 import type { ActivityStage } from "./chat-event-types.js";
+import type { ActCompletion } from "./act-completion.js";
 export type RequestStage =
   | "ACCEPTED"
   | ActivityStage
@@ -21,4 +22,5 @@ export type RequestSnapshot = {
   outcome?: Outcome;
   code?: ErrorCode;
   dispatch_started?: boolean;
+  completion?: ActCompletion;
 };

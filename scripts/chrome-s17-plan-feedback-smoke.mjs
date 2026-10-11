@@ -11,7 +11,7 @@ const child = spawn(
       S15_LIVE_MODEL: process.env.S17_LIVE_MODEL ?? "",
       ACCESSIBLE_ITEMS_CASES:
         process.env.ACCESSIBLE_ITEMS_CASES ??
-        "search,multiple,deny,controls-link,states-link,preview,document-link,async-preview",
+        "search,multiple,deny,controls-link,states-link,preview,document-link,async-preview,delayed-cost-screen,anchor-menuitem",
     },
   },
 );

@@ -1,3 +1,8 @@
+import {
+  validateActCompletion,
+  validActCompletion,
+  type ActCompletion,
+} from "../contracts/act-completion.js";
 import type { ErrorCode, Outcome } from "../contracts/core-types.js";
 import { isErrorCode } from "../contracts/error-codes.js";
 import { copy, type Request } from "./request-store.js";
@@ -99,8 +104,20 @@ export class ChatRequestLifecycle extends RequestExecution {
     )
       outcome = "UNKNOWN";
     request.outcome = outcome;
+    if (request.completion?.goal_status === "checking")
+      request.completion = {
+        ...request.completion,
+        goal_status: "unknown",
+        reason: "REQUEST_ENDED",
+      };
     if (code) request.code = code;
-    this.diagnostics?.terminal(requestId, outcome, code, reason);
+    this.diagnostics?.terminal(
+      requestId,
+      outcome,
+      code,
+      reason,
+      request.completion,
+    );
     this.controllers.get(requestId)?.abort();
     this.controllers.delete(requestId);
     this.budget.stop(requestId);
@@ -171,17 +188,33 @@ export class ChatRequestLifecycle extends RequestExecution {
       );
       return;
     }
+    if (validActCompletion(result.completion))
+      request.completion = { ...result.completion };
     this.finish(
       requestId,
       generation,
-      result.ok
-        ? "VERIFIED"
-        : result.outcome === "UNKNOWN"
-          ? "UNKNOWN"
-          : "FAILED",
+      result.outcome === "VERIFIED" ||
+        result.outcome === "FAILED" ||
+        result.outcome === "UNKNOWN"
+        ? result.outcome
+        : result.ok
+          ? "VERIFIED"
+          : result.outcome === "UNKNOWN"
+            ? "UNKNOWN"
+            : "FAILED",
       isErrorCode(result.code) ? result.code : undefined,
     );
   }
+  public completion(tabId: number, value: ActCompletion): void {
+    const request = [...this.requests.values()].find(
+      (r) => r.tab_id === tabId && r.state !== "TERMINAL",
+    );
+    if (!request) return;
+    request.completion = validateActCompletion(value);
+    request.revision += 1;
+    void this.flush().catch(() => undefined);
+  }
+
   public endTab(tabId: number, outcome: Outcome, code?: ErrorCode): void {
     const request = [...this.requests.values()].find(
       (item) => item.tab_id === tabId && item.state !== "TERMINAL",
@@ -232,12 +265,24 @@ export class ChatRequestLifecycle extends RequestExecution {
     request.generation += 1;
     this.transition(request, "TERMINAL", "TERMINAL");
     request.outcome = request.dispatch_started ? "UNKNOWN" : outcome;
+    if (request.completion)
+      request.completion = {
+        ...request.completion,
+        goal_status: "unknown",
+        reason: "REQUEST_ENDED",
+      };
     if (code) request.code = code;
     this.controllers.get(requestId)?.abort();
     this.controllers.delete(requestId);
     this.budget.stop(requestId);
     this.onTerminal?.(request.tab_id, request.outcome, code, requestId);
-    this.diagnostics?.terminal(requestId, request.outcome, code, reason);
+    this.diagnostics?.terminal(
+      requestId,
+      request.outcome,
+      code,
+      reason,
+      request.completion,
+    );
     void this.flush().catch(() => undefined);
     return copy(request);
   }

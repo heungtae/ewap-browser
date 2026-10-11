@@ -1,4 +1,5 @@
 import type { Outcome } from "./core-types.js";
+import type { ActCompletion } from "./act-completion.js";
 
 export type ChatMode = "ask" | "act";
 export type ActivityStage =
@@ -44,7 +45,11 @@ export type ChatEventPayload =
   | { type: "page_scope_changed" }
   | { type: "run_started"; mode: ChatMode; permission_mode: string }
   | { type: "activity_started"; stage: ActivityStage }
-  | { type: "activity_progress"; stage: ActivityStage }
+  | {
+      type: "activity_progress";
+      stage: ActivityStage;
+      completion?: ActCompletion;
+    }
   | { type: "activity_finished"; stage: ActivityStage }
   | { type: "assistant_delta"; text: string }
   | {
@@ -82,7 +87,12 @@ export type ChatEventPayload =
       purpose?: "source" | "component-scroll" | "component-vision";
       host: string;
     }
-  | { type: "run_terminal"; outcome: Outcome; code?: string };
+  | {
+      type: "run_terminal";
+      outcome: Outcome;
+      code?: string;
+      completion?: ActCompletion;
+    };
 export type ChatEvent = ChatEventPayload & {
   session_id: string;
   thread_id: string;

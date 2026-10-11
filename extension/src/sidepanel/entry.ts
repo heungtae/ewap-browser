@@ -1,3 +1,4 @@
+import { actCompletionView } from "./act-completion-view.js";
 import {
   requestVisionPermission,
   type VisionPermissions,
@@ -152,7 +153,10 @@ const requestClient = new RequestClient({
     if (request.state === "TERMINAL") {
       if (!stopRequested) setRunActive(false);
       setActivityStatus();
-      if (request.outcome === "FAILED" || request.outcome === "UNKNOWN")
+      const completionView = actCompletionView(request.completion);
+      if (completionView && request.outcome !== "CANCELLED")
+        setStatus(completionView.message);
+      else if (request.outcome === "FAILED" || request.outcome === "UNKNOWN")
         showFailure(
           typeof request.code === "string" ? request.code : "INTERNAL_FAILURE",
         );
@@ -1463,7 +1467,10 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     event.type === "activity_progress" ||
     event.type === "activity_finished"
   ) {
-    const detail = activityLabel(event.stage);
+    const detail =
+      (event.type === "activity_progress"
+        ? actCompletionView(event.completion)?.message
+        : undefined) ?? activityLabel(event.stage);
     setStatus(detail);
     setActivityStatus(detail);
     if (event.type === "activity_finished") {
@@ -1631,10 +1638,19 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
   streamingMessages.delete(event.run_id);
   if (activeRunId === event.run_id) activeRunId = undefined;
   if (activeRunId !== undefined) return;
+  const completionView = actCompletionView(event.completion);
+  if (completionView?.active && lastRequest?.state !== "TERMINAL") {
+    setRunActive(true);
+    setStatus(completionView.message);
+    setActivityStatus(completionView.message);
+    return;
+  }
   stopRequested = false;
   setActivityStatus();
   setRunActive(false);
-  if (event.outcome === "VERIFIED") setStatus("작업을 완료했습니다.");
+  if (completionView && event.outcome !== "CANCELLED")
+    setStatus(completionView.message);
+  else if (event.outcome === "VERIFIED") setStatus("작업을 완료했습니다.");
   else if (event.outcome === "CANCELLED") setStatus("작업을 중단했습니다.");
   else showFailure(event.code);
 };

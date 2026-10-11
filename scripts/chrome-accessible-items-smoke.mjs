@@ -1,4 +1,8 @@
 import {
+  delayGoalRender,
+  verifyDelayedGoal,
+} from "./chrome-act-goal-reassessment-fixture.mjs";
+import {
   workflowResultEvidence,
   workflowReadEvidence,
 } from "./chrome-workflow-call-evidence.mjs";
@@ -73,6 +77,7 @@ if (process.env.ACCESSIBLE_ITEMS_TEST_PROFILE) {
 }
 const cert = await mkdtemp(join(tmpdir(), "contextpilot-accessible-cert-"));
 let current;
+let goalRegressionPage;
 const calls = [];
 const results = [];
 const stream = (response, delta, finishReason) => {
@@ -366,7 +371,18 @@ const fixture = await createS1Fixture(
     }
     if (s17Suite) {
       const reply = s17ProviderReply(body, current);
-      if (reply) return stream(res, reply);
+      if (reply) {
+        await delayGoalRender(
+          body,
+          current,
+          reply,
+          goalRegressionPage,
+          evaluate,
+          sleep,
+          callRecord,
+        );
+        return stream(res, reply);
+      }
     }
     if (current.clarify && current.proposed)
       return stream(res, { content: "Fixture action complete" });
@@ -594,6 +610,7 @@ try {
     10000,
     "PAGE_READY",
   );
+  goalRegressionPage = page;
   const { panel, panelWindowId } = await openAnalysisPanel({
     cdpPort: port,
     extensionId,
@@ -946,6 +963,23 @@ try {
     },
   };
   const s17Cases = [
+    {
+      ...cases.find((item) => item.id === "controls-link"),
+      id: "anchor-menuitem",
+      role: "menuitem",
+      prepare: async () => {
+        await cases.find((item) => item.id === "controls-link").prepare();
+        await evaluate(
+          page,
+          "(()=>{const link=[...document.querySelectorAll('a')].find(item=>item.textContent.trim()==='Controls');link.setAttribute('role','menuitem');return true})()",
+        );
+      },
+    },
+    {
+      ...cases.find((item) => item.id === "controls-link"),
+      id: "delayed-cost-screen",
+      prompt: "Controls 링크로 이동해서 비용 화면이 표시되는지 확인해줘.",
+    },
     s17DocumentCase,
     s17AsyncCase,
     ...s15Cases.filter((item) =>
@@ -1012,7 +1046,7 @@ try {
       const goalFeedbackBefore = s17Suite
         ? await evaluate(
             panel,
-            "document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length",
+            "document.querySelector('#chat-messages').textContent.split('요청한 목표의 완료를 확인했습니다.').length",
           )
         : 0;
       const before = await state();
@@ -1159,7 +1193,7 @@ try {
           current.deny ||
           (await evaluate(
             panel,
-            `document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length>${goalFeedbackBefore} || [...document.querySelectorAll('.event-card[data-kind=error]')].some(e=>e.dataset.testSeen!=='1')`,
+            `document.querySelector('#chat-messages').textContent.split('요청한 목표의 완료를 확인했습니다.').length>${goalFeedbackBefore} || [...document.querySelectorAll('.event-card[data-kind=error]')].some(e=>e.dataset.testSeen!=='1')`,
           ));
         const s15LiveFinished =
           s18ReviewTerminal ||
@@ -1223,7 +1257,7 @@ try {
       const after = await state();
       const ui = await evaluate(
         panel,
-        "({busy:document.querySelector('#chat-send')?.dataset.state,cards:[...document.querySelectorAll('.event-card')].filter(e=>e.dataset.testSeen!=='1').map(e=>({kind:e.dataset.kind,title:e.querySelector('b')?.textContent,detail:e.dataset.kind==='error'?e.querySelector('.event-detail')?.textContent:undefined})).slice(-8)})",
+        "({status:document.querySelector('#chat-status')?.textContent,busy:document.querySelector('#chat-send')?.dataset.state,cards:[...document.querySelectorAll('.event-card')].filter(e=>e.dataset.testSeen!=='1').map(e=>({kind:e.dataset.kind,title:e.querySelector('b')?.textContent,detail:e.dataset.kind==='error'?e.querySelector('.event-detail')?.textContent:undefined})).slice(-8)})",
       );
       const result = {
         id: current.id,
@@ -1251,14 +1285,16 @@ try {
           ? {
               goalFeedbackVisible: await evaluate(
                 panel,
-                `document.querySelector('#chat-messages').textContent.split('모델이 목표 완료').length>${goalFeedbackBefore}`,
+                `document.querySelector('#chat-messages').textContent.split('요청한 목표의 완료를 확인했습니다.').length>${goalFeedbackBefore}`,
               ),
             }
           : {}),
         eventSummary: recovered?.events?.map((e) => ({
           type: e.type,
+          ...(e.completion ? { completion: e.completion } : {}),
           run: e.run_id,
           code: e.code,
+          outcome: e.outcome ?? e.result?.outcome,
           tool: e.action?.tool,
         })),
         replies: s15Suite
@@ -1334,6 +1370,7 @@ try {
           true,
           current.id + ": raw value in diagnostic ZIP",
         );
+      verifyDelayedGoal(current, result);
       if (s17Suite && !current.deny) {
         assert.ok(result.planReviewObserved, "Plan approval UI missing");
         assert.ok(
@@ -1375,9 +1412,9 @@ try {
           "Incomplete goal must not hide failed execution",
         );
         assert.ok(
-          ui.cards.some(
-            (item) =>
-              item.kind === "info" && item.title.includes("목표에 남은 작업"),
+          await evaluate(
+            panel,
+            "document.querySelector('#chat-messages').textContent.includes('목표에 남은 작업')",
           ),
           "Remaining goal must be visible",
         );
@@ -1406,6 +1443,10 @@ try {
               ]),
             )
           : {}),
+        "anchor-menuitem": async () =>
+          (await evaluate(page, "location.hash")) === "#controls",
+        "delayed-cost-screen": async () =>
+          (await evaluate(page, "location.hash")) === "#controls",
         "controls-link": async () =>
           (await evaluate(page, "location.hash")) === "#controls",
         "states-link": async () =>

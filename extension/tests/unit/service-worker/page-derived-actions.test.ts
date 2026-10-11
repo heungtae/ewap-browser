@@ -50,6 +50,44 @@ const snapshot = {
 };
 
 describe("page-derived Act discovery", () => {
+  it("excludes checked targets with unknown state from generic and declared tools", () => {
+    const page = {
+      ...snapshot,
+      nodes: [
+        {
+          ...snapshot.nodes[0]!,
+          role: "radio" as const,
+          state: { checked: false },
+        },
+        {
+          ...snapshot.nodes[0]!,
+          ref_id: "unknown-radio-abcdefghijkl",
+          role: "radio" as const,
+          state: {},
+        },
+      ],
+    };
+    const definitions = pageDerivedActionTools(page);
+    const tools = genericActTools(
+      definitions,
+      {
+        ...page,
+        nodes: page.nodes.map(({ ref_id, ...node }) => ({
+          ...node,
+          model_ref: ref_id,
+        })),
+      },
+      page,
+    );
+    expect(tools[0]?.function.parameters.properties.target).toMatchObject({
+      type: "string",
+      enum: [page.nodes[0]!.ref_id],
+    });
+    expect(
+      pageDerivedActionTools({ ...page, nodes: [page.nodes[1]!] }),
+    ).toEqual([]);
+  });
+
   it("offers anchor menu items as navigation, not unverifiable clicks", () => {
     const page = {
       ...snapshot,

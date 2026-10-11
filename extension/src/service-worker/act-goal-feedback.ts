@@ -1,162 +1,153 @@
-import { isErrorCode } from "../contracts/error-codes.js";
-import { digestCanonical } from "../security/canonical.js";
-import {
-  classifyOutcome,
-  toLegacyOutcome,
-} from "../page-act-harness/outcome.js";
-import { isPlainObject, fail } from "../security/validation.js";
-import { safeChatText } from "../state/tab-chat-session-store.js";
-import { traceDecision } from "../diagnostics/method-trace.js";
-import { assertRequestActive } from "./request-context.js";
+import { withDeadline } from "../security/deadline.js";
+import type { PageScope } from "../state/tab-chat-session-store.js";
+import type {
+  ProviderChatResponse,
+  ProviderMessage,
+} from "../providers/types.js";
 import type { ActStepDependencies } from "./act-step-dependencies.js";
 import type { ActSession } from "./act-session-types.js";
 import type { Run } from "../state/run-coordinator.js";
-import type { ProviderToolCall } from "../providers/types.js";
+import type { ActivePage } from "./page-context-runtime.js";
+import { assertRequestActive } from "./request-context.js";
+import { parseGoalReport } from "./act-goal-report.js";
+import {
+  finaliseGoal,
+  actionOutcome,
+  checkingCompletion,
+} from "./act-goal-finalizer.js";
+import {
+  goalBindingCurrent,
+  goalObservationDigest,
+  goalEvidenceCurrent,
+  observeStableGoal,
+} from "./act-goal-observation.js";
+import { reassessGoal } from "./act-goal-reassessment.js";
+import { ContractError } from "../security/validation.js";
 
 export const finishGoalFeedback = async (opts: {
   dependencies: ActStepDependencies;
   session: ActSession;
   run: Run;
-  response: { content: string; tool_calls: ProviderToolCall[] };
+  response: ProviderChatResponse;
   observationId: string;
-  observationDigest: string;
+  observation: ActivePage;
+  observationScope: PageScope;
+  modelRefs: string[];
+  messages: ProviderMessage[];
 }): Promise<Record<string, unknown>> => {
-  const { dependencies, session, run, response } = opts;
-  assertRequestActive(session.requestContext);
-  const active = await dependencies
-    .readActive(undefined, session.tabId)
-    .catch(() => undefined);
-  assertRequestActive(session.requestContext);
-  const bindingCurrent =
-    active !== undefined &&
-    active.tabId === session.tabId &&
-    active.origin === session.origin &&
-    active.snapshot.document_epoch === run.documentEpoch &&
-    digestCanonical(active.snapshot) === opts.observationDigest;
-  const call = response.tool_calls[0];
-  let status: "completed" | "incomplete" | "unknown" = "unknown";
-  let summary = response.content;
-  if (call) {
-    if (
-      response.tool_calls.length !== 1 ||
-      call.name !== "report_goal_status" ||
-      !call.id ||
-      session.messages.some(
-        (message) =>
-          message.role === "tool" && message.tool_call_id === call.id,
-      )
-    )
-      return fail("INVALID_ARGUMENT");
-    const value: unknown = JSON.parse(call.arguments);
-    if (
-      !isPlainObject(value) ||
-      Object.keys(value).some(
-        (key) => !["status", "summary", "observation_id"].includes(key),
-      ) ||
-      !["completed", "incomplete", "unknown"].includes(String(value.status)) ||
-      typeof value.summary !== "string" ||
-      !value.summary.trim() ||
-      value.summary.length > 4000 ||
-      value.observation_id !== opts.observationId
-    )
-      return fail("INVALID_ARGUMENT");
-    status = value.status as "completed" | "incomplete" | "unknown";
-    summary = value.summary;
-  }
-  const actions = session.executionEvidence ?? [];
-  const required = session.plan?.input.steps.length ?? actions.length;
-  const verified = actions.filter(
-    (action) => action.verifier === "satisfied",
-  ).length;
-  const terminal = classifyOutcome({
-    tool_calls_made: true,
-    read_only: false,
-    actions,
-    binding_current: bindingCurrent,
-    goal: {
-      required_actions: required,
-      verified_actions: session.plan
-        ? Math.min(verified, session.plan.completedSteps)
-        : verified,
-      final_observation: bindingCurrent,
-      goal_met: status === "completed",
-    },
-    ...(status === "incomplete" ? { remaining_work: true } : {}),
-  });
-  const outcome = toLegacyOutcome(terminal.kind);
-  const labels = {
-    ANSWER_ONLY: "답변만 완료했습니다.",
-    VERIFIED: "동작 결과는 검증됐지만 전체 목표 완료는 확인되지 않았습니다.",
-    GOAL_VERIFIED:
-      "검증된 동작과 최신 관찰을 바탕으로 모델이 목표 완료를 확인했습니다.",
-    FAILED: "동작 검증이 실패했습니다. 목표 완료로 처리하지 않습니다.",
-    UNKNOWN:
-      "동작 또는 최신 관찰을 확정하지 못했습니다. 목표 완료로 처리하지 않습니다.",
-    INCOMPLETE: "검증된 동작 이후에도 목표에 남은 작업이 있습니다.",
+  const { dependencies, session, run } = opts;
+  let response = opts.response,
+    observationId = opts.observationId;
+  let observation = structuredClone(opts.observation),
+    refs = opts.modelRefs;
+  const scope = opts.observationScope;
+  const deadline = Date.now() + 15_000;
+  const check = () => {
+    assertRequestActive(session.requestContext);
+    if (dependencies.coordinator.runs.byId(run.id)?.phase === "TERMINAL")
+      throw new ContractError("POLICY_DENIED");
   };
-  // Typed failures always win; do not publish a model's conflicting success prose.
-  const message = [
-    labels[terminal.kind],
-    terminal.kind === "FAILED" || terminal.kind === "UNKNOWN"
-      ? ""
-      : safeChatText(summary),
-  ]
-    .filter(Boolean)
-    .join("\n");
-  if (call)
-    session.messages.push(
-      {
-        role: "assistant",
-        content: response.content,
-        tool_calls: response.tool_calls,
-      },
-      {
-        role: "tool",
-        tool_call_id: call.id,
-        content: JSON.stringify({
-          terminal: terminal.kind,
-          reason: terminal.reason,
-          outcome,
-        }),
-      },
+  for (let reassessments = 0; ; reassessments++) {
+    check();
+    const report = parseGoalReport(response, session, observationId, refs);
+    const active = await withDeadline(
+      dependencies.readActive(undefined, session.tabId),
+      Math.max(0, deadline - Date.now()),
+      "REQUEST_TIMEOUT",
+    ).catch(() => undefined);
+    check();
+    const bound =
+      !!active && goalBindingCurrent(dependencies, session, active, scope);
+    const current =
+      bound &&
+      !active.snapshot.truncated &&
+      (goalObservationDigest(active.snapshot) ===
+        goalObservationDigest(observation.snapshot) ||
+        (report.status === "completed" &&
+          goalEvidenceCurrent(
+            observation.snapshot,
+            active.snapshot,
+            report.indexes,
+          )));
+    const finish = (reason?: Parameters<typeof finaliseGoal>[0]["reason"]) =>
+      finaliseGoal({
+        dependencies,
+        session,
+        run,
+        status: report.status,
+        summary: report.summary,
+        current: Boolean(current),
+        reassessments,
+        ...(reason ? { reason } : {}),
+      });
+    if (actionOutcome(session) !== "VERIFIED") return finish();
+    if (!bound)
+      return finish(
+        Date.now() >= deadline
+          ? "REASSESSMENT_LIMIT"
+          : active
+            ? "BINDING_CHANGED"
+            : "OBSERVATION_UNAVAILABLE",
+      );
+    if (current) {
+      if (response.tool_calls[0])
+        session.messages.push(
+          {
+            role: "assistant",
+            content: response.content,
+            tool_calls: response.tool_calls,
+          },
+          {
+            role: "tool",
+            tool_call_id: response.tool_calls[0].id,
+            content: JSON.stringify({ status: report.status }),
+          },
+        );
+      return finish();
+    }
+    if (reassessments >= 2 || Date.now() >= deadline)
+      return finish("REASSESSMENT_LIMIT");
+    dependencies.publish(run.id, {
+      type: "activity_progress",
+      stage: "VERIFYING_RESULT",
+      completion: checkingCompletion(session, reassessments + 1),
+    });
+    const stable = await observeStableGoal(
+      dependencies,
+      session,
+      active,
+      scope,
+      deadline,
     );
-  traceDecision("act.goal.feedback", {
-    terminal: terminal.kind,
-    reason: terminal.reason,
-    action_count: actions.length,
-    verified_actions: session.plan
-      ? Math.min(verified, session.plan.completedSteps)
-      : verified,
-    observation_current: bindingCurrent,
-    model_status: status,
-  });
-  const executionCode = actions.find(
-    (action) => action.outcome !== "VERIFIED" && action.code,
-  )?.code;
-  const code = isErrorCode(executionCode)
-    ? executionCode
-    : terminal.kind === "INCOMPLETE"
-      ? "GOAL_INCOMPLETE"
-      : undefined;
-  dependencies.coordinator.runs.terminal(run.id, outcome, code);
-  dependencies.publish(run.id, { type: "assistant_delta", text: message });
-  dependencies.publish(run.id, {
-    type: "activity_finished",
-    stage: outcome === "VERIFIED" ? "COMPLETED" : "FAILED",
-  });
-  dependencies.publish(run.id, {
-    type: "run_terminal",
-    outcome,
-    ...(code ? { code } : {}),
-  });
-  dependencies.endSession(session);
-  return {
-    ok: true,
-    state: terminal.kind,
-    terminal: terminal.kind,
-    reason: terminal.reason,
-    outcome,
-    message,
-    ...(code ? { code } : {}),
-  };
+    check();
+    if (!stable.active) return finish(stable.reason);
+    observation = structuredClone(stable.active);
+    try {
+      const next = await reassessGoal({
+        ...opts,
+        response,
+        observation,
+        deadline,
+        check,
+      });
+      response = next.response;
+      refs = next.refs;
+      observationId = next.observationId;
+    } catch (error) {
+      check();
+      if (error instanceof ContractError && error.code === "INVALID_ARGUMENT")
+        throw error;
+      return finaliseGoal({
+        dependencies,
+        session,
+        run,
+        status: "unknown",
+        summary: "",
+        current: false,
+        reassessments: reassessments + 1,
+        reason:
+          Date.now() >= deadline ? "REASSESSMENT_LIMIT" : "PROVIDER_FAILED",
+      });
+    }
+  }
 };

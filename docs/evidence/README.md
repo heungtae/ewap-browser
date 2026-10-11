@@ -23,6 +23,8 @@ JSON 증거는 각 기록에서 연결한다.
 
 | 범위                                          | 기록                                                                                                                                                                      |
 | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 웹 요소 발견·도구·실행·검증 지원 범위         | [호환성 audit와 26개 통제 관찰](web-element-compatibility-audit-2026-10-11.md)                                                                                            |
+| Act 이동 후 목표 확인                         | [ISS-20261011-001 수정 검증](act-completion-after-navigation-2026-10-11.md)                                                                                               |
 | Community 설치·독립 실행                      | [readiness](community-readiness-2026-10-04.md), [Linux 패키지 검증](s9-closure-2026-09-26.md)                                                                             |
 | Collection Reading                            | [S6-R](s6-r-closure-2026-10-01.md)                                                                                                                                        |
 | Page API·취소·요청 binding                    | [Page API](s10-page-api-closure-2026-10-01.md), [취소](s10-r-request-cancellation-2026-10-01.md)                                                                          |
@@ -33,3 +35,5 @@ JSON 증거는 각 기록에서 연결한다.
 
 나머지 날짜별 기록은 [디렉터리](.)와 [Sprint 진행 기록](../sprint-progress.md)에서 찾는다.
 이전 설계가 필요한 기록은 삭제 전 커밋에 고정된 링크를 사용한다.
+
+- [ARIA checked 컨트롤 수정 검증 — 2026-10-11](aria-checked-control-fix-2026-10-11.md): ISS-20261011-002 bounded 구현·Chrome·회귀 범위.

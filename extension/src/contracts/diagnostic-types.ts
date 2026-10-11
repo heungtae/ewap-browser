@@ -1,3 +1,4 @@
+import type { ActCompletion } from "./act-completion.js";
 import type { ErrorCode, Outcome } from "./core-types.js";
 /**
  * Diagnostics use the same threshold ordering as application logs.  A level
@@ -49,6 +50,7 @@ export type DiagnosticRecord = {
   reason?: DiagnosticReason;
   message?: string;
   elapsed_ms?: number;
+  completion?: ActCompletion;
 };
 
 export type DiagnosticsBundleExportRequest = {

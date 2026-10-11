@@ -115,7 +115,13 @@ export const pageDerivedActionTools = (
     });
   const checkedRoles = ["checkbox", "radio"] as const;
   const observedCheckedRoles = checkedRoles.filter((role) =>
-    visibleEnabled(snapshot, role),
+    snapshot.nodes.some(
+      (node) =>
+        node.role === role &&
+        node.visible &&
+        node.enabled &&
+        typeof node.state.checked === "boolean",
+    ),
   );
   if (observedCheckedRoles.length > 0)
     definitions.push({

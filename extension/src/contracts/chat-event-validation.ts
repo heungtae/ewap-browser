@@ -43,7 +43,7 @@ const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   page_scope_changed: [],
   run_started: ["mode", "permission_mode"],
   activity_started: ["stage"],
-  activity_progress: ["stage"],
+  activity_progress: ["stage", "completion"],
   activity_finished: ["stage"],
   assistant_delta: ["text"],
   tool_started: ["tool_use_id", "tool", "summary", "target_name"],
@@ -54,7 +54,7 @@ const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   value_required: ["action", "value_kind"],
   confirmation_required: ["action", "confirmation_id", "confirmation_nonce"],
   source_consent_required: ["request_id", "resource_count", "host", "purpose"],
-  run_terminal: ["outcome", "code"],
+  run_terminal: ["outcome", "code", "completion"],
 };
 export const hasExactChatEventKeys = (
   value: Record<string, unknown>,

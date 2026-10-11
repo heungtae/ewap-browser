@@ -1,3 +1,4 @@
+import type { ActCompletion } from "../contracts/act-completion.js";
 import { approveSubmittedPlan, assertApprovedPlan } from "./act-plan-store.js";
 import { fail } from "../security/validation.js";
 import { toHarnessRevision } from "../page-act-harness/act-entry-bridge.js";
@@ -58,7 +59,12 @@ type Dependencies = {
     proposal: ParsedPageApiProposal,
   ): Promise<Execution>;
   publish(runId: string, event: ChatEventPayload): void;
-  publishTerminal(run: Run, outcome: Outcome, code?: string): void;
+  publishTerminal(
+    run: Run,
+    outcome: Outcome,
+    code?: string,
+    completion?: ActCompletion,
+  ): void;
   actionView(session: ActSession, proposal: ActProposal): ChatActionView;
   continueWorkflow(
     session: ActSession,

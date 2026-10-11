@@ -1,0 +1,169 @@
+{
+  "recorded_at": "2026-10-11T01:59:03.427Z",
+  "extension_version": "0.1.100",
+  "chrome": "Chrome/147.0.7727.15",
+  "scope": "controlled HTTPS internal Worker-Content plus compiled provider schemas; no approval or live Provider qualification",
+  "hashes": {
+    "extension/src/content/entry.ts": "1fcd94538fa88c62680eaa53ba31792345d78e7564afc66e4d43946d48a5cfd5",
+    "extension/src/service-worker/page-derived-actions.ts": "31b8b762064ab75784edc277e21e4b09c6781bdb4c2ea8f7ac224f6fe81a9480",
+    "extension/src/service-worker/act-tools.ts": "59b80fa4bc101a67729a0c7f044548c620d5412ffdcf31e8017a81380e5252a0",
+    "dist-extension/js/content.js": "4157bd9934fe1363855af821d99f1345273478548e4501a1e41dabc906577622",
+    "dist-extension/js/service-worker.js": "397fef39c43a189bcc028a4b3d602407b9b46e814198a3a5bca547fbf9a069b1",
+    "dist/service-worker/page-derived-actions.js": "feaa2b18fe77cd04533e5b803d0e36034856db7a09bd36f303da15fc9bf350f1",
+    "dist/service-worker/act-tools.js": "19e8381563b3f746108ba7e7e6d46ff020ba8ec9c0694e27ce22f54a1b7c5eea",
+    "scripts/chrome-web-element-audit.mjs": "e91def479e33098344f26b052f7379861870800998e3b6d9df8da0aeef367e2d",
+    "scripts/chrome-web-element-audit-checks.mjs": "1dc837ca6fd482294455ae3e72fde09d9d6c97ced5cd28a468b26660cf3af9ad"
+  },
+  "checks": [
+    {
+      "id": "Custom radio-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Custom radio-checked-missing",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Custom radio-rejected",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_NOT_ACTIONABLE"
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Custom checkbox-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Custom checkbox-checked-missing",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Custom checkbox-rejected",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_NOT_ACTIONABLE"
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "custom-controls-not-clicked",
+      "observed": [0, 0],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "native-checkbox-selected",
+      "observed": {
+        "ok": true,
+        "postcondition": "semantic"
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "native-checkbox-already-selected-rejected",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_NOT_ACTIONABLE"
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "ARIA disabled-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Fieldset disabled-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Read only-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "rich-editor-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "rich-editor-value-verification-rejected",
+      "observed": {
+        "ok": false,
+        "code": "INVALID_ARGUMENT"
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Native range-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Native date-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Native file-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Input button-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "Native number-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "toggle-pressed-missing",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "mixed-state-missing",
+      "observed": {
+        "checked": false
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "multi-select-treated-as-single",
+      "observed": ["combobox", true],
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "list-option-click-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "missing-action-targets",
+      "observed": 5,
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "disclosure-state-readable",
+      "observed": {
+        "expanded": false
+      },
+      "result": "REPRODUCED"
+    },
+    {
+      "id": "link-navigation-offered",
+      "observed": true,
+      "result": "REPRODUCED"
+    }
+  ],
+  "total": 26
+}

@@ -69,6 +69,7 @@ const parseNode = (value: unknown): SemanticNode => {
     "cross_origin_link",
     "parent_ref_id",
     "label_ref_id",
+    "completion_digest",
   ]);
   for (const required of [
     "ref_id",
@@ -101,6 +102,13 @@ const parseNode = (value: unknown): SemanticNode => {
   )
     return fail("INVALID_ARGUMENT");
   if (
+    node.completion_digest !== undefined &&
+    (typeof node.completion_digest !== "string" ||
+      !/^[A-Za-z0-9_-]{43}$/.test(node.completion_digest) ||
+      !["dialog", "main", "form"].includes(String(node.role)))
+  )
+    return fail("INVALID_ARGUMENT");
+  if (
     (node.visible &&
       (node.visibility === "hidden" || node.hidden_reason !== undefined)) ||
     (!node.visible &&
@@ -126,6 +134,9 @@ const parseNode = (value: unknown): SemanticNode => {
     ...(node.cross_origin_link ? { cross_origin_link: true } : {}),
     ...(parent ? { parent_ref_id: parent } : {}),
     ...(label ? { label_ref_id: label } : {}),
+    ...(typeof node.completion_digest === "string"
+      ? { completion_digest: node.completion_digest }
+      : {}),
   };
 };
 export const validateSemanticSnapshot = (value: unknown): SemanticSnapshot => {

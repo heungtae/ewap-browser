@@ -139,7 +139,7 @@ describe("S17 execution feedback", () => {
       (await createActStepRunner(dependencies).runStep(session)).terminal,
     ).toBe("VERIFIED");
   });
-  it("rejects stale observation after provider reasoning", async () => {
+  it("reassesses stale observation after provider reasoning", async () => {
     const { session, dependencies, active } = makeS17Test();
     session.executionEvidence = [
       {
@@ -172,6 +172,6 @@ describe("S17 execution feedback", () => {
     };
     expect(
       (await createActStepRunner(dependencies).runStep(session)).terminal,
-    ).toBe("UNKNOWN");
+    ).toBe("GOAL_VERIFIED");
   });
 });

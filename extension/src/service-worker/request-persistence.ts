@@ -1,3 +1,4 @@
+import { validActCompletion } from "../contracts/act-completion.js";
 import type { RequestSnapshot } from "../contracts/request-types.js";
 import { isPlainObject } from "../security/validation.js";
 import { isErrorCode } from "../contracts/error-codes.js";
@@ -22,6 +23,7 @@ const keys = [
   "code",
   "owner",
   "dispatch_started",
+  "completion",
 ];
 export class RequestPersistence {
   private queue = Promise.resolve();
@@ -60,6 +62,7 @@ export class RequestPersistence {
             "PROVIDER_BODY",
             "DISPATCH",
             "VERIFY",
+            "VERIFYING_RESULT",
             "FAILED",
             "TERMINAL",
           ].includes(String(row.stage)) &&
@@ -74,6 +77,8 @@ export class RequestPersistence {
             ["VERIFIED", "FAILED", "UNKNOWN", "CANCELLED"].includes(
               String(row.outcome),
             )) &&
+          (row.completion === undefined ||
+            validActCompletion(row.completion)) &&
           (row.code === undefined || isErrorCode(row.code)) &&
           (row.dispatch_started === undefined ||
             row.dispatch_started === true) &&

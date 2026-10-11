@@ -73,12 +73,13 @@ export const submitPlanTool = (
 
 export const goalCheckTool = (
   observationId: string,
+  evidenceRefs: string[] = [],
 ): ProviderToolDefinition => ({
   type: "function",
   function: {
     name: "report_goal_status",
     description:
-      "After execution results and fresh observation, report whether the original goal is completed, incomplete or unknown. Typed FAILED/UNKNOWN cannot become success. Further actions require new approvals; use available reads or submit_plan to replan instead when appropriate.",
+      "After execution results and fresh observation, report whether the original goal is completed, incomplete or unknown. Typed FAILED/UNKNOWN cannot become success. When a supplied complete dialog/main/form region alone establishes the goal, include its model_ref in evidence_refs; otherwise omit evidence_refs and the entire observation will be checked. A heading or toast alone is not a complete result. Further actions require new approvals.",
     parameters: {
       type: "object",
       additionalProperties: false,
@@ -88,6 +89,16 @@ export const goalCheckTool = (
           enum: ["completed", "incomplete", "unknown"],
         },
         summary: { type: "string", minLength: 1, maxLength: 4000 },
+        ...(evidenceRefs.length
+          ? {
+              evidence_refs: {
+                type: "array",
+                maxItems: 8,
+                uniqueItems: true,
+                items: { type: "string", enum: evidenceRefs },
+              },
+            }
+          : {}),
         observation_id: {
           type: "string",
           enum: [observationId],

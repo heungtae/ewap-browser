@@ -4,6 +4,20 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Act S21 — 2026-10-11
+
+**Planned.** [현재 관찰·실행 증거에 기반한 LLM 추가 판단](sprints/s21-act-evidence-based-llm-assessment.md)을
+작성했다. 기존 처리 가능한 경로를 유지하고, 요소 해석·action 완료·전체 목표 판단이
+불명확할 때 bounded 현재 자료와 실제 dispatch 근거를 수집해 LLM에 판단을 요청한다.
+실행 전 거절의 승인된 대안, 실행 후 읽기 전용 확인, 논리 단계 결과 합성·UI·계약 호환성·
+회귀/live 검증을 C1~C8로 나눴다. 카드 상태는 모두 Planned다.
+
+[ISS-20261011-001](issues/records/2026-10-11-act-completion-after-navigation.md)·
+[002](issues/records/2026-10-11-aria-radio-button-execution.md)·
+[003](issues/records/2026-10-11-web-control-capability-parity.md)와 연결한다.
+[기준 audit](evidence/web-element-compatibility-audit-2026-10-11.md)의 기존 테스트·26개 관찰은
+새 Sprint 구현 증거가 아니다. 이번 변경은 문서만 작성했으며 구현·build·배포는 수행하지 않았다.
+
 ## Community 출시 / Enterprise 후속 상태 (2026-10-04)
 
 [후속 Sprint 계획](sprints/community-release-enterprise-followup.md):

@@ -1,3 +1,4 @@
+import type { CompletionContract } from "../contracts/action-types.js";
 import type { ActionIntent } from "../contracts/types.js";
 import type { ErrorCode } from "../contracts/core-types.js";
 import type {
@@ -56,6 +57,10 @@ type Dependencies = {
       origin: string,
       expectedUrl?: string,
       beforeScope?: PageScope,
+      destinationMarker?: Extract<
+        CompletionContract,
+        { kind: "navigation" }
+      >["destination_marker"],
     ): Promise<boolean>;
     waitForSameOriginNavigation(
       tabId: number,
@@ -190,7 +195,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       dependencies.terminal(run, outcome, verification.code);
       if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
-        ? { ok: true, outcome }
+        ? { ok: true, outcome, verified_scope: dependencies.scope?.(run.tabId) }
         : {
             ...dependencies.safeFailure(
               verification.code ?? "POSTCONDITION_UNVERIFIED",
@@ -296,6 +301,9 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
               new URL(expectedUrl).origin,
               expectedUrl,
               beforeScope,
+              ready.intent.completion?.kind === "navigation"
+                ? ready.intent.completion.destination_marker
+                : undefined,
             )
           : await dependencies.verifier.waitForNavigation(
               run.tabId,
@@ -309,7 +317,7 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       );
       if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
-        ? { ok: true, outcome }
+        ? { ok: true, outcome, verified_scope: dependencies.scope?.(run.tabId) }
         : { ...dependencies.safeFailure("NAVIGATION_UNVERIFIED"), outcome };
     }
     if (

@@ -30,6 +30,7 @@ export type SemanticNode = {
   cross_origin_link?: boolean;
   parent_ref_id?: string;
   label_ref_id?: string;
+  completion_digest?: string;
 };
 export type SemanticSnapshot = {
   schema_version?: 2;

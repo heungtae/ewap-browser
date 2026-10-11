@@ -16,7 +16,10 @@ type CompletionMarker = {
   name: string;
   state?: { field: SemanticStatePredicate["field"]; expected: boolean };
 };
-export type CompletionContract =
+export type CompletionContract = {
+  /** Trusted declaration that this condition satisfies the entire original request. */
+  goal_request_digest?: string;
+} & (
   | {
       version: 2;
       kind: "control_state";
@@ -49,7 +52,8 @@ export type CompletionContract =
       report_scope: "result";
       marker: CompletionMarker;
       requires_result_generation: true;
-    };
+    }
+);
 export type VerifierPredicate =
   | {
       kind: "semantic-state-transition";

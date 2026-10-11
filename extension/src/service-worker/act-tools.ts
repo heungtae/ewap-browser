@@ -61,6 +61,11 @@ const eligibleTargets = (
       source.cross_origin_link !== true
     )
       return [];
+    if (
+      definition.tool === "set_checked_by_ref" &&
+      typeof source.state.checked !== "boolean"
+    )
+      return [];
     return [node.model_ref];
   });
 

@@ -1,3 +1,5 @@
+import type { ActCompletion } from "../contracts/act-completion.js";
+import { checkingCompletion } from "./act-goal-finalizer.js";
 import { recordActExecution } from "./act-execution-feedback.js";
 import type { ChatEventPayload } from "../contracts/chat-events.js";
 import type { Run } from "../state/run-coordinator.js";
@@ -7,7 +9,12 @@ type Outcome = "FAILED" | "UNKNOWN" | "VERIFIED";
 type Execution = Record<string, unknown>;
 type Dependencies = {
   publish(runId: string, event: ChatEventPayload): void;
-  publishTerminal(run: Run, outcome: Outcome, code?: string): void;
+  publishTerminal(
+    run: Run,
+    outcome: Outcome,
+    code?: string,
+    completion?: ActCompletion,
+  ): void;
   continueWorkflow(
     session: ActSession,
     proposal: ActProposal,
@@ -41,6 +48,11 @@ export const completeActProposal = async (
   // Keep the request alive until the model receives the result and observation.
   // Failed terminal events abort the request, so publish them after feedback.
   if (evidence.outcome === "VERIFIED")
-    dependencies.publishTerminal(run, "VERIFIED");
+    dependencies.publishTerminal(
+      run,
+      "VERIFIED",
+      undefined,
+      checkingCompletion(session),
+    );
   return dependencies.continueWorkflow(session, proposal);
 };

@@ -68,6 +68,9 @@ chatRequests.onTerminal = (tabId, outcome, code, requestId) => {
   for (const [id, selection] of workflowSelections.values)
     if (selection.tabId === tabId) workflowSelections.values.delete(id);
 };
+chatRunLifecycle.setCompletionObserver((tabId, completion) =>
+  chatRequests.completion(tabId, completion),
+);
 chatRunLifecycle.setTerminalObserver((tabId, outcome, code) =>
   chatRequests.endTab(tabId, outcome, isErrorCode(code) ? code : undefined),
 );

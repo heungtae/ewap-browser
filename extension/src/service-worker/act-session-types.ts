@@ -22,6 +22,8 @@ export const sourceReadSystemPrompt =
 export type ActProposal = ParsedActProposal | ParsedPageApiProposal;
 
 export type ActSession = {
+  localGoalProof?: import("./act-local-goal.js").LocalGoalProof;
+  requiredGoalActions?: number;
   lastObservationScope?: PageScope;
   plan?: import("./act-plan-store.js").StoredActPlan;
   executionEvidence?: import("./act-execution-feedback.js").ActExecutionEvidence[];

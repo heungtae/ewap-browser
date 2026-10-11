@@ -1,0 +1,491 @@
+{
+  "recorded_at": "2026-10-11T02:34:57.627Z",
+  "extension_version": "0.1.100",
+  "chrome": "Chrome/147.0.7727.15",
+  "scope": "controlled HTTPS internal Worker-Content plus compiled provider schemas; no approval or live Provider qualification",
+  "hashes": {
+    "extension/src/content/entry.ts": "07904b2c7bcc803b840653d372a46f8d00d3cbd054ba643315a2a67527d3a19b",
+    "extension/src/service-worker/page-derived-actions.ts": "e5299a05e492cd2936520aa2cd998ae957bcd9d402cf4b117e41fadc23dcbd67",
+    "extension/src/service-worker/act-tools.ts": "d21a2f76607a6a73d23790fc6c9c46943225cfeb8e0abc76b14af5b03323c4c9",
+    "dist-extension/js/content.js": "e1fecee94adf3ea677cd99128a2b7b8a54c2060a945506ad501fdc08586095d6",
+    "dist-extension/js/service-worker.js": "b8b296f86b737e5553f1336e5358c0e8e111566664901b6fab14d61a40d5890e",
+    "dist/service-worker/page-derived-actions.js": "1471727296d8bc4c689be2569c5783c763d967ce5013aebc5aecfbd055be7a42",
+    "dist/service-worker/act-tools.js": "031936b6cdffef2cfdd8d41e918286ce76b5c55b511ce9fb5269a5bde15743bf",
+    "scripts/chrome-web-element-audit.mjs": "45c2bf5a5f34aa6105d09d1f0997473524a66172d82fabe4d6f289ec5f7fa3c9",
+    "scripts/chrome-web-element-audit-checks.mjs": "0b3be55100688af388a2587cd62051cfc0775ff01b2716e1c48b401f4597455c",
+    "scripts/chrome-checked-control-regression.mjs": "02b3cb239be4a5b891abf3fe744a268516118245599604cb6a0049e4872412b6",
+    "extension/src/content/checked-control.ts": "91d832dfbc60f19fa0191a4f4b4bd2be42ca448afc5d24d689f227c59b960e51"
+  },
+  "checks": [
+    {
+      "id": "Custom radio-offered",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "Custom radio-checked-readable",
+      "observed": false,
+      "result": "PASS"
+    },
+    {
+      "id": "Custom radio-verified",
+      "observed": {
+        "ok": true,
+        "postcondition": "semantic"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "Custom checkbox-offered",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "Custom checkbox-checked-readable",
+      "observed": false,
+      "result": "PASS"
+    },
+    {
+      "id": "Custom checkbox-verified",
+      "observed": {
+        "ok": true,
+        "postcondition": "semantic"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "custom-controls-clicked-once",
+      "observed": [1, 1],
+      "result": "PASS"
+    },
+    {
+      "id": "native-checkbox-selected",
+      "observed": {
+        "ok": true,
+        "postcondition": "semantic"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "native-checkbox-already-selected-no-op",
+      "observed": {
+        "ok": true,
+        "postcondition": "semantic"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "ARIA disabled-offered",
+      "observed": false,
+      "result": "PASS"
+    },
+    {
+      "id": "Fieldset disabled-offered",
+      "observed": false,
+      "result": "PASS"
+    },
+    {
+      "id": "Read only-offered",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "rich-editor-offered",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "rich-editor-value-verification-rejected",
+      "observed": {
+        "ok": false,
+        "code": "INVALID_ARGUMENT"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "Native range-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "PASS"
+    },
+    {
+      "id": "Native date-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "PASS"
+    },
+    {
+      "id": "Native file-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "PASS"
+    },
+    {
+      "id": "Input button-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "PASS"
+    },
+    {
+      "id": "Native number-treated-as-textbox",
+      "observed": ["textbox", true],
+      "result": "PASS"
+    },
+    {
+      "id": "toggle-pressed-missing",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "mixed-state-not-coerced",
+      "observed": {},
+      "result": "PASS"
+    },
+    {
+      "id": "multi-select-treated-as-single",
+      "observed": ["combobox", true],
+      "result": "PASS"
+    },
+    {
+      "id": "list-option-click-offered",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "missing-action-targets",
+      "observed": 5,
+      "result": "PASS"
+    },
+    {
+      "id": "disclosure-state-readable",
+      "observed": {
+        "expanded": false
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "link-navigation-offered",
+      "observed": true,
+      "result": "PASS"
+    },
+    {
+      "id": "aria-radio-already-selected-no-op",
+      "observed": {
+        "ok": true,
+        "postcondition": "semantic"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "aria-radio-false-rejected",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_NOT_ACTIONABLE"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "aria-disabled-execution-rejected",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_NOT_ACTIONABLE"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "aria-no-op-no-extra-click",
+      "observed": 1,
+      "result": "PASS"
+    },
+    {
+      "id": "aria-mixed-execution-rejected",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_NOT_ACTIONABLE"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "aria-mixed-no-extra-click",
+      "observed": 1,
+      "result": "PASS"
+    },
+    {
+      "id": "replacement-does-not-inherit-execution-authority",
+      "observed": {
+        "ok": false,
+        "code": "TARGET_STALE"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "replacement-clicked-once",
+      "observed": 2,
+      "result": "PASS"
+    }
+  ],
+  "total": 34,
+  "navigation_regression": {
+    "scope": "real Chrome Side Panel with approval and controlled provider; no live Provider qualification",
+    "cases": [
+      {
+        "id": "anchor-menuitem",
+        "pass": true,
+        "eventSummary": [
+          {
+            "type": "activity_started",
+            "run": "TEp7hjtNiWIMce_3Tj8ZE6xZtfkE8Pdg"
+          },
+          {
+            "type": "activity_progress",
+            "run": "TEp7hjtNiWIMce_3Tj8ZE6xZtfkE8Pdg"
+          },
+          {
+            "type": "activity_progress",
+            "run": "TEp7hjtNiWIMce_3Tj8ZE6xZtfkE8Pdg"
+          },
+          {
+            "type": "activity_finished",
+            "run": "TEp7hjtNiWIMce_3Tj8ZE6xZtfkE8Pdg"
+          },
+          {
+            "type": "user_message",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4"
+          },
+          {
+            "type": "run_started",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4"
+          },
+          {
+            "type": "activity_started",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4"
+          },
+          {
+            "type": "activity_progress",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4"
+          },
+          {
+            "type": "assistant_delta",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4"
+          },
+          {
+            "type": "activity_finished",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4"
+          },
+          {
+            "type": "run_terminal",
+            "run": "e69830c5-991d-418e-956c-a730724e89e4",
+            "outcome": "VERIFIED"
+          },
+          {
+            "type": "run_started",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a"
+          },
+          {
+            "type": "activity_started",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a"
+          },
+          {
+            "type": "activity_progress",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a"
+          },
+          {
+            "type": "activity_finished",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a"
+          },
+          {
+            "type": "tool_started",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a"
+          },
+          {
+            "type": "tool_started",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a"
+          },
+          {
+            "type": "tool_finished",
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a",
+            "outcome": "VERIFIED"
+          },
+          {
+            "type": "run_terminal",
+            "completion": {
+              "action_outcome": "VERIFIED",
+              "goal_status": "checking",
+              "reason": "OBSERVING",
+              "reassessments": 0
+            },
+            "run": "0c2bae09-aec6-4295-87d5-1fef3373ab5a",
+            "outcome": "VERIFIED"
+          },
+          {
+            "type": "page_scope_changed",
+            "run": "page-scope"
+          },
+          {
+            "type": "run_started",
+            "run": "4d46053c-9e9c-445e-bfea-576be6f446db"
+          },
+          {
+            "type": "activity_started",
+            "run": "4d46053c-9e9c-445e-bfea-576be6f446db"
+          },
+          {
+            "type": "activity_progress",
+            "run": "4d46053c-9e9c-445e-bfea-576be6f446db"
+          },
+          {
+            "type": "assistant_delta",
+            "run": "4d46053c-9e9c-445e-bfea-576be6f446db"
+          },
+          {
+            "type": "activity_finished",
+            "run": "4d46053c-9e9c-445e-bfea-576be6f446db"
+          },
+          {
+            "type": "run_terminal",
+            "completion": {
+              "action_outcome": "VERIFIED",
+              "goal_status": "completed",
+              "reason": "GOAL_OBSERVED",
+              "reassessments": 0
+            },
+            "run": "4d46053c-9e9c-445e-bfea-576be6f446db",
+            "outcome": "VERIFIED"
+          }
+        ]
+      },
+      {
+        "id": "delayed-cost-screen",
+        "pass": true,
+        "eventSummary": [
+          {
+            "type": "activity_started",
+            "run": "Scpmh4ZkWB05Rxt8gEf9STsR7-BlbDUr"
+          },
+          {
+            "type": "activity_progress",
+            "run": "Scpmh4ZkWB05Rxt8gEf9STsR7-BlbDUr"
+          },
+          {
+            "type": "activity_progress",
+            "run": "Scpmh4ZkWB05Rxt8gEf9STsR7-BlbDUr"
+          },
+          {
+            "type": "activity_finished",
+            "run": "Scpmh4ZkWB05Rxt8gEf9STsR7-BlbDUr"
+          },
+          {
+            "type": "user_message",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4"
+          },
+          {
+            "type": "run_started",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4"
+          },
+          {
+            "type": "activity_started",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4"
+          },
+          {
+            "type": "activity_progress",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4"
+          },
+          {
+            "type": "assistant_delta",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4"
+          },
+          {
+            "type": "activity_finished",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4"
+          },
+          {
+            "type": "run_terminal",
+            "run": "13dd9cd8-ec43-4f3d-a9a1-f1e11b69d9d4",
+            "outcome": "VERIFIED"
+          },
+          {
+            "type": "run_started",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16"
+          },
+          {
+            "type": "activity_started",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16"
+          },
+          {
+            "type": "activity_progress",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16"
+          },
+          {
+            "type": "activity_finished",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16"
+          },
+          {
+            "type": "tool_started",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16"
+          },
+          {
+            "type": "tool_started",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16"
+          },
+          {
+            "type": "tool_finished",
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16",
+            "outcome": "VERIFIED"
+          },
+          {
+            "type": "run_terminal",
+            "completion": {
+              "action_outcome": "VERIFIED",
+              "goal_status": "checking",
+              "reason": "OBSERVING",
+              "reassessments": 0
+            },
+            "run": "1c8df31f-3a86-48e0-9508-71f24d579c16",
+            "outcome": "VERIFIED"
+          },
+          {
+            "type": "page_scope_changed",
+            "run": "page-scope"
+          },
+          {
+            "type": "run_started",
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa"
+          },
+          {
+            "type": "activity_started",
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa"
+          },
+          {
+            "type": "activity_progress",
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa"
+          },
+          {
+            "type": "activity_progress",
+            "completion": {
+              "action_outcome": "VERIFIED",
+              "goal_status": "checking",
+              "reason": "OBSERVING",
+              "reassessments": 1
+            },
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa"
+          },
+          {
+            "type": "assistant_delta",
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa"
+          },
+          {
+            "type": "activity_finished",
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa"
+          },
+          {
+            "type": "run_terminal",
+            "completion": {
+              "action_outcome": "VERIFIED",
+              "goal_status": "completed",
+              "reason": "GOAL_OBSERVED",
+              "reassessments": 1
+            },
+            "run": "1b5bf3f4-2e30-4b72-8e60-371edf4b76aa",
+            "outcome": "VERIFIED"
+          }
+        ]
+      }
+    ]
+  }
+}

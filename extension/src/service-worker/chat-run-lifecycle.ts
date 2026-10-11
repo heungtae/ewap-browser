@@ -1,3 +1,4 @@
+import type { ActCompletion } from "../contracts/act-completion.js";
 import type { ChatEventPayload } from "../contracts/chat-events.js";
 import type {
   LocalFixtureSessionBinding,
@@ -29,9 +30,12 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
   let terminalObserver:
     | ((
         tabId: number,
-        outcome: "FAILED" | "UNKNOWN" | "CANCELLED",
+        outcome: "VERIFIED" | "FAILED" | "UNKNOWN" | "CANCELLED",
         code?: string,
       ) => void)
+    | undefined;
+  let completionObserver:
+    | ((tabId: number, completion: ActCompletion) => void)
     | undefined;
   let activityObserver = dependencies.onActivity;
   const persistence = new ChatPersistence(
@@ -62,7 +66,17 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
       return;
     }
     const event = dependencies.events.append(runId, payload);
-    if (payload.type === "run_terminal" && payload.outcome !== "VERIFIED")
+    if (
+      (payload.type === "run_terminal" ||
+        payload.type === "activity_progress") &&
+      payload.completion
+    )
+      completionObserver?.(event.tab_id, payload.completion);
+    if (
+      payload.type === "run_terminal" &&
+      payload.completion?.goal_status !== "checking" &&
+      (payload.completion || payload.outcome !== "VERIFIED")
+    )
       terminalObserver?.(event.tab_id, payload.outcome, payload.code);
     if (
       payload.type === "activity_started" ||
@@ -113,6 +127,9 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
     publishCancelled(run);
   };
   return {
+    setCompletionObserver(observer: typeof completionObserver): void {
+      completionObserver = observer;
+    },
     setTerminalObserver(observer: typeof terminalObserver): void {
       terminalObserver = observer;
     },

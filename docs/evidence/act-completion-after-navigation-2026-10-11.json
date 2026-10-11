@@ -1,0 +1,336 @@
+{
+  "schema_version": 1,
+  "issue_id": "ISS-20261011-001",
+  "date_kst": "2026-10-11",
+  "base_revision": "549ebacc76b5608d80ca70ab71610da11bbc29f0",
+  "modified_commit": null,
+  "extension_version": "0.1.99",
+  "source_state": "uncommitted worktree",
+  "changed_source_manifest_sha256": "109b79ce54ecd27fb41469b5e40d6eeaf60d61b3d958a4fd4c516541c5464a96",
+  "changed_source_files": [
+    {
+      "path": "extension/src/content/completion-region.ts",
+      "sha256": "3abdafd24e935f611f630a120409f07b4a89a256773190d5f9fc0461fabc2689"
+    },
+    {
+      "path": "extension/src/content/entry.ts",
+      "sha256": "1fcd94538fa88c62680eaa53ba31792345d78e7564afc66e4d43946d48a5cfd5"
+    },
+    {
+      "path": "extension/src/contracts/act-completion.ts",
+      "sha256": "1cf0ade05ab4d8f763a01e6bc4aa8a4d6fa0ec4ce874cdecdc1be971f7e68206"
+    },
+    {
+      "path": "extension/src/contracts/action-types.ts",
+      "sha256": "ff33424882dbf6e049b958232901f596061665c732fd5fa5639a7642a2b0e51b"
+    },
+    {
+      "path": "extension/src/contracts/chat-event-types.ts",
+      "sha256": "784a8b2b266fb88948270fc87c01d723f24e4fe406af54c4117651c29e2e2393"
+    },
+    {
+      "path": "extension/src/contracts/chat-event-validation.ts",
+      "sha256": "5e58cff64b85a40035f04a1891c0414f9a40337a99869bade456ba9051a4daf0"
+    },
+    {
+      "path": "extension/src/contracts/chat-events.ts",
+      "sha256": "dbe9813d6179ff88ad1d296b5e89d79a6edb1c3e5b862a6bcaef0b2e6c10dd4b"
+    },
+    {
+      "path": "extension/src/contracts/core-types.ts",
+      "sha256": "9596a6dbec26c61c1ccab6c05be9545b6ded63b1a752cf1a923ea21638b7f032"
+    },
+    {
+      "path": "extension/src/contracts/diagnostic-types.ts",
+      "sha256": "2dfd43078e7ed49807276cccef9e34ceebbb350274d0a82badf9ed3a8732d3f5"
+    },
+    {
+      "path": "extension/src/contracts/diagnostics-validation.ts",
+      "sha256": "3c6c61ca032c5d0823c7861242d3f312a5e39259029e4e5f60af178267b237fc"
+    },
+    {
+      "path": "extension/src/contracts/error-codes.ts",
+      "sha256": "7c74ab3e3420d01a21d66605d8b612805773ef05d1b2eda1905d2ede625c5a7f"
+    },
+    {
+      "path": "extension/src/contracts/request-types.ts",
+      "sha256": "c7b391866f3eb0cada030b6f099e56e1699ba1a457edc65055dd7f2bf34ecf43"
+    },
+    {
+      "path": "extension/src/contracts/semantic-snapshot.ts",
+      "sha256": "e895f62a5d925773d8ca531904a13a416b238429b611a39a1dc378317cb55e9d"
+    },
+    {
+      "path": "extension/src/contracts/semantic-types.ts",
+      "sha256": "946f8ad358a421b8a11bb3a0879f2091914843fd467c0b9975a570b46d0a39a3"
+    },
+    {
+      "path": "extension/src/page-act-harness/outcome.ts",
+      "sha256": "a7e38a7a9748f10f62f78b8d7a9e7d6cb4e805dc1b97f59c17176696952de2ff"
+    },
+    {
+      "path": "extension/src/profile/profile-action-validation.ts",
+      "sha256": "e116bd392773c39318ca490654a5736d3f85133a8fbf75dedb9b442145ab38f6"
+    },
+    {
+      "path": "extension/src/service-worker/act-execution-feedback.ts",
+      "sha256": "1d80ceecd21806679ed36439ce71fd97523a88ac9a71eef7d26d2f3d3aba1c2f"
+    },
+    {
+      "path": "extension/src/service-worker/act-execution-runtime.ts",
+      "sha256": "d8958ca40014833df882892add813fc22a7b161a1654b72a4ed7687ba010e5ae"
+    },
+    {
+      "path": "extension/src/service-worker/act-feedback-unavailable.ts",
+      "sha256": "a0e2f0fb7908c2c1ea557dff47dd041208817a4440970ac20df125f974b52402"
+    },
+    {
+      "path": "extension/src/service-worker/act-goal-feedback.ts",
+      "sha256": "f9af2fc8e4a23e4956b28b8e54e9e6ff2010b0954460b4b872a03bdfa2aa62f5"
+    },
+    {
+      "path": "extension/src/service-worker/act-goal-finalizer.ts",
+      "sha256": "b25420d6283d77af5662034483bbd3a3d5719e154ab5e4aa97ed2b1ec1fe7d02"
+    },
+    {
+      "path": "extension/src/service-worker/act-goal-observation.ts",
+      "sha256": "1fcdc8a11ef3dab210fc63c7950801b5aae6d1da7d1f4b4a4b0fcd1892ce0b2a"
+    },
+    {
+      "path": "extension/src/service-worker/act-goal-reassessment.ts",
+      "sha256": "80f1e2aaf7681f4b8a8c64a42c365046a41f30eb6cd210eadac049711560606c"
+    },
+    {
+      "path": "extension/src/service-worker/act-goal-report.ts",
+      "sha256": "bfb4714b4c1369570e02abf39ae52edacb4d876355eb9cda679b0c930dad262a"
+    },
+    {
+      "path": "extension/src/service-worker/act-local-goal.ts",
+      "sha256": "4a596e7d0d95a53eed31bcbf2d7bf3eb5ea327e221d4cca6a569607d3ac6ff74"
+    },
+    {
+      "path": "extension/src/service-worker/act-plan-schema.ts",
+      "sha256": "c1965859f6e88b9799eea91c76ad87c4850ead74ce2b2eca6df82aa2c2ec08ec"
+    },
+    {
+      "path": "extension/src/service-worker/act-postcondition-verifier.ts",
+      "sha256": "d00d68baf521bc85d34b12e16dad8fbb58d8b1072120a2d5d6a4c3083ae5e9e7"
+    },
+    {
+      "path": "extension/src/service-worker/act-proposal-completion.ts",
+      "sha256": "68024e2bf608a4c1395d18fc25629af1ec1b216c06734ec9aaa40918cc4733d9"
+    },
+    {
+      "path": "extension/src/service-worker/act-proposal-executor.ts",
+      "sha256": "3f02a771d2f4226bd360a720ad41e5539fd8ae5ab0257244ea72994974586d4f"
+    },
+    {
+      "path": "extension/src/service-worker/act-session-types.ts",
+      "sha256": "32c3a9c4e468c878f829415467465983924e6ac62374c62c695b84da2643bbf6"
+    },
+    {
+      "path": "extension/src/service-worker/act-step-runner.ts",
+      "sha256": "06a989a44f26e47ed1696ae8197a1ae5c1e00ad22c3bbb3f4fde2ea7aa192fe3"
+    },
+    {
+      "path": "extension/src/service-worker/act-terminal-evidence.ts",
+      "sha256": "29c09aeadbb00e06a2837887651d041f6d398dd8e1df0a18c32a163d245b4c8b"
+    },
+    {
+      "path": "extension/src/service-worker/chat-request-lifecycle.ts",
+      "sha256": "024688cb11d68f6fa213fd8396daaf5a564151755ea82abc69c478fbdee3dd51"
+    },
+    {
+      "path": "extension/src/service-worker/chat-run-lifecycle.ts",
+      "sha256": "000f90e52eb6a3b46f0ec91695d48ad3493017539cf4dfbd38ca663abe0fc889"
+    },
+    {
+      "path": "extension/src/service-worker/coordinator.ts",
+      "sha256": "359de07512119745c0252063a43e3700699f1e512fe48b43ebd51d68aacdb433"
+    },
+    {
+      "path": "extension/src/service-worker/execution-diagnostics.ts",
+      "sha256": "9eeb0a86759a818647997ca1fb8afc46f7b4f9f54b284446f9572700f63f56bb"
+    },
+    {
+      "path": "extension/src/service-worker/request-persistence.ts",
+      "sha256": "2a4ed0b0c8416882dde9cef81a8caf47881a71059a578d0ffb6f3118503596f0"
+    },
+    {
+      "path": "extension/src/service-worker/request-store.ts",
+      "sha256": "f6c4d82188667218b2fe78aa1ae91fab706a0e4db31d971519df2218c85377dd"
+    },
+    {
+      "path": "extension/src/service-worker/runtime-core-handlers.ts",
+      "sha256": "053964a940dcc620772730135e01fad8bb68f4a070bc6840265b953e69ef8cda"
+    },
+    {
+      "path": "extension/src/sidepanel/act-completion-view.ts",
+      "sha256": "35808b66d39b55ad06ec7e1272249a151fc2d7ed42ba1c5f73dd907bb3cd84f2"
+    },
+    {
+      "path": "extension/src/sidepanel/entry.ts",
+      "sha256": "407c6e49c2b28e05d19b726a9d6cb756feb438fbe1c8d796390c00ba4731ced3"
+    },
+    {
+      "path": "extension/src/sidepanel/panel.ts",
+      "sha256": "728017816be2f88fa953685fc848e29443455042cd5e397947fee00118353973"
+    },
+    {
+      "path": "extension/src/state/tab-chat-session-store.ts",
+      "sha256": "c756da1722db857739b4e456ab6f37b55e516ed00a59b94501ed013fe34a3aa1"
+    },
+    {
+      "path": "extension/tests/unit/content/completion-region.test.ts",
+      "sha256": "e33e654cc7316308d698a82cd3c6596eb5dbea7ce4ae1403180e0a24a07f2a26"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-completion-recovery.test.ts",
+      "sha256": "95d150f35e900f1fa8901384ad1722288e7a10610dc69bf0193c4321760bb597"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-goal-deadline.test.ts",
+      "sha256": "f81c2d8c830df899a6c5b12b0b20be13bb0e52dcaeec90c7e368f3eccfeec6b8"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-goal-observation.test.ts",
+      "sha256": "fe55cdc95764c82a2684c5055ae3c64a4957a5a5e6027c7c6eb7ef95f579f769"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-goal-reassessment.test.ts",
+      "sha256": "4ad357d4459e1165e17c8d506e978c41a25e2c5c58168c9049d7af5f4e761fae"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-local-goal.test.ts",
+      "sha256": "908d3db5a122209b8c502bf768f621dd0ccda5492b2fb13f9c7481d7cfcea84e"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-navigation-marker.test.ts",
+      "sha256": "41d5d7aebe3dfbb5056de8d3b3669e25845253afc853d06bfd67f12e5e11e659"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-result-generation.test.ts",
+      "sha256": "600b82dff2d019c5fcf15647e2abd5aa3058226aeaef05d413f9de8561d76643"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-s17-feedback.test.ts",
+      "sha256": "a1cff0a77b7c0b0a984d681128a89f4de7ca9cffd21c96ae9ea29b9be363cd49"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/chat-run-lifecycle.test.ts",
+      "sha256": "e484064b6ff9cb7614fb4ccb5ff60c44029fe1374629b78c1dc7ab27c4dc1da1"
+    },
+    {
+      "path": "extension/tests/unit/service-worker/diagnostics-message-handler.test.ts",
+      "sha256": "adee3859be29d6e1daa1aa643c15e3fb4c7eab2e69b975da430091aabccda03c"
+    },
+    {
+      "path": "scripts/chrome-accessible-items-smoke.mjs",
+      "sha256": "bcd6ea02aa84522d89be4f7ea9bd6fafa2ca33ba8ab629d4ba248d1a911a29f0"
+    },
+    {
+      "path": "scripts/chrome-act-goal-reassessment-fixture.mjs",
+      "sha256": "4d20f05c43208f3c90a1f6a77a3ab42e950a0f45e559c9183a422867680ad044"
+    },
+    {
+      "path": "scripts/chrome-s17-plan-feedback-smoke.mjs",
+      "sha256": "d8aa41ad560914b6d6aca95419f5931163c53763ed1e76a2c8531dd97d4deb57"
+    }
+  ],
+  "checks": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "module_boundaries": "PASS",
+    "unit": {
+      "files": 159,
+      "tests": 734,
+      "result": "PASS"
+    },
+    "fixture": {
+      "tests": 1,
+      "result": "PASS"
+    },
+    "vitest_e2e": {
+      "tests": 1,
+      "result": "PASS"
+    },
+    "version_preserving_build": "PASS",
+    "package_validation": "PASS",
+    "source_size": {
+      "result": "FAIL",
+      "existing_oversized_files": 86,
+      "new_oversized_files": 0
+    }
+  },
+  "chrome": {
+    "version": "147.0.7727.15",
+    "environment": "isolated HTTPS fixture; controlled provider",
+    "final_build_cases": [
+      {
+        "case": "anchor-menuitem",
+        "result": "PASS",
+        "provider": "controlled",
+        "mutation_results": 1,
+        "final_completions": [
+          {
+            "action_outcome": "VERIFIED",
+            "goal_status": "completed",
+            "reason": "GOAL_OBSERVED",
+            "reassessments": 0
+          }
+        ],
+        "goal_status_reports": [],
+        "observation_count": 0,
+        "panel_idle": true,
+        "error_card_count": 0,
+        "diagnostic_zip_redacted": true
+      },
+      {
+        "case": "delayed-cost-screen",
+        "result": "PASS",
+        "provider": "controlled",
+        "mutation_results": 1,
+        "final_completions": [
+          {
+            "action_outcome": "VERIFIED",
+            "goal_status": "completed",
+            "reason": "GOAL_OBSERVED",
+            "reassessments": 1
+          }
+        ],
+        "goal_status_reports": ["incomplete", "completed"],
+        "observation_count": 2,
+        "panel_idle": true,
+        "error_card_count": 0,
+        "diagnostic_zip_redacted": true
+      }
+    ],
+    "intermediate_build_case_ids": [
+      "delayed-cost-screen",
+      "document-link",
+      "async-preview",
+      "search",
+      "multiple",
+      "deny",
+      "preview",
+      "controls-link",
+      "states-link"
+    ],
+    "intermediate_build_result": "9 cases PASS"
+  },
+  "unverified": [
+    "original live pricing site",
+    "live provider",
+    "release deployment"
+  ],
+  "artifacts": [
+    {
+      "path": "dist-extension/js/content.js",
+      "sha256": "4157bd9934fe1363855af821d99f1345273478548e4501a1e41dabc906577622"
+    },
+    {
+      "path": "dist-extension/js/service-worker.js",
+      "sha256": "397fef39c43a189bcc028a4b3d602407b9b46e814198a3a5bca547fbf9a069b1"
+    }
+  ]
+}

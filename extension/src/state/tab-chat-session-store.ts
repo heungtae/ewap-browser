@@ -63,7 +63,13 @@ const diagnosticEvent = (event: ChatEvent): Record<string, unknown> => {
     case "activity_started":
     case "activity_progress":
     case "activity_finished":
-      return { ...base, stage: event.stage };
+      return {
+        ...base,
+        stage: event.stage,
+        ...(event.type === "activity_progress" && event.completion
+          ? { completion: event.completion }
+          : {}),
+      };
     case "tool_started":
       return {
         ...base,
@@ -101,6 +107,7 @@ const diagnosticEvent = (event: ChatEvent): Record<string, unknown> => {
       return {
         ...base,
         outcome: event.outcome,
+        ...(event.completion ? { completion: event.completion } : {}),
         ...(event.code === undefined ? {} : { code: event.code }),
       };
   }

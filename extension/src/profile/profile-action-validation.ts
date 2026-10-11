@@ -83,11 +83,19 @@ export const isCompletionContract = (
     typeof value.source === "string" &&
     typeof value.scope_policy === "string" &&
     typeof value.report_scope === "string";
-  if (!base) return false;
+  if (
+    !base ||
+    (value.goal_request_digest !== undefined &&
+      (value.source !== "trusted_profile" ||
+        typeof value.goal_request_digest !== "string" ||
+        !/^[A-Za-z0-9_-]{43}$/.test(value.goal_request_digest)))
+  )
+    return false;
   if (value.kind === "control_state")
     return (
       Object.keys(value).every((key) =>
         [
+          "goal_request_digest",
           "version",
           "kind",
           "source",
@@ -107,6 +115,7 @@ export const isCompletionContract = (
     return (
       Object.keys(value).every((key) =>
         [
+          "goal_request_digest",
           "version",
           "kind",
           "source",
@@ -124,6 +133,7 @@ export const isCompletionContract = (
     return (
       Object.keys(value).every((key) =>
         [
+          "goal_request_digest",
           "version",
           "kind",
           "source",
@@ -144,6 +154,7 @@ export const isCompletionContract = (
     value.kind === "render_result" &&
     Object.keys(value).every((key) =>
       [
+        "goal_request_digest",
         "version",
         "kind",
         "source",

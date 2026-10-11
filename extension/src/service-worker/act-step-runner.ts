@@ -1,3 +1,5 @@
+import { localGoalCurrent } from "./act-local-goal.js";
+import { finaliseGoal } from "./act-goal-finalizer.js";
 import { actValueSource } from "./act-value-source.js";
 import { completeActProviderTurn } from "./act-provider-turn.js";
 import { actExecutionInventory } from "./act-execution-inventory.js";
@@ -71,6 +73,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       if (active.tabId !== session.tabId || active.origin !== session.origin)
         return unavailableActFeedback(dependencies, session);
       delete session.navigationFeedback;
+      if (session.plan)
+        session.requiredGoalActions = session.plan.input.steps.length;
       delete session.plan;
       delete session.pageApiActions;
       delete session.pageApiScope;
@@ -136,6 +140,16 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         type: "activity_started",
         stage: "PREPARING_PAGE",
       });
+      if (localGoalCurrent(session, active, dependencies.pageScope(active)))
+        return finaliseGoal({
+          dependencies,
+          session,
+          run,
+          status: "completed",
+          summary: "",
+          current: true,
+          reassessments: 0,
+        });
       let targetRefId: string | undefined;
       if (session.workflow && !session.workflowCompleted) {
         const candidate = workflowActionDefinitions(
@@ -334,7 +348,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               session.pageApiActions,
             );
       const observationId = opaqueId();
-      const observationDigest = digestCanonical(active.snapshot);
+      const observation = structuredClone(active);
+      const observationScope = structuredClone(dependencies.pageScope(active));
       const requestRevision = session.requestContext
         ? toHarnessRevision(session.requestContext.generation)
         : (session.harnessCapabilities?.request_revision ?? 1);
@@ -365,7 +380,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             ),
           );
         if (session.executionEvidence?.length)
-          tools.push(goalCheckTool(observationId));
+          tools.push(
+            goalCheckTool(
+              observationId,
+              model.snapshot.nodes
+                .filter((node) => node.visible && node.completion_digest)
+                .map((node) => node.model_ref),
+            ),
+          );
       }
       // Workflow suitability review gate: a session started from a user
       // selection reviews fit (original request + current page + candidate
@@ -518,21 +540,32 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         thread: ProviderMessage[] = messages,
       ) =>
         completeActProviderTurn(thread, () =>
-          dependencies.provider.chat(
-            {
-              messages: thread,
-              ...(offered.length > 0
-                ? { tools: valueSource ? valueSource.tools(offered) : offered }
-                : {}),
-            },
-            session.requestContext
-              ? {
-                  signal: session.requestContext.signal,
-                  onProgress: () =>
-                    session.requestContext?.progress?.("PROVIDER_BODY"),
-                }
-              : {},
-          ),
+          dependencies.provider
+            .chat(
+              {
+                messages: thread,
+                ...(offered.length > 0
+                  ? {
+                      tools: valueSource ? valueSource.tools(offered) : offered,
+                    }
+                  : {}),
+              },
+              session.requestContext
+                ? {
+                    signal: session.requestContext.signal,
+                    onProgress: () =>
+                      session.requestContext?.progress?.("PROVIDER_BODY"),
+                  }
+                : {},
+            )
+            .catch((error: unknown) => {
+              if (
+                error instanceof ContractError ||
+                !session.executionEvidence?.length
+              )
+                throw error;
+              throw new ContractError("PROVIDER_PLUGIN_FAILED");
+            }),
         );
       const readTranscriptStart = messages.length;
       let response: { content: string; tool_calls: ProviderToolCall[] };
@@ -676,7 +709,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           run,
           response,
           observationId,
-          observationDigest,
+          observation,
+          observationScope,
+          modelRefs: model.snapshot.nodes.map((node) => node.model_ref),
+          messages,
         });
       }
       assertRequestActive(session.requestContext);
@@ -981,6 +1017,28 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       });
       return actionReview(session, proposal);
     } catch (error) {
+      assertRequestActive(session.requestContext);
+      if (
+        session.executionEvidence?.length &&
+        error instanceof ContractError &&
+        [
+          "PROVIDER_PLUGIN_FAILED",
+          "PROVIDER_UNAVAILABLE",
+          "PROVIDER_AUTH_FAILED",
+          "PROVIDER_BODY_IDLE_TIMEOUT",
+          "PROVIDER_TIMEOUT",
+        ].includes(error.code)
+      )
+        return finaliseGoal({
+          dependencies,
+          session,
+          run,
+          status: "unknown",
+          summary: "",
+          current: false,
+          reassessments: 0,
+          reason: "PROVIDER_FAILED",
+        });
       failActRun({ ...dependencies, session, run, error });
       throw error;
     }

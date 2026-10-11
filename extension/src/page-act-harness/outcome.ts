@@ -69,8 +69,6 @@ export const classifyOutcome = (opts: {
         traceBranch(context, method, "failed", "unsupported", "steps removed");
         return done("FAILED", "UNSUPPORTED_STEP_REMOVED");
       }
-      if (opts.binding_current === false)
-        return done("UNKNOWN", "STALE_BINDING");
       const failed = opts.actions.filter((a) => a.verifier === "failed");
       if (failed.length > 0) {
         traceBranch(
@@ -91,6 +89,8 @@ export const classifyOutcome = (opts: {
           a.verifier !== "satisfied",
       );
       if (unverified.length > 0) return done("UNKNOWN", "UNOBSERVED_ACTION");
+      if (opts.binding_current === false)
+        return done("UNKNOWN", "STALE_BINDING");
       // Budget exhaustion preserves remaining work: it outranks a would-be
       // VERIFIED/GOAL promotion but never hides a FAILED/UNKNOWN above.
       if (opts.budget_exhausted === true)

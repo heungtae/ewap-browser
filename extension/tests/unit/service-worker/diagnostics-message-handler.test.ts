@@ -6,6 +6,7 @@ import { TabChatSessionStore } from "../../../src/state/tab-chat-session-store.j
 
 it.each([
   "normal",
+  "goal-unconfirmed",
   "extra-url",
   "bad-digest",
   "bad-count-key",
@@ -27,13 +28,24 @@ it.each([
     mode: "ask",
   });
   const run = requests.startRun(id)!;
+  if (scenario === "goal-unconfirmed")
+    requests.completion(7, {
+      action_outcome: "VERIFIED",
+      goal_status: "unknown",
+      reason: "REASSESSMENT_LIMIT",
+      reassessments: 2,
+    });
   requests.finish(
     id,
     run,
-    scenario === "navigation" ? "UNKNOWN" : "FAILED",
-    scenario === "navigation"
-      ? "NAVIGATION_UNVERIFIED"
-      : "PROVIDER_UNAVAILABLE",
+    ["navigation", "goal-unconfirmed"].includes(scenario)
+      ? "UNKNOWN"
+      : "FAILED",
+    scenario === "goal-unconfirmed"
+      ? "GOAL_UNVERIFIED"
+      : scenario === "navigation"
+        ? "NAVIGATION_UNVERIFIED"
+        : "PROVIDER_UNAVAILABLE",
   );
   const otherId = "ffffffff-ffff-4fff-8fff-ffffffffffff";
   requests.start({
@@ -136,6 +148,18 @@ it.each([
       outcome: "UNKNOWN",
       code: "NAVIGATION_UNVERIFIED",
     });
+  if (scenario === "goal-unconfirmed") {
+    expect(response.data.sections.request.data).toMatchObject({
+      completion: {
+        action_outcome: "VERIFIED",
+        goal_status: "unknown",
+        reason: "REASSESSMENT_LIMIT",
+        reassessments: 2,
+      },
+    });
+    expect(exported).toContain("REASSESSMENT_LIMIT");
+    expect(exported).not.toContain("INTERNAL_FAILURE");
+  }
   expect(response.data.sections.execution_trace.status).toBe("collected");
   if (["bad-digest", "bad-count-key", "content-failure"].includes(scenario))
     expect(response.data.sections.page.status).toBe("unavailable");

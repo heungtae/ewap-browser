@@ -1,3 +1,4 @@
+import { validActCompletion } from "./act-completion.js";
 import { isPlainObject } from "../security/validation.js";
 import { isErrorCode } from "./error-codes.js";
 import type { DiagnosticRecord } from "./diagnostic-types.js";
@@ -46,6 +47,7 @@ export const validDiagnostic = (value: unknown): value is DiagnosticRecord => {
           "reason",
           "message",
           "elapsed_ms",
+          "completion",
         ].includes(key),
     )
   )
@@ -87,6 +89,7 @@ export const validDiagnostic = (value: unknown): value is DiagnosticRecord => {
       ["VERIFIED", "FAILED", "UNKNOWN", "CANCELLED"].includes(
         String(value.outcome),
       )) &&
+    (value.completion === undefined || validActCompletion(value.completion)) &&
     (value.code === undefined || isErrorCode(value.code)) &&
     (value.reason === undefined ||
       [

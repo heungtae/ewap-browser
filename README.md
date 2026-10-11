@@ -11,6 +11,7 @@ TypeScript 구현은 [extension/src](extension/src)에 있다.
 - [설치·업데이트·복구](docs/community-installation.md)
 - [개발·테스트 실행](docs/test.md)
 - [검증 증거](docs/evidence/README.md)
+- [이슈 진행·수정·재발 관리](docs/issues/README.md)
 - [Sprint 이력과 남은 작업](docs/sprints/README.md)
 - [기여 규칙](AGENTS.md)
 

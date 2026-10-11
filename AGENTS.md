@@ -36,6 +36,14 @@ Name tests `*.test.ts` and mirror the affected module under `extension/tests/uni
 
 ## Commit & Pull Request Guidelines
 
+For issue fixes, consult [`docs/issues/README.md`](docs/issues/README.md) and related
+regression records before editing. Track occurrence, cause, fix, tests, and evidence
+under one issue ID; update both the issue record and list status in the same change.
+Reopen recurring issues while preserving prior fix history. Add a regression check
+for the reported failure and run relevant checks for earlier related issues. Mark
+an issue resolved only after its recorded acceptance criteria and required runtime
+scope are verified; keep remaining verification and deployment limits explicit.
+
 Follow history's scoped messages, such as `feat(act): ...`, `fix(harness): ...`, and `docs(evidence): ...`. Stage only intended changes and preserve unrelated work. PR descriptions should explain the problem, resulting behavior, relevant sprint or issue, checks performed, and remaining limitations. Include screenshots for visible UI changes and evidence links for runtime claims.
 
 ## Security & Configuration

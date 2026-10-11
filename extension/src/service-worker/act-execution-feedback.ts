@@ -1,3 +1,5 @@
+import type { PageScope } from "../state/tab-chat-session-store.js";
+import { recordLocalGoal } from "./act-local-goal.js";
 import type { ActSession, ActProposal } from "./act-session-types.js";
 import type { ActionResult } from "../page-act-harness/outcome.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
@@ -39,6 +41,12 @@ export const recordActExecution = (
       executed.already_satisfied === true,
   };
   (session.executionEvidence ??= []).push(evidence);
+  recordLocalGoal(
+    session,
+    proposal,
+    evidence,
+    executed.verified_scope as PageScope | undefined,
+  );
   if (session.plan && outcome === "VERIFIED") session.plan.completedSteps += 1;
   session.messages.push({
     role: "tool",
@@ -46,7 +54,8 @@ export const recordActExecution = (
     content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({ ...evidence, tool: proposal.tool, target_name: safeChatText(proposal.targetName), verification_meaning: "ACTION_RESULT_NOT_GOAL_COMPLETION" })}\n[/UNTRUSTED_TOOL_RESULT]`,
   });
   if (outcome !== "VERIFIED") session.feedbackOnly = true;
-  if (evidence.navigation) session.navigationFeedback = true;
+  if (evidence.navigation && outcome === "VERIFIED")
+    session.navigationFeedback = true;
   delete session.proposal;
   return evidence;
 };

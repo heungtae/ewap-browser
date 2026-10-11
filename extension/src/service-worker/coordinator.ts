@@ -77,6 +77,9 @@ export class ServiceCoordinator {
         ...(node.visibility ? { visibility: node.visibility } : {}),
         ...(node.hidden_reason ? { hidden_reason: node.hidden_reason } : {}),
         enabled: node.enabled,
+        ...(node.completion_digest
+          ? { completion_digest: node.completion_digest }
+          : {}),
         ...(parent ? { parent_model_ref: parent } : {}),
         ...(label ? { label_model_ref: label } : {}),
       };

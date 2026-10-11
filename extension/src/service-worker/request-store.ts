@@ -31,6 +31,7 @@ export const copy = (request: Request): RequestSnapshot =>
     started_at_ms: request.started_at_ms,
     stage_started_at_ms: request.stage_started_at_ms,
     last_progress_at_ms: request.last_progress_at_ms,
+    ...(request.completion ? { completion: request.completion } : {}),
     ...(request.outcome ? { outcome: request.outcome } : {}),
     ...(request.code ? { code: request.code } : {}),
     ...(request.dispatch_started ? { dispatch_started: true } : {}),
@@ -56,6 +57,12 @@ export class RequestStore {
         request.state = "TERMINAL";
         request.outcome = request.dispatch_started ? "UNKNOWN" : "FAILED";
         request.code = "WORKER_RESTARTED";
+        if (request.completion)
+          request.completion = {
+            ...request.completion,
+            goal_status: "unknown",
+            reason: "REQUEST_ENDED",
+          };
         request.revision += 1;
         request.last_progress_at_ms = Date.now();
       }

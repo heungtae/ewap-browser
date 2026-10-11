@@ -1,3 +1,4 @@
+import type { ActCompletion } from "../contracts/act-completion.js";
 import { setMethodTraceLevel } from "../diagnostics/method-trace.js";
 import type { ErrorCode, Outcome } from "../contracts/core-types.js";
 import { DiagnosticsStorage } from "./diagnostics-storage.js";
@@ -165,6 +166,7 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
     outcome: Outcome,
     code?: ErrorCode,
     reason: DiagnosticReason = "request_settled",
+    completion?: ActCompletion,
   ): void {
     const request = this.requests.get(requestId);
     if (request) request.terminal = true;
@@ -172,15 +174,19 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
       requestId,
       "router",
       "request.terminal",
-      outcome === "VERIFIED"
-        ? "info"
-        : outcome === "CANCELLED"
-          ? "warn"
-          : "error",
+      completion?.action_outcome === "VERIFIED" &&
+        completion.goal_status !== "completed"
+        ? "warn"
+        : outcome === "VERIFIED"
+          ? "info"
+          : outcome === "CANCELLED"
+            ? "warn"
+            : "error",
       "TERMINAL",
       outcome,
       code,
       reason,
+      completion,
     );
   }
 
@@ -265,6 +271,7 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
     outcome?: Outcome,
     code?: ErrorCode,
     reason?: DiagnosticReason,
+    completion?: ActCompletion,
   ): void {
     this.prune(Date.now());
     if (levelRank[level] > levelRank[this.level]) return;
@@ -295,6 +302,7 @@ export class ExecutionDiagnostics extends DiagnosticsStorage {
       ...(outcome ? { outcome } : {}),
       ...(code ? { code } : {}),
       ...(reason ? { reason } : {}),
+      ...(completion ? { completion } : {}),
       message: diagnosticMessage(event, stage, outcome, code, reason),
       elapsed_ms: Math.max(0, Date.now() - request.startedAt),
     };

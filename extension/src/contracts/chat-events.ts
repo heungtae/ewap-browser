@@ -1,5 +1,6 @@
 import { fail, isPlainObject, opaque, string } from "../security/validation.js";
 import type { Outcome } from "./core-types.js";
+import { validateActCompletion } from "./act-completion.js";
 import type { ActivityStage, ChatEvent, ChatMode } from "./chat-event-types.js";
 import {
   hasExactChatEventKeys,
@@ -74,6 +75,9 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       ...base,
       type: value.type,
       stage: value.stage as ActivityStage,
+      ...(value.type === "activity_progress" && value.completion !== undefined
+        ? { completion: validateActCompletion(value.completion) }
+        : {}),
     };
   }
   if (value.type === "assistant_delta") {
@@ -157,6 +161,9 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       ...base,
       type: "run_terminal",
       outcome: value.outcome as Outcome,
+      ...(value.completion !== undefined
+        ? { completion: validateActCompletion(value.completion) }
+        : {}),
       ...(typeof value.code === "string"
         ? { code: string(value.code, 128) }
         : {}),

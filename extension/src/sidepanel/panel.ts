@@ -6,6 +6,7 @@ export const userMessage: Record<ErrorCode, string> = {
   WORKFLOW_DISCOVERY_TIMEOUT: "워크플로우 확인 제한 시간이 초과되었습니다.",
   PROVIDER_BODY_IDLE_TIMEOUT: "AI 응답 수신이 지연되어 중단했습니다.",
   REQUEST_TIMEOUT: "작업 제한 시간이 초과되었습니다.",
+  GOAL_UNVERIFIED: "동작은 완료했습니다. 최종 화면 확인이 필요합니다.",
   GOAL_INCOMPLETE:
     "동작은 검증됐지만 요청한 목표에 남은 작업이 있습니다. 다음 작업을 지정해 주세요.",
   INVALID_ARGUMENT: "작업 요청 형식이 올바르지 않습니다.",

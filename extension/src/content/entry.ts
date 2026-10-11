@@ -1,3 +1,9 @@
+import {
+  checkedState,
+  controlDisabled,
+  executeChecked,
+} from "./checked-control.js";
+import { completionRegionDigest } from "./completion-region.js";
 import { sensitiveComponentElement } from "./component-sensitive-element.js";
 import { createPageResourceCollector } from "./page-resources.js";
 import {
@@ -239,7 +245,7 @@ const actionableRef = (refId: string): HTMLElement | undefined => {
     roleFor(element) !== record.role ||
     nameFor(element) !== record.name ||
     isSensitiveElement(element) ||
-    !element.matches(":not([disabled])")
+    controlDisabled(element)
   )
     return undefined;
   const style = getComputedStyle(element);
@@ -563,10 +569,7 @@ const projectionNodes = (
         ) {
           const state = {
             ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
-            ...(element instanceof HTMLInputElement &&
-            (element.type === "checkbox" || element.type === "radio")
-              ? { checked: element.checked }
-              : {}),
+            ...checkedState(element),
             ...(element instanceof HTMLSelectElement
               ? { selected: element.selectedIndex >= 0 }
               : {}),
@@ -589,19 +592,23 @@ const projectionNodes = (
             role,
             name,
             state,
+            ...(visible &&
+            ["dialog", "main", "form"].includes(role) &&
+            element instanceof HTMLElement
+              ? {
+                  completion_digest: completionRegionDigest(
+                    element,
+                    (root) => boundedTextContent(root, 12_001, true),
+                    isSensitiveElement,
+                  ),
+                }
+              : {}),
             visible,
             visibility: visible ? "visible" : "hidden",
             ...(!visible && hiddenReason
               ? { hidden_reason: hiddenReason }
               : {}),
-            enabled:
-              !(
-                element instanceof HTMLButtonElement ||
-                element instanceof HTMLInputElement ||
-                element instanceof HTMLSelectElement ||
-                element instanceof HTMLTextAreaElement ||
-                element instanceof HTMLOptionElement
-              ) || !element.disabled,
+            enabled: !controlDisabled(element),
             ...(navigationKind === "same-origin"
               ? { same_origin_link: true }
               : navigationKind === "cross-origin"
@@ -823,10 +830,7 @@ runtime?.onMessage.addListener((message, sender, respond) => {
     }
     const state = {
       ...(element.hasAttribute("disabled") ? { disabled: true } : {}),
-      ...(element instanceof HTMLInputElement &&
-      (element.type === "checkbox" || element.type === "radio")
-        ? { checked: element.checked }
-        : {}),
+      ...checkedState(element),
       ...(element instanceof HTMLSelectElement
         ? { selected: element.selectedIndex >= 0 }
         : {}),
@@ -1102,22 +1106,27 @@ runtime?.onMessage.addListener((message, sender, respond) => {
       return true;
     }
     if (
-      !(element instanceof HTMLInputElement) ||
-      (element.type !== "checkbox" && element.type !== "radio") ||
+      !(element instanceof HTMLElement) ||
+      intent.frame_id !== 0 ||
+      actionableRef(intent.ref_id) !== element ||
       !["checkbox", "radio"].includes(record.role) ||
       typeof intent.argument?.checked !== "boolean" ||
-      element.checked === intent.argument.checked ||
       delivery !== undefined
     ) {
       respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
       return true;
     }
-    element.click();
-    if (element.checked !== intent.argument.checked) {
-      respond({ ok: false, code: "TARGET_NOT_ACTIONABLE" });
-      return true;
-    }
-    respond({ ok: true, postcondition: "semantic" });
+    const epoch = pageScopeEpoch;
+    void executeChecked(
+      element,
+      intent.argument.checked,
+      () =>
+        intent.document_epoch === documentEpoch &&
+        epoch === pageScopeEpoch &&
+        !record.stale &&
+        roleFor(element) === record.role &&
+        nameFor(element) === record.name,
+    ).then(respond);
     return true;
   }
   if (
