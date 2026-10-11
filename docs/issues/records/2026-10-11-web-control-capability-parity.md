@@ -1,17 +1,24 @@
 # ISS-20261011-003: 웹 컨트롤 후보·실행·검증 지원 범위 불일치
 
+## 현재 상태 — 완료
+
+2026-10-11 사용자의 “모두 완료 처리해” 요청에 따라 이슈 추적을 종료했다.
+아래의 검증 중·재검증 필요 표현과 미체크 완료 조건은 완료 처리 이전의 이력이다.
+실제 사이트·Provider·사용자 설치·배포 및 기존 미확인 조건을 새로 검증했다는 의미는 아니다.
+기존 수정·검증 기록은 보존하며, 같은 문제가 재발하면 이 ID를 다시 연다.
+
 ## 관리 정보
 
 | 항목             | 값                                                                                                                               |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 상태             | 검증 중                                                                                                                      |
+| 상태             | 완료 (사용자 요청에 따른 추적 종료)                                                                                              |
 | 발생일·최근 갱신 | 2026-10-11 KST                                                                                                                   |
 | 영향 범위        | DOM role/type/state 수집, generic action schema, inventory, executor, verifier                                                   |
 | 발생 환경        | 통제 Chrome `147.0.7727.15`, ContextPilot `0.1.100`                                                                              |
 | 분석 source      | HEAD `549ebacc76b5608d80ca70ab71610da11bbc29f0` + 미커밋 작업 트리                                                               |
 | 관련 이슈        | [ISS-20261011-002](2026-10-11-aria-radio-button-execution.md), [ISS-20261011-001](2026-10-11-act-completion-after-navigation.md) |
-| 수정 commit·배포 | 미구현·미배포                                                                                                                    |
-| 다음 작업        | 공통 capability 판별로 schema·실행·검증을 맞추고 타입·비활성·editor 후보부터 정정                                                |
+| 수정 commit·배포 | S21 구현 후 추가 검증 중; 원래 사이트 해결 미확인                                                                                |
+| 다음 작업        | 없음 — 사용자 요청으로 추적 종료                                                                                                 |
 
 ## 증상과 재현
 
@@ -120,11 +127,47 @@ supported_actions와 capability 공통 기준, readonly/unsupported type/editor/
 원래 운영 사이트·배포는 미검증이며, controlled HTTPS와 실제 모델이 연결된 fixture
 표본을 실제 사이트 수락 조건 충족으로 대체하지 않는다.
 
-## 2026-10-11 일반 클릭 재현 및 수정
+## 2026-10-11 18:00 실제 사이트 추가 발생: 일반 클릭이 실행 전 차단됨
 
-0.1.104 진단 요청 d74891eb-3d31-4e43-a0f9-3758bb3d6bd9에서 일반 button이
-not_dispatched / UNSUPPORTED_COMPLETION으로 차단됐다. Provider 목표 응답은 incomplete였다.
+진단 요청 `d74891eb-3d31-4e43-a0f9-3758bb3d6bd9`, 버전 0.1.104,
+실제 provider `gpt-5.6-luna`에서 최종 FAILED / UNSUPPORTED_COMPLETION이 발생했다.
+이는 ISS-20261011-004의 provider completed 거절과 다른 실행 전 실패다.
+이번 provider goal 응답은 **incomplete**였고 provider_completed=false가 기록돼 있다.
 
+확인된 원인과 흐름:
+
+1. 수집된 대상은 이름이 비어 있고 state={}인 visible/enabled button이다.
+   supported_actions에는 click_by_ref/press_key_by_ref가 있고 실제 propose_click 후보로 제공됐다.
+2. provider의 click_by_ref 제안은 approval_scope=session이며 generic verifier의
+   required_changes=[]였다. 제안 후 실행 경로에 진입했다.
+3. canVerify=false이고 CONTENT_PREPARE_UI_COMPLETION도 ok=false였다.
+   Content에서 actionableRef는 DOM 객체를 반환했으며, UI 준비가 !target || !kind에서
+   거절됐다. 이 observer는 native dialog 또는 명시적인 ARIA status/alert 관계만 지원한다.
+4. act-execution-runtime.ts의 실행 전 guard에서 UNSUPPORTED_COMPLETION을 반환했다.
+   실제 receipt는 **not_dispatched / raw FAILED**다. 클릭이 실행된 것으로 해석하지 않는다.
+5. 이후 최신 화면을 provider에 전달한 goal 요청이 수행됐고 report_goal_status는
+   incomplete, evidence indexes=[]였다. 최종 상태는 FAILED / VERIFIER_FAILED다.
+
+이름이 비어 있다는 사실을 직접 차단 원인으로 삼지 않는다. 확인된 차단 조건은
+로컬 semantic 변화 조건 및 지원 UI completion baseline의 부재다.
+일반 button의 supported_actions와 provider schema는 클릭 가능성을 표시하지만,
+실행기는 completion을 준비하지 못하면 dispatch 전에 차단하므로 후보·실행·검증 지원
+범위 불일치가 실제 사이트에서 남아 있다. 구체적인 버튼 목적과 목표 원문은 마스킹되어
+메뉴 버튼 등으로 단정하지 않는다.
+
+빌드된 UI observer/verifier의 축소 재현에서도 explicit completion 관계가 없는 generic
+button은 canVerify=false / prepareBrowserUi=false였다. 이는 guard 재현이며 원래 DOM이나
+실제 사이트 재실행이 아니다. Worker drop=55,024, Content=235,948, Panel/Offscreen=0,
+lifecycle=0이며 보존된 prepare/receipt/goal/final 판단 범위에 한정한다.
+
+후속 수정 범위는 실제 실행 가능한 일반 클릭의 completion 준비와 provider 확인 연결,
+또는 실행 불가능한 후보의 정확한 capability/schema 표시다. provider completed 최종 수용
+정책만으로 실행 전 차단을 해결할 수 없다. 이번 분석에서는 실행 코드를 변경하지 않았으며
+기존 S21 통제 PASS를 이 사이트의 해결 증거로 사용하지 않는다. 상태는 검증 중으로 유지한다.
+
+[진단 분석 증거](../../evidence/iss-20261011-003-click-preflight-2026-10-11.json)를 연결한다.
+
+## 2026-10-11 일반 클릭 사전 차단 수정
 
 명시 completion이 없고 semantic required_changes가 비어 있는 R1/local-ui-only
 click_by_ref에 한해 UI completion baseline이 없어도 승인된 CDP 실행을 진행한다.
@@ -155,3 +198,9 @@ raw UNKNOWN 보존, 두 번의 goal 확인 후 Worker/UI completed를 확인했�
 버전은 0.1.104로 유지했다. 실제 운영 사이트와 live provider 재실행·설치/배포는
 확인하지 않았다. 따라서 코드 결함의 수정과 통제 PASS를 기록하되 상태는 **검증 중**을
 유지한다. 이전 audit와 미검증 acceptance 조건을 해결 처리하지 않는다.
+
+## 2026-10-11 완료 처리 이력
+
+- 상태: 완료 (사용자 요청에 따른 추적 종료).
+- 근거: 미확인 범위를 안내한 뒤 사용자가 모든 로컬 이슈의 완료 처리를 명시했다.
+- 남은 추적 작업: 없음. 기존 미검증 범위와 실행 증거는 위 이력대로 보존한다.
