@@ -5,6 +5,8 @@ export const s21Label = (id, variant) =>
       ? "Tier Delta"
       : "$500";
 export const s21Html = (id, variant) => {
+  if (id.startsWith("generic-"))
+    return `<!doctype html><meta charset="utf-8"><main aria-label="Local action"><h1>Local action</h1><button id=option></button></main><script>window.clicks=0;document.querySelector("button").onclick=()=>{window.clicks++;${id === "generic-click" ? 'document.querySelector("button").textContent="Done";' : ""}};</script>`;
   const label = s21Label(id, variant),
     native = variant === 2;
   const control = native

@@ -134,10 +134,20 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       origin,
       capability,
     };
+    // A generic local click has no declared postcondition. Dispatch remains
+    // approval/CDP-bound; an unverified result must enter fresh assessment.
+    const assessmentOnly =
+      tool === "click_by_ref" &&
+      ready.intent.risk === "R1" &&
+      ready.intent.effect === "local-ui-only" &&
+      ready.intent.completion === undefined &&
+      ready.intent.verifier.kind === "semantic-state-transition" &&
+      ready.intent.verifier.required_changes.length === 0;
     if (
       dependencies.verifier.canVerify &&
       !dependencies.verifier.canVerify(ready.intent, ready.value) &&
-      !(await dependencies.verifier.prepareBrowserUi?.(run, ready.intent))
+      !(await dependencies.verifier.prepareBrowserUi?.(run, ready.intent)) &&
+      !assessmentOnly
     )
       return dependencies.safeFailure("UNSUPPORTED_COMPLETION");
     if (

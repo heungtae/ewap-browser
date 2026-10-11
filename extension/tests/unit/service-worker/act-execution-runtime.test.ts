@@ -34,7 +34,37 @@ const ready: ReadyExecution = {
 };
 
 describe("Act execution runtime", () => {
-  it("does_not_dispatch_when_the_completion_contract_is_unsupported", async () => {
+  it.each([
+    "server-side",
+    "R2",
+    "press-key",
+    "declared-change",
+    "render-result",
+  ])("does_not_dispatch_unsupported_completion: %s", async (kind) => {
+    const intent = structuredClone(ready.intent);
+    if (kind === "server-side") intent.effect = "server-side";
+    if (kind === "R2") intent.risk = "R2";
+    if (kind === "press-key") {
+      intent.tool = "press_key_by_ref";
+      intent.argument = { key: "Enter" };
+    }
+    if (
+      kind === "declared-change" &&
+      intent.verifier.kind === "semantic-state-transition"
+    )
+      intent.verifier.required_changes = [
+        { ref_id: intent.ref_id, field: "expanded", expected: true },
+      ];
+    if (kind === "render-result")
+      intent.completion = {
+        version: 2,
+        kind: "render_result",
+        source: "trusted_profile",
+        scope_policy: "same_scope",
+        report_scope: "result",
+        marker: { role: "status", name: "Result" },
+        requires_result_generation: true,
+      };
     let dispatched = 0;
     const runtime = createActExecutionRuntime({
       boundedCdp: {
@@ -63,7 +93,11 @@ describe("Act execution runtime", () => {
       },
     });
     await expect(
-      runtime.executeBounded(run, ready, "https://portal.company.test"),
+      runtime.executeBounded(
+        run,
+        { ...ready, intent },
+        "https://portal.company.test",
+      ),
     ).resolves.toEqual({
       ok: false,
       code: "UNSUPPORTED_COMPLETION",
@@ -91,6 +125,9 @@ describe("Act execution runtime", () => {
       safeFailure: (code) => ({ ok: false, code }),
       verifier: {
         bounded: async () => false,
+        canVerify: () => false,
+        prepareBrowserUi: async () => false,
+        prepare: async () => true,
         navigationTarget: () => undefined,
         semantic: async () => false,
         waitForSameOriginNavigation: async () => false,

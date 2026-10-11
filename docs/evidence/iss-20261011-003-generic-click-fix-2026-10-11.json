@@ -1,0 +1,232 @@
+{
+  "issue": "ISS-20261011-003",
+  "date": "2026-10-11",
+  "revision": "549ebacc76b5608d80ca70ab71610da11bbc29f0 + working tree",
+  "version": "0.1.104",
+  "provider": "controlled fixture (not live model)",
+  "worker_sha256": "3edc33d70296d634270ab90d8481f293676e86d7755af56f5d1fb1172fe8b64b",
+  "results": [
+    {
+      "id": "generic-click",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "undefined",
+      "assessmentCalls": 1,
+      "elementCalls": 0,
+      "finalGoal": "completed",
+      "accepted": {
+        "run_id": "d5dfb843-f8bb-4ffb-a11f-d344d649259a",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      }
+    },
+    {
+      "id": "generic-unchanged",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "undefined",
+      "assessmentCalls": 2,
+      "elementCalls": 0,
+      "finalGoal": "unknown",
+      "accepted": {
+        "run_id": "7ec2b1b1-782f-4574-b44b-5d72584b6c3e",
+        "outcome": "UNKNOWN",
+        "code": "POSTCONDITION_UNVERIFIED",
+        "completion": {
+          "action_outcome": "UNKNOWN",
+          "goal_status": "unknown",
+          "reason": "UNOBSERVED_ACTION",
+          "reassessments": 0,
+          "assessment": {
+            "version": 1,
+            "calls": 2,
+            "reads": 1,
+            "confirmation": "none"
+          }
+        }
+      }
+    },
+    {
+      "id": "element",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "true",
+      "assessmentCalls": 0,
+      "elementCalls": 1,
+      "finalGoal": "completed",
+      "accepted": {
+        "run_id": "862cccba-19b6-4a18-bd03-27f3f8049a60",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      }
+    },
+    {
+      "id": "normal",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "true",
+      "assessmentCalls": 0,
+      "elementCalls": 0,
+      "finalGoal": "completed",
+      "accepted": {
+        "run_id": "fdb78de9-bed7-4abb-a351-7e23741f9a3b",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0
+        }
+      }
+    },
+    {
+      "id": "delayed",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "true",
+      "assessmentCalls": 1,
+      "elementCalls": 0,
+      "finalGoal": "completed",
+      "accepted": {
+        "run_id": "9e2c4f70-79b8-4ab4-9174-95bef3e71bd8",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      }
+    },
+    {
+      "id": "replacement",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "true",
+      "assessmentCalls": 1,
+      "elementCalls": 0,
+      "finalGoal": "completed",
+      "accepted": {
+        "run_id": "df7e3fea-cd46-4eef-98f4-4cf40bad6a29",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      }
+    },
+    {
+      "id": "not-completed",
+      "pass": true,
+      "mutationCount": 1,
+      "checked": "false",
+      "assessmentCalls": 2,
+      "elementCalls": 0,
+      "finalGoal": "unknown",
+      "accepted": {
+        "run_id": "6b58ccc6-f113-4117-82a9-87accabd5bfa",
+        "outcome": "UNKNOWN",
+        "code": "TARGET_NOT_ACTIONABLE",
+        "completion": {
+          "action_outcome": "UNKNOWN",
+          "goal_status": "unknown",
+          "reason": "UNOBSERVED_ACTION",
+          "reassessments": 0,
+          "assessment": {
+            "version": 1,
+            "calls": 2,
+            "reads": 1,
+            "confirmation": "none"
+          }
+        }
+      }
+    },
+    {
+      "id": "already",
+      "pass": true,
+      "mutationCount": 0,
+      "checked": "true",
+      "assessmentCalls": 0,
+      "elementCalls": 0,
+      "finalGoal": "completed",
+      "accepted": {
+        "run_id": "8e30fb1d-052e-4a7e-ac51-758293ee1d6d",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0
+        }
+      }
+    },
+    {
+      "id": "blocked",
+      "pass": true,
+      "mutationCount": 0,
+      "checked": "false",
+      "assessmentCalls": 0,
+      "elementCalls": 0,
+      "accepted": {
+        "run_id": "5e5bb185-8707-46fd-8333-b38e30071369",
+        "outcome": "VERIFIED"
+      }
+    }
+  ],
+  "navigation_regression": {
+    "case": "late-destination",
+    "scope": "controlled Chrome/provider fixture",
+    "build": "3edc33d70296d634270ab90d8481f293676e86d7755af56f5d1fb1172fe8b64b",
+    "proposal_calls": 1,
+    "goal_calls": 2,
+    "raw_unknown_observed": true,
+    "visible_completion": true,
+    "version": "0.1.104"
+  },
+  "generic_receipt_recheck": {
+    "worker_sha256": "3edc33d70296d634270ab90d8481f293676e86d7755af56f5d1fb1172fe8b64b",
+    "passed": true,
+    "checks": [
+      "single mutation after single_step approval",
+      "same-conversation tool result dispatched=true/outcome=UNKNOWN/code=POSTCONDITION_UNVERIFIED",
+      "changed UI: llm evidence and completed",
+      "unchanged UI: unknown, no retry"
+    ]
+  }
+}

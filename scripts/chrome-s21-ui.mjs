@@ -73,6 +73,11 @@ export const verifyS21Result = ({
   if (["normal", "already", "blocked"].includes(id))
     assert.equal(assessmentCalls, 0);
   if (["delayed", "replacement"].includes(id)) assert.ok(assessmentCalls > 0);
+  if (id.startsWith("generic-")) {
+    assert.ok(assessmentCalls > 0);
+    assert.equal(finalGoal, id === "generic-click" ? "completed" : "unknown");
+    assert.equal(accepted?.completion?.goal_status, finalGoal);
+  }
   if (id === "not-completed") {
     assert.notEqual(finalGoal, "completed");
     assert.ok(

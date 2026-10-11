@@ -39,3 +39,5 @@ JSON 증거는 각 기록에서 연결한다.
 - [ARIA checked 컨트롤 수정 검증 — 2026-10-11](aria-checked-control-fix-2026-10-11.md): ISS-20261011-002 bounded 구현·Chrome·회귀 범위.
 
 - [S21 추가 판단 구현·검증 — 2026-10-11](s21-assessment-2026-10-11.md): dispatch·freshness·budget·승인·UI, 통제 및 실제 provider 표본과 미검증 범위.
+
+- [ISS-20261011-003 일반 클릭 사전 차단 수정](iss-20261011-003-generic-click-fix-2026-10-11.json): 승인·UNKNOWN receipt·모델 확인을 포함한 통제 Chrome S21 9/9; 실제 사이트/live provider·배포 제외.

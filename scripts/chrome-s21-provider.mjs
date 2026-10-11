@@ -115,6 +115,13 @@ export const s21Provider = (options) =>
           approval_reason: "Unsupported candidate test",
         });
       }
+      if (c.id.startsWith("generic-") && tool("propose_click"))
+        return call("propose_click", {
+          target:
+            tool("propose_click").function.parameters.properties.target.enum[0],
+          approval_scope: "single_step",
+          approval_reason: "Perform the requested local click",
+        });
       const checked = tool("propose_set_checked");
       if (checked)
         return call("propose_set_checked", {

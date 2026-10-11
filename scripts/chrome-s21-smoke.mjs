@@ -17,6 +17,8 @@ import { s21Provider } from "./chrome-s21-provider.mjs";
 const model = process.env.S21_LIVE_MODEL,
   live = liveProviderConfig(model);
 const cases = [
+  "generic-click",
+  "generic-unchanged",
   "element",
   "normal",
   "delayed",
@@ -63,7 +65,7 @@ try {
       });
       await evaluate(
         harness.panel,
-        `(()=>{document.querySelector('#mode-act').click();document.querySelector('#chat-input').value=${JSON.stringify(`Select the ${s21Label(id, variant)} radio option and confirm its current UI state. Do not perform any other action.`)};document.querySelector('#chat-form').requestSubmit();return true})()`,
+        `(()=>{document.querySelector('#mode-act').click();document.querySelector('#chat-input').value=${JSON.stringify(id.startsWith("generic-") ? "Click the visible button once and confirm whether its label changed to Done." : `Select the ${s21Label(id, variant)} radio option and confirm its current UI state. Do not perform any other action.`)};document.querySelector('#chat-form').requestSubmit();return true})()`,
       );
       const deadline = Date.now() + (model ? 120000 : 30000);
       let settled = false;
@@ -102,6 +104,14 @@ try {
       const finalGoal = recent
         .flatMap((c) => c.response)
         .findLast((c) => c.name === "report_goal_status")?.goal;
+      if (id.startsWith("generic-")) {
+        const receipt = recent
+          .flatMap((call) => call.returned)
+          .find((result) => result.execution);
+        assert.equal(receipt?.dispatched, true);
+        assert.equal(receipt?.outcome, "UNKNOWN");
+        assert.equal(receipt?.code, "POSTCONDITION_UNVERIFIED");
+      }
       const accepted = await s21Completion(harness);
       verifyS21Result({
         id,

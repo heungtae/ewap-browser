@@ -4,7 +4,7 @@
 
 | 항목             | 값                                                                                                                               |
 | ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 상태             | 해결안 정리                                                                                                                      |
+| 상태             | 검증 중                                                                                                                      |
 | 발생일·최근 갱신 | 2026-10-11 KST                                                                                                                   |
 | 영향 범위        | DOM role/type/state 수집, generic action schema, inventory, executor, verifier                                                   |
 | 발생 환경        | 통제 Chrome `147.0.7727.15`, ContextPilot `0.1.100`                                                                              |
@@ -119,3 +119,39 @@ supported_actions와 capability 공통 기준, readonly/unsupported type/editor/
 기존 이력과 당시 실패 관찰은 보존한다. 현재 상태는 **검증 중**이다.
 원래 운영 사이트·배포는 미검증이며, controlled HTTPS와 실제 모델이 연결된 fixture
 표본을 실제 사이트 수락 조건 충족으로 대체하지 않는다.
+
+## 2026-10-11 일반 클릭 재현 및 수정
+
+0.1.104 진단 요청 d74891eb-3d31-4e43-a0f9-3758bb3d6bd9에서 일반 button이
+not_dispatched / UNSUPPORTED_COMPLETION으로 차단됐다. Provider 목표 응답은 incomplete였다.
+
+
+명시 completion이 없고 semantic required_changes가 비어 있는 R1/local-ui-only
+click_by_ref에 한해 UI completion baseline이 없어도 승인된 CDP 실행을 진행한다.
+기존 approval, target/document binding, dispatch 직전 취소 검사와 CDP cleanup은 유지한다.
+명시된 completion, 선언된 상태 변화, R2, server-side, 키 입력에는 이 예외를 적용하지 않는다.
+prepare 실패도 계속 차단한다. 클릭 receipt는 dispatched / raw UNKNOWN이며 성공으로
+자동 변환하지 않는다. 기존 assessPendingAction이 같은 대화에서 최신 상태 증거를
+검사하고, 이후 report_goal_status가 원래 목표를 별도로 확인한다.
+
+회귀: act-execution-runtime.test.ts는 기존 UNSUPPORTED_COMPLETION 조건을 실제
+미지원 범위로 좁히고 일반 클릭 UNKNOWN 및 다섯 가지 예외 차단 조건을 검사한다.
+chrome-s21-smoke.mjs에 초기 이름이 비고 state가 없는 generic-click과
+generic-unchanged를 추가했다. single_step 승인, 한 번의 mutation, 같은 tool call의
+UNKNOWN/dispatched 결과, read-only assessment, 최종 Worker/UI 결과를 확인한다.
+receipt 명시 assert 추가 후 generic 두 사례도 재실행 PASS.
+화면 변화가 있으면 llm_evidence 확인 후 completed, 없으면 두 번의 assessment와
+한 번의 추가 read 뒤 unknown을 유지하며 재클릭하지 않는다.
+
+실행: typecheck, lint, 버전 변경 없는 build·validate-package PASS.
+전체 unit 171 suites / 813 tests PASS 후 차단 경계 추가분 포함 runtime 10 tests PASS.
+fixture 1 test, e2e 1 test, module boundaries PASS. 통제 Chrome S21 9/9 PASS로
+ARIA radio·delayed·replacement·already-satisfied·blocked 회귀를 함께 실행했다.
+chrome-navigation-confirmation-smoke.mjs의 late-destination도 PASS: 한 번의 이동,
+raw UNKNOWN 보존, 두 번의 goal 확인 후 Worker/UI completed를 확인했다.
+[이번 실행 증거](../../evidence/iss-20261011-003-generic-click-fix-2026-10-11.json)는
+빌드 Worker SHA-256, 각 사례 mutation·assessment 수와 Worker 완료 결과를 보존한다.
+
+버전은 0.1.104로 유지했다. 실제 운영 사이트와 live provider 재실행·설치/배포는
+확인하지 않았다. 따라서 코드 결함의 수정과 통제 PASS를 기록하되 상태는 **검증 중**을
+유지한다. 이전 audit와 미검증 acceptance 조건을 해결 처리하지 않는다.
