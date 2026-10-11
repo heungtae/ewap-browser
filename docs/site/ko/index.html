@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ContextPilot — 사용자 가이드</title>
+    <meta
+      name="description"
+      content="읽고 있는 페이지에 질문하고, 동의와 검토를 거쳐 작업을 실행하세요. 원하는 모델 Provider를 연결해 사용할 수 있습니다."
+    />
+    <link rel="stylesheet" href="../assets/styles.css" />
+    <link rel="alternate" hreflang="en" href="../en/index.html" />
+    <link rel="alternate" hreflang="ko" href="../ko/index.html" />
+    <script src="../assets/language.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">본문으로 건너뛰기</a>
+    <header>
+      <a class="brand" href="./index.html"
+        >ContextPilot<span>사용자 가이드</span></a
+      >
+      <nav aria-label="언어" class="languages">
+        <a href="../en/index.html" lang="en" hreflang="en" data-language="en"
+          >English</a
+        >
+        <a
+          href="../ko/index.html"
+          lang="ko"
+          hreflang="ko"
+          data-language="ko"
+          aria-current="page"
+          >한국어</a
+        >
+      </nav>
+      <a class="repository" href="https://github.com/heungtae/ewap-browser"
+        >저장소 ↗</a
+      >
+    </header>
+    <div class="layout">
+      <nav class="contents" aria-label="이 페이지의 내용">
+        <p>이 페이지의 내용</p>
+        <a href="#installation">ContextPilot 설치</a>
+        <a href="#provider">모델 Provider 연결</a>
+        <a href="#ask">페이지에 질문하기</a>
+        <a href="#act">브라우저 작업 실행</a>
+        <a href="#privacy">권한과 개인정보</a>
+        <a href="#updates">업데이트와 복구</a>
+        <a href="#troubleshooting">문제 해결</a>
+      </nav>
+      <main id="main">
+        <div class="hero">
+          <p class="eyebrow">CONTEXT PILOT / 사용자 가이드</p>
+          <h1>브라우저 작업을 함께하는 도우미.</h1>
+          <p>
+            읽고 있는 페이지에 질문하고, 동의와 검토를 거쳐 작업을 실행하세요.
+            원하는 모델 Provider를 연결해 사용할 수 있습니다.
+          </p>
+          <a class="button" href="#installation">시작하기 →</a>
+        </div>
+        <section id="installation" aria-labelledby="installation-title">
+          <h2 id="installation-title">ContextPilot 설치</h2>
+          <p>
+            Chrome 116 이상이 필요합니다. 소스에서 빌드하려면 Node.js 20 이상과
+            <code>pnpm@9.15.4</code>를 준비하세요. 복제한 저장소의 루트에서 다음
+            명령을 실행합니다.
+          </p>
+          <pre><code>corepack enable
+pnpm install --frozen-lockfile
+pnpm exec tsc -p tsconfig.build.json
+node scripts/build-extension.mjs
+pnpm validate:package</code></pre>
+          <ol>
+            <li>
+              <code>chrome://extensions</code>에서
+              <strong>개발자 모드</strong>를 켭니다.
+            </li>
+            <li>
+              <strong>압축해제된 확장 프로그램을 로드합니다</strong>를 누르고
+              저장소의 <code>dist-extension/</code>을 선택합니다.
+            </li>
+            <li>
+              확장 프로그램 옵션 페이지(<strong>Settings</strong>)에서 모델
+              Provider를 설정합니다.
+            </li>
+            <li>작업할 웹 페이지를 열고 ContextPilot 사이드 패널을 엽니다.</li>
+          </ol>
+          <p>
+            로컬 ZIP이 필요하면 빌드 후 <code>pnpm package:local</code>을
+            실행하세요. <code>dist/contextpilot-&lt;version&gt;.zip</code>을
+            압축 해제하고 해당 폴더를 로드합니다. Chrome Web Store 설치가 아닌
+            압축 해제 설치 방식입니다.
+          </p>
+          <aside>
+            위 명령은 확장 버전을 유지합니다. <code>pnpm build</code>와
+            <code>pnpm test</code>는 버전을 증가시킵니다.
+          </aside>
+        </section>
+        <section id="provider" aria-labelledby="provider-title">
+          <h2 id="provider-title">모델 Provider 연결</h2>
+          <ol>
+            <li>
+              <strong>Settings → LLM Provider</strong>에서 Provider ID를
+              입력하고 해당 Plugin을 선택합니다.
+            </li>
+            <li>
+              Provider의 <strong>Endpoint</strong>와 <strong>Model</strong>을
+              입력합니다. 지원하는 <strong>Wire API</strong>(자동, Chat
+              Completions, Responses)를 선택합니다.
+            </li>
+            <li>
+              인증 방식을 선택하고 필요한 경우 secret 필드에 API key를
+              입력합니다. Provider가 요구할 때만 HTTP header를 추가합니다.
+            </li>
+            <li>
+              설정을 저장한 뒤 연결 테스트를 실행합니다. Provider 관리에서
+              사용할 Provider를 활성화합니다.
+            </li>
+          </ol>
+          <p>
+            HTTP endpoint는 HTTP host 권한을 요청해야 합니다. 사설 IPv4
+            endpoint는 사설망 사용 동의도 필요합니다. Endpoint·모델·인증 형식은
+            해당 Provider의 API 문서를 확인하세요.
+          </p>
+          <aside>
+            설정은 현재 Chrome 프로필에 저장됩니다. 요청에 대해 승인한 페이지
+            문맥은 선택한 Provider로 전송될 수 있습니다. 확장이 로컬에서
+            동작하더라도 원격 모델까지 로컬에서 실행되는 것은 아닙니다.
+          </aside>
+        </section>
+        <section id="ask" aria-labelledby="ask-title">
+          <h2 id="ask-title">페이지에 질문하기</h2>
+          <ol>
+            <li>질문할 페이지와 ContextPilot 사이드 패널을 엽니다.</li>
+            <li>
+              <strong>Ask</strong>를 선택하고 “이 페이지를 요약하고 핵심 내용을
+              정리해줘”처럼 질문합니다.
+            </li>
+            <li>
+              페이지·소스·화면 접근 요청이 나타나면 내용을 확인한 뒤 동의합니다.
+            </li>
+            <li>
+              답변을 읽고 같은 대화에서 추가로 질문합니다. 중요한 결론은 원문과
+              비교하세요.
+            </li>
+          </ol>
+          <p>
+            표나 목록에는 “화면에 보이는 표를 읽고 값을 비교해줘”처럼 요청해
+            보세요. 읽을 수 있는 데이터는 페이지·접근 권한·지원 도구에 따라
+            달라집니다. 소스를 선택해야 할 때는 페이지 데이터 읽기 기능을
+            사용하세요.
+          </p>
+        </section>
+        <section id="act" aria-labelledby="act-title">
+          <h2 id="act-title">브라우저 작업 실행</h2>
+          <ol>
+            <li>작업을 시작할 페이지에서 <strong>Act</strong>를 선택합니다.</li>
+            <li>
+              “검색창에 ContextPilot을 입력하고 결과를 보여줘”처럼 목표와 정확한
+              값을 설명합니다.
+            </li>
+            <li>
+              사이드 패널에 나타나는 계획·동작 검토 안내를 따릅니다. 승인하기
+              전에 목적지와 입력값을 확인하세요.
+            </li>
+            <li>
+              실행 상세와 실제 페이지 변화를 확인합니다. 진행 중인 요청은
+              <strong>Stop</strong>으로 취소할 수 있습니다.
+            </li>
+          </ol>
+          <p>
+            페이지가 바뀌거나 대상을 식별할 수 없으면 새 관찰·선택 안내를
+            따릅니다. 작업이 차단되거나 미완료로 끝날 수 있으므로 최종 상태와
+            실제 페이지를 함께 확인하세요.
+          </p>
+        </section>
+        <section id="privacy" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">권한과 개인정보</h2>
+          <p>
+            Settings의 승인 설정을 확인하고 의도한 작업에 필요한 접근을
+            허용하세요. 페이지 접근, 소스·vision 공유, 중요한 동작은 실제 UI의
+            안내를 따릅니다. 저장된 권한은 Settings에서 철회하고 새 요청으로
+            적용 결과를 확인할 수 있습니다.
+          </p>
+          <p>
+            API key는 secret 필드에 저장하세요. 공유용 설정이나 문의 자료에
+            key·인증 header·민감한 페이지 원문을 넣지 마세요. 진단을 내보낼 때도
+            공유할 자료를 확인하세요.
+          </p>
+          <p>
+            조직에서 관리하는 확장이라면 필요한 서비스나 정책 제한은 관리자에게
+            문의하세요.
+          </p>
+        </section>
+        <section id="updates" aria-labelledby="updates-title">
+          <h2 id="updates-title">업데이트와 복구</h2>
+          <ol>
+            <li>Chrome을 종료하고 현재 확장 폴더를 백업합니다.</li>
+            <li>같은 경로의 내용을 새 ZIP의 압축 해제 내용으로 교체합니다.</li>
+            <li>
+              Chrome을 다시 열고 확장 버전·Settings·Provider 연결·권한을
+              확인합니다.
+            </li>
+            <li>
+              복구하려면 Chrome을 종료하고 같은 경로에 이전 패키지를 복원합니다.
+            </li>
+          </ol>
+          <p>
+            설치 경로를 바꾸면 확장 ID와 저장소가 달라질 수 있습니다. 대화는
+            브라우저 세션 저장소를 사용하므로 Chrome 재시작 후 보존을 전제로
+            하지 마세요. 업데이트 전에 버전과 설치 경로를 기록하세요.
+          </p>
+        </section>
+        <section id="troubleshooting" aria-labelledby="troubleshooting-title">
+          <h2 id="troubleshooting-title">문제 해결</h2>
+          <dl>
+            <dt>확장이 로드되지 않아요</dt>
+            <dd>
+              Chrome 116 이상인지 확인하고 빌드된 <code>manifest.json</code>이
+              들어 있는 폴더를 선택하세요. 저장소 루트나 ZIP 파일 자체를
+              선택하면 안 됩니다.
+            </dd>
+            <dt>Provider 연결이 실패해요</dt>
+            <dd>
+              Plugin·endpoint·wire API·모델·인증·host 권한을 확인하세요. 변경
+              사항을 저장한 뒤 연결 테스트를 다시 실행합니다.
+            </dd>
+            <dt>페이지 데이터나 동작을 사용할 수 없어요</dt>
+            <dd>
+              현재 탭과 접근 요청을 확인하세요. 실행 상세에서 권한 거부·오래된
+              페이지·지원하지 않는 대상·Provider 오류를 확인하고 필요한 경우 새
+              요청을 시작합니다.
+            </dd>
+            <dt>문제를 제보하고 싶어요</dt>
+            <dd>
+              확장 버전·Chrome/OS·재현 단계·기대 결과·실제 결과를 기록하세요.
+              화면과 진단 자료에서 민감한 값을 제거합니다.
+            </dd>
+          </dl>
+          <p>
+            <a href="https://github.com/heungtae/ewap-browser/issues"
+              >문제 제보</a
+            >
+            ·
+            <a
+              href="https://github.com/heungtae/ewap-browser/blob/master/docs/reference/method-execution-diagnostics.md"
+              >진단 참고 문서</a
+            >
+            ·
+            <a
+              href="https://github.com/heungtae/ewap-browser/blob/master/docs/evidence/README.md"
+              >검증 기록</a
+            >
+          </p>
+        </section>
+        <footer>
+          개발·테스트 안내가 필요하신가요?
+          <a
+            href="https://github.com/heungtae/ewap-browser/blob/master/docs/README.md"
+            >저장소 문서 ↗</a
+          >
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

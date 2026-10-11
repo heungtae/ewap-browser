@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ContextPilot — User guide</title>
+    <meta
+      name="description"
+      content="Ask questions about the page you are reading. Act on a task with consent and review. Connect the model provider you choose."
+    />
+    <link rel="stylesheet" href="../assets/styles.css" />
+    <link rel="alternate" hreflang="en" href="../en/index.html" />
+    <link rel="alternate" hreflang="ko" href="../ko/index.html" />
+    <script src="../assets/language.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header>
+      <a class="brand" href="./index.html"
+        >ContextPilot<span>User guide</span></a
+      >
+      <nav aria-label="Language" class="languages">
+        <a
+          href="../en/index.html"
+          lang="en"
+          hreflang="en"
+          data-language="en"
+          aria-current="page"
+          >English</a
+        >
+        <a href="../ko/index.html" lang="ko" hreflang="ko" data-language="ko"
+          >한국어</a
+        >
+      </nav>
+      <a class="repository" href="https://github.com/heungtae/ewap-browser"
+        >Repository ↗</a
+      >
+    </header>
+    <div class="layout">
+      <nav class="contents" aria-label="On this page">
+        <p>On this page</p>
+        <a href="#installation">Install ContextPilot</a>
+        <a href="#provider">Connect a model provider</a>
+        <a href="#ask">Ask about a page</a>
+        <a href="#act">Carry out a browser task</a>
+        <a href="#privacy">Permissions and privacy</a>
+        <a href="#updates">Update or roll back</a>
+        <a href="#troubleshooting">Troubleshooting</a>
+      </nav>
+      <main id="main">
+        <div class="hero">
+          <p class="eyebrow">CONTEXT PILOT / User guide</p>
+          <h1>Your browser, with a helping hand.</h1>
+          <p>
+            Ask questions about the page you are reading. Act on a task with
+            consent and review. Connect the model provider you choose.
+          </p>
+          <a class="button" href="#installation">Get started →</a>
+        </div>
+        <section id="installation" aria-labelledby="installation-title">
+          <h2 id="installation-title">Install ContextPilot</h2>
+          <p>
+            You need Chrome 116 or later. To build from source, install Node.js
+            20 or later and use <code>pnpm@9.15.4</code>. Run these commands
+            from your repository clone:
+          </p>
+          <pre><code>corepack enable
+pnpm install --frozen-lockfile
+pnpm exec tsc -p tsconfig.build.json
+node scripts/build-extension.mjs
+pnpm validate:package</code></pre>
+          <ol>
+            <li>
+              Open <code>chrome://extensions</code> and turn on
+              <strong>Developer mode</strong>.
+            </li>
+            <li>
+              Click <strong>Load unpacked</strong> and select
+              <code>dist-extension/</code> inside the repository.
+            </li>
+            <li>
+              Open the extension's options page (<strong>Settings</strong>) to
+              configure your model provider.
+            </li>
+            <li>Visit a web page and open the ContextPilot side panel.</li>
+          </ol>
+          <p>
+            For a local ZIP, run <code>pnpm package:local</code> after building.
+            Extract <code>dist/contextpilot-&lt;version&gt;.zip</code> and load
+            the extracted folder. This is an unpacked installation, not a Chrome
+            Web Store install.
+          </p>
+          <aside>
+            The commands above preserve the extension version.
+            <code>pnpm build</code> and <code>pnpm test</code> increment it.
+          </aside>
+        </section>
+        <section id="provider" aria-labelledby="provider-title">
+          <h2 id="provider-title">Connect a model provider</h2>
+          <ol>
+            <li>
+              In <strong>Settings → LLM Provider</strong>, enter a Provider ID
+              and select the matching Plugin.
+            </li>
+            <li>
+              Enter your provider's <strong>Endpoint</strong> and
+              <strong>Model</strong>. Choose the supported
+              <strong>Wire API</strong>: Auto, Chat Completions, or Responses.
+            </li>
+            <li>
+              Select the authentication method and enter your API key in the
+              secret field if required. Add HTTP headers only when your provider
+              needs them.
+            </li>
+            <li>
+              Save the configuration and run the connection test. In provider
+              management, select the provider you want to use.
+            </li>
+          </ol>
+          <p>
+            For HTTP endpoints, request HTTP host access. Private IPv4 endpoints
+            also require the private-network opt-in. Check your provider's API
+            documentation for the endpoint, model, and authentication format.
+          </p>
+          <aside>
+            Configuration is stored in the current Chrome profile. Page context
+            approved for a request can be sent to the selected provider; a
+            remote model does not run locally just because the extension does.
+          </aside>
+        </section>
+        <section id="ask" aria-labelledby="ask-title">
+          <h2 id="ask-title">Ask about a page</h2>
+          <ol>
+            <li>
+              Open the page you want to discuss and the ContextPilot side panel.
+            </li>
+            <li>
+              Select <strong>Ask</strong> and enter a question, such as
+              “Summarize this page and list its main points.”
+            </li>
+            <li>
+              Review any page, source, or screenshot access prompt before
+              granting consent.
+            </li>
+            <li>
+              Read the answer and continue in the same conversation. Check
+              important conclusions against the original page.
+            </li>
+          </ol>
+          <p>
+            For tables or lists, try “Read the visible table and compare the
+            values.” Available data depends on the page, access permissions, and
+            supported tools. Use the page-data controls when you need to select
+            a source.
+          </p>
+        </section>
+        <section id="act" aria-labelledby="act-title">
+          <h2 id="act-title">Carry out a browser task</h2>
+          <ol>
+            <li>
+              Select <strong>Act</strong> on the page where the task should
+              begin.
+            </li>
+            <li>
+              Describe the goal and exact values: “Enter ContextPilot in the
+              search field and show the results.”
+            </li>
+            <li>
+              Follow the plan and action review prompts shown in the side panel.
+              Inspect destinations and values before approving.
+            </li>
+            <li>
+              Watch execution details and the resulting page. Use
+              <strong>Stop</strong> to cancel an active request.
+            </li>
+          </ol>
+          <p>
+            If the page changes or the target cannot be identified, follow the
+            new observation or selection prompt. A task may be blocked or
+            incomplete; inspect the final status and actual page before assuming
+            it succeeded.
+          </p>
+        </section>
+        <section id="privacy" aria-labelledby="privacy-title">
+          <h2 id="privacy-title">Permissions and privacy</h2>
+          <p>
+            Review approval settings in Settings and grant access only for the
+            task you intend to perform. Follow the actual UI for page access,
+            source or vision sharing, and consequential actions. You can revoke
+            saved permissions in Settings, then verify the effect with a new
+            request.
+          </p>
+          <p>
+            Keep API keys in the secret fields. Do not include keys,
+            authentication headers, or raw sensitive page content in shared
+            configurations or support reports. Before exporting diagnostics,
+            inspect the material you plan to share.
+          </p>
+          <p>
+            When an organization manages the extension, contact your
+            administrator about required services or policy restrictions.
+          </p>
+        </section>
+        <section id="updates" aria-labelledby="updates-title">
+          <h2 id="updates-title">Update or roll back</h2>
+          <ol>
+            <li>Close Chrome and back up the current extension folder.</li>
+            <li>
+              Replace the contents at the same path with the new unpacked ZIP.
+            </li>
+            <li>
+              Restart Chrome and check the extension version, Settings, provider
+              connection, and permissions.
+            </li>
+            <li>
+              To roll back, close Chrome and restore the previous package at the
+              same path.
+            </li>
+          </ol>
+          <p>
+            A different installation path may change the extension ID and
+            storage. Conversations use browser-session storage; do not rely on
+            them surviving a Chrome restart. Record the version and installation
+            path before an update.
+          </p>
+        </section>
+        <section id="troubleshooting" aria-labelledby="troubleshooting-title">
+          <h2 id="troubleshooting-title">Troubleshooting</h2>
+          <dl>
+            <dt>The extension will not load</dt>
+            <dd>
+              Use Chrome 116 or later and choose the folder containing the built
+              <code>manifest.json</code>, not the repository root or the ZIP
+              itself.
+            </dd>
+            <dt>The provider connection fails</dt>
+            <dd>
+              Check the plugin, endpoint, wire API, model, authentication, and
+              host permissions. Run the connection test again after saving
+              changes.
+            </dd>
+            <dt>Page data or an action is unavailable</dt>
+            <dd>
+              Check the current tab and access prompts. Inspect the execution
+              details for a denied permission, stale page, unsupported target,
+              or provider error, then start a new request when appropriate.
+            </dd>
+            <dt>You need to report a problem</dt>
+            <dd>
+              Record the extension version, Chrome/OS, reproduction steps,
+              expected result, and actual result. Remove sensitive values from
+              screenshots and diagnostics.
+            </dd>
+          </dl>
+          <p>
+            <a href="https://github.com/heungtae/ewap-browser/issues"
+              >Report an issue</a
+            >
+            ·
+            <a
+              href="https://github.com/heungtae/ewap-browser/blob/master/docs/reference/method-execution-diagnostics.md"
+              >Diagnostics reference</a
+            >
+            ·
+            <a
+              href="https://github.com/heungtae/ewap-browser/blob/master/docs/evidence/README.md"
+              >Verification records</a
+            >
+          </p>
+        </section>
+        <footer>
+          Looking for development and testing instructions?
+          <a
+            href="https://github.com/heungtae/ewap-browser/blob/master/docs/README.md"
+            >Repository documentation ↗</a
+          >
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>
