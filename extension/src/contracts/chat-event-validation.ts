@@ -46,6 +46,13 @@ const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   activity_progress: ["stage", "completion"],
   activity_finished: ["stage"],
   assistant_delta: ["text"],
+  approval_decision: [
+    "category",
+    "approval_source",
+    "policy_revision",
+    "outcome",
+    "reason",
+  ],
   tool_started: ["tool_use_id", "tool", "summary", "target_name"],
   tool_progress: ["tool_use_id", "summary"],
   tool_finished: ["tool_use_id", "result"],

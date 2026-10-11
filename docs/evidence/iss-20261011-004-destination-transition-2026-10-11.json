@@ -1,0 +1,133 @@
+{
+  "issue_id": "ISS-20261011-004",
+  "analyzed_at": "2026-10-11 KST",
+  "request_id": "d9b6c2a2-aeb6-43a6-8baa-f679bceac2a1",
+  "extension_version": "0.1.103",
+  "archive": {
+    "filename": "contextpilot-diagnostics-2026-10-11T06-24-23-d9b6c2a2-aeb6-43a6-8baa-f679bceac2a1.zip",
+    "sha256": "ae6a0465c64652ba3a3232bede59ad7a45b863cd6b3236b42d02ad1273deb179"
+  },
+  "finding": "Approved URL was observed in a new document, then the same document ID was observed with a different URL. Both local verification and provider confirmation require the final URL to exactly match the approved URL; the provider completed report was rejected with DESTINATION_MISMATCH.",
+  "urls": {
+    "source": "https://chatgpt.com/ko-KR/contact-sales/",
+    "approved": "https://chatgpt.com/ko-KR/pricing/",
+    "final": "https://chatgpt.com/#pricing"
+  },
+  "decisions": [
+    {
+      "sequence": 64251,
+      "elapsed_ms": 35933,
+      "decision": "act.navigation.dispatch",
+      "data": {
+        "source_url": "https://chatgpt.com/ko-KR/contact-sales/",
+        "approved_url": "https://chatgpt.com/ko-KR/pricing/",
+        "navigation_bound": true
+      }
+    },
+    {
+      "sequence": 67531,
+      "elapsed_ms": 51568,
+      "decision": "act.navigation.result",
+      "data": {
+        "approved_url": "https://chatgpt.com/ko-KR/pricing/",
+        "observed_url": "https://chatgpt.com/#pricing",
+        "verified": false
+      }
+    },
+    {
+      "sequence": 68298,
+      "elapsed_ms": 51586,
+      "decision": "act.dispatch.receipt",
+      "data": {
+        "logical_step_id": "orFvsi1Nx6Ni33IJNBMOZqou1lfRYYyp",
+        "attempt_id": "orFvsi1Nx6Ni33IJNBMOZqou1lfRYYyp",
+        "dispatch": "dispatched",
+        "raw_outcome": "UNKNOWN",
+        "observed": false,
+        "already_satisfied": false
+      }
+    },
+    {
+      "sequence": 88980,
+      "elapsed_ms": 56703,
+      "decision": "act.navigation.confirmation",
+      "data": {
+        "accepted": false,
+        "code": "DESTINATION_MISMATCH",
+        "current_url": "https://chatgpt.com/#pricing",
+        "destination_matches": false,
+        "observation_current": true,
+        "evidence_count": 2
+      }
+    },
+    {
+      "sequence": 89098,
+      "elapsed_ms": 56709,
+      "decision": "act.goal.feedback",
+      "data": {
+        "terminal": "UNKNOWN",
+        "action_count": 1,
+        "verified_actions": 0,
+        "observation_current": true,
+        "model_status": "completed",
+        "action_outcome": "UNKNOWN",
+        "goal_status": "unknown",
+        "reason": "UNOBSERVED_ACTION",
+        "reassessments": 0
+      }
+    }
+  ],
+  "document_registration_observations": [
+    {
+      "component": "offscreen",
+      "sequence": 325,
+      "elapsed_ms": 36163,
+      "sender_url": "https://chatgpt.com/ko-KR/pricing/",
+      "tab_url": "https://chatgpt.com/ko-KR/pricing/",
+      "new_document_compared_with_source": true
+    },
+    {
+      "component": "offscreen",
+      "sequence": 381,
+      "elapsed_ms": 37693,
+      "sender_url": "https://chatgpt.com/ko-KR/pricing/",
+      "tab_url": "https://chatgpt.com/#pricing",
+      "same_document_id_as_sequence_325": true
+    }
+  ],
+  "provider_report": {
+    "component": "worker",
+    "sequence": 85419,
+    "status": "completed",
+    "evidence_indexes": [105, 107],
+    "schema_validation_passed": true
+  },
+  "final_observation": {
+    "component": "worker",
+    "sequence": 85513,
+    "url": "https://chatgpt.com/#pricing",
+    "snapshot_truncated": false,
+    "node_count": 122
+  },
+  "reduced_built_module_reproduction": {
+    "scope": "Other guard conditions controlled; no original-site/provider replay",
+    "actual_url_accepted": false,
+    "approved_url_accepted": true,
+    "matching_digests_verified_against_archive": true
+  },
+  "retention": {
+    "lifecycle_dropped": 0,
+    "method_dropped": {
+      "worker": 87703,
+      "content": 979869,
+      "offscreen": 0,
+      "panel": 1390
+    }
+  },
+  "limits": [
+    "No HTTP redirect chain or specific history API invocation is recorded. Same-document URL change is observed; its exact site implementation is unverified.",
+    "Trace drops prevent reconstructing all early verifier snapshots. Why no snapshot met every guard while the URL briefly matched is not fully established.",
+    "Evidence node names and original provider summary are masked or omitted by trace retention; provider completion alone does not independently prove the requested business goal.",
+    "Source behavior was analyzed and a reduced built-module case was executed. No source fix, new build, deployment, commit, or push was performed."
+  ]
+}

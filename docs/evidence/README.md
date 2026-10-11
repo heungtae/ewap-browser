@@ -40,4 +40,16 @@ JSON 증거는 각 기록에서 연결한다.
 
 - [S21 추가 판단 구현·검증 — 2026-10-11](s21-assessment-2026-10-11.md): dispatch·freshness·budget·승인·UI, 통제 및 실제 provider 표본과 미검증 범위.
 
+- [ISS-20261011-004 이동 UNKNOWN 후 완료 확인](../issues/records/2026-10-11-navigation-provider-confirmation.md): 목적지 바인딩, 통제 Chrome 수용/거절, 회귀 실행 및 미검증 범위.
+
+- [ISS-20261011-004 URL 진단 검증 — 0.1.103](iss-20261011-004-url-diagnostics-2026-10-11.json): 0.1.102 재현, 명시적 URL 마스킹 제거, 실제 Chrome export에서 URL 보존 및 완료 수용/거절 검증.
+
+- [ISS-20261011-004 승인 주소 도착 후 URL 전환 분석](iss-20261011-004-destination-transition-2026-10-11.json): 0.1.103 진단의 동일 documentId 주소 변경 및 DESTINATION_MISMATCH 확인; 분석과 축소 재현 범위.
+
+- [ISS-20261011-004 provider completed 최종 수용](iss-20261011-004-provider-completion-2026-10-11.json): 0.1.104, 단위 813개·통제 Chrome 세 사례 및 request/session 복원 확인. [완료 표시](iss-20261011-004-provider-completed.png). 원래 사이트/live provider·설치 확인은 별도.
+
+- [ISS-20261011-003 일반 클릭 실행 전 completion 차단 분석](iss-20261011-003-click-preflight-2026-10-11.json): 0.1.104 실제 사이트 진단; not_dispatched / UNSUPPORTED_COMPLETION과 provider incomplete 확인. 분석·축소 재현 범위.
+
 - [ISS-20261011-003 일반 클릭 사전 차단 수정](iss-20261011-003-generic-click-fix-2026-10-11.json): 승인·UNKNOWN receipt·모델 확인을 포함한 통제 Chrome S21 9/9; 실제 사이트/live provider·배포 제외.
+
+S21/S22 추가 구현의 [커밋 전 검증과 남은 범위](s21-s22-precommit-2026-10-11.md).

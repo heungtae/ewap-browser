@@ -45,24 +45,29 @@ export const finaliseGoal = (opts: {
   const actions = logicalActionResults(session.executionEvidence ?? []);
   const action = actionOutcome(session);
   const verified = actions.filter((a) => a.verifier === "satisfied").length;
-  const terminal = classifyOutcome({
-    tool_calls_made: true,
-    read_only: false,
-    actions,
-    binding_current: opts.current,
-    goal: {
-      required_actions: Math.max(
-        session.requiredGoalActions ?? 0,
-        session.plan?.input.steps.length ?? actions.length,
-      ),
-      verified_actions: session.plan
-        ? Math.min(verified, session.plan.completedSteps)
-        : verified,
-      final_observation: opts.current,
-      goal_met: opts.status === "completed",
-    },
-    ...(opts.status === "incomplete" ? { remaining_work: true } : {}),
-  });
+  // A validated report about the current observation decides goal completion.
+  // Local action receipts remain unchanged, including UNKNOWN/FAILED history.
+  const providerCompleted = opts.current && opts.status === "completed";
+  const terminal = providerCompleted
+    ? { kind: "GOAL_VERIFIED" as const, reason: "PROVIDER_COMPLETED" }
+    : classifyOutcome({
+        tool_calls_made: true,
+        read_only: false,
+        actions,
+        binding_current: opts.current,
+        goal: {
+          required_actions: Math.max(
+            session.requiredGoalActions ?? 0,
+            session.plan?.input.steps.length ?? actions.length,
+          ),
+          verified_actions: session.plan
+            ? Math.min(verified, session.plan.completedSteps)
+            : verified,
+          final_observation: opts.current,
+          goal_met: opts.status === "completed",
+        },
+        ...(opts.status === "incomplete" ? { remaining_work: true } : {}),
+      });
   const outcome = toLegacyOutcome(terminal.kind);
   const completion: ActCompletion = {
     action_outcome: action,
@@ -72,8 +77,9 @@ export const finaliseGoal = (opts: {
         : terminal.kind === "INCOMPLETE"
           ? "incomplete"
           : "unknown",
-    reason:
-      action === "FAILED"
+    reason: providerCompleted
+      ? "PROVIDER_COMPLETED"
+      : action === "FAILED"
         ? "VERIFIER_FAILED"
         : action === "UNKNOWN"
           ? "UNOBSERVED_ACTION"
@@ -90,13 +96,15 @@ export const finaliseGoal = (opts: {
             version: 1 as const,
             calls: session.assessmentBudget.calls,
             reads: session.assessmentBudget.reads,
-            confirmation: actions.some((a) => a.confirmation === "llm_evidence")
-              ? ("llm_evidence" as const)
-              : actions.some((a) => a.confirmation === "current_state")
-                ? ("current_state" as const)
-                : actions.some((a) => a.outcome === "VERIFIED")
-                  ? ("local_verifier" as const)
-                  : ("none" as const),
+            confirmation:
+              providerCompleted ||
+              actions.some((a) => a.confirmation === "llm_evidence")
+                ? ("llm_evidence" as const)
+                : actions.some((a) => a.confirmation === "current_state")
+                  ? ("current_state" as const)
+                  : actions.some((a) => a.outcome === "VERIFIED")
+                    ? ("local_verifier" as const)
+                    : ("none" as const),
           },
         }
       : {}),
@@ -124,28 +132,31 @@ export const finaliseGoal = (opts: {
     actions.find((a) => a.outcome === "FAILED" && a.code) ??
     actions.find((a) => a.outcome !== "VERIFIED" && a.code)
   )?.code;
-  const code = isErrorCode(executionCode)
-    ? executionCode
-    : action !== "VERIFIED"
-      ? "POSTCONDITION_UNVERIFIED"
-      : completion.goal_status === "incomplete"
-        ? "GOAL_INCOMPLETE"
-        : completion.goal_status === "unknown"
-          ? "GOAL_UNVERIFIED"
-          : undefined;
+  const code = providerCompleted
+    ? undefined
+    : isErrorCode(executionCode)
+      ? executionCode
+      : action !== "VERIFIED"
+        ? "POSTCONDITION_UNVERIFIED"
+        : completion.goal_status === "incomplete"
+          ? "GOAL_INCOMPLETE"
+          : completion.goal_status === "unknown"
+            ? "GOAL_UNVERIFIED"
+            : undefined;
   traceDecision("act.goal.feedback", {
     terminal: terminal.kind,
     action_count: actions.length,
     verified_actions: verified,
     observation_current: opts.current,
     model_status: opts.status,
+    provider_completed: providerCompleted,
     ...completion,
   });
   dependencies.coordinator.runs.terminal(run.id, outcome, code);
   dependencies.publish(run.id, { type: "assistant_delta", text: message });
   dependencies.publish(run.id, {
     type: "activity_finished",
-    stage: action === "FAILED" ? "FAILED" : "COMPLETED",
+    stage: !providerCompleted && action === "FAILED" ? "FAILED" : "COMPLETED",
   });
   dependencies.publish(run.id, {
     type: "run_terminal",

@@ -1,3 +1,4 @@
+import { approvalToolPermission } from "./approval-runtime.js";
 import type { CollectionReadDescriptor } from "../contracts/collection-read-types.js";
 import type { PageApiReadBinding } from "./page-api-read-runner.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -119,7 +120,12 @@ export const createAnalysisSourceSelection = (dependencies: Dependencies) => {
     const capability =
       source?.kind === "page_api_read" ? "page_api_read" : "collection_read";
     const permission = source
-      ? dependencies.permissions.check(capability, active.origin, runId)
+      ? approvalToolPermission(
+          dependencies.permissions,
+          capability,
+          active.origin,
+          runId,
+        )
       : undefined;
     if (permission === "DENY") {
       if (selectionId) pending.delete(selectionId);

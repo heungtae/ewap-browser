@@ -1,0 +1,126 @@
+{
+  "issue_id": "ISS-20261011-004",
+  "date": "2026-10-11 KST",
+  "version": "0.1.104",
+  "source_revision": "f4e962f205caf9f0c8b6ad012c0de55a7624c236 plus uncommitted worktree",
+  "user_policy": "A valid provider report_goal_status completed bound to the current observation determines final goal completion. Local action result/history and destination mismatch remain diagnostic evidence.",
+  "checks": {
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "module_boundaries": "PASS (330 TypeScript files)",
+    "method_trace": "PASS (1871 methods/callbacks, 228 modules)",
+    "unit": "PASS (171 files, 813 tests)",
+    "fixture": "PASS (1 test)",
+    "e2e": "PASS (1 test)",
+    "build": "PASS (0.1.103 -> 0.1.104)",
+    "package": "PASS"
+  },
+  "regressions": [
+    "Current structured completed accepted for local UNKNOWN/FAILED without rewriting execution history",
+    "Different destination URL accepted for provider goal completion",
+    "Incomplete local action counts do not veto provider completed",
+    "Invalid observation ID rejected; stale observation reassessed without another mutation",
+    "Ordinary model prose is not structured completion",
+    "Completed state retained through validated events, session restore, request persistence, and Side Panel presentation"
+  ],
+  "chrome": [
+    {
+      "case": "late-destination",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "7020580763b3a9accecb34f9e8230282728ddf488d75b6d563bea51c0389e480",
+      "proposal_calls": 1,
+      "goal_calls": 2,
+      "raw_unknown_observed": true,
+      "visible_completion": true,
+      "version": "0.1.104",
+      "diagnostics": {
+        "approved_url_visible": true,
+        "observed_url_visible": true,
+        "confirmation_url_visible": true,
+        "urls_differ": false,
+        "local_navigation_code": null,
+        "provider_completed_accepted": true,
+        "bundle_version": "0.1.104"
+      },
+      "terminal": {
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 1,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      }
+    },
+    {
+      "case": "wrong-destination",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "7020580763b3a9accecb34f9e8230282728ddf488d75b6d563bea51c0389e480",
+      "proposal_calls": 1,
+      "goal_calls": 1,
+      "raw_unknown_observed": true,
+      "visible_completion": true,
+      "version": "0.1.104",
+      "diagnostics": {
+        "approved_url_visible": true,
+        "observed_url_visible": true,
+        "confirmation_url_visible": true,
+        "urls_differ": true,
+        "local_navigation_code": "DESTINATION_MISMATCH",
+        "provider_completed_accepted": true,
+        "bundle_version": "0.1.104"
+      },
+      "terminal": {
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "UNKNOWN",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0
+        }
+      }
+    },
+    {
+      "case": "url-transition",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "7020580763b3a9accecb34f9e8230282728ddf488d75b6d563bea51c0389e480",
+      "proposal_calls": 1,
+      "goal_calls": 1,
+      "raw_unknown_observed": true,
+      "visible_completion": true,
+      "version": "0.1.104",
+      "diagnostics": {
+        "approved_url_visible": true,
+        "observed_url_visible": true,
+        "confirmation_url_visible": true,
+        "urls_differ": true,
+        "local_navigation_code": "DESTINATION_MISMATCH",
+        "provider_completed_accepted": true,
+        "bundle_version": "0.1.104"
+      },
+      "terminal": {
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "UNKNOWN",
+          "goal_status": "completed",
+          "reason": "PROVIDER_COMPLETED",
+          "reassessments": 0
+        }
+      }
+    }
+  ],
+  "screenshot": "iss-20261011-004-provider-completed.png",
+  "limits": [
+    "Controlled fixture/provider Chrome runs; original chatgpt.com and live gpt-5.6-luna were not replayed.",
+    "User extension reload/deployment is not verified; issue remains validation pending.",
+    "Screenshot verifies final assistant completion message; earlier approval/permission card execution labels are outside this change.",
+    "No commit or push performed for this change."
+  ],
+  "initial_unit_failure": "Two historical tests expected typed FAILED/UNKNOWN to veto a valid completed report. Expectations were updated to the explicitly requested policy and the full suite passed."
+}

@@ -1,3 +1,4 @@
+import { requestSourceConsent } from "./source-consent.js";
 import { allowsModelScreenshot } from "../policy/permission-mode.js";
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import { actionView } from "./act-review-presentation.js";
@@ -101,6 +102,23 @@ const analysisDataAcquisition = createAnalysisDataAcquisition({
   chrome: chromeApi!,
   permissions,
   scopeFor: (tabId) => pageScopes.get(tabId),
+  scrollConsent: (runId, active, context) =>
+    requestSourceConsent({
+      runId,
+      record: (event) => chatRunLifecycle.publish(runId, event),
+      category: "scroll_read",
+      preferences: agentPreferences,
+      ...(context?.signal ? { signal: context.signal } : {}),
+      current: () => !context?.signal.aborted,
+      publish: (requestId) =>
+        chatRunLifecycle.publish(runId, {
+          type: "source_consent_required",
+          request_id: requestId,
+          resource_count: 1,
+          purpose: "component-scroll",
+          host: new URL(active.origin).host,
+        }),
+    }),
   pageApiSource: pageApiAnalysisSource,
   requiresAdapterReview: requiresAnalysisAdapterReview,
   readPageApi: readPageApiSource,

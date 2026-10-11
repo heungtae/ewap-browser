@@ -1,6 +1,7 @@
 import type { PermissionManager } from "../policy/permission-manager.js";
 import type { AgentPreferences } from "../policy/permission-mode.js";
 import type { BrowserChromeApi } from "./browser-api.js";
+import { markApprovalSettingsInvalid } from "./approval-runtime.js";
 
 type Dependencies = {
   chrome: BrowserChromeApi | undefined;
@@ -44,6 +45,7 @@ export const bootstrapStorage = async (
         dependencies.validatePreferences(storedPreferences.agent_preferences),
       );
     } catch {
+      markApprovalSettingsInvalid(true);
       dependencies.setPreferences(dependencies.defaultPreferences());
     }
   }

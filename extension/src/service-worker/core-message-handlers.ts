@@ -1,3 +1,5 @@
+import { CollectionReadOrchestrator } from "./collection-read-orchestrator.js";
+import { beginApprovalUpdate } from "./approval-runtime.js";
 import type { AgentPreferences } from "../policy/permission-mode.js";
 import type {
   Capability,
@@ -74,6 +76,7 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
     return true;
   };
   const cancelAllRuns = async (): Promise<void> => {
+    CollectionReadOrchestrator.cancel();
     const tabs = await dependencies.chrome.tabs.query({});
     for (const tab of tabs) {
       if (tab.id === undefined) continue;
@@ -103,7 +106,9 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
     preferences: dependencies.preferences,
     validatePreferences: dependencies.validatePreferences,
     async savePreferences(value) {
-      await dependencies.chrome.storage.local.set?.({
+      if (!dependencies.chrome.storage.local.set)
+        throw new Error("STORAGE_BOUNDARY_UNAVAILABLE");
+      await dependencies.chrome.storage.local.set({
         agent_preferences: value,
       });
       dependencies.setPreferences(value);
@@ -114,8 +119,28 @@ export const createCoreMessageHandlers = (dependencies: Dependencies) => {
   const provider = createProviderMessageHandler({
     isPanelOrSettingsSender: dependencies.isPanelOrSettingsSender,
     providerAvailable: () => !!dependencies.provider,
-    handleProvider: (kind, payload) =>
-      dependencies.provider!.handle(kind, payload),
+    handleProvider: async (kind, payload) => {
+      if (
+        ![
+          "PROVIDER_SAVE",
+          "PROVIDER_SET_ACTIVE",
+          "PROVIDER_REMOVE",
+          "PLUGIN_INSTALL",
+          "PLUGIN_SET_ENABLED",
+          "PLUGIN_REMOVE",
+        ].includes(kind)
+      )
+        return dependencies.provider!.handle(kind, payload);
+      const finish = beginApprovalUpdate();
+      try {
+        await cancelAllRuns();
+        const result = await dependencies.provider!.handle(kind, payload);
+        await cancelAllRuns();
+        return result;
+      } finally {
+        finish();
+      }
+    },
     safeFailure: dependencies.safeFailure,
   });
   const runControl = createRunControlMessageHandler({

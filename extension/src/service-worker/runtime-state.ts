@@ -1,3 +1,4 @@
+import { configureApprovalRuntime } from "./approval-runtime.js";
 import {
   defaultAgentPreferences,
   type AgentPreferences,
@@ -60,6 +61,10 @@ export const coordinator = new ServiceCoordinator({
   llm_egress_origins: [],
 });
 export let agentPreferences: AgentPreferences = defaultAgentPreferences();
+configureApprovalRuntime(
+  () => agentPreferences,
+  (id) => planScopes.origins(id),
+);
 export const setAgentPreferences = (value: AgentPreferences): void => {
   agentPreferences = value;
 };

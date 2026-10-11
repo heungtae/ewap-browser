@@ -51,6 +51,11 @@ type Dependencies = {
     runId: string,
     capability?: "collection_read" | "page_api_read",
   ): string;
+  scrollConsent?(
+    runId: string,
+    active: ActivePage,
+    context?: RequestContext,
+  ): Promise<boolean>;
   pageApiSource?(
     active: ActivePage,
     runId: string,
@@ -345,6 +350,13 @@ export const createAnalysisDataAcquisition = (dependencies: Dependencies) => {
       };
     }
     const descriptor = selected.descriptor;
+    if (
+      descriptor.has_virtual_scroll &&
+      dependencies.scrollConsent &&
+      !(await dependencies.scrollConsent(runId, active, context))
+    )
+      return unavailable("PERMISSION_REQUIRED");
+    assertRequestActive(context);
 
     const cancel = (): void => CollectionReadOrchestrator.cancel();
     context?.signal.addEventListener("abort", cancel, { once: true });

@@ -9,6 +9,9 @@ import { fail, isPlainObject } from "../security/validation.js";
 
 type Dependencies = {
   enabled: boolean;
+  consent?(): Promise<boolean>;
+  safe?(): Promise<boolean>;
+  current?(): boolean;
   tabs: BrowserTabs;
   tabId: number;
   capture(id: string): VisionCapture | undefined;
@@ -19,6 +22,12 @@ export const createAskVisionToolExecutor = (dependencies: Dependencies) => ({
   async screenshot(argumentsValue: string): Promise<unknown> {
     if (argumentsValue !== "{}") return fail("INVALID_ARGUMENT");
     if (!dependencies.enabled) return fail("VISION_CAPTURE_UNAVAILABLE");
+    if (dependencies.current && !dependencies.current())
+      return fail("TARGET_STALE");
+    if (dependencies.consent && !(await dependencies.consent()))
+      return fail("POLICY_DENIED");
+    if (dependencies.current && !dependencies.current())
+      return fail("TARGET_STALE");
     const tab = (
       await dependencies.tabs.query({ active: true, lastFocusedWindow: true })
     )[0];
@@ -30,6 +39,8 @@ export const createAskVisionToolExecutor = (dependencies: Dependencies) => ({
       tab.windowId < 0
     )
       return fail("TARGET_STALE");
+    if (dependencies.safe && !(await dependencies.safe()))
+      return fail("POLICY_DENIED");
     const dataUrl = await dependencies.tabs
       .captureVisibleTab(tab.windowId, { format: "jpeg", quality: 75 })
       .catch(() => undefined);
@@ -39,6 +50,10 @@ export const createAskVisionToolExecutor = (dependencies: Dependencies) => ({
     )[0];
     if (current?.id !== tab.id || current?.windowId !== tab.windowId)
       return fail("TARGET_STALE");
+    if (dependencies.current && !dependencies.current())
+      return fail("TARGET_STALE");
+    if (dependencies.safe && !(await dependencies.safe()))
+      return fail("POLICY_DENIED");
     const capture = normalizeViewportCapture(dataUrl);
     dependencies.remember(capture);
     return capture;
@@ -52,12 +67,21 @@ export const createAskVisionToolExecutor = (dependencies: Dependencies) => ({
       typeof args.capture_id !== "string"
     )
       return fail("INVALID_ARGUMENT");
+    if (!dependencies.enabled) return fail("VISION_CAPTURE_UNAVAILABLE");
+    if (dependencies.current && !dependencies.current())
+      return fail("TARGET_STALE");
+    if (dependencies.consent && !(await dependencies.consent()))
+      return fail("POLICY_DENIED");
     const capture = dependencies.capture(args.capture_id);
     if (!capture) return fail("VISION_CAPTURE_UNAVAILABLE");
     const zoomed = await zoomViewportCapture(
       capture,
       normalizeZoomRegion(args.region),
     );
+    if (dependencies.current && !dependencies.current())
+      return fail("TARGET_STALE");
+    if (dependencies.safe && !(await dependencies.safe()))
+      return fail("POLICY_DENIED");
     dependencies.remember(zoomed);
     return zoomed;
   },

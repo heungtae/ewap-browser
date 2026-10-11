@@ -22,6 +22,10 @@ describe("page context runtime", () => {
           query: async () => [
             { id: 7, url: "https://code.visualstudio.com/docs/remote/ssh" },
           ],
+          get: async () => ({
+            id: 7,
+            url: "https://code.visualstudio.com/docs/remote/ssh",
+          }),
           sendMessage,
         },
       } as never,

@@ -21,6 +21,8 @@ export type ActivePage = {
   origin: string;
   snapshot: SemanticSnapshot;
   path: string;
+  navigationUrlDigest?: string;
+  url?: string;
   workflow?: WorkflowDeclaration;
 };
 
@@ -142,7 +144,25 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     } catch {
       throw new ContractError("ORIGIN_NOT_ALLOWED");
     }
-    return { tabId, origin, snapshot, path, ...(workflow ? { workflow } : {}) };
+    const latest = await chrome.tabs.get(tabId);
+    if (
+      !dependencies.isRegistered(tabId, snapshot.document_epoch) ||
+      latest.url !== tab.url
+    )
+      throw new ContractError("PAGE_SCOPE_STALE");
+    return {
+      tabId,
+      origin,
+      snapshot,
+      path,
+      ...(latest.url
+        ? {
+            url: new URL(latest.url).href,
+            navigationUrlDigest: digestCanonical(new URL(latest.url).href),
+          }
+        : {}),
+      ...(workflow ? { workflow } : {}),
+    };
   };
 
   const resolveProfile = async (

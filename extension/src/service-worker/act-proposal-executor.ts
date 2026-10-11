@@ -1,3 +1,4 @@
+import { approvalDecision } from "./approval-runtime.js";
 import type { ActCompletion } from "../contracts/act-completion.js";
 import { approveSubmittedPlan, assertApprovedPlan } from "./act-plan-store.js";
 import { fail } from "../security/validation.js";
@@ -96,6 +97,10 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
   ): Promise<Record<string, unknown>> => {
     assertRequestActive(session.requestContext);
     if (session.plan && !session.plan.approved) {
+      if (
+        approvalDecision("plan_approval", dependencies.preferences()) === "deny"
+      )
+        return fail("POLICY_DENIED");
       const active = await dependencies.readActive(undefined, session.tabId);
       assertRequestActive(session.requestContext);
       if (active.tabId !== session.tabId || active.origin !== session.origin)
@@ -127,6 +132,11 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
         ? toHarnessRevision(session.requestContext.generation)
         : (session.harnessCapabilities?.request_revision ?? 1),
     );
+    if (
+      approvalDecision("action_execution", dependencies.preferences()) ===
+      "deny"
+    )
+      return fail("POLICY_DENIED");
     const capability = capabilityFor(proposal);
     const pageApi = proposal.tool === "call_page_api";
     const risk = pageApi ? "R1" : proposal.definition.risk;

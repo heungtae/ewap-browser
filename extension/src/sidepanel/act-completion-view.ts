@@ -2,6 +2,8 @@ import { validActCompletion } from "../contracts/act-completion.js";
 
 /** Shared presentation for live events and restored request status. */
 export const actCompletionView = (completion?: unknown) => {
+  if (validActCompletion(completion) && completion.goal_status === "completed")
+    return { message: "요청한 목표의 완료를 확인했습니다.", active: false };
   if (
     !validActCompletion(completion) ||
     (completion.action_outcome === "FAILED" &&

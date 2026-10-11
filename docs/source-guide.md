@@ -85,3 +85,8 @@ S21 추가 판단은 [element turn](../extension/src/service-worker/act-element-
 [논리 단계](../extension/src/service-worker/act-logical-results.ts),
 [중복 mutation 차단](../extension/src/service-worker/act-mutation-history.ts),
 [컨트롤 capability](../extension/src/content/control-capability.ts)에서 확인한다.
+
+Provider의 최종 completed 수용은 [goal finalizer](../extension/src/service-worker/act-goal-finalizer.ts),
+[completion 계약](../extension/src/contracts/act-completion.ts), [완료 표시](../extension/src/sidepanel/act-completion-view.ts)에서 확인한다.
+로컬 이동 UNKNOWN의 목적지 결합 확인은 [navigation confirmation](../extension/src/service-worker/act-navigation-confirmation.ts)과
+[ISS-20261011-004](issues/records/2026-10-11-navigation-provider-confirmation.md)에서 확인한다.

@@ -1,5 +1,6 @@
 import type { ActionResult } from "../page-act-harness/outcome.js";
 export type ActExecutionEvidence = ActionResult & {
+  navigation_binding?: import("./act-navigation-confirmation.js").NavigationBinding;
   target_binding?: string;
   semantic_binding?: string;
   input_binding?: string;

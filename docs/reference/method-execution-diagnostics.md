@@ -23,7 +23,8 @@ Content/Offscreen 조회는 같은 extension의 Worker sender만 허용하고,
 응답은 export에서 다시 검증·마스킹한다. 수집 불가 사유는 다른 realm의 수집을 막지 않는다.
 
 민감 필드, 비밀번호·API key·인증 token·cookie·header·입력값·원문 collection
-records·실행용 ref/locator·URL·source·이미지는 마스킹한다. 알려진 credential의
+records·실행용 ref/locator·source·이미지는 마스킹한다. 이동 원인 확인을 위한
+URL·origin·host·path·endpoint는 그대로 기록한다. URL 안의 자격증명은 계속 마스킹한다. 알려진 credential의
 다른 필드 재등장, JSON 안의 credential, bearer/JWT, email·일부 개인정보 형식도
 마스킹한다. DOM/class instance의 내부 값과 getter는 읽지 않는다. 각 record의
 `detail.masking`에는 `masked`, `fields[{path,reason,count}]`, `truncated`를 남긴다.

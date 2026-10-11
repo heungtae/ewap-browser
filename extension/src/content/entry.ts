@@ -104,6 +104,7 @@ let observedPageUrl = location.href;
 const refs = new WeakMap<Element, string>();
 const consumedDeliveries = new Set<string>();
 type RefRecord = {
+  navigationUrl?: string;
   element: Element;
   role: string;
   name: string;
@@ -246,6 +247,8 @@ const actionableRef = (refId: string): HTMLElement | undefined => {
     !(element instanceof HTMLElement) ||
     !element.isConnected ||
     roleFor(element) !== record.role ||
+    (element instanceof HTMLAnchorElement &&
+      element.href !== record.navigationUrl) ||
     nameFor(element) !== record.name ||
     isSensitiveElement(element) ||
     controlDisabled(element)
@@ -278,6 +281,8 @@ const refFor = (element: Element, role: string, name: string): string => {
       record &&
       !record.stale &&
       record.role === role &&
+      (!(element instanceof HTMLAnchorElement) ||
+        record.navigationUrl === element.href) &&
       record.name === name
     ) {
       // Refresh insertion order so references in the current projection are
@@ -292,7 +297,15 @@ const refFor = (element: Element, role: string, name: string): string => {
   crypto.getRandomValues(bytes);
   const ref = base64Url(bytes);
   refs.set(element, ref);
-  refRecords.set(ref, { element, role, name, stale: false });
+  refRecords.set(ref, {
+    element,
+    role,
+    name,
+    stale: false,
+    ...(element instanceof HTMLAnchorElement
+      ? { navigationUrl: element.href }
+      : {}),
+  });
   while (refRecords.size > maxRetainedRefs) {
     const oldest = refRecords.keys().next().value;
     if (typeof oldest !== "string") break;
@@ -420,6 +433,7 @@ new MutationObserver((mutations) => {
   attributes: true,
   attributeFilter: [
     "aria-label",
+    "href",
     "aria-labelledby",
     "role",
     "disabled",
@@ -935,6 +949,7 @@ runtime?.onMessage.addListener((message, sender, sendResponse) => {
         !["button", "tab", "menuitem"].includes(record.role)) ||
       (intent.tool === "navigate" &&
         (!(element instanceof HTMLAnchorElement) ||
+          element.href !== record.navigationUrl ||
           !["link", "menuitem"].includes(record.role) ||
           !linkNavigationKind(element))) ||
       (intent.tool === "press_key_by_ref" &&
@@ -976,6 +991,7 @@ runtime?.onMessage.addListener((message, sender, sendResponse) => {
         ok: true,
         postcondition: "navigation",
         target_url: target.href,
+        navigation_bound: record?.navigationUrl === target.href,
       });
       return true;
     } else {

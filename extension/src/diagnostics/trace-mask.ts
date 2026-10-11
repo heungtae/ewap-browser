@@ -7,7 +7,7 @@ const knownSecrets = new Set<string>();
 const credentialKey =
   /(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key)/i;
 const privateKey =
-  /^(?:.*(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key|nonce)|function_paths|function_name|functionPath|functionPaths|functionName|entrypoint|raw_result|workflowResourceCandidates|declaration|user_value_source|boundary_characters|source_text|description|subtree_rows|excerpt|record|row|cell|chunk|headers?|value|raw|records|rows|cells|cursor|selector|locator|endpoint|function_path|ref_id|source_ref|candidate_ref|data_url|image_data_urls|image|source|html|script|textContent|innerHTML|host|hostname|origin|path|url|token|refId|targetRefId|document_id|documentEpoch|document_epoch|page_scope_epoch|profile_jws|jws|text_value|input_value|arguments|args|classifier_response|output_text|refusal|user_input|target_name|targetName|goal|intent|postcondition|side_effects|provenance|origin_diff|coverage_note|summary|suggested_value|suggested_value_tail|prompt|question|answer|response_text|text|approval_reason|approvalReason|rationale|reasoning|reasoning_details)$/i;
+  /^(?:.*(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key|nonce)|function_paths|function_name|functionPath|functionPaths|functionName|entrypoint|raw_result|workflowResourceCandidates|declaration|user_value_source|boundary_characters|source_text|description|subtree_rows|excerpt|record|row|cell|chunk|headers?|value|raw|records|rows|cells|cursor|selector|locator|function_path|ref_id|source_ref|candidate_ref|data_url|image_data_urls|image|source|html|script|textContent|innerHTML|token|refId|targetRefId|document_id|documentEpoch|document_epoch|page_scope_epoch|profile_jws|jws|text_value|input_value|arguments|args|classifier_response|output_text|refusal|user_input|target_name|targetName|goal|intent|postcondition|side_effects|provenance|origin_diff|coverage_note|summary|suggested_value|suggested_value_tail|prompt|question|answer|response_text|text|approval_reason|approvalReason|rationale|reasoning|reasoning_details)$/i;
 /** No getters, DOM values, arbitrary class internals or collection cells are read. */
 export const maskTraceValue = (
   input: unknown,
@@ -53,15 +53,10 @@ export const maskTraceValue = (
     return `[MASKED:${reason}]`;
   };
   const text = (value: string, path: string): string => {
-    for (const url of value.match(/https?:\/\/[^\s"'<>]+/gi) ?? []) {
-      try {
-        const host = new URL(url).hostname;
-        if (knownSecrets.size < 256 && host.length > 3) knownSecrets.add(host);
-      } catch {
-        /* Invalid URLs are still masked below. */
-      }
-    }
-    let result = value;
+    let result = value.replace(
+      /(https?:\/\/)[^/\s@]+@/gi,
+      (_match, scheme: string) => scheme + mark(path, "url_credentials") + "@",
+    );
     for (const secret of knownSecrets) {
       if (result.includes(secret))
         result = result.split(secret).join(mark(path, "known_credential"));
@@ -83,7 +78,6 @@ export const maskTraceValue = (
         /\b(?:01[016789][- ]?\d{3,4}[- ]?\d{4}|\d{6}-[1-4]\d{6})\b/g,
         "personal_identifier",
       ],
-      [/https?:\/\/[^\s"'<>]+/gi, "url"],
       [/data:[^\s"']+/gi, "data_url"],
     ] as const) {
       result = result.replace(pattern, () => mark(path, reason));

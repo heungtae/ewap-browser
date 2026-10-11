@@ -71,7 +71,7 @@ describe("S17 execution feedback", () => {
     },
   );
   it.each(["FAILED", "UNKNOWN"] as const)(
-    "never lets model prose override typed %s",
+    "accepts structured provider completion while retaining typed %s",
     async (outcome) => {
       const { session, dependencies } = makeS17Test();
       dependencies.provider.chat = async (input) => {
@@ -114,8 +114,14 @@ describe("S17 execution feedback", () => {
         { ok: false, outcome, code: "POSTCONDITION_UNMET" },
         { success: "Verified", failure: "Failed" },
       );
-      expect(result.terminal).toBe(outcome);
-      expect(result.message).not.toContain("Everything succeeded");
+      expect(result.terminal).toBe("GOAL_VERIFIED");
+      expect(result.completion).toMatchObject({
+        action_outcome: outcome,
+        goal_status: "completed",
+        reason: "PROVIDER_COMPLETED",
+      });
+      expect(result.code).toBeUndefined();
+      expect(result.message).toContain("Everything succeeded");
     },
   );
   it("does not promote an ordinary final answer to goal completion", async () => {

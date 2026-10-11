@@ -1,3 +1,4 @@
+import { assertApprovalAvailable } from "./approval-runtime.js";
 import { ContractError } from "../security/validation.js";
 export type RequestContext = {
   requestId?: string;
@@ -9,6 +10,7 @@ export type RequestContext = {
   check(): void;
 };
 export const assertRequestActive = (context?: RequestContext): void => {
+  assertApprovalAvailable();
   if (context?.signal.aborted) throw new ContractError("POLICY_DENIED");
   context?.check();
 };

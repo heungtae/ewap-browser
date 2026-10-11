@@ -510,9 +510,8 @@
       <section class="settings-card">
         <h2>Browser Agent</h2>
         <p>
-          hidden DOM은 기본 읽기 컨텍스트로 제공되지만 실행 대상이 아닙니다.
-          권한 질문 생략은 host/tool 질문만 생략하며 credential, R2/R3 확인과
-          제한 페이지 차단은 유지합니다.
+          승인 설정은 페이지 변경·중요 작업·선택한 Provider로의 코드와 화면
+          전송에 적용됩니다.
         </p>
         <div class="button-row">
           <button id="permission-revoke-all" type="button">
@@ -522,13 +521,27 @@
         <output id="permission-revoke-status" aria-live="polite"></output>
         <form id="agent-preferences-form">
           <label
-            >Permission mode
-            <select name="permission_mode">
-              <option value="standard">표준 권한 질문</option>
-              <option value="follow_a_plan">승인된 계획만</option>
-              <option value="skip_all_permission_checks">권한 질문 생략</option>
+            >승인 설정
+            <select name="approval_mode">
+              <option value="ask">승인 확인</option>
+              <option value="full">Full Permission</option>
+              <option value="custom">항목별 설정</option>
             </select>
           </label>
+          <p>
+            Full Permission은 요청한 작업의 실행·권한·자료 전송 승인을 자동
+            처리합니다. 입력값·대상 선택과 Chrome 권한이 필요한 경우에는
+            안내합니다.
+          </p>
+          <div id="approval-categories"></div>
+          <output id="approval-constraints" aria-live="polite"></output>
+          <select name="permission_mode" hidden aria-hidden="true">
+            <option value="standard">standard</option>
+            <option value="follow_a_plan">follow_a_plan</option>
+            <option value="skip_all_permission_checks">
+              skip_all_permission_checks
+            </option>
+          </select>
           <label
             >기본 page read 범위
             <select name="default_read_scope">
@@ -569,14 +582,7 @@
             </label>
             <output id="content-recovery-status" aria-live="polite"></output>
           </div>
-          <label
-            >권한 질문 생략 확인
-            <input
-              name="skip_acknowledgement"
-              autocomplete="off"
-              placeholder="권한 질문 생략"
-            />
-          </label>
+          <input name="skip_acknowledgement" type="hidden" />
           <button type="submit">Browser Agent 설정 저장</button>
         </form>
         <output id="agent-preferences-status" aria-live="polite"></output>

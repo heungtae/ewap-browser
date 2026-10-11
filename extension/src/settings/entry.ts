@@ -1,3 +1,7 @@
+import {
+  applyApprovalSettings,
+  readApprovalSettings,
+} from "./approval-settings.js";
 type StorageArea = {
   get(key: string): Promise<Record<string, unknown>>;
   set(value: Record<string, unknown>): Promise<void>;
@@ -816,6 +820,7 @@ const preferenceField = (
 const applyPreferences = (value: unknown): void => {
   if (!value || typeof value !== "object") return;
   const preferences = value as Record<string, unknown>;
+  applyApprovalSettings(preferences);
   for (const name of [
     "permission_mode",
     "default_read_scope",
@@ -842,6 +847,13 @@ void runtime
       (response as { ok?: unknown }).ok
     )
       applyPreferences((response as { preferences?: unknown }).preferences);
+    if (
+      (response as { approval_settings_error?: unknown })
+        ?.approval_settings_error &&
+      agentPreferencesStatus
+    )
+      agentPreferencesStatus.value =
+        "승인 설정을 복구해야 합니다. 자동 승인은 비활성화되어 있습니다. 설정을 확인하고 다시 저장하세요.";
   });
 agentPreferencesForm?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -853,6 +865,7 @@ agentPreferencesForm?.addEventListener("submit", (event) => {
       payload: {
         preferences: {
           permission_mode: preferenceField("permission_mode").value,
+          approval_policy: readApprovalSettings(),
           default_read_scope: preferenceField("default_read_scope").value,
           screenshot_policy: preferenceField("screenshot_policy").value,
           group_tools_in_timeline: (
@@ -862,7 +875,11 @@ agentPreferencesForm?.addEventListener("submit", (event) => {
             preferenceField("show_tool_debug_details") as HTMLInputElement
           ).checked,
         },
-        acknowledgement: acknowledgement.value,
+        acknowledgement:
+          preferenceField("permission_mode").value ===
+          "skip_all_permission_checks"
+            ? "권한 질문 생략"
+            : acknowledgement.value,
       },
     });
     if (
@@ -889,7 +906,7 @@ agentPreferencesForm?.addEventListener("submit", (event) => {
     if (agentPreferencesStatus)
       agentPreferencesStatus.value =
         error instanceof Error && error.message === "INVALID_ARGUMENT"
-          ? "권한 질문 생략을 활성화하려면 확인 문구를 정확히 입력하세요."
+          ? "설정이 변경되었거나 유효하지 않습니다. 다시 불러온 후 저장하세요."
           : "Browser Agent 설정을 저장하지 못했습니다.";
   });
 });

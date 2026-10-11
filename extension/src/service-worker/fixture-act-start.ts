@@ -1,54 +1,17 @@
-import type { Capability } from "../policy/permission-manager.js";
+import type { Dependencies } from "./fixture-act-start-types.js";
 import {
-  gatePermission,
-  type AgentPreferences,
-} from "../policy/permission-mode.js";
-import type { PermissionManager } from "../policy/permission-manager.js";
-import type { SemanticNode } from "../contracts/types.js";
+  approvalDecision,
+  createApprovalGrant,
+  assertApprovalAvailable,
+} from "./approval-runtime.js";
+import type { Capability } from "../policy/permission-manager.js";
+import { gatePermission } from "../policy/permission-mode.js";
 import { ContractError } from "../security/validation.js";
-import type {
-  LocalFixtureSessionBinding,
-  SessionBinding,
-} from "../state/local-session-binding.js";
-import type { ServiceCoordinator } from "./coordinator.js";
 import {
   fixtureProposal,
   fixtureTargetMatches,
 } from "./fixture-act-proposal.js";
 import type { StartActRequest } from "./start-act-message-handler.js";
-
-type PermissionRequest = {
-  capability: Capability;
-  origin: string;
-  expiresAt: number;
-  act_session_id?: string;
-};
-type Active = {
-  tabId: number;
-  origin: string;
-  snapshot: {
-    document_epoch: string;
-    nodes: SemanticNode[];
-  };
-};
-type Dependencies = {
-  readActive(): Promise<Active>;
-  preferences(): AgentPreferences;
-  permissions: PermissionManager;
-  requests: Map<string, PermissionRequest>;
-  createId(): string;
-  coordinator: ServiceCoordinator;
-  bindings: Map<string, SessionBinding>;
-  localSessions: LocalFixtureSessionBinding;
-  profile: { id: string; version: number };
-  execute(
-    run: Parameters<ServiceCoordinator["mutations"]["executeR1"]>[0],
-    ready: ReturnType<ServiceCoordinator["mutations"]["executeR1"]>,
-    respond: (response: unknown) => void,
-    origin: string,
-  ): void;
-  safeFailure(code: string): unknown;
-};
 
 export const createFixtureActStart =
   (dependencies: Dependencies) =>
@@ -56,6 +19,12 @@ export const createFixtureActStart =
     void dependencies
       .readActive()
       .then(({ tabId, snapshot, origin }) => {
+        assertApprovalAvailable();
+        if (
+          approvalDecision("action_execution", dependencies.preferences()) ===
+          "deny"
+        )
+          throw new ContractError("POLICY_DENIED");
         const capability: Capability =
           request.tool === "set_checked_by_ref" ||
           request.tool === "click_by_ref" ||
@@ -152,6 +121,29 @@ export const createFixtureActStart =
             respond,
             origin,
           );
+          return;
+        }
+        const riskDecision = approvalDecision(
+          "risk_confirmation",
+          dependencies.preferences(),
+        );
+        if (riskDecision === "deny") throw new ContractError("POLICY_DENIED");
+        if (riskDecision === "auto") {
+          createApprovalGrant({
+            category: "risk_confirmation",
+            source: "policy",
+            preferences: dependencies.preferences(),
+            binding: `${run.id}:${next.confirmationId}`,
+            current: () => run.phase === "AWAITING_CONFIRMATION",
+          })();
+          const ready = dependencies.coordinator.mutations.confirm(
+            run,
+            next.confirmationId,
+            next.confirmationNonce,
+          );
+          if (binding) dependencies.localSessions.clear(binding.id);
+          dependencies.bindings.delete(run.id);
+          dependencies.execute(run, ready, respond, origin);
           return;
         }
         respond({

@@ -1,3 +1,7 @@
+import {
+  approvalDecision,
+  assertApprovalAvailable,
+} from "./approval-runtime.js";
 import { ContractError } from "../security/validation.js";
 import type {
   LocalFixtureSessionBinding,
@@ -43,6 +47,9 @@ export const createFixtureMutationMessageHandler = (
           if (!run || run.id !== payload.run_id || run.phase === "TERMINAL")
             return respond(dependencies.safeFailure("VALUE_BINDING_INVALID"));
           try {
+            assertApprovalAvailable();
+            if (approvalDecision("action_execution") === "deny")
+              throw new ContractError("POLICY_DENIED");
             dependencies.coordinator.mutations.submitValue(
               run,
               payload.value_slot_id,
@@ -92,6 +99,9 @@ export const createFixtureMutationMessageHandler = (
           )
             return respond(dependencies.safeFailure("CONFIRMATION_INVALID"));
           try {
+            assertApprovalAvailable();
+            if (approvalDecision("risk_confirmation") === "deny")
+              throw new ContractError("POLICY_DENIED");
             dependencies.localSessions.verify(
               binding,
               run.id,

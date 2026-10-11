@@ -184,7 +184,8 @@ HTTP 200뿐 아니라 유효한 `submit_plan`, 실제 계획 카드, 동작별 �
 실행 결과 반환, 최신 observation ID를 가진 `report_goal_status`, 실제 요청값 적용,
 진단 ZIP 마스킹을 확인한다. 미지원 계획 단계는 삭제하지 않고 기술 오류로 반환한다.
 `VERIFIED`는 동작 검증이며 `GOAL_VERIFIED`는 최신 관찰과 typed 결과를 받은 모델의 목표 판단이다.
-모델의 설명으로 typed FAILED/UNKNOWN을 성공으로 바꾸지 않는다.
+일반 모델 설명만으로 완료 처리하지 않는다. 현재 observation에 연결된 유효한
+`report_goal_status completed`는 최종 완료로 수용하며 typed FAILED/UNKNOWN은 실행 이력으로 보존한다.
 
 Page API의 성공·이미 만족됨·throw·timeout·Stop·scope 변경·restart·replay 차단은
 `pnpm test:chrome-s10`으로 회귀 검증한다. S15 입력과 S16 source 경계도 각각
@@ -293,3 +294,23 @@ LIVE_PROVIDER=openai S21_LIVE_MODEL=gpt-6-luna S21_CASES=normal,delayed,replacem
 강제로 잘못된 제안으로 바꾸지 않는다. 결과 JSON은 schema/hash, call ID, tool 결과,
 실제 클릭 수·상태·현재 완료 UI·latency를 보존한다. fixture의 성공은 운영 사이트 성공이 아니다.
 [실행 증거](evidence/s21-assessment-2026-10-11.md)를 참조한다.
+
+## 이동 UNKNOWN 후 완료 확인 회귀
+
+```bash
+CHROME_FOR_TESTING_BIN=/path/to/chrome NAVIGATION_EVIDENCE_PATH=/tmp/navigation-late.json node --experimental-websocket scripts/chrome-navigation-confirmation-smoke.mjs
+NAVIGATION_CASE=wrong-destination CHROME_FOR_TESTING_BIN=/path/to/chrome NAVIGATION_EVIDENCE_PATH=/tmp/navigation-wrong.json node --experimental-websocket scripts/chrome-navigation-confirmation-smoke.mjs
+NAVIGATION_CASE=url-transition CHROME_FOR_TESTING_BIN=/path/to/chrome NAVIGATION_EVIDENCE_PATH=/tmp/navigation-transition.json node --experimental-websocket scripts/chrome-navigation-confirmation-smoke.mjs
+CHROME_FOR_TESTING_BIN=/path/to/chrome NAVIGATION_EVIDENCE_PATH=/tmp/navigation-binding.json node --experimental-websocket scripts/chrome-navigation-binding-smoke.mjs
+```
+
+앞의 세 검사는 통제 provider와 실제 승인 UI·Worker 최종 결과를 사용한다.
+최신 observation에 연결된 provider의 유효한 completed는 최종 completed로 처리한다.
+다른 목적지의 URL 불일치와 최초 UNKNOWN은 진단 이력으로 보존하며 최종 완료를 거절하지 않는다.
+마지막 검사는 Content executor에 직접 Worker 메시지를 보내 href/base 변경으로 기존
+화면 참조를 재사용할 수 없는지 확인하며 provider·승인 UI 검증을 의미하지 않는다.
+[이슈와 실행 증거](issues/records/2026-10-11-navigation-provider-confirmation.md)를 참조한다.
+
+0.1.103부터 위 이동 완료 검사는 진단 bundle의 승인 URL·실제 도착 URL이 마스킹되지 않고, 주소 불일치 시 DESTINATION_MISMATCH를 보존하는지도 확인한다.
+
+0.1.104부터 위 세 사례는 provider completed의 최종 수용과 PROVIDER_COMPLETED 사유를 확인한다. URL 전환 사례는 승인 링크의 도착 페이지가 history.replaceState로 주소를 변경하는 통제 fixture다.

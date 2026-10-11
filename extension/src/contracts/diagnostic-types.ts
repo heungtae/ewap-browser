@@ -66,8 +66,8 @@ export type BundleSectionStatus =
   | "failed";
 
 /**
- * Content-script diagnostic response. Page source, script source, URLs, and
- * titles never cross the extension boundary into a downloadable bundle.
+ * Content structural summary omits page/script source and titles. Navigation
+ * URLs are available separately in execution method traces.
  */
 export type ContentDiagnosticsSummary = {
   schema_version: 1;

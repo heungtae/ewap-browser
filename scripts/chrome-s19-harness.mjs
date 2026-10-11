@@ -1,3 +1,4 @@
+import { configureS22Settings } from "./chrome-s22-settings.mjs";
 import { spawn } from "node:child_process";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { join, resolve } from "node:path";
@@ -143,7 +144,7 @@ export const openS19Chrome = async ({
     panel,
     `(()=>{window.__downloads=[];const original=URL.createObjectURL.bind(URL);URL.createObjectURL=blob=>{blob.arrayBuffer().then(buffer=>window.__downloads.push(Array.from(new Uint8Array(buffer))));return original(blob)};HTMLAnchorElement.prototype.click=function(){};return true})()`,
   );
-  return {
+  const harness = {
     panel,
     page,
     version,
@@ -155,4 +156,7 @@ export const openS19Chrome = async ({
       await rm(profile, { recursive: true, force: true, maxRetries: 3 });
     },
   };
+  if (process.env.S22_MODE)
+    await configureS22Settings(harness, process.env.S22_MODE);
+  return harness;
 };

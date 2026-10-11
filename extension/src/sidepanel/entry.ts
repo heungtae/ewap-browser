@@ -1,3 +1,8 @@
+import { approvalLabels } from "../policy/approval-policy.js";
+import {
+  approvalModeLabel,
+  validateApprovalPolicy,
+} from "../policy/approval-policy.js";
 import { actCompletionView } from "./act-completion-view.js";
 import {
   requestVisionPermission,
@@ -447,11 +452,15 @@ const applyPermissionMode = (mode: string): void => {
   if (!permissionModeBadge) return;
   permissionModeBadge.dataset.mode = mode;
   permissionModeBadge.textContent =
-    mode === "skip_all_permission_checks"
-      ? "권한 질문 생략"
-      : mode === "follow_a_plan"
-        ? "계획 제한"
-        : "표준 권한";
+    mode === "full"
+      ? "Full Permission"
+      : mode === "custom"
+        ? "항목별 승인 설정"
+        : mode === "skip_all_permission_checks"
+          ? "권한 질문 생략"
+          : mode === "follow_a_plan"
+            ? "계획 제한"
+            : "표준 권한";
 };
 const showFailure = (code?: string): void => {
   if (!runActive && code && lastTerminalFailureCode === code) return;
@@ -1484,6 +1493,15 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     }
     return;
   }
+  if (event.type === "approval_decision") {
+    append(
+      message(
+        "assistant",
+        `${approvalLabels[event.category]}: ${event.approval_source === "policy" ? "설정에 따라 자동 승인됨" : "사용자가 승인함"} (설정 revision ${event.policy_revision}).`,
+      ),
+    );
+    return;
+  }
   if (event.type === "assistant_delta") {
     pendingDeltas.set(
       event.run_id,
@@ -2028,9 +2046,21 @@ void runtime
   .then((response) => {
     const preferences =
       typeof response === "object" && response !== null
-        ? (response as { preferences?: { permission_mode?: unknown } })
-            .preferences
+        ? (
+            response as {
+              preferences?: {
+                permission_mode?: unknown;
+                approval_policy?: unknown;
+              };
+            }
+          ).preferences
         : undefined;
     if (typeof preferences?.permission_mode === "string")
-      applyPermissionMode(preferences.permission_mode);
+      applyPermissionMode(
+        preferences.approval_policy === undefined
+          ? preferences.permission_mode
+          : approvalModeLabel(
+              validateApprovalPolicy(preferences.approval_policy),
+            ),
+      );
   });

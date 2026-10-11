@@ -1,0 +1,107 @@
+{
+  "issue": "ISS-20261011-004",
+  "date": "2026-10-11 KST",
+  "source_head": "f4e962f205caf9f0c8b6ad012c0de55a7624c236",
+  "source_state": "uncommitted issue fix; preexisting version bump preserved",
+  "extension_version": "0.1.101",
+  "chrome": "Chrome/147.0.7727.15",
+  "cases": [
+    {
+      "issue": "ISS-20261011-004",
+      "case": "late-destination",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "063f50103307e4ac06f7ea76eae4de537950355c77189ade7510c56182a2534c",
+      "proposal_calls": 1,
+      "goal_calls": 2,
+      "raw_unknown_observed": true,
+      "accepted": {
+        "run_id": "5968f498-3306-4534-baf5-85d4205346e7",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "GOAL_OBSERVED",
+          "reassessments": 1,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      },
+      "visible_completion": true,
+      "version": "0.1.101"
+    },
+    {
+      "issue": "ISS-20261011-004",
+      "case": "wrong-destination",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "063f50103307e4ac06f7ea76eae4de537950355c77189ade7510c56182a2534c",
+      "proposal_calls": 1,
+      "goal_calls": 1,
+      "raw_unknown_observed": true,
+      "accepted": {
+        "run_id": "a1b377d7-6c00-445a-9297-e1edd46eddc9",
+        "outcome": "UNKNOWN",
+        "code": "NAVIGATION_UNVERIFIED",
+        "completion": {
+          "action_outcome": "UNKNOWN",
+          "goal_status": "unknown",
+          "reason": "UNOBSERVED_ACTION",
+          "reassessments": 0
+        }
+      },
+      "visible_completion": true,
+      "version": "0.1.101"
+    }
+  ],
+  "related_s20": [
+    {
+      "id": "cedar",
+      "pass": true,
+      "build_hash": "063f50103307e4ac06f7ea76eae4de537950355c77189ade7510c56182a2534c"
+    },
+    {
+      "id": "ridge",
+      "pass": true,
+      "build_hash": "063f50103307e4ac06f7ea76eae4de537950355c77189ade7510c56182a2534c"
+    }
+  ],
+  "checks": {
+    "unit_files": 168,
+    "unit_tests": 797,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "module_boundaries": "PASS 330 TS files",
+    "method_trace": "PASS 1869 methods, 228 runtime modules",
+    "fixture": "PASS 1",
+    "e2e": "PASS 1",
+    "version_preserving_build_package": "PASS"
+  },
+  "limits": [
+    "controlled fixtures and controlled provider only",
+    "original site and actual gpt-5.6-luna request not rerun",
+    "not committed, pushed or deployed",
+    "arbitrary redirect does not prove approved destination"
+  ],
+  "content_reference_binding": {
+    "issue": "ISS-20261011-004",
+    "scope": "controlled Chrome Content executor; direct Worker message, no provider/approval UI",
+    "build": "063f50103307e4ac06f7ea76eae4de537950355c77189ade7510c56182a2534c",
+    "results": [
+      {
+        "change": "href",
+        "dispatch": "not_dispatched",
+        "code": "TARGET_STALE",
+        "navigation_blocked": true
+      },
+      {
+        "change": "base",
+        "dispatch": "not_dispatched",
+        "code": "TARGET_NOT_ACTIONABLE",
+        "navigation_blocked": true
+      }
+    ]
+  }
+}

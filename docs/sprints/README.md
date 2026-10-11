@@ -14,6 +14,9 @@
 
 ## 신규 구현 계획
 
+- [Browser Agent S22 — 통합 승인 정책과 Full Permission 자동 실행](s22-unified-approval-policy.md)
+  — Planned, 2026-10-11. Options의 승인 모드·항목별 설정을 작업 제안·계획·권한·중요 확인·
+  자료 전송 동의에 연결하는 C1~C8 계획이다. 기존 설정의 안전한 이전과 자동 실행 검증을 포함한다.
 - [Browser Act S21 — 현재 관찰·실행 증거에 기반한 LLM 추가 판단](s21-act-evidence-based-llm-assessment.md)
   — Planned, 2026-10-11. 기존 경로를 유지하고 요소 해석·action 완료·전체 목표의
   불명확한 상태를 자료 수집과 LLM 판단으로 확정하는 C1~C8 계획이다.

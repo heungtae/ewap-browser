@@ -8,6 +8,8 @@ import type {
 import type { Capability } from "../policy/permission-manager.js";
 import { ContractError } from "../security/validation.js";
 import { withDeadline } from "../security/deadline.js";
+import { traceDecision } from "../diagnostics/method-trace.js";
+import { digestCanonical } from "../security/canonical.js";
 import type { ReadyExecution } from "../state/mutation-coordinator.js";
 import type { Run } from "../state/run-coordinator.js";
 
@@ -323,6 +325,12 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
         dependencies.terminal(run, "FAILED");
         return dependencies.safeFailure("TARGET_NOT_ACTIONABLE");
       }
+      traceDecision("act.navigation.dispatch", {
+        source_url: beforeUrl,
+        approved_url: expectedUrl,
+        navigation_bound:
+          (result as { navigation_bound?: unknown }).navigation_bound === true,
+      });
       const verified =
         beforeUrl && dependencies.verifier.waitForPageTransition
           ? await dependencies.verifier.waitForPageTransition(
@@ -339,7 +347,32 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
               run.tabId,
               expectedUrl,
             );
+      const observedUrl = await dependencies
+        .tab(run.tabId)
+        .then((tab) => tab.url)
+        .catch(() => undefined);
+      traceDecision("act.navigation.result", {
+        approved_url: expectedUrl,
+        observed_url: observedUrl,
+        verified,
+      });
       const outcome = verified ? "VERIFIED" : "UNKNOWN";
+      const navigation_binding =
+        (result as { navigation_bound?: unknown }).navigation_bound === true &&
+        beforeScope
+          ? {
+              destination_digest: digestCanonical(expectedUrl),
+              source_document_epoch: beforeScope.document_epoch,
+              source_page_scope_epoch: beforeScope.page_scope_epoch,
+              ...(ready.intent.completion?.kind === "navigation" &&
+              ready.intent.completion.destination_marker
+                ? {
+                    destination_marker:
+                      ready.intent.completion.destination_marker,
+                  }
+                : {}),
+            }
+          : undefined;
       dependencies.terminal(
         run,
         outcome,
@@ -348,7 +381,11 @@ export const createActExecutionRuntime = (dependencies: Dependencies) => {
       if (verified) dependencies.milestone?.(run.tabId, "COMPLETION_VERIFIED");
       return verified
         ? { ok: true, outcome, verified_scope: dependencies.scope?.(run.tabId) }
-        : { ...dependencies.safeFailure("NAVIGATION_UNVERIFIED"), outcome };
+        : {
+            ...dependencies.safeFailure("NAVIGATION_UNVERIFIED"),
+            outcome,
+            navigation_binding,
+          };
     }
     if (
       postcondition === "semantic" ||

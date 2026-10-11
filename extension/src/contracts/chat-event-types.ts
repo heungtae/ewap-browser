@@ -1,3 +1,4 @@
+import type { ApprovalCategory } from "../policy/approval-policy.js";
 import type { Outcome } from "./core-types.js";
 import type { ActCompletion } from "./act-completion.js";
 
@@ -52,6 +53,14 @@ export type ChatEventPayload =
     }
   | { type: "activity_finished"; stage: ActivityStage }
   | { type: "assistant_delta"; text: string }
+  | {
+      type: "approval_decision";
+      category: ApprovalCategory;
+      approval_source: "user" | "policy";
+      policy_revision: number;
+      outcome: "consumed";
+      reason: "USER_APPROVED" | "SETTINGS_AUTO";
+    }
   | {
       type: "tool_started";
       tool_use_id: string;

@@ -1,3 +1,4 @@
+import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
 import { exactKeys } from "./runtime-message-router.js";
 import type { BrowserSender } from "./browser-api.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -19,6 +20,11 @@ type Dependencies = {
   active(): Promise<ActivePage>;
   recordedCurrent(id: string, active: ActivePage): Promise<boolean>;
   persist(): Promise<void>;
+  startApproved?(
+    selection: Selection,
+    candidate: Candidate,
+    respond: Respond,
+  ): Promise<void>;
   safeFailure(code: string): unknown;
 };
 
@@ -73,6 +79,21 @@ export const createWorkflowSelectionMessageHandler = (
           return respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
         selection.selectedId = candidateId;
         await dependencies.persist();
+        const decision = approvalDecision("plan_approval");
+        if (decision === "deny")
+          return respond(dependencies.safeFailure("POLICY_DENIED"));
+        if (decision === "auto" && dependencies.startApproved) {
+          createApprovalGrant({
+            category: "plan_approval",
+            source: "policy",
+            binding: `${selection.id}:${candidateId}`,
+            current: () =>
+              dependencies.selection(selection.id) === selection &&
+              selection.selectedId === candidateId,
+          })();
+          await dependencies.startApproved(selection, candidate, respond);
+          return;
+        }
         respond({
           ok: true,
           state: "WORKFLOW_PLAN",

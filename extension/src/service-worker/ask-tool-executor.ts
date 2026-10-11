@@ -17,6 +17,9 @@ type Dependencies = {
   runId: string;
   signal?: AbortSignal;
   screenshotEnabled: boolean;
+  visionConsent?(): Promise<boolean>;
+  visionSafe?(): Promise<boolean>;
+  current?(): boolean;
   tabs: BrowserTabs;
   capture(id: string): VisionCapture | undefined;
   remember(capture: VisionCapture): void;
@@ -37,6 +40,11 @@ export const createAskToolExecutor = (dependencies: Dependencies) => {
   const { snapshot } = dependencies;
   const vision = createAskVisionToolExecutor({
     enabled: dependencies.screenshotEnabled,
+    ...(dependencies.visionConsent
+      ? { consent: dependencies.visionConsent }
+      : {}),
+    ...(dependencies.current ? { current: dependencies.current } : {}),
+    ...(dependencies.visionSafe ? { safe: dependencies.visionSafe } : {}),
     tabs: dependencies.tabs,
     tabId: dependencies.tabId,
     capture: dependencies.capture,

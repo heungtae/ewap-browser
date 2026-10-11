@@ -73,6 +73,15 @@ describe("S21 read-only action assessment", () => {
       expect(test.session.executionEvidence?.[0]?.outcome).toBe("UNKNOWN");
       expect(test.dependencies.executeApprovedProposal).not.toHaveBeenCalled();
       expect(test.session.assessmentBudget!.calls).toBeLessThanOrEqual(2);
+      for (const message of test.session.messages.filter(
+        (m) => m.role === "assistant",
+      ))
+        for (const call of message.tool_calls ?? [])
+          expect(
+            test.session.messages.some(
+              (m) => m.role === "tool" && m.tool_call_id === call.id,
+            ),
+          ).toBe(true);
     },
   );
   it("returns bounded current DOM read under the same tool call ID then accepts fresh evidence", async () => {

@@ -1,4 +1,5 @@
 import { readAdditionalAction } from "./act-assessment-read.js";
+import { settledAssessmentTranscript } from "./assessment-transcript.js";
 import { assessmentChat } from "./act-assessment-provider.js";
 import { assessCurrentState } from "./act-current-state-assessment.js";
 import { checkingCompletion } from "./act-goal-finalizer.js";
@@ -188,11 +189,14 @@ export const assessPendingAction = async (
     });
   } finally {
     session.messages.push(
-      ...messages
-        .slice(transcriptStart)
-        .filter(
-          (message) => message.role === "assistant" || message.role === "tool",
-        ),
+      ...settledAssessmentTranscript(
+        messages
+          .slice(transcriptStart)
+          .filter(
+            (message) =>
+              message.role === "assistant" || message.role === "tool",
+          ),
+      ),
     );
     delete session.pendingAssessment;
   }

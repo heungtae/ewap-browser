@@ -1,3 +1,4 @@
+import { countS22ApprovalCards } from "./chrome-s22-settings.mjs";
 import { mkdtemp, rm, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -70,10 +71,16 @@ try {
       let finalFeedback = false;
       while (Date.now() < deadline) {
         await sleep(150);
-        await evaluate(
-          panel,
-          `(()=>{for(const label of ['일반 한 단계 실행','이번 요청에 허용','계획 승인','이번 단계 실행','이번만 허용','확인하고 실행']){for(const c of [...document.querySelectorAll('.event-card')].filter(c=>c.dataset.testSeen!=='1')){const b=[...c.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes(label));if(b){c.dataset.testSeen='1';b.click();break}}}return true})()`,
-        );
+        if (process.env.S22_MODE !== "full")
+          await evaluate(
+            panel,
+            `(()=>{for(const label of ['일반 한 단계 실행','이번 요청에 허용','계획 승인','이번 단계 실행','이번만 허용','확인하고 실행']){for(const c of [...document.querySelectorAll('.event-card')].filter(c=>c.dataset.testSeen!=='1')){const b=[...c.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes(label));if(b){c.dataset.testSeen='1';b.click();break}}}return true})()`,
+          );
+        if (process.env.S22_MODE === "full")
+          await evaluate(
+            panel,
+            "(()=>{const b=[...document.querySelectorAll('.event-card button')].find(b=>!b.disabled&&b.textContent.includes('일반 한 단계 실행'));b?.click();return true})()",
+          );
         const goal = calls
           .slice(start)
           .flatMap((x) => x.response)
@@ -111,8 +118,13 @@ try {
       );
       const own = calls.slice(start),
         zip = await checkS20({ c: current, own, panel, page });
+      const approvalCards = process.env.S22_MODE
+        ? await countS22ApprovalCards(panel)
+        : undefined;
+      if (process.env.S22_MODE === "full") assert.equal(approvalCards, 0);
       results.push({
         id: item.id,
+        approvalCards,
         pass: true,
         chrome: version.Browser,
         build_hash: buildHash,

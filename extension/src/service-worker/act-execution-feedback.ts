@@ -23,6 +23,13 @@ export const recordActExecution = (
       ? executed.dispatch
       : "unknown";
   const evidence: ActExecutionEvidence = {
+    ...(executed.navigation_binding
+      ? {
+          navigation_binding: executed.navigation_binding as NonNullable<
+            ActExecutionEvidence["navigation_binding"]
+          >,
+        }
+      : {}),
     ...mutationBinding(session, proposal, session.assessmentBaseline),
     dispatch,
     logical_step_id:

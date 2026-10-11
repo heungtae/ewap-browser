@@ -54,6 +54,15 @@ const diagnosticEvent = (event: ChatEvent): Record<string, unknown> => {
     case "user_message":
     case "assistant_delta":
       return { ...base, text_length: event.text.length };
+    case "approval_decision":
+      return {
+        ...base,
+        category: event.category,
+        approval_source: event.approval_source,
+        policy_revision: event.policy_revision,
+        outcome: event.outcome,
+        reason: event.reason,
+      };
     case "run_started":
       return {
         ...base,

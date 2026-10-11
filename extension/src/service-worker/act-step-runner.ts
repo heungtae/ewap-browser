@@ -1,3 +1,8 @@
+import {
+  approvalModeLabel,
+  migrateApprovalPolicy,
+} from "../policy/approval-policy.js";
+import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
 import { repeatedMutation } from "./act-mutation-history.js";
 import { parseElementAssessment } from "./act-element-assessment.js";
 import { runElementAssessment } from "./act-element-assessment-turn.js";
@@ -141,7 +146,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       dependencies.publish(run.id, {
         type: "run_started",
         mode: "act",
-        permission_mode: dependencies.preferences().permission_mode,
+        permission_mode: approvalModeLabel(
+          dependencies.preferences().approval_policy ??
+            migrateApprovalPolicy(dependencies.preferences().permission_mode),
+        ),
       });
       dependencies.publish(run.id, {
         type: "activity_started",
@@ -252,12 +260,16 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                   "TERMINAL" &&
                 session.runId === run.id,
               consent: async (resources) => {
-                dependencies.publish(run.id, {
-                  type: "activity_progress",
-                  stage: "AWAITING_REVIEW",
-                });
                 const allowed = await requestSourceConsent({
                   runId: run.id,
+                  record: (event) => dependencies.publish(run.id, event),
+                  category:
+                    resources[0] === "component-scroll"
+                      ? "scroll_read"
+                      : resources[0] === "component-vision"
+                        ? "vision_disclosure"
+                        : "source_disclosure",
+                  preferences: dependencies.preferences(),
                   ...(session.requestContext?.signal
                     ? { signal: session.requestContext.signal }
                     : {}),
@@ -1133,6 +1145,32 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       session.proposal = proposal;
       session.assessmentBaseline = structuredClone(active);
       session.assessmentBaselineScope = structuredClone(observationScope);
+      const actionDecision = approvalDecision(
+        "action_execution",
+        dependencies.preferences(),
+      );
+      if (actionDecision === "deny") return fail("POLICY_DENIED");
+      if (actionDecision === "auto") {
+        if ((session.autoExecutionCount ?? 0) >= 12)
+          return fail("WORKFLOW_STEP_LIMIT");
+        createApprovalGrant({
+          record: (event) => dependencies.publish(run.id, event),
+          category: "action_execution",
+          source: "policy",
+          preferences: dependencies.preferences(),
+          binding: `${session.id}:${run.id}:${proposal.id}`,
+          current: () =>
+            session.proposal === proposal &&
+            session.runId === run.id &&
+            !session.requestContext?.signal.aborted,
+        })();
+        session.autoExecutionCount = (session.autoExecutionCount ?? 0) + 1;
+        dependencies.publish(run.id, {
+          type: "assistant_delta",
+          text: "작업 제안이 설정에 따라 자동 승인됨.",
+        });
+        return dependencies.executeApprovedProposal(session);
+      }
       // PAH-9/R1: a prior session approval covers only the bounded
       // session-scoped sequence it explicitly showed. A new single_step
       // proposal (text inputs always are) is never part of that approval:

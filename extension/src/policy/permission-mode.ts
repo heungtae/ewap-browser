@@ -1,3 +1,9 @@
+import {
+  migrateApprovalPolicy,
+  resolveApproval,
+  validateApprovalPolicy,
+  type ApprovalPolicy,
+} from "./approval-policy.js";
 import type { PageReadScope } from "../contracts/types.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import {
@@ -11,6 +17,7 @@ export type PermissionMode =
   | "follow_a_plan"
   | "skip_all_permission_checks";
 export type AgentPreferences = {
+  approval_policy?: ApprovalPolicy;
   permission_mode: PermissionMode;
   default_read_scope: PageReadScope;
   screenshot_policy: "manual_or_model" | "manual_only" | "disabled";
@@ -54,6 +61,7 @@ export const allowsModelScreenshot = (
 export const validateAgentPreferences = (value: unknown): AgentPreferences => {
   if (!isPlainObject(value)) return fail("INVALID_ARGUMENT");
   const keys = [
+    "approval_policy",
     "permission_mode",
     "default_read_scope",
     "screenshot_policy",
@@ -74,6 +82,10 @@ export const validateAgentPreferences = (value: unknown): AgentPreferences => {
   )
     return fail("INVALID_ARGUMENT");
   return {
+    approval_policy:
+      value.approval_policy === undefined
+        ? migrateApprovalPolicy(value.permission_mode as string)
+        : validateApprovalPolicy(value.approval_policy),
     permission_mode: value.permission_mode as PermissionMode,
     default_read_scope: value.default_read_scope as PageReadScope,
     screenshot_policy:
@@ -88,7 +100,7 @@ export const validateAgentPreferences = (value: unknown): AgentPreferences => {
  * credential, R2/R3, ref/preflight and verifier hard policy before this gate.
  */
 export const gatePermission = (
-  manager: PermissionManager,
+  manager: Pick<PermissionManager, "check">,
   preferences: AgentPreferences,
   capability: Capability,
   url: string,
@@ -99,9 +111,15 @@ export const gatePermission = (
   const origin = new URL(url).origin;
   const stored = manager.check(capability, url, runId);
   if (stored === "DENY") return "DENY";
-  if (preferences.permission_mode === "skip_all_permission_checks")
-    return "ALLOW";
-  if (preferences.permission_mode === "follow_a_plan")
-    return approvedPlanOrigins.has(origin) ? "ALLOW" : "PLAN_SCOPE_VIOLATION";
+  const policy =
+    preferences.approval_policy ??
+    migrateApprovalPolicy(preferences.permission_mode);
+  const decision = resolveApproval(policy, "tool_permission");
+  if (decision === "deny") return "DENY";
+  if (decision === "auto")
+    return policy.tool_scope === "approved_plan" &&
+      !approvedPlanOrigins.has(origin)
+      ? "PLAN_SCOPE_VIOLATION"
+      : "ALLOW";
   return stored;
 };

@@ -56,12 +56,19 @@ export const checkS6 = async ({ panel, fixtureData }) => {
   );
   try {
     await waitFor(
-      async () =>
-        fixtureData.providerRequests.length >= 3 &&
-        (await evaluate(
+      async () => {
+        await evaluate(
           panel,
-          "document.querySelector('#chat-messages')?.textContent.includes('S6 read tools complete') && document.querySelector('#chat-send')?.dataset.state === 'send'",
-        )),
+          "(()=>{for(const c of [...document.querySelectorAll('.event-card')].filter(c=>/화면 이미지 전달 동의/.test(c.textContent))){const b=[...c.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes('이번 요청에 허용'));b?.click()}return true})()",
+        );
+        return (
+          fixtureData.providerRequests.length >= 3 &&
+          (await evaluate(
+            panel,
+            "document.querySelector('#chat-messages')?.textContent.includes('S6 read tools complete') && document.querySelector('#chat-send')?.dataset.state === 'send'",
+          ))
+        );
+      },
       20_000,
       "S6_TOOL_TURN_NOT_COMPLETED",
     );

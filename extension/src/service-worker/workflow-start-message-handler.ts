@@ -1,3 +1,4 @@
+import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
 import type { WorkflowDeclaration } from "../contracts/workflow.js";
 import type { BrowserSender } from "./browser-api.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -72,6 +73,14 @@ export const createWorkflowStartMessageHandler = (
           !(await dependencies.recordedCurrent(candidate.candidate.id, active))
         )
           return respond(dependencies.safeFailure("WORKFLOW_STATE_MISMATCH"));
+        if (approvalDecision("plan_approval") === "deny")
+          return respond(dependencies.safeFailure("POLICY_DENIED"));
+        createApprovalGrant({
+          category: "plan_approval",
+          source: "user",
+          binding: `${selection.id}:${selection.selectedId}`,
+          current: () => dependencies.selection(selection.id) === selection,
+        })();
         await dependencies.start(selection, candidate, respond);
       })
       .catch(() =>

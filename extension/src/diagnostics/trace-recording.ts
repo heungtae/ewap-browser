@@ -84,6 +84,10 @@ export const append = (
       /page-act-harness\/value-binding/.test(method) &&
       event === "method.result" &&
       typeof input === "string";
+    const sensitiveMethod =
+      /(?:insertText|typeText|screenshot|captureVisibleTab|submitValue)/i.test(
+        method,
+      );
     const entry: RecordEntry = {
       sequence: ++sequence,
       timestamp_ms: Date.now(),
@@ -98,10 +102,14 @@ export const append = (
           typeof input === "string") ||
           sensitiveData ||
           valueBindingStringResult ||
-          /(?:insertText|typeText|screenshot|captureVisibleTab|submitValue)/i.test(
-            method,
-          )
-          ? { value: input }
+          sensitiveMethod
+          ? typeof input === "string" &&
+            /^https?:\/\/[^\s]+$/i.test(input) &&
+            !sensitiveData &&
+            !valueBindingStringResult &&
+            !sensitiveMethod
+            ? { url: input }
+            : { value: input }
           : input,
       ),
       context,

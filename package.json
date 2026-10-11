@@ -49,7 +49,8 @@
     "test:chrome-s20-fault": "node --experimental-websocket scripts/chrome-s20-fault-smoke.mjs",
     "test:chrome-s20-qualification": "node scripts/chrome-s20-qualification.mjs",
     "test:chrome-s20-api": "node --experimental-websocket scripts/chrome-s20-api-smoke.mjs",
-    "test:chrome-s21": "node --experimental-websocket scripts/chrome-s21-smoke.mjs"
+    "test:chrome-s21": "node --experimental-websocket scripts/chrome-s21-smoke.mjs",
+    "test:chrome-s22": "node --experimental-websocket scripts/chrome-s22-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

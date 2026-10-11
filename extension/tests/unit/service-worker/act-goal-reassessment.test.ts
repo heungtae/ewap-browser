@@ -195,7 +195,7 @@ describe("Act goal observation reassessment", () => {
       input: Pick<NormalizedProviderRequest, "messages" | "tools">,
     ) => {
       active.snapshot.visible_text = "Changed";
-      return report(input, 1);
+      return report(input, 1, "unknown");
     };
     const result = await createActStepRunner(dependencies).runStep(session);
     expect(result.terminal).toBe("FAILED");

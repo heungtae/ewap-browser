@@ -92,6 +92,9 @@ export const createWorkflowSessionActions = (dependencies: Dependencies) => {
           },
         ],
         workflowResourceCandidates: [...current.candidates.values()],
+        ...(current.requestContext
+          ? { requestContext: current.requestContext }
+          : {}),
         profile: current.profile,
         discovery: selected.discovery,
         definitions: selected.definitions,
@@ -184,6 +187,9 @@ export const createWorkflowSessionActions = (dependencies: Dependencies) => {
           },
         ],
         workflowResourceCandidates: [...current.candidates.values()],
+        ...(current.requestContext
+          ? { requestContext: current.requestContext }
+          : {}),
         profile: current.profile,
         discovery: "page-derived",
         definitions: [],

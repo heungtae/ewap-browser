@@ -1,3 +1,8 @@
+import {
+  approvalDecision,
+  assertApprovalAvailable,
+} from "./approval-runtime.js";
+import { assertRequestActive } from "./request-context.js";
 import { fail } from "../security/validation.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import { toHarnessRevision } from "../page-act-harness/act-entry-bridge.js";
@@ -60,6 +65,9 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
     run: Run,
     proposal: ParsedActProposal,
   ): Promise<void> => {
+    assertRequestActive(session.requestContext);
+    if (approvalDecision("action_execution") === "deny")
+      return fail("POLICY_DENIED");
     await authorizeActWithEvidence({
       session,
       run,
@@ -190,6 +198,9 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
     )
       return fail("CONFIRMATION_INVALID");
     await authorizeResume(session, run, proposal);
+    assertApprovalAvailable();
+    if (approvalDecision("risk_confirmation") === "deny")
+      return fail("POLICY_DENIED");
     delete session.awaitingConfirmation;
     return dependencies.complete(
       session,

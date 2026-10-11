@@ -1,3 +1,7 @@
+import {
+  approvalCategories,
+  type ApprovalCategory,
+} from "../policy/approval-policy.js";
 import { fail, isPlainObject, opaque, string } from "../security/validation.js";
 import type { Outcome } from "./core-types.js";
 import { validateActCompletion } from "./act-completion.js";
@@ -44,6 +48,27 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
   if (value.type === "user_message") {
     if (typeof value.text !== "string") return fail("INVALID_ARGUMENT");
     return { ...base, type: "user_message", text: string(value.text, 16_000) };
+  }
+  if (value.type === "approval_decision") {
+    if (
+      !approvalCategories.includes(value.category as ApprovalCategory) ||
+      !["user", "policy"].includes(value.approval_source as string) ||
+      !Number.isSafeInteger(value.policy_revision) ||
+      (value.policy_revision as number) < 0 ||
+      value.outcome !== "consumed" ||
+      value.reason !==
+        (value.approval_source === "user" ? "USER_APPROVED" : "SETTINGS_AUTO")
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "approval_decision",
+      category: value.category as ApprovalCategory,
+      approval_source: value.approval_source as "user" | "policy",
+      policy_revision: value.policy_revision as number,
+      outcome: "consumed",
+      reason: value.reason as "USER_APPROVED" | "SETTINGS_AUTO",
+    };
   }
   if (value.type === "page_scope_changed")
     return { ...base, type: "page_scope_changed" };

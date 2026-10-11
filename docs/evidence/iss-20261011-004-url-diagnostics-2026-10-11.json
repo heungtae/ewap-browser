@@ -1,0 +1,106 @@
+{
+  "issue": "ISS-20261011-004",
+  "date": "2026-10-11 KST",
+  "version": "0.1.103",
+  "source_head": "f4e962f205caf9f0c8b6ad012c0de55a7624c236",
+  "source_state": "uncommitted issue fix and explicit user-requested diagnostic URL visibility",
+  "runtime_incident": {
+    "request_id": "b85e9afc-67a0-4c14-a13a-3300bb7839c9",
+    "version": "0.1.102",
+    "provider_completed": true,
+    "observation_current": true,
+    "destination_digest_mismatch": true,
+    "confirmation_accepted": false,
+    "terminal": "UNKNOWN/NAVIGATION_UNVERIFIED",
+    "url_relationship": "unknown; original ZIP already masked",
+    "trace_drops": {
+      "worker": 177681,
+      "content": 972841,
+      "panel": 2905,
+      "lifecycle": 0
+    }
+  },
+  "cases": [
+    {
+      "diagnostics": {
+        "approved_url_visible": true,
+        "observed_url_visible": true,
+        "confirmation_url_visible": true,
+        "urls_differ": true,
+        "rejection_code": "DESTINATION_MISMATCH",
+        "bundle_version": "0.1.103"
+      },
+      "issue": "ISS-20261011-004",
+      "case": "wrong-destination",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "f38932f0ef4fac796ac987e37bb03c59574b083c987c6de13317b0322978ae76",
+      "proposal_calls": 1,
+      "goal_calls": 1,
+      "raw_unknown_observed": true,
+      "accepted": {
+        "run_id": "3adce1c2-34e2-4814-9b96-aa18952d54e7",
+        "outcome": "UNKNOWN",
+        "code": "NAVIGATION_UNVERIFIED",
+        "completion": {
+          "action_outcome": "UNKNOWN",
+          "goal_status": "unknown",
+          "reason": "UNOBSERVED_ACTION",
+          "reassessments": 0
+        }
+      },
+      "visible_completion": true,
+      "version": "0.1.103"
+    },
+    {
+      "diagnostics": {
+        "approved_url_visible": true,
+        "observed_url_visible": true,
+        "confirmation_url_visible": true,
+        "urls_differ": false,
+        "rejection_code": null,
+        "bundle_version": "0.1.103"
+      },
+      "issue": "ISS-20261011-004",
+      "case": "late-destination",
+      "scope": "controlled Chrome/provider fixture",
+      "build": "f38932f0ef4fac796ac987e37bb03c59574b083c987c6de13317b0322978ae76",
+      "proposal_calls": 1,
+      "goal_calls": 2,
+      "raw_unknown_observed": true,
+      "accepted": {
+        "run_id": "f12d4da2-369d-4cda-89ea-788cdced6037",
+        "outcome": "VERIFIED",
+        "completion": {
+          "action_outcome": "VERIFIED",
+          "goal_status": "completed",
+          "reason": "GOAL_OBSERVED",
+          "reassessments": 1,
+          "assessment": {
+            "version": 1,
+            "calls": 1,
+            "reads": 0,
+            "confirmation": "llm_evidence"
+          }
+        }
+      },
+      "visible_completion": true,
+      "version": "0.1.103"
+    }
+  ],
+  "checks": {
+    "full_unit": "169 files / 802 tests PASS",
+    "final_focused_unit": "8 files / 48 tests PASS",
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "module_boundaries": "PASS",
+    "method_trace": "1871 methods / 228 modules PASS",
+    "build_package": "PASS; 0.1.102 -> 0.1.103 then final version-preserving rebuild"
+  },
+  "limits": [
+    "Original site navigation relationship is not established",
+    "Masked URL bytes in existing archive cannot be recovered",
+    "No completion acceptance criteria relaxed",
+    "Controlled fixtures and controlled provider, not original gpt-5.6-luna site rerun",
+    "Not committed, pushed or deployed"
+  ]
+}

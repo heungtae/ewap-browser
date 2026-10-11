@@ -3,6 +3,7 @@ import { fail, isPlainObject } from "../security/validation.js";
 const reasons = [
   "OBSERVING",
   "GOAL_OBSERVED",
+  "PROVIDER_COMPLETED",
   "GOAL_UNMET",
   "GOAL_UNCONFIRMED",
   "OBSERVATION_CHANGED",
@@ -47,7 +48,11 @@ export const validActCompletion = (value: unknown): value is ActCompletion =>
   Number.isInteger(value.reassessments) &&
   Number(value.reassessments) >= 0 &&
   Number(value.reassessments) <= 2 &&
-  (value.goal_status !== "completed" || value.action_outcome === "VERIFIED") &&
+  (value.goal_status !== "completed" ||
+    value.action_outcome === "VERIFIED" ||
+    value.reason === "PROVIDER_COMPLETED") &&
+  (value.reason !== "PROVIDER_COMPLETED" ||
+    value.goal_status === "completed") &&
   (value.assessment === undefined ||
     (isPlainObject(value.assessment) &&
       Object.keys(value.assessment).length === 4 &&

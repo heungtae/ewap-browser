@@ -1,3 +1,7 @@
+import {
+  approvalDecision,
+  assertApprovalAvailable,
+} from "./approval-runtime.js";
 import type {
   CollectionReadDescriptor,
   CollectionReadRequest,
@@ -77,6 +81,13 @@ export class CollectionReadOrchestrator {
     if (orchestratorState?.active)
       return { ok: false, code: "ORCHESTRATOR_BUSY" };
 
+    assertApprovalAvailable();
+    if (
+      request.mode === "full" &&
+      descriptor.has_virtual_scroll &&
+      approvalDecision("scroll_read") === "deny"
+    )
+      return { ok: false, code: "PERMISSION_DENIED" };
     orchestratorState = {
       active: true,
       runId: request.run_id,
@@ -611,6 +622,17 @@ export class CollectionReadOrchestrator {
     tabId: number,
     message: unknown,
   ): Promise<unknown> {
+    const kind = (message as { kind?: unknown }).kind;
+    const cleanup = [
+      "CONTENT_SCROLL_RESTORE",
+      "CONTENT_SCROLL_RESET",
+      "CONTENT_COLLECTION_RELEASE",
+    ].includes(String(kind));
+    if (!cleanup) {
+      assertApprovalAvailable();
+      if (orchestratorState?.cancelled)
+        return Promise.reject(new Error("CANCELLED"));
+    }
     return withDeadline(
       sendToContent(tabId, message),
       CONTENT_MESSAGE_TIMEOUT_MS,

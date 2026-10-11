@@ -1,3 +1,8 @@
+import {
+  approvalModeLabel,
+  migrateApprovalPolicy,
+} from "../policy/approval-policy.js";
+import { createAskVisionConsent } from "./ask-vision-consent.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import { digestCanonical } from "../security/canonical.js";
 import { fail, isPlainObject } from "../security/validation.js";
@@ -89,7 +94,10 @@ export const createAskChatRunner =
       dependencies.publish(run.id, {
         type: "run_started",
         mode: dependencies.mode ?? "ask",
-        permission_mode: dependencies.preferences().permission_mode,
+        permission_mode: approvalModeLabel(
+          dependencies.preferences().approval_policy ??
+            migrateApprovalPolicy(dependencies.preferences().permission_mode),
+        ),
       });
       dependencies.publish(run.id, {
         type: "activity_started",
@@ -172,6 +180,24 @@ export const createAskChatRunner =
       tabId: active.tabId,
       runId: run.id,
       ...(context?.signal ? { signal: context.signal } : {}),
+      ...(() => {
+        const vision = createAskVisionConsent({
+          active,
+          runId: run.id,
+          ...(context ? { context } : {}),
+          tabs: dependencies.chrome.tabs,
+          preferences: dependencies.preferences,
+          readActive: dependencies.readActive,
+          publish: dependencies.publish,
+          current: () =>
+            dependencies.coordinator.runs.byId(run.id)?.phase !== "TERMINAL",
+        });
+        return {
+          current: vision.current,
+          visionConsent: vision.consent,
+          visionSafe: vision.safe,
+        };
+      })(),
       screenshotEnabled: allowsModelScreenshot(
         dependencies.preferences().screenshot_policy,
       ),

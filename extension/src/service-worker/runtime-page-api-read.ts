@@ -1,3 +1,4 @@
+import { approvalToolPermission } from "./approval-runtime.js";
 import { createAnalysisApiAvailability } from "./analysis-api-availability.js";
 import { fixturePageApiReadAdapter as adapter } from "../page-api/read-adapter.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -43,7 +44,12 @@ const pageApiReadRuntime = createPageApiReadRunner({
   },
   authorize: async (binding, capability, risk) => {
     if (
-      permissions.check(capability, binding.origin, binding.run_id) !== "ALLOW"
+      approvalToolPermission(
+        permissions,
+        capability,
+        binding.origin,
+        binding.run_id,
+      ) !== "ALLOW"
     )
       return false;
     const decision = await enterprisePolicy.authorize({
@@ -57,7 +63,12 @@ const pageApiReadRuntime = createPageApiReadRunner({
     });
     return (
       decision.decision === "ALLOW" &&
-      permissions.check(capability, binding.origin, binding.run_id) === "ALLOW"
+      approvalToolPermission(
+        permissions,
+        capability,
+        binding.origin,
+        binding.run_id,
+      ) === "ALLOW"
     );
   },
 });

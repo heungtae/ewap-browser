@@ -1,0 +1,97 @@
+{
+  "issue_id": "ISS-20261011-003",
+  "related_issue": "ISS-20261011-004",
+  "date": "2026-10-11 KST",
+  "request_id": "d74891eb-3d31-4e43-a0f9-3758bb3d6bd9",
+  "extension_version": "0.1.104",
+  "archive": {
+    "filename": "contextpilot-diagnostics-2026-10-11T09-00-33-d74891eb-3d31-4e43-a0f9-3758bb3d6bd9.zip",
+    "sha256": "8ac50559553349adc5c9b30bca407c1282ed7ed197ccc1a2d25ba3e11a85f523"
+  },
+  "source_analysis": "f4e962f205caf9f0c8b6ad012c0de55a7624c236 plus uncommitted worktree",
+  "finding": "A generic button click was offered and approved, but execution was blocked before dispatch because neither a local semantic postcondition nor a supported browser UI completion baseline was available. The follow-up provider returned incomplete, not completed.",
+  "retained_evidence": [
+    {
+      "component": "worker",
+      "sequence": 33885,
+      "fact": "Selected target: button, empty name, state {}, visible/enabled, supported_actions click_by_ref and press_key_by_ref"
+    },
+    {
+      "component": "worker",
+      "sequence": 33903,
+      "fact": "Parsed click_by_ref proposal; session approval scope; semantic-state-transition required_changes []"
+    },
+    {
+      "component": "worker",
+      "sequence": 36859,
+      "fact": "canVerify=false"
+    },
+    {
+      "component": "content",
+      "sequence": 141126,
+      "fact": "actionableRef returned an existing DOM source object; target reference resolution did not fail"
+    },
+    {
+      "component": "content",
+      "sequence": 141131,
+      "fact": "UI completion preparation returned at !target || !kind"
+    },
+    {
+      "component": "worker",
+      "sequence": 36866,
+      "fact": "CONTENT_PREPARE_UI_COMPLETION result ok=false"
+    },
+    {
+      "component": "worker",
+      "sequence": 36877,
+      "fact": "executeBoundedCore returned UNSUPPORTED_COMPLETION before mutation dispatch"
+    },
+    {
+      "component": "worker",
+      "sequence": 37616,
+      "fact": "act.dispatch.receipt dispatch=not_dispatched, raw_outcome=FAILED, observed=false"
+    },
+    {
+      "component": "worker",
+      "sequence": 53364,
+      "fact": "Validated report_goal_status: status=incomplete, evidence indexes []"
+    },
+    {
+      "component": "worker",
+      "sequence": 56796,
+      "fact": "act.goal.feedback: observation_current=true, model_status=incomplete, provider_completed=false, FAILED/VERIFIER_FAILED"
+    }
+  ],
+  "terminal": {
+    "state": "TERMINAL",
+    "outcome": "FAILED",
+    "code": "UNSUPPORTED_COMPLETION",
+    "completion": {
+      "action_outcome": "FAILED",
+      "goal_status": "unknown",
+      "reason": "VERIFIER_FAILED",
+      "reassessments": 0
+    }
+  },
+  "reduced_reproduction": {
+    "scope": "Built-module preflight with a controlled generic button stub; no original-site/provider replay",
+    "canVerify": false,
+    "prepareBrowserUi": false,
+    "runtime_guard": "UNSUPPORTED_COMPLETION before dispatch"
+  },
+  "retention": {
+    "lifecycle_dropped": 0,
+    "method_dropped": {
+      "worker": 55024,
+      "content": 235948,
+      "offscreen": 0,
+      "panel": 0
+    }
+  },
+  "limits": [
+    "Original prompt, provider summary and proposed approval rationale are masked; the requested target semantics cannot be fully reconstructed.",
+    "The selected control was unnamed, but its empty name is not the UNSUPPORTED_COMPLETION guard. Missing supported postcondition/baseline is the confirmed guard.",
+    "Large Worker/Content trace drops limit full method reconstruction; retained source-resolution/prepare/receipt/report/final records support this finding.",
+    "No runtime source changes, rebuild, commit, push, or original-site replay performed for this diagnostic analysis."
+  ]
+}

@@ -23,6 +23,7 @@ import {
 } from "./act-goal-observation.js";
 import { reassessGoal } from "./act-goal-reassessment.js";
 import { ContractError } from "../security/validation.js";
+import { confirmNavigation } from "./act-navigation-confirmation.js";
 
 export const finishGoalFeedback = async (opts: {
   dependencies: ActStepDependencies;
@@ -89,7 +90,14 @@ export const finishGoalFeedback = async (opts: {
         reassessments,
         ...(reason ? { reason } : {}),
       });
-    if (actionOutcome(session) !== "VERIFIED") return finish();
+    if (active && bound && current)
+      confirmNavigation(session, active, scope, report, current);
+    if (
+      actionOutcome(session) !== "VERIFIED" &&
+      report.status !== "completed" &&
+      (!session.executionEvidence?.at(-1)?.navigation_binding || current)
+    )
+      return finish();
     if (!bound)
       return finish(
         Date.now() >= deadline

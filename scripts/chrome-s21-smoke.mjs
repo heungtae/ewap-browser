@@ -1,9 +1,6 @@
-import {
-  verifyS21Ui,
-  s21BuildHash,
-  s21Completion,
-  verifyS21Result,
-} from "./chrome-s21-ui.mjs";
+import { countS22ApprovalCards } from "./chrome-s22-settings.mjs";
+import { s21BuildHash } from "./chrome-s21-ui.mjs";
+import { finishS21Case } from "./chrome-s21-case-result.mjs";
 import { s21Html, s21Label } from "./chrome-s21-fixture.mjs";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -71,10 +68,11 @@ try {
       let settled = false;
       while (Date.now() < deadline) {
         await sleep(150);
-        await evaluate(
-          harness.panel,
-          `(()=>{for(const label of ['일반 한 단계 실행','이번 요청에 허용','계획 승인','이번 단계 실행','이번만 허용','확인하고 실행']){for(const c of [...document.querySelectorAll('.event-card')].filter(c=>c.dataset.testSeen!=='1')){const b=[...c.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes(label));if(b){c.dataset.testSeen='1';b.click();break}}}return true})()`,
-        );
+        if (process.env.S22_MODE !== "full")
+          await evaluate(
+            harness.panel,
+            `(()=>{for(const label of ['일반 한 단계 실행','이번 요청에 허용','계획 승인','이번 단계 실행','이번만 허용','확인하고 실행']){for(const c of [...document.querySelectorAll('.event-card')].filter(c=>c.dataset.testSeen!=='1')){const b=[...c.querySelectorAll('button')].find(b=>!b.disabled&&b.textContent.includes(label));if(b){c.dataset.testSeen='1';b.click();break}}}return true})()`,
+          );
         const recent = calls.slice(start);
         const goal = recent
           .flatMap((c) => c.response)
@@ -83,70 +81,24 @@ try {
           harness.panel,
           "document.querySelector('#chat-send').dataset.state==='send'",
         );
+        if (idle && recent.some((c) => c.upstream_status >= 400))
+          throw new Error(
+            `UPSTREAM_HTTP_${recent.find((c) => c.upstream_status >= 400).upstream_status}`,
+          );
         if (idle && (goal || recent.length >= 2)) {
           settled = true;
           break;
         }
       }
       assert.ok(settled, `${id}: request did not settle`);
-      const recent = calls.slice(start);
-      const mutationCount = await evaluate(harness.page, "window.clicks");
-      const checked = await evaluate(
-        harness.page,
-        "document.getElementById('option').getAttribute('aria-checked') ?? String(document.getElementById('option').checked)",
-      );
-      const assessmentCalls = recent.filter((c) =>
-        c.tools.some((t) => t.name === "assess_action_result"),
-      ).length;
-      const elementCalls = recent.filter((c) =>
-        c.tools.some((t) => t.name === "assess_element"),
-      ).length;
-      const finalGoal = recent
-        .flatMap((c) => c.response)
-        .findLast((c) => c.name === "report_goal_status")?.goal;
-      if (id.startsWith("generic-")) {
-        const receipt = recent
-          .flatMap((call) => call.returned)
-          .find((result) => result.execution);
-        assert.equal(receipt?.dispatched, true);
-        assert.equal(receipt?.outcome, "UNKNOWN");
-        assert.equal(receipt?.code, "POSTCONDITION_UNVERIFIED");
-      }
-      const accepted = await s21Completion(harness);
-      verifyS21Result({
-        id,
-        model,
-        elementCalls,
-        mutationCount,
-        assessmentCalls,
-        finalGoal,
-        checked,
-        accepted,
-      });
-      const text = await evaluate(
-        harness.panel,
-        "document.querySelector('#status').textContent",
-      );
-      if (finalGoal === "completed")
-        assert.ok(
-          text.includes("목표의 완료를 확인"),
-          `Current completion UI: ${text}`,
-        );
-      else assert.ok(!text.includes("목표의 완료를 확인"));
-      const visibleCompletion = await verifyS21Ui(harness, finalGoal);
       results.push({
-        id,
-        pass: true,
-        mutationCount,
-        checked,
-        assessmentCalls,
-        elementCalls,
-        finalGoal,
-        completionUi: text,
-        visibleCompletion,
-        accepted,
+        ...(await finishS21Case({
+          harness,
+          recent: calls.slice(start),
+          id,
+          model,
+        })),
         latencyMs: Date.now() - started,
-        calls: recent,
       });
       if (process.env.S21_SCREENSHOT)
         await writeFile(
@@ -163,8 +115,18 @@ try {
           ),
         );
     } catch (error) {
+      const approvalCards = process.env.S22_MODE
+        ? await countS22ApprovalCards(harness.panel)
+        : undefined;
+      if (process.env.S22_MODE === "full")
+        assert.equal(
+          approvalCards,
+          0,
+          "Full Permission showed an approval card",
+        );
       results.push({
         id,
+        approvalCards,
         pass: false,
         error: error.message,
         calls: calls.slice(start),

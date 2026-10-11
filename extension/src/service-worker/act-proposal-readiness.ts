@@ -1,3 +1,5 @@
+import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
+import type { AgentPreferences } from "../policy/permission-mode.js";
 import { fail } from "../security/validation.js";
 import type { ModelActionProposal } from "../contracts/types.js";
 import type { Role } from "../contracts/core-types.js";
@@ -28,6 +30,7 @@ type Target = {
 };
 type Dependencies = {
   actionView(session: ActSession, proposal: ParsedActProposal): ChatActionView;
+  preferences?(): AgentPreferences;
   coordinator: ServiceCoordinator;
   publish(runId: string, event: ChatEventPayload): void;
 };
@@ -252,6 +255,37 @@ export const prepareActProposal = (
       confirmationId: next.confirmationId,
       confirmationNonce: next.confirmationNonce,
     };
+    const decision = approvalDecision(
+      "risk_confirmation",
+      dependencies.preferences?.(),
+    );
+    if (decision === "deny") return fail("POLICY_DENIED");
+    if (decision === "auto") {
+      createApprovalGrant({
+        record: (event) => dependencies.publish(run.id, event),
+        category: "risk_confirmation",
+        source: "policy",
+        binding: `${session.id}:${next.confirmationId}`,
+        current: () =>
+          !session.requestContext?.signal.aborted &&
+          run.phase === "AWAITING_CONFIRMATION",
+        ...(dependencies.preferences
+          ? { preferences: dependencies.preferences() }
+          : {}),
+      })();
+      delete session.awaitingConfirmation;
+      dependencies.publish(run.id, {
+        type: "assistant_delta",
+        text: "중요 작업 확인이 설정에 따라 자동 승인됨.",
+      });
+      return {
+        ready: dependencies.coordinator.mutations.confirm(
+          run,
+          next.confirmationId,
+          next.confirmationNonce,
+        ),
+      };
+    }
     dependencies.publish(run.id, {
       type: "confirmation_required",
       action: dependencies.actionView(session, proposal),

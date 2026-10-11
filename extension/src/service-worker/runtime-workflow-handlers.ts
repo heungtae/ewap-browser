@@ -97,6 +97,13 @@ export const workflowSelectionMessageHandler =
     active: readActiveSnapshot,
     recordedCurrent: workflowCatalogRuntime.recordedCurrent,
     persist: workflowSelections.persist,
+    startApproved: async (selection, candidate, respond) => {
+      const current = workflowSelections.selection(selection.id);
+      const selected = current?.candidates.get(candidate.candidate.id);
+      if (!current || !selected)
+        throw new ContractError("WORKFLOW_STATE_MISMATCH");
+      await workflowActions.start(current, selected, respond);
+    },
     safeFailure,
   });
 export const previewMessageHandler = createPreviewMessageHandler({

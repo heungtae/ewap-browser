@@ -4,6 +4,12 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S22 — 2026-10-11
+
+**구현·검증 진행 중.** Options와 공통 승인 정책의 구현 및 회귀 테스트를 추가했다.
+[검증 기록](evidence/s21-s22-precommit-2026-10-11.md)에 현재 확인 범위와 live 실패를 보존한다.
+[S22](sprints/s22-unified-approval-policy.md)의 전체 qualification은 아직 완료하지 않았다.
+
 ## Browser Act S21 — 2026-10-11
 
 **Browser-local 구현 완료; qualification 제한 있음.**

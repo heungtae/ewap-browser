@@ -1,3 +1,4 @@
+import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
 import { storeSubmittedPlan } from "./act-plan-store.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
 import { assertRequestActive } from "./request-context.js";
@@ -101,6 +102,27 @@ export const runPlanSubmissionTurns = async (opts: {
       type: "assistant_delta",
       text: `계획: ${plan.input.goal}\n근거 범위: ${plan.input.coverage_note}\n출처: ${plan.input.provenance}\n${plan.input.origin_diff ?? ""}\n${plan.input.steps.map((step, index) => `${index + 1}. ${step.intent} [${step.capability}]\n입력: ${step.user_input ?? "없음"}\n부작용: ${(step.side_effects ?? []).join(", ") || "미기재"}\n검증: ${step.postcondition}`).join("\n")}\n계획 승인 후에도 각 동작의 승인과 권한 확인이 필요합니다.`,
     });
+    const decision = approvalDecision(
+      "plan_approval",
+      dependencies.preferences(),
+    );
+    if (decision === "deny") return fail("POLICY_DENIED");
+    if (decision === "auto") {
+      createApprovalGrant({
+        record: (event) => dependencies.publish(run.id, event),
+        category: "plan_approval",
+        source: "policy",
+        preferences: dependencies.preferences(),
+        binding: `${session.id}:${plan.reviewId}:${plan.revision}`,
+        current: () =>
+          session.plan === plan && !session.requestContext?.signal.aborted,
+      })();
+      dependencies.publish(run.id, {
+        type: "assistant_delta",
+        text: "계획이 설정에 따라 자동 승인됨.",
+      });
+      return { review: await dependencies.executeApprovedProposal(session) };
+    }
     dependencies.publish(run.id, {
       type: "action_review_required",
       action: {

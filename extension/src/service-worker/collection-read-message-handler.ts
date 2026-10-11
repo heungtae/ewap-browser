@@ -1,3 +1,4 @@
+import { approvalToolPermission } from "./approval-runtime.js";
 import type { Capability } from "../policy/permission-manager.js";
 import type { BrowserChromeApi, BrowserSender } from "./browser-api.js";
 import { CollectionReadOrchestrator } from "./collection-read-orchestrator.js";
@@ -264,7 +265,8 @@ export const createCollectionReadMessageHandler = (
         respond(dependencies.safeFailure("PAGE_SCOPE_STALE"));
         return;
       }
-      const permission = dependencies.permissions.check(
+      const permission = approvalToolPermission(
+        dependencies.permissions,
         "collection_read",
         selected.origin,
         selected.runId,
