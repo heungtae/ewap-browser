@@ -1,8 +1,8 @@
 import { approvalLabels } from "../policy/approval-policy.js";
 import {
-  approvalModeLabel,
-  validateApprovalPolicy,
-} from "../policy/approval-policy.js";
+  observeApprovalMode,
+  type PreferenceChanges,
+} from "./approval-mode-sync.js";
 import { actCompletionView } from "./act-completion-view.js";
 import {
   requestVisionPermission,
@@ -55,6 +55,7 @@ type BrowserTabs = {
 const chromeApi = (
   globalThis as typeof globalThis & {
     chrome?: {
+      storage?: { onChanged: PreferenceChanges };
       permissions?: VisionPermissions;
       runtime: BrowserRuntime;
       tabs?: BrowserTabs;
@@ -1465,7 +1466,6 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
       stoppedRuns.add(event.run_id);
       return;
     }
-    applyPermissionMode(event.permission_mode);
     setActivityStatus(runStartActivityLabel(event.mode));
     setRunActive(true);
     setStatus("응답을 생성하는 중입니다.");
@@ -2041,26 +2041,10 @@ chatInput?.addEventListener("keydown", (event) => {
 });
 void recoverChatEvents();
 window.addEventListener("focus", () => void recoverChatEvents());
-void runtime
-  ?.sendMessage({ kind: "AGENT_PREFERENCES_GET" })
-  .then((response) => {
-    const preferences =
-      typeof response === "object" && response !== null
-        ? (
-            response as {
-              preferences?: {
-                permission_mode?: unknown;
-                approval_policy?: unknown;
-              };
-            }
-          ).preferences
-        : undefined;
-    if (typeof preferences?.permission_mode === "string")
-      applyPermissionMode(
-        preferences.approval_policy === undefined
-          ? preferences.permission_mode
-          : approvalModeLabel(
-              validateApprovalPolicy(preferences.approval_policy),
-            ),
-      );
-  });
+observeApprovalMode(
+  runtime
+    ? () => runtime.sendMessage({ kind: "AGENT_PREFERENCES_GET" })
+    : undefined,
+  chromeApi?.storage?.onChanged,
+  applyPermissionMode,
+);
