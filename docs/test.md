@@ -295,6 +295,21 @@ LIVE_PROVIDER=openai S21_LIVE_MODEL=gpt-6-luna S21_CASES=normal,delayed,replacem
 실제 클릭 수·상태·현재 완료 UI·latency를 보존한다. fixture의 성공은 운영 사이트 성공이 아니다.
 [실행 증거](evidence/s21-assessment-2026-10-11.md)를 참조한다.
 
+## S23 페이지 메서드 호출 검증
+
+버전 변경 없는 build 후 통제 Chrome을 실행한다. 기본 실행은 fixture Provider를 쓰며,
+`S23_LIVE_MODEL`을 지정하면 실제 Provider에 같은 요청을 보낸다. Full Permission은
+검증 프로필에 적용되며, 보고서는 method call ID·dispatch·invocation·호출 횟수만 저장한다.
+
+```bash
+CHROME_FOR_TESTING_BIN=/path/to/chrome S23_REPORT=/tmp/s23.json pnpm test:chrome-s23
+CHROME_FOR_TESTING_BIN=/path/to/chrome S23_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free S23_REPORT=/tmp/s23-live.json pnpm test:chrome-s23
+```
+
+OpenRouter가 사용 불가하면 `LIVE_PROVIDER=openai S23_LIVE_MODEL=gpt-6-luna`와
+`OPENAI_API_KEY`를 사용한다. 통제 fixture 성공은 운영 사이트나 업무 서버의 상태를
+검증하지 않는다. raw 반환값과 credential은 evidence report에 저장하지 않는다.
+
 ## 이동 UNKNOWN 후 완료 확인 회귀
 
 ```bash

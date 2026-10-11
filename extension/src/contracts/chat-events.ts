@@ -203,9 +203,13 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
   if (value.type === "source_consent_required") {
     if (
       (value.purpose !== undefined &&
-        !["source", "component-scroll", "component-vision"].includes(
-          String(value.purpose),
-        )) ||
+        ![
+          "source",
+          "component-scroll",
+          "component-vision",
+          "runtime-methods",
+          "runtime-result",
+        ].includes(String(value.purpose))) ||
       typeof value.request_id !== "string" ||
       typeof value.host !== "string" ||
       !Number.isInteger(value.resource_count) ||
@@ -225,7 +229,9 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
             purpose: value.purpose as
               | "source"
               | "component-scroll"
-              | "component-vision",
+              | "component-vision"
+              | "runtime-methods"
+              | "runtime-result",
           }),
     };
   }

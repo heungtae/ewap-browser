@@ -4,6 +4,7 @@ export const CAPABILITIES = [
   "navigate",
   "page_api",
   "page_api_read",
+  "page_method",
   "click",
   "type",
   "network_write",
@@ -84,6 +85,8 @@ export class PermissionManager {
     decision: PermissionDecision,
   ): void {
     if (!CAPABILITIES.includes(capability)) fail("INVALID_ARGUMENT");
+    if (capability === "page_method" && decision === "always")
+      fail("POLICY_DENIED");
     const host = permissionHost(rawUrl);
     const key = this.key(capability, host);
     if (decision === "deny" && (isIp(host) || host === "localhost")) {
@@ -163,6 +166,7 @@ export class PermissionManager {
   private validateStored(entry: StoredPermission): StoredPermission {
     if (
       !CAPABILITIES.includes(entry.capability) ||
+      entry.capability === "page_method" ||
       !/^[a-z0-9.-]+$/.test(entry.host) ||
       entry.host === "localhost" ||
       isIp(entry.host) ||

@@ -26,8 +26,12 @@ import {
 import {
   executeActContent,
   executePageApi as dispatchPageApi,
+  discoverPageMethods as discoverPageMethodsRuntime,
+  executePageMethod as dispatchPageMethod,
 } from "./runtime-execution.js";
 import type { PageApiIntent } from "../contracts/page-api-types.js";
+import type { PageMethodIntent } from "../contracts/page-method-types.js";
+import { redactForChat } from "../security/chat-redaction.js";
 import {
   chatRunLifecycle,
   chatRequests,
@@ -165,6 +169,15 @@ const proposalExecutorRef: {
 } = {};
 const actStepRunner = createActStepRunner({
   requestContext: (tabId) => chatRequests.activeContext(tabId),
+  discoverPageMethods: async (active) => {
+    const document = registered.get(registrationKey(active.tabId, 0));
+    if (!document || document.epoch !== active.snapshot.document_epoch)
+      return [];
+    return (await discoverPageMethodsRuntime(
+      active.tabId,
+      document.documentId,
+    )) as import("./page-method-main.js").MainPageMethodCandidate[];
+  },
   workflowCandidates: async (active, session) => {
     const resolved = await resolveProfileFor(active).catch(() => undefined);
     const profile = resolved?.profile;
@@ -327,6 +340,103 @@ const proposalExecutor = createActProposalExecutor({
       approval_digest: proposal.approvalDigest,
     };
     return dispatchPageApi(intent, active.path, context);
+  },
+  executePageMethod: async (run, session, proposal) => {
+    const context = session.requestContext;
+    if (!context)
+      return {
+        ok: false,
+        outcome: "FAILED",
+        dispatch: "not_dispatched",
+        code: "POLICY_DENIED",
+      };
+    context.check();
+    const active = await readActiveSnapshot("all_dom", run.tabId);
+    context.check();
+    const document = registered.get(registrationKey(run.tabId, 0));
+    const scope = pageScopes.get(run.tabId);
+    if (
+      !document ||
+      !scope ||
+      active.origin !== session.origin ||
+      active.snapshot.document_epoch !== run.documentEpoch ||
+      session.pageMethodScope?.document_epoch !== run.documentEpoch ||
+      session.pageMethodScope.page_scope_epoch !== scope.page_scope_epoch ||
+      !session.pageMethods?.some(
+        (item) => item.method_ref === proposal.method.method_ref,
+      )
+    )
+      return {
+        ok: false,
+        outcome: "FAILED",
+        dispatch: "not_dispatched",
+        code: "PAGE_SCOPE_STALE",
+      };
+    const intent: PageMethodIntent = {
+      kind: "page_method",
+      run_id: run.id,
+      tab_id: run.tabId,
+      document_id: document.documentId,
+      document_epoch: run.documentEpoch,
+      page_scope_epoch: scope.page_scope_epoch,
+      origin: active.origin,
+      request_generation: proposal.requestGeneration,
+      source_evidence_id: proposal.sourceEvidenceId,
+      ...(proposal.planId ? { plan_id: proposal.planId } : {}),
+      ...(proposal.planRevision === undefined
+        ? {}
+        : { plan_revision: proposal.planRevision }),
+      method: proposal.method,
+      arguments: proposal.arguments,
+      arguments_digest: proposal.argumentsDigest,
+      capability: "page_method",
+      approval_digest: proposal.approvalDigest,
+    };
+    const result = await dispatchPageMethod(intent, context);
+    if (result.return_data?.available) {
+      const allowed = await requestSourceConsent({
+        runId: run.id,
+        record: (event) => chatRunLifecycle.publish(run.id, event),
+        category: "runtime_data_disclosure",
+        preferences: agentPreferences,
+        ...(context.signal ? { signal: context.signal } : {}),
+        current: () =>
+          !context.signal.aborted &&
+          session.runId === run.id &&
+          coordinator.runs.byId(run.id)?.phase !== "TERMINAL",
+        publish: (requestId) =>
+          chatRunLifecycle.publish(run.id, {
+            type: "source_consent_required",
+            request_id: requestId,
+            resource_count: 1,
+            purpose: "runtime-result",
+            host: new URL(active.origin).host,
+          }),
+      });
+      if (!allowed)
+        return {
+          ...result,
+          return_data: { available: false },
+          outcome: "UNKNOWN",
+          ok: false,
+        };
+      const raw = JSON.stringify(result.return_data.value) ?? "undefined";
+      return {
+        ...result,
+        return_data: {
+          available: true,
+          value: redactForChat(raw, 8192),
+          truncated: result.return_data.truncated,
+        },
+        outcome: "UNKNOWN",
+        ok: false,
+      };
+    }
+    return {
+      ...result,
+      outcome: result.dispatch === "dispatched" ? "UNKNOWN" : "FAILED",
+      ok: false,
+    };
   },
   publish: chatRunLifecycle.publish,
   publishTerminal: publishActTerminal,

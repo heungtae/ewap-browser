@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { build } from "esbuild";
-import { instrumentMethodSource } from "./method-trace-instrumentation.mjs";
+import {
+  instrumentMethodSource,
+  isTraceSource,
+} from "./method-trace-instrumentation.mjs";
 import { resolve } from "node:path";
 
 const source = `
@@ -67,3 +70,15 @@ for (const method of result.inventory)
 console.log(
   `Method instrumentation PASS: ${result.inventory.length} methods, async/constructor/getter/callback/branch/caught error/masking`,
 );
+
+for (const file of [
+  "page-method-discovery-main.ts",
+  "page-method-invoke-main.ts",
+  "page-api-main.ts",
+]) {
+  assert.equal(
+    isTraceSource(resolve("extension/src/service-worker", file)),
+    false,
+    `Serialized MAIN-world helper must have no trace closure: ${file}`,
+  );
+}

@@ -37,6 +37,7 @@ export const assessPendingAction = async (
 
   if (
     proposal.tool === "call_page_api" ||
+    proposal.tool === "call_page_method" ||
     proposal.tool === "navigate" ||
     !session.assessmentBaseline ||
     proposal.definition?.effect !== "local-ui-only" ||

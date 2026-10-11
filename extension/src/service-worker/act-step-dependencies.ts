@@ -20,6 +20,9 @@ export type ActStepDependencies = {
   provider: ProviderRuntime;
   preferences(): AgentPreferences;
   readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
+  discoverPageMethods?(
+    active: ActivePage,
+  ): Promise<import("./page-method-main.js").MainPageMethodCandidate[]>;
   threadContext(tabId: number): ProviderMessage[];
   pageScope(active: ActivePage): PageScope;
   bindRun(runId: string, tabId: number, scope: PageScope): void;

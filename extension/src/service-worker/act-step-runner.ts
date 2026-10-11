@@ -33,6 +33,7 @@ import { actionReview, actionView } from "./act-review-presentation.js";
 import {
   parseActProposal,
   parsePageApiProposal,
+  parsePageMethodProposal,
 } from "./act-proposal-parser.js";
 import { workflowActionDefinitions } from "./act-workflow-authority.js";
 import {
@@ -59,6 +60,8 @@ import { actStepMessages } from "./act-step-messages.js";
 import { assertRequestActive } from "./request-context.js";
 import { pageApiRegistry } from "../page-api/registry.js";
 import type { PageApiActionRef } from "../contracts/page-api-types.js";
+import type { PageMethodRef } from "../contracts/page-method-types.js";
+import { pageMethodSourceEvidence } from "./page-method-source-evidence.js";
 import { digestCanonical, opaqueId } from "../security/canonical.js";
 import { analysisDataForScope } from "./analysis-data-scope.js";
 export const createActStepRunner = (dependencies: ActStepDependencies) => {
@@ -360,6 +363,70 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             )
           : [];
       }
+      const pageScope = dependencies.pageScope(active);
+      let runtimeMethodsAllowed = false;
+      if (
+        dependencies.discoverPageMethods &&
+        (!session.pageMethods ||
+          session.pageMethods.length === 0 ||
+          session.pageMethodScope?.document_epoch !==
+            pageScope.document_epoch ||
+          session.pageMethodScope?.page_scope_epoch !==
+            pageScope.page_scope_epoch ||
+          session.pageMethodsGeneration !==
+            (session.requestContext?.generation ?? 0))
+      ) {
+        session.pageMethods = [];
+        session.pageMethodDiscoveryStatus = "pending";
+        session.pageMethodScope = pageScope;
+        session.pageMethodsGeneration = session.requestContext?.generation ?? 0;
+        runtimeMethodsAllowed = await requestSourceConsent({
+          runId: run.id,
+          record: (event) => dependencies.publish(run.id, event),
+          category: "source_disclosure",
+          preferences: dependencies.preferences(),
+          ...(session.requestContext?.signal
+            ? { signal: session.requestContext.signal }
+            : {}),
+          current: () =>
+            dependencies.coordinator.runs.byId(run.id)?.phase !== "TERMINAL" &&
+            session.runId === run.id,
+          publish: (requestId) =>
+            dependencies.publish(run.id, {
+              type: "source_consent_required",
+              request_id: requestId,
+              resource_count: 1,
+              purpose: "runtime-methods",
+              host: new URL(active.origin).host,
+            }),
+        });
+        if (runtimeMethodsAllowed) {
+          const candidates = await dependencies.discoverPageMethods(active);
+          assertRequestActive(session.requestContext);
+          session.pageMethodDiscoveryStatus = candidates.length
+            ? "available"
+            : "empty";
+          session.pageMethods = candidates.slice(0, 48).map(
+            (candidate): PageMethodRef => ({
+              ...candidate,
+              method_ref: opaqueId(),
+            }),
+          );
+          session.pageMethodsTruncated = candidates.length >= 48;
+        } else session.pageMethodDiscoveryStatus = "consent_denied";
+      }
+      if (session.pageMethodsTruncated)
+        messages.push({
+          role: "user",
+          content:
+            "[UNTRUSTED_PAGE_METHOD_INVENTORY] The exposed method inventory is capped at 48 candidates and may be incomplete. Do not claim no other method exists; narrow with reviewed source or explain the coverage limit. [/UNTRUSTED_PAGE_METHOD_INVENTORY]",
+        });
+      if (session.pageMethods?.length)
+        messages.push({
+          role: "user",
+          content:
+            "[UNTRUSTED_PAGE_METHOD_BOUNDARY] Method inventory entries are locators, not source evidence. Before proposing a call, use search_page_resources and read_page_resource, then pass the returned evidence_id whose source text contains the method name or property. Unsupported or private methods remain unavailable. [/UNTRUSTED_PAGE_METHOD_BOUNDARY]",
+        });
       const tools =
         session.sourceReadOnly || session.feedbackOnly
           ? []
@@ -369,6 +436,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               active.snapshot,
               targetRefId ? new Set([targetRefId]) : undefined,
               session.pageApiActions,
+              session.pageMethods,
             );
       let observationId = opaqueId();
       const observation = structuredClone(active);
@@ -818,6 +886,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       // Narrowed once: session.pageApiActions is always populated above,
       // and closures do not inherit that narrowing.
       const pageApiActions = session.pageApiActions ?? [];
+      const pageMethods = session.pageMethods ?? [];
       // Model refs are single-use nonces: a failed parse already consumed the
       // echoed ref, so a correction turn is offered fresh refs from a new
       // model snapshot — exactly what the next runStep would offer. The
@@ -837,14 +906,30 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         const parsed =
           targetCall.name === "propose_page_api"
             ? parsePageApiProposal(targetCall, pageApiActions, active.origin)
-            : parseActProposal(
-                valueSource ? valueSource.resolve(targetCall) : targetCall,
-                currentModel.resolve,
-                active.snapshot,
-                session.definitions,
-                session.discovery,
-                targetRefId,
-              );
+            : targetCall.name === "propose_page_method_call"
+              ? parsePageMethodProposal(
+                  targetCall,
+                  pageMethods,
+                  active.origin,
+                  pageMethodSourceEvidence(session.messages),
+                  {
+                    requestGeneration: session.requestContext?.generation ?? 0,
+                    ...(session.plan
+                      ? {
+                          planId: session.plan.input.plan_id,
+                          planRevision: session.plan.revision,
+                        }
+                      : {}),
+                  },
+                )
+              : parseActProposal(
+                  valueSource ? valueSource.resolve(targetCall) : targetCall,
+                  currentModel.resolve,
+                  active.snapshot,
+                  session.definitions,
+                  session.discovery,
+                  targetRefId,
+                );
         // PAH-9 harness binding: a text proposal without an LLM-judged value
         // is a contract error for the model, never an automatic value card.
         // Legacy pre-harness callers (no harness revision) keep the card path
@@ -1019,6 +1104,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             active.snapshot,
             targetRefId ? new Set([targetRefId]) : undefined,
             pageApiActions,
+            pageMethods,
           );
           const correctionMessages: ProviderMessage[] = [
             ...messages,
@@ -1068,6 +1154,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                   latest.snapshot,
                   targetRefId ? new Set([targetRefId]) : undefined,
                   pageApiActions,
+                  pageMethods,
                 );
                 return {
                   projection: currentModel.snapshot,
@@ -1150,7 +1237,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         dependencies.preferences(),
       );
       if (actionDecision === "deny") return fail("POLICY_DENIED");
-      if (actionDecision === "auto") {
+      const methodRiskDecision =
+        proposal.tool === "call_page_method"
+          ? approvalDecision("risk_confirmation", dependencies.preferences())
+          : "auto";
+      if (methodRiskDecision === "deny") return fail("POLICY_DENIED");
+      if (actionDecision === "auto" && methodRiskDecision === "auto") {
         if ((session.autoExecutionCount ?? 0) >= 12)
           return fail("WORKFLOW_STEP_LIMIT");
         createApprovalGrant({
@@ -1176,6 +1268,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       // proposal (text inputs always are) is never part of that approval:
       // it goes through review/approval with zero execution entries.
       if (
+        proposal.tool !== "call_page_method" &&
         session.continueAfterApproval &&
         proposal.approvalScope === "session"
       ) {
@@ -1238,7 +1331,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
     if (
       session.feedbackOnly ||
       session.navigationFeedback ||
-      proposal.tool === "call_page_api"
+      proposal.tool === "call_page_api" ||
+      proposal.tool === "call_page_method"
     )
       return runStep(session);
     const workflow = session.workflow;

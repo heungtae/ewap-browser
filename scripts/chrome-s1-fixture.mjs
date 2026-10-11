@@ -163,7 +163,9 @@ export const createS1Fixture = async (
         return;
       }
       response.writeHead(200, {
-        "content-type": "text/html",
+        "content-type": request.url.endsWith(".js")
+          ? "text/javascript"
+          : "text/html",
         "set-cookie":
           "session=S1_SECRET_COOKIE; Secure; HttpOnly; SameSite=Lax",
       });

@@ -16,7 +16,11 @@ export const recordLocalGoal = (
   verifiedScope?: PageScope,
 ): void => {
   delete session.localGoalProof;
-  if (proposal.tool === "call_page_api" || evidence.outcome !== "VERIFIED")
+  if (
+    proposal.tool === "call_page_api" ||
+    proposal.tool === "call_page_method" ||
+    evidence.outcome !== "VERIFIED"
+  )
     return;
   const completion = proposal.definition?.completion;
   // Only a trusted full-request declaration can bypass model goal reasoning.

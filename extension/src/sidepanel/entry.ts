@@ -1231,7 +1231,9 @@ const renderPermission = (
       ? "입력"
       : capability === "navigate"
         ? "화면 전환"
-        : "클릭";
+        : capability === "page_method"
+          ? "페이지 메서드 호출"
+          : "클릭";
   const item = card(
     "permission",
     "권한 확인",
@@ -1265,11 +1267,10 @@ const renderPermission = (
       showFailure(error instanceof Error ? error.message : undefined);
     }
   };
-  row.append(
-    actionButton("이번만 허용", "primary", () => decide("once")),
-    actionButton("항상 허용", "", () => decide("always")),
-    actionButton("거부", "danger", () => decide("deny")),
-  );
+  row.append(actionButton("이번만 허용", "primary", () => decide("once")));
+  if (capability !== "page_method")
+    row.append(actionButton("항상 허용", "", () => decide("always")));
+  row.append(actionButton("거부", "danger", () => decide("deny")));
   append(item);
   trackDecisionCard(runId, item);
   setStatus("실행 권한이 필요합니다.");
@@ -1570,12 +1571,20 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
         ? "Component 스크롤 읽기 승인"
         : event.purpose === "component-vision"
           ? "화면 이미지 전달 동의"
-          : "페이지 소스 전달 동의",
+          : event.purpose === "runtime-methods"
+            ? "페이지 메서드 목록 전달 동의"
+            : event.purpose === "runtime-result"
+              ? "페이지 메서드 반환 자료 전달 동의"
+              : "페이지 소스 전달 동의",
       event.purpose === "component-scroll"
         ? `${event.host}의 선택한 component를 제한된 스크롤로 읽고 원래 위치로 복구합니다. 수집 범위와 복구 결과를 확인합니다.`
         : event.purpose === "component-vision"
           ? `${event.host}의 현재 화면 이미지를 모델에 전달합니다. Chrome 화면 캡처 권한도 요청합니다. 민감한 화면은 지원하지 않으며 이미지를 동작 좌표로 사용하지 않습니다.`
-          : `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
+          : event.purpose === "runtime-methods"
+            ? `${event.host}에서 확인한 메서드 이름·경로·인자 수를 모델에 전달합니다. 페이지 메서드 실행은 별도의 검토를 거칩니다.`
+            : event.purpose === "runtime-result"
+              ? `${event.host}의 페이지 메서드 반환 자료를 제한·마스킹한 뒤 모델에 전달합니다.`
+              : `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
     );
     const row = actionRow(item);
     let selected = false;

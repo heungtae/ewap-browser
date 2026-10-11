@@ -93,7 +93,12 @@ export type ChatEventPayload =
       type: "source_consent_required";
       request_id: string;
       resource_count: number;
-      purpose?: "source" | "component-scroll" | "component-vision";
+      purpose?:
+        | "source"
+        | "component-scroll"
+        | "component-vision"
+        | "runtime-methods"
+        | "runtime-result";
       host: string;
     }
   | {

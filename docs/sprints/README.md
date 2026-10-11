@@ -15,9 +15,9 @@
 ## 신규 구현 계획
 
 - [Browser Act S23 — Provider의 페이지 스크립트 분석과 메서드 호출](s23-provider-page-method-execution.md)
-  — Planned, 2026-10-11. 사이트별 adapter 없이 Provider의 소스 분석·동적 메서드
-  제안·호출 결과 반환을 연결하는 C1~C8 계획이다. 기존 Sprint와의 충돌/보존 경계
-  X01~X12, 선행 결정과 R01~R20 검증을 포함한다.
+  — In Progress, 2026-10-12. 빌드 계측으로 발생한 Chrome inventory 누락을 수정했다.
+  통제 Chrome 호출·결과 continuation은 통과했으며 실제 Provider·R01~R20 qualification은 미완료다.
+  기존 Sprint와의 충돌/보존 경계 X01~X12를 추적한다.
 - [Browser Agent S22 — 통합 승인 정책과 Full Permission 자동 실행](s22-unified-approval-policy.md)
   — Planned, 2026-10-11. Options의 승인 모드·항목별 설정을 작업 제안·계획·권한·중요 확인·
   자료 전송 동의에 연결하는 C1~C8 계획이다. 기존 설정의 안전한 이전과 자동 실행 검증을 포함한다.

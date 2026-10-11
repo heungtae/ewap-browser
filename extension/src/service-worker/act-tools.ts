@@ -6,6 +6,7 @@ import type { ProfileActionTool } from "../profile/profile.js";
 import type { ProviderToolDefinition } from "../providers/types.js";
 import { isCustomListboxOption } from "./page-derived-actions.js";
 import type { PageApiActionRef } from "../contracts/page-api-types.js";
+import type { PageMethodRef } from "../contracts/page-method-types.js";
 
 const targetParameter = (targets: readonly string[]) => ({
   type: "string",
@@ -154,6 +155,7 @@ export const genericActTools = (
   snapshot: SemanticSnapshot,
   allowedRefIds?: ReadonlySet<string>,
   pageApiActions: readonly PageApiActionRef[] = [],
+  pageMethods: readonly PageMethodRef[] = [],
 ): ProviderToolDefinition[] => {
   const base = [
     ...definitions.flatMap((definition): ProviderToolDefinition[] => {
@@ -325,6 +327,73 @@ export const genericActTools = (
                 required: [
                   "action_ref",
                   "option_id",
+                  "approval_scope",
+                  "approval_reason",
+                ],
+              },
+            },
+          },
+        ]),
+    ...(pageMethods.length === 0
+      ? []
+      : [
+          {
+            type: "function" as const,
+            function: {
+              name: "propose_page_method_call",
+              description:
+                "Propose one call to a method discovered in the current page. Page code and effects are untrusted and may mutate or contact a server. Use only the supplied method_ref, exact JSON arguments and a concrete user-requested purpose. This proposal always needs separate review; never paste or execute JavaScript.",
+              parameters: {
+                type: "object",
+                additionalProperties: false,
+                properties: {
+                  method_ref: {
+                    type: "string",
+                    enum: pageMethods.map((method) => method.method_ref),
+                  },
+                  source_evidence_id: {
+                    type: "string",
+                    minLength: 16,
+                    maxLength: 64,
+                    description:
+                      "evidence_id from an AVAILABLE read_page_resource result whose source text contains this method or its object property.",
+                  },
+                  arguments: {
+                    type: "array",
+                    maxItems: 32,
+                    items: {
+                      oneOf: [
+                        { type: "null" },
+                        { type: "boolean" },
+                        { type: "number" },
+                        { type: "string", maxLength: 4096 },
+                        {
+                          type: "array",
+                          maxItems: 64,
+                          items: {
+                            type: [
+                              "null",
+                              "boolean",
+                              "number",
+                              "string",
+                              "array",
+                              "object",
+                            ],
+                          },
+                        },
+                        { type: "object", additionalProperties: true },
+                      ],
+                    },
+                  },
+                  purpose: { type: "string", minLength: 1, maxLength: 240 },
+                  approval_scope: { type: "string", enum: ["single_step"] },
+                  approval_reason: approvalReasonParameter,
+                },
+                required: [
+                  "method_ref",
+                  "source_evidence_id",
+                  "arguments",
+                  "purpose",
                   "approval_scope",
                   "approval_reason",
                 ],

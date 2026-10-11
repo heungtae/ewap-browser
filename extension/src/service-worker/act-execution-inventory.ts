@@ -22,6 +22,7 @@ export const actExecutionInventory = (opts: {
     propose_set_checked: "click",
     propose_press_key: "click",
     propose_page_api: "page_api",
+    propose_page_method_call: "page_method",
   };
   return {
     read_contracts: opts.readContracts ?? [],
@@ -60,9 +61,11 @@ export const actExecutionInventory = (opts: {
         verification_meaning: "TYPED_ACTION_RESULT_NOT_GOAL_COMPLETION",
         permission: permissions[tool.function.name],
         side_effect:
-          tool.function.name === "propose_navigate"
-            ? "navigation"
-            : "local_ui_mutation",
+          tool.function.name === "propose_page_method_call"
+            ? "unknown_page_method_effect"
+            : tool.function.name === "propose_navigate"
+              ? "navigation"
+              : "local_ui_mutation",
         approval_required: true,
         supported: true,
       })),
@@ -80,8 +83,22 @@ export const actExecutionInventory = (opts: {
       result_supported:
         "typed DOM postcondition only; arbitrary return values UNSUPPORTED",
     })),
-    arbitrary_functions: "UNSUPPORTED",
-    arbitrary_api_arguments: "UNSUPPORTED",
+    page_methods: (opts.session.pageMethods ?? []).map((method) => ({
+      method_ref: method.method_ref,
+      object_path: method.object_path,
+      method_name: method.method_name,
+      arity: method.arity,
+      locator_revision: method.locator_revision,
+      permission: "page_method",
+      side_effect: "unknown; R2 approval required",
+      persistence: "request-local; single-use",
+    })),
+    page_method_discovery: opts.session.pageMethodDiscoveryStatus ?? "pending",
+    page_methods_truncated: opts.session.pageMethodsTruncated ?? false,
+    arbitrary_functions:
+      "Only currently discovered own-property methods are exposed through propose_page_method_call; other functions UNSUPPORTED",
+    arbitrary_api_arguments:
+      "Bounded JSON only; request-local single-use proposal",
     reviewed_readers: opts.readTools.map((tool) => ({
       name: tool.function.name,
       description: tool.function.description,

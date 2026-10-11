@@ -2,6 +2,7 @@ import { createActExecutionRuntime } from "./act-execution-runtime.js";
 import { createActPostconditionVerifier } from "./act-postcondition-verifier.js";
 import { createPageApiObserver } from "./page-api-observer.js";
 import { createPageApiRunner } from "./page-api-runner.js";
+import { createPageMethodRunner } from "./page-method-runner.js";
 import { withDeadline } from "../security/deadline.js";
 import {
   boundedCdp,
@@ -83,3 +84,23 @@ export const { execute: executePageApi } = createPageApiRunner({
   progress: (runId, stage) =>
     chatRunLifecycle.publish(runId, { type: "activity_progress", stage }),
 });
+
+const pageMethodRunner = createPageMethodRunner({
+  ...(chromeApi?.scripting ? { scripting: chromeApi.scripting } : {}),
+  beforeDispatch: (tabId, context) =>
+    chatRequests.beforeDispatch(tabId, context),
+  documentFor: (tabId, frameId) =>
+    registered.get(registrationKey(tabId, frameId)),
+  scope: (tabId) => pageScopes.get(tabId),
+});
+export const discoverPageMethods = async (
+  tabId: number,
+  documentId: string,
+) => {
+  const result = await pageMethodRunner.discover(tabId, documentId);
+  const entry = result.find(
+    (item) => item.frameId === 0 && item.documentId === documentId,
+  )?.result;
+  return Array.isArray(entry) ? entry : [];
+};
+export const executePageMethod = pageMethodRunner.execute;

@@ -1,4 +1,4 @@
-import { approvalDecision } from "./approval-runtime.js";
+import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
 import type { ActCompletion } from "../contracts/act-completion.js";
 import { approveSubmittedPlan, assertApprovedPlan } from "./act-plan-store.js";
 import { fail } from "../security/validation.js";
@@ -23,6 +23,7 @@ import type {
 import type { ActivePage } from "./page-context-runtime.js";
 import type { ActProposal, ActSession } from "./act-session-types.js";
 import type { ParsedPageApiProposal } from "./act-proposal-parser.js";
+import type { ParsedPageMethodProposal } from "./act-proposal-parser.js";
 import { completeActProposal } from "./act-proposal-completion.js";
 import { createActProposalFollowup } from "./act-proposal-followup.js";
 import { prepareActProposal } from "./act-proposal-readiness.js";
@@ -59,6 +60,11 @@ type Dependencies = {
     session: ActSession,
     proposal: ParsedPageApiProposal,
   ): Promise<Execution>;
+  executePageMethod(
+    run: Run,
+    session: ActSession,
+    proposal: ParsedPageMethodProposal,
+  ): Promise<Execution>;
   publish(runId: string, event: ChatEventPayload): void;
   publishTerminal(
     run: Run,
@@ -81,15 +87,17 @@ type Dependencies = {
 const capabilityFor = (
   proposal: ActProposal,
 ): Exclude<Capability, "collection_read" | "page_api_read"> =>
-  proposal.tool === "call_page_api"
-    ? "page_api"
-    : proposal.tool === "navigate"
-      ? "navigate"
-      : proposal.tool === "set_checked_by_ref" ||
-          proposal.tool === "click_by_ref" ||
-          proposal.tool === "press_key_by_ref"
-        ? "click"
-        : "type";
+  proposal.tool === "call_page_method"
+    ? "page_method"
+    : proposal.tool === "call_page_api"
+      ? "page_api"
+      : proposal.tool === "navigate"
+        ? "navigate"
+        : proposal.tool === "set_checked_by_ref" ||
+            proposal.tool === "click_by_ref" ||
+            proposal.tool === "press_key_by_ref"
+          ? "click"
+          : "type";
 
 export const createActProposalExecutor = (dependencies: Dependencies) => {
   const executeProposal = async (
@@ -139,7 +147,8 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
       return fail("POLICY_DENIED");
     const capability = capabilityFor(proposal);
     const pageApi = proposal.tool === "call_page_api";
-    const risk = pageApi ? "R1" : proposal.definition.risk;
+    const pageMethod = proposal.tool === "call_page_method";
+    const risk = pageApi ? "R1" : pageMethod ? "R2" : proposal.definition.risk;
     await authorizeActWithEvidence({
       session,
       run,
@@ -223,6 +232,59 @@ export const createActProposalExecutor = (dependencies: Dependencies) => {
               : "작업 결과를 확인했습니다.",
           failure: "작업을 완료하지 못했습니다.",
           unknown: "페이지 API 호출 뒤 결과를 확정하지 못했습니다.",
+        },
+      );
+    }
+    if (pageMethod) {
+      if (
+        proposal.requestGeneration !==
+          (session.requestContext?.generation ?? 0) ||
+        proposal.planId !== session.plan?.input.plan_id ||
+        proposal.planRevision !== session.plan?.revision
+      )
+        return fail("PAGE_SCOPE_STALE");
+      const riskDecision = approvalDecision(
+        "risk_confirmation",
+        dependencies.preferences(),
+      );
+      if (riskDecision === "deny") return fail("POLICY_DENIED");
+      if (riskDecision === "ask")
+        createApprovalGrant({
+          record: (event) => dependencies.publish(run.id, event),
+          category: "risk_confirmation",
+          source: "user",
+          preferences: dependencies.preferences(),
+          binding: `${session.id}:${run.id}:${proposal.id}`,
+          current: () =>
+            session.proposal === proposal &&
+            session.runId === run.id &&
+            !session.requestContext?.signal.aborted,
+        })();
+      const executed = await dependencies.executePageMethod(
+        run,
+        session,
+        proposal,
+      );
+      const outcome = executed.outcome === "FAILED" ? "FAILED" : "UNKNOWN";
+      dependencies.coordinator.runs.terminal(
+        run.id,
+        outcome,
+        isErrorCode(executed.code) ? executed.code : undefined,
+      );
+      return completeActProposal(
+        dependencies,
+        session,
+        run,
+        proposal,
+        {
+          ...executed,
+          ok: false,
+          outcome,
+        },
+        {
+          success: "메서드 호출 결과를 확인했습니다.",
+          failure: "페이지 메서드를 호출하지 못했습니다.",
+          unknown: "메서드가 반환됐지만 페이지 효과는 확인되지 않았습니다.",
         },
       );
     }

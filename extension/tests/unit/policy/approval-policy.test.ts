@@ -56,7 +56,7 @@ describe("unified approval policy", () => {
   it("rejects unknown versions, missing categories, extra keys and malformed revisions", () => {
     const policy = defaultApprovalPolicy();
     for (const value of [
-      { ...policy, version: 2 },
+      { ...policy, version: 3 },
       { ...policy, categories: {} },
       { ...policy, injected: true },
       { ...policy, revision: -1 },
@@ -66,6 +66,36 @@ describe("unified approval policy", () => {
     expect(() => resolveApproval(policy, "injected" as never)).toThrow(
       "INVALID_ARGUMENT",
     );
+  });
+  it("migrates v1 runtime-result disclosure safely and preserves Full Permission", () => {
+    const v2 = defaultApprovalPolicy();
+    const v1 = {
+      ...v2,
+      version: 1,
+      categories: Object.fromEntries(
+        approvalCategories
+          .filter((category) => category !== "runtime_data_disclosure")
+          .map((category) => [category, "ask"]),
+      ),
+    };
+    expect(validateApprovalPolicy(v1).categories.runtime_data_disclosure).toBe(
+      "ask",
+    );
+    expect(
+      validateApprovalPolicy({ ...v1, mode: "full" }).categories
+        .runtime_data_disclosure,
+    ).toBe("auto");
+    const custom = {
+      ...v1,
+      mode: "custom",
+      categories: { ...v1.categories, source_disclosure: "deny" },
+    };
+    expect(validateApprovalPolicy(custom).categories.source_disclosure).toBe(
+      "deny",
+    );
+    expect(
+      validateApprovalPolicy(custom).categories.runtime_data_disclosure,
+    ).toBe("ask");
   });
   it("preserves stored DENY and custom deny above an existing grant", () => {
     const manager = new PermissionManager();

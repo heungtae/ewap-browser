@@ -14,6 +14,7 @@ export type AuditEvent = {
   capability?:
     | "navigate"
     | "page_api"
+    | "page_method"
     | "click"
     | "type"
     | "network_write"
@@ -81,6 +82,7 @@ export const serializeAudit = (event: AuditEvent): string => {
       ![
         "navigate",
         "page_api",
+        "page_method",
         "click",
         "type",
         "network_write",

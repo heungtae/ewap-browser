@@ -40,6 +40,8 @@ JSON 증거는 각 기록에서 연결한다.
 
 - [S21 추가 판단 구현·검증 — 2026-10-11](s21-assessment-2026-10-11.md): dispatch·freshness·budget·승인·UI, 통제 및 실제 provider 표본과 미검증 범위.
 
+- [S23 Provider 페이지 메서드 구현·통합 확인 — 2026-10-11](s23-provider-page-method-2026-10-11.md): approval/schema/runner 구현 및 회귀 통과. Act inventory가 Chrome에서 비어 승인 호출까지 이어지지 않은 실패와 미검증 범위.
+
 - [ISS-20261011-004 이동 UNKNOWN 후 완료 확인](../issues/records/2026-10-11-navigation-provider-confirmation.md): 목적지 바인딩, 통제 Chrome 수용/거절, 회귀 실행 및 미검증 범위.
 
 - [ISS-20261011-004 URL 진단 검증 — 0.1.103](iss-20261011-004-url-diagnostics-2026-10-11.json): 0.1.102 재현, 명시적 URL 마스킹 제거, 실제 Chrome export에서 URL 보존 및 완료 수용/거절 검증.

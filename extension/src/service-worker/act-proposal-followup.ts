@@ -149,6 +149,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
       !awaiting ||
       !proposal ||
       proposal.tool === "call_page_api" ||
+      proposal.tool === "call_page_method" ||
       !run ||
       run.phase === "TERMINAL" ||
       awaiting.valueKind !== "text" ||
@@ -191,6 +192,7 @@ export const createActProposalFollowup = (dependencies: Dependencies) => {
       !awaiting ||
       !proposal ||
       proposal.tool === "call_page_api" ||
+      proposal.tool === "call_page_method" ||
       !run ||
       run.phase !== "AWAITING_CONFIRMATION" ||
       awaiting.confirmationId !== confirmationId ||

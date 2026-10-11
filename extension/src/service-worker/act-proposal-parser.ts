@@ -17,6 +17,7 @@ import {
 } from "./page-derived-actions.js";
 import type { PageApiActionRef } from "../contracts/page-api-types.js";
 import { pageApiCompletionDigest } from "./page-api-main.js";
+import type { PageMethodRef } from "../contracts/page-method-types.js";
 
 export type ParsedActProposal = {
   id: string;
@@ -46,6 +47,158 @@ export type ParsedPageApiProposal = {
   approvalDigest: string;
   completionDigest: string;
   toolCallId: string;
+};
+
+export type ParsedPageMethodProposal = {
+  id: string;
+  tool: "call_page_method";
+  targetName: string;
+  approvalScope: "single_step";
+  approvalReason: string;
+  purpose: string;
+  method: PageMethodRef;
+  arguments: unknown[];
+  value: string;
+  argumentsDigest: string;
+  approvalDigest: string;
+  toolCallId: string;
+  requestGeneration: number;
+  planId?: string;
+  planRevision?: number;
+  sourceEvidenceId: string;
+};
+
+const boundedJson = (input: unknown): boolean => {
+  let nodes = 0;
+  const visit = (value: unknown, depth: number): boolean => {
+    if (++nodes > 256 || depth > 6) return false;
+    if (
+      value === null ||
+      typeof value === "boolean" ||
+      typeof value === "number"
+    )
+      return true;
+    if (typeof value === "string") return value.length <= 4096;
+    if (Array.isArray(value))
+      return (
+        value.length <= 64 && value.every((item) => visit(item, depth + 1))
+      );
+    if (!isPlainObject(value)) return false;
+    const entries = Object.entries(value);
+    return (
+      entries.length <= 64 &&
+      entries.every(
+        ([key, item]) => key.length <= 100 && visit(item, depth + 1),
+      )
+    );
+  };
+  return visit(input, 0);
+};
+
+const sensitiveJson = (input: unknown): boolean => {
+  if (Array.isArray(input)) return input.some(sensitiveJson);
+  if (!isPlainObject(input)) return false;
+  return Object.entries(input).some(
+    ([key, value]) =>
+      isSensitive("text", key) ||
+      /token|credential|api.?key|authorization/i.test(key) ||
+      sensitiveJson(value),
+  );
+};
+
+export const parsePageMethodProposal = (
+  call: { id: string; name: string; arguments: string },
+  methods: readonly PageMethodRef[],
+  origin: string,
+  sourceEvidence: ReadonlyMap<string, string>,
+  binding: {
+    requestGeneration?: number;
+    planId?: string;
+    planRevision?: number;
+  } = {},
+): ParsedPageMethodProposal => {
+  let value: unknown;
+  try {
+    value = JSON.parse(call.arguments);
+  } catch {
+    return fail("INVALID_ARGUMENT");
+  }
+  if (
+    !isPlainObject(value) ||
+    call.name !== "propose_page_method_call" ||
+    Object.keys(value).some(
+      (key) =>
+        ![
+          "method_ref",
+          "source_evidence_id",
+          "arguments",
+          "purpose",
+          "approval_scope",
+          "approval_reason",
+        ].includes(key),
+    ) ||
+    typeof value.method_ref !== "string" ||
+    typeof value.source_evidence_id !== "string" ||
+    !Array.isArray(value.arguments) ||
+    !boundedJson(value.arguments) ||
+    typeof value.purpose !== "string" ||
+    !value.purpose.trim() ||
+    value.purpose.length > 240 ||
+    value.approval_scope !== "single_step" ||
+    typeof value.approval_reason !== "string" ||
+    !value.approval_reason.trim() ||
+    value.approval_reason.length > 240
+  )
+    return fail("INVALID_ARGUMENT");
+  if (sensitiveJson(value.arguments)) return fail("POLICY_DENIED");
+  const method = methods.find((item) => item.method_ref === value.method_ref);
+  if (!method) return fail("TARGET_STALE");
+  const sourceText = sourceEvidence.get(value.source_evidence_id);
+  if (
+    !sourceText ||
+    (!sourceText.includes(method.method_name) &&
+      !sourceText.includes(method.object_path.at(-1) ?? ""))
+  )
+    return fail("POLICY_DENIED");
+  const args = value.arguments;
+  const serializedArguments = JSON.stringify(args);
+  if (serializedArguments.length > 4096) return fail("INVALID_ARGUMENT");
+  const argumentsDigest = digestCanonical(args);
+  const requestGeneration = binding.requestGeneration ?? 0;
+  const approvalDigest = digestCanonical({
+    kind: "page_method",
+    origin,
+    request_generation: requestGeneration,
+    source_evidence_id: value.source_evidence_id,
+    ...(binding.planId ? { plan_id: binding.planId } : {}),
+    ...(binding.planRevision === undefined
+      ? {}
+      : { plan_revision: binding.planRevision }),
+    method,
+    arguments: args,
+    arguments_digest: argumentsDigest,
+    capability: "page_method",
+  });
+  return {
+    id: opaqueId(),
+    tool: "call_page_method",
+    targetName: `${method.object_path.join(".")} — ${redactForChat(value.purpose.trim(), 240)}`,
+    approvalScope: "single_step",
+    approvalReason: redactForChat(value.approval_reason.trim(), 240),
+    purpose: redactForChat(value.purpose.trim(), 240),
+    method,
+    arguments: args,
+    value: redactForChat(serializedArguments, 4096),
+    argumentsDigest,
+    approvalDigest,
+    toolCallId: call.id,
+    requestGeneration,
+    sourceEvidenceId: value.source_evidence_id,
+    ...(binding.planId ? { planId: binding.planId } : {}),
+    ...(binding.planRevision === undefined
+      ? {}
+      : { planRevision: binding.planRevision }),
+  };
 };
 
 export const parsePageApiProposal = (

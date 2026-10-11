@@ -79,7 +79,18 @@ export const recordActExecution = (
   session.messages.push({
     role: "tool",
     tool_call_id: proposal.toolCallId,
-    content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({ ...evidence, tool: proposal.tool, target_name: safeChatText(proposal.targetName), verification_meaning: "ACTION_RESULT_NOT_GOAL_COMPLETION" })}\n[/UNTRUSTED_TOOL_RESULT]`,
+    content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({
+      ...evidence,
+      tool: proposal.tool,
+      target_name: safeChatText(proposal.targetName),
+      verification_meaning: "ACTION_RESULT_NOT_GOAL_COMPLETION",
+      ...(proposal.tool === "call_page_method" && executed.return_data
+        ? { return_data: executed.return_data }
+        : {}),
+      ...(proposal.tool === "call_page_method"
+        ? { invocation: executed.invocation, dispatch: executed.dispatch }
+        : {}),
+    })}\n[/UNTRUSTED_TOOL_RESULT]`,
   });
   const recovering = session.recoveryStep?.attempts === 1;
   const recoverable =
@@ -99,7 +110,11 @@ export const recordActExecution = (
         "This attempt was rejected BEFORE dispatch. You may propose at most one supported alternative for the SAME logical step, using the fresh observation and a new single-step approval. Preserve the original plan and failed attempt; do not retry a dispatched or unknown mutation.",
     });
   }
-  if (outcome !== "VERIFIED" && !recoverable) {
+  const returnedPageMethod =
+    proposal.tool === "call_page_method" &&
+    executed.dispatch === "dispatched" &&
+    executed.invocation === "returned";
+  if (outcome !== "VERIFIED" && !recoverable && !returnedPageMethod) {
     session.feedbackOnly = true;
     if (outcome === "UNKNOWN") session.pendingAssessment = proposal;
   }

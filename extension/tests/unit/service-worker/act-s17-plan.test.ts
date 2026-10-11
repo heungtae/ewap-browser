@@ -20,7 +20,10 @@ describe("S17 plan submission and approval", () => {
         input.tools?.some((tool) => tool.function.name === "submit_plan"),
       ).toBe(true);
       const inventory = executionInventory(input.messages);
-      expect(inventory.arbitrary_functions).toBe("UNSUPPORTED");
+      expect(inventory.arbitrary_functions).toContain(
+        "currently discovered own-property methods",
+      );
+      expect(inventory.page_methods).toEqual([]);
       expect(inventory.actions[0].input_schema).toBeDefined();
       return {
         content: "",
