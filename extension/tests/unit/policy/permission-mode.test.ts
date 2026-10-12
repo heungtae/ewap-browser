@@ -73,4 +73,39 @@ describe("permission modes", () => {
       }),
     ).toThrow("INVALID_ARGUMENT");
   });
+  it("migrates missing method toggle and disables only the page-method capability", () => {
+    expect(
+      validateAgentPreferences(defaultAgentPreferences()).page_method_enabled,
+    ).toBe(true);
+    expect(() =>
+      validateAgentPreferences({
+        ...defaultAgentPreferences(),
+        page_method_enabled: "true",
+      }),
+    ).toThrow();
+    const preferences = {
+      ...defaultAgentPreferences(),
+      page_method_enabled: false,
+      permission_mode: "skip_all_permission_checks" as const,
+    };
+    const manager = new PermissionManager();
+    expect(
+      gatePermission(
+        manager,
+        preferences,
+        "page_method",
+        "https://fixture.company.test",
+        "run",
+      ),
+    ).toBe("DENY");
+    expect(
+      gatePermission(
+        manager,
+        preferences,
+        "click",
+        "https://fixture.company.test",
+        "run",
+      ),
+    ).toBe("ALLOW");
+  });
 });

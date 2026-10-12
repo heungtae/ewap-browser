@@ -6,14 +6,13 @@
 
 ## Browser Act S23 — 2026-10-12 리뷰 수정
 
-**In Progress — 통제 Chrome 호출·결과 continuation PASS; 전체 qualification 미완료.**
-[S23](sprints/s23-provider-page-method-execution.md)의 MAIN 주입 함수에 진단 계측이
-모듈 의존성을 추가하던 원인을 수정하고 문서 등록을 덮어쓰는 fallback과 추가 Provider
-turn 우회를 제거했다. 내장 함수 제외, 희소 배열·accessor 반환 처리, unsupported 표시,
-소비된 ref의 메모리 수명과 Chrome fixture의 중복 집계를 보강했다.
-180 unit files/853 tests, fixture/e2e, lint/typecheck/module boundaries/package validation 및
-통제 Chrome script 검색·읽기→단일 메서드 호출→원래 call ID 결과→완료 판단이 통과했다.
-실제 Provider·R01~R20 전체 행렬은 미검증이다. [증거와 이전 실패](evidence/s23-provider-page-method-2026-10-11.md)를 보존한다.
+**Completed — Browser-local 구현·검증 범위.**
+함수/receiver identity, 중복 호출 방지, 계획·인수 binding, 반환 마스킹/크기,
+read-only 경계, 데이터 목표 판단과 기능 비활성화 rollback을 보강했다.
+unit 186 files/882 tests, S10/S16/S17/S18/S19 및 rollback 회귀가 통과했다.
+실제 OpenRouter 데이터 holdout과 OpenAI `gpt-6-luna` 독립 UI/수동 승인 검증 PASS.
+최초 429/503 실패를 보존하며 운영 사이트/임의 모델/회사/Platform/배포는 별도 범위다.
+[수용 범위·실패·재실행 기록](evidence/s23-page-method-review-2026-10-12.md).
 
 ## Browser Agent S22 — 2026-10-11
 

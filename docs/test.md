@@ -329,3 +329,13 @@ CHROME_FOR_TESTING_BIN=/path/to/chrome NAVIGATION_EVIDENCE_PATH=/tmp/navigation-
 0.1.103부터 위 이동 완료 검사는 진단 bundle의 승인 URL·실제 도착 URL이 마스킹되지 않고, 주소 불일치 시 DESTINATION_MISMATCH를 보존하는지도 확인한다.
 
 0.1.104부터 위 세 사례는 provider completed의 최종 수용과 PROVIDER_COMPLETED 사유를 확인한다. URL 전환 사례는 승인 링크의 도착 페이지가 history.replaceState로 주소를 변경하는 통제 fixture다.
+
+S23 전체 통제 행렬은 `pnpm test:chrome-s23-matrix`로 실행한다.
+`S23_CASES=plan,replacement,timeout,secret`로 일부만 선택하고
+`S23_MATRIX_REPORT=/tmp/s23-matrix.json`으로 안전한 결과를 저장한다.
+Live 독립 사례는 `S23_VARIANT=holdout`(데이터) 또는 `S23_VARIANT=ui S23_CASE=ask`
+(수동 승인·UI 변경)로 구분한다. 설정의 **페이지 메서드 호출 사용**을 끄면
+새 경로만 비활성화한다. Full Permission이어도 local/managed deny를 우회하지 않는다.
+
+`S23_CASE=ask`는 Act 수동 승인 설정을 검사한다. Ask 모드 자체의 호출 금지 검사는
+`S23_CASE=ask-mode`이며 method tool 미제공·실제 호출 0회를 확인한다.

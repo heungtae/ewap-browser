@@ -7,6 +7,7 @@ export const invokePageMethodMain = async (
   expectedName: string,
   expectedArity: number,
   arguments_: unknown[],
+  registryKey = "__contextPilotMethodTestRegistry",
 ): Promise<MainPageMethodOutcome> => {
   const validSegment = (value: string): boolean =>
     value.length > 0 &&
@@ -14,9 +15,10 @@ export const invokePageMethodMain = async (
     !["__proto__", "prototype", "constructor"].includes(value);
   const boundedValue = (
     input: unknown,
-  ): { value: unknown; truncated: boolean } => {
+  ): { value: unknown; truncated: boolean; unsupported: boolean } => {
     let nodes = 0;
     let truncated = false;
+    let unsupported = false;
     const seen = new WeakSet<object>();
     const visit = (value: unknown, depth: number): unknown => {
       nodes++;
@@ -38,6 +40,7 @@ export const invokePageMethodMain = async (
       }
       if (typeof value !== "object" || seen.has(value)) {
         truncated = true;
+        unsupported = true;
         return "[UNSUPPORTED]";
       }
       seen.add(value);
@@ -49,6 +52,7 @@ export const invokePageMethodMain = async (
           Object.getPrototypeOf(value) !== null
         ) {
           truncated = true;
+          unsupported = true;
           return "[UNSUPPORTED_OBJECT]";
         }
         const allKeys = array
@@ -84,21 +88,16 @@ export const invokePageMethodMain = async (
         return output;
       } catch {
         truncated = true;
+        unsupported = true;
         return "[UNAVAILABLE]";
       }
     };
-    return { value: visit(input, 0), truncated };
-  };
-  const revisionOf = (
-    fn: (...args: never[]) => unknown,
-    name: string,
-    arity: number,
-  ): string => {
-    const source = Function.prototype.toString.call(fn);
-    let hash = 2166136261;
-    for (let index = 0; index < source.length; index++)
-      hash = Math.imul(hash ^ source.charCodeAt(index), 16777619);
-    return `${name}:${arity}:${source.length}:${(hash >>> 0).toString(16)}`;
+    let value = visit(input, 0);
+    if (new TextEncoder().encode(JSON.stringify(value)).length > 8192) {
+      value = "[TRUNCATED_RETURN]";
+      truncated = true;
+    }
+    return { value, truncated, unsupported };
   };
   if (
     !Array.isArray(path) ||
@@ -141,18 +140,34 @@ export const invokePageMethodMain = async (
     if (
       typeof name !== "string" ||
       typeof arity !== "number" ||
-      name !== expectedName ||
+      (name.slice(0, 100) || path[path.length - 1]) !== expectedName ||
       Math.min(arity, 32) !== expectedArity ||
-      revisionOf(
-        method.value as (...args: never[]) => unknown,
-        name,
-        Math.min(arity, 32),
-      ) !== expectedRevision
+      !(
+        Object.getOwnPropertyDescriptor(globalThis, registryKey)?.value as
+          | { matches(token: string, owner: object, fn: unknown): boolean }
+          | undefined
+      )?.matches(expectedRevision, owner, method.value)
     )
       return { status: "stale" };
     const returned = await Reflect.apply(method.value, owner, arguments_);
+    if (returned === undefined)
+      return {
+        status: "returned",
+        value: null,
+        kind: "undefined",
+        truncated: false,
+        unsupported: false,
+      };
     const safe = boundedValue(returned);
-    return { status: "returned", ...safe };
+    const kind =
+      returned === null
+        ? "null"
+        : typeof returned === "function" ||
+            typeof returned === "symbol" ||
+            typeof returned === "bigint"
+          ? "unsupported"
+          : "json";
+    return { status: "returned", kind, ...safe };
   } catch {
     return { status: "threw" };
   }

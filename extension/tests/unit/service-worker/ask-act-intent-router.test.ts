@@ -35,6 +35,25 @@ describe("Ask/Act intent router", () => {
     ).resolves.toBe("QUESTION");
     expect(chat.mock.calls[0]?.[0]).not.toHaveProperty("tools");
   });
+  it("does not disclose page data to the intent classifier", async () => {
+    const chat = vi.fn(async (_input: unknown) => ({
+      content: '{"route":"COMPONENT_READ_REQUIRED"}',
+      tool_calls: [],
+    }));
+    await createAskActIntentRouter({ provider: { chat } as never })(
+      "Inspect component channels",
+      {
+        tabId: 1,
+        snapshot: {
+          visible_text: "token S19_PRIVATE_82d71",
+        },
+      } as never,
+    );
+    expect(JSON.stringify(chat.mock.calls)).not.toContain("S19_PRIVATE_82d71");
+    expect(JSON.stringify(chat.mock.calls)).toContain(
+      "Inspect component channels",
+    );
+  });
   it("returns a malformed classification for one closed-contract correction", async () => {
     const chat = vi
       .fn()

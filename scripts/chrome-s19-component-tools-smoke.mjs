@@ -89,7 +89,7 @@ try {
           );
         const pending = await evaluate(
           panel,
-          `[...document.querySelectorAll('.event-card')].some(c=>/Component 스크롤 읽기 승인|화면 이미지 전달 동의|페이지 소스 전달 동의/.test(c.textContent)&&[...c.querySelectorAll('button')].some(b=>!b.disabled))`,
+          `[...document.querySelectorAll('.event-card')].some(c=>/Component 스크롤 읽기 승인|화면 이미지 전달 동의|페이지 소스 전달 동의|페이지 메서드 목록 전달 동의/.test(c.textContent)&&[...c.querySelectorAll('button')].some(b=>!b.disabled))`,
         );
         if (pending) {
           if (
@@ -126,7 +126,7 @@ try {
             );
           await gesture(
             panel,
-            `(()=>{const c=[...document.querySelectorAll('.event-card')].find(c=>/Component 스크롤 읽기 승인|화면 이미지 전달 동의|페이지 소스 전달 동의/.test(c.textContent)&&[...c.querySelectorAll('button')].some(b=>!b.disabled));[...c.querySelectorAll('button')].find(b=>b.textContent.includes(${JSON.stringify(current.id.includes("deny") ? "거부" : "이번 요청에 허용")}))?.click();return true})()`,
+            `(()=>{const c=[...document.querySelectorAll('.event-card')].find(c=>/Component 스크롤 읽기 승인|화면 이미지 전달 동의|페이지 소스 전달 동의|페이지 메서드 목록 전달 동의/.test(c.textContent)&&[...c.querySelectorAll('button')].some(b=>!b.disabled));[...c.querySelectorAll('button')].find(b=>b.textContent.includes(${JSON.stringify(current.id.includes("deny") ? "거부" : "이번 요청에 허용")}))?.click();return true})()`,
           );
         }
         if (

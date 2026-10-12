@@ -1,3 +1,4 @@
+import { advancePlanStep } from "./page-method-plan.js";
 import type { CompletionContract } from "../contracts/action-types.js";
 import type { ActSession } from "./act-session-types.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -77,7 +78,7 @@ export const confirmNavigation = (
     verifier: "satisfied",
     confirmation: "llm_evidence",
   });
-  if (session.plan) session.plan.completedSteps += 1;
+  if (session.plan) advancePlanStep(session.plan, true);
   session.navigationFeedback = true;
   traceDecision("act.navigation.confirmation", {
     attempt_id: evidence.action_id,

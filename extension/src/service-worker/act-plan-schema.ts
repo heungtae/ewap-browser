@@ -4,6 +4,7 @@ export const submitPlanTool = (
   capabilities: string[],
   revision: number,
   evidenceIds: string[],
+  methodRefs: string[] = [],
 ): ProviderToolDefinition => ({
   type: "function",
   function: {
@@ -41,6 +42,23 @@ export const submitPlanTool = (
                 description: "One supplied observation evidence ID.",
                 enum: evidenceIds,
               },
+              ...(methodRefs.length
+                ? {
+                    method_ref: {
+                      type: "string",
+                      enum: methodRefs,
+                      description:
+                        "Required for a page-method step; copy a current method_ref.",
+                    },
+                    arguments: {
+                      type: "array",
+                      maxItems: 32,
+                      items: {},
+                      description:
+                        "Required for a page-method step: exact bounded JSON arguments. Do not also supply user_input.",
+                    },
+                  }
+                : {}),
               user_input: {
                 type: "string",
                 maxLength: 4096,
@@ -79,7 +97,7 @@ export const goalCheckTool = (
   function: {
     name: "report_goal_status",
     description:
-      "After execution results and fresh observation, report whether the original goal is completed, incomplete or unknown. Preserve typed FAILED/UNKNOWN as action history; a valid structured completed report bound to the current observation decides final goal completion. Only Worker-accepted structured local UI confirmations in the current execution inventory can resolve raw UNKNOWN; preserve historical receipts and do not claim business persistence. When a supplied complete dialog/main/form region alone establishes the goal, include its model_ref in evidence_refs; otherwise omit evidence_refs and the entire observation will be checked. A heading or toast alone is not a complete result. For a dispatched navigation with navigation_binding in the inventory, report completed only when the latest supplied destination evidence satisfies the original request, and include evidence_refs. The Worker accepts a valid completed report bound to the current observation even if the final URL differs from the approved link URL; raw local results remain diagnostic history. Further actions require new approvals.",
+      "After execution results and fresh observation, report whether the original goal is completed, incomplete or unknown. Preserve typed FAILED/UNKNOWN as action history; a valid structured completed report bound to the current observation decides final goal completion. For an approved page-method calculation or data query, the returned data can satisfy the original data-only goal without a UI change. Preserve action UNKNOWN and do not claim server persistence from a return. For other mutations, only Worker-accepted structured local UI confirmations in the current execution inventory can resolve raw UNKNOWN; preserve historical receipts and do not claim business persistence. When a supplied complete dialog/main/form region alone establishes the goal, include its model_ref in evidence_refs; otherwise omit evidence_refs and the entire observation will be checked. A heading or toast alone is not a complete result. For a dispatched navigation with navigation_binding in the inventory, report completed only when the latest supplied destination evidence satisfies the original request, and include evidence_refs. The Worker accepts a valid completed report bound to the current observation even if the final URL differs from the approved link URL; raw local results remain diagnostic history. Further actions require new approvals.",
     parameters: {
       type: "object",
       additionalProperties: false,

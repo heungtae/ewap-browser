@@ -95,6 +95,10 @@ export const finishGoalFeedback = async (opts: {
     if (
       actionOutcome(session) !== "VERIFIED" &&
       report.status !== "completed" &&
+      !(
+        response.tool_calls.length === 0 &&
+        session.executionEvidence?.at(-1)?.page_method_invocation === "returned"
+      ) &&
       (!session.executionEvidence?.at(-1)?.navigation_binding || current)
     )
       return finish();

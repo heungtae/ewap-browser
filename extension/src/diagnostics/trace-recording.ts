@@ -68,7 +68,7 @@ export const append = (
       ) && /(?:callback|cell|record)/i.test(method.split(":")[2] ?? "");
     const sensitiveData =
       (dataCallback ||
-        /service-worker\/(?:act-value-source|workflow-resource)/.test(
+        /service-worker\/(?:act-value-source|workflow-resource|page-method|act-proposal-parser)/.test(
           method,
         )) &&
       typeof input !== "boolean" &&

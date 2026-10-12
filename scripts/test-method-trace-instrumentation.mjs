@@ -74,6 +74,7 @@ console.log(
 for (const file of [
   "page-method-discovery-main.ts",
   "page-method-invoke-main.ts",
+  "page-method-registry-main.ts",
   "page-api-main.ts",
 ]) {
   assert.equal(

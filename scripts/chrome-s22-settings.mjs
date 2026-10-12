@@ -29,7 +29,7 @@ export const configureS22Settings = async (
   await sleep(400);
   await evaluate(
     settings,
-    `(()=>{const select=document.querySelector('[name=approval_mode]');select.value=${JSON.stringify(mode)};select.dispatchEvent(new Event('change',{bubbles:true}));for(const [category,decision] of Object.entries(${JSON.stringify(overrides)})){const field=document.querySelector('[name=approval_'+category+']');field.value=decision;field.dispatchEvent(new Event('change',{bubbles:true}));}document.querySelector('#agent-preferences-form').requestSubmit();return true})()`,
+    `(()=>{const select=document.querySelector('[name=approval_mode]');select.value=${JSON.stringify(mode)};select.dispatchEvent(new Event('change',{bubbles:true}));for(const [category,decision] of Object.entries(${JSON.stringify(overrides)})){const field=document.querySelector('[name=approval_'+category+']');field.value=decision;field.dispatchEvent(new Event('change',{bubbles:true}));}if(${JSON.stringify(process.env.S22_PAGE_METHODS === "off")})document.querySelector('[name=page_method_enabled]').checked=false;document.querySelector('#agent-preferences-form').requestSubmit();return true})()`,
   );
   await waitFor(
     () =>

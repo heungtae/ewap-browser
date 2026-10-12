@@ -2,7 +2,7 @@ import type {
   PageMethodIntent,
   PageMethodResult,
 } from "../contracts/page-method-types.js";
-import { digestCanonical } from "../security/canonical.js";
+import { digestCanonical, opaqueId } from "../security/canonical.js";
 import { withDeadline } from "../security/deadline.js";
 import { ContractError } from "../security/validation.js";
 import { assertRequestActive, type RequestContext } from "./request-context.js";
@@ -16,9 +16,10 @@ import {
 export { pageMethodApprovalDigest } from "./page-method-runner-contract.js";
 
 export const createPageMethodRunner = (deps: Dependencies) => {
+  const registryKey = `__contextPilotMethods_${opaqueId()}`;
   const consumedBySignal = new WeakMap<AbortSignal, Set<string>>();
   const discover = (tabId: number, documentId: string): Promise<Injection[]> =>
-    discoverPageMethods(deps, tabId, documentId);
+    discoverPageMethods(deps, tabId, documentId, registryKey);
   const execute = async (
     intent: PageMethodIntent,
     context: RequestContext,
@@ -28,7 +29,7 @@ export const createPageMethodRunner = (deps: Dependencies) => {
       consumed = new Set<string>();
       consumedBySignal.set(context.signal, consumed);
     }
-    const key = `${context.requestId}:${context.generation}:${intent.method.method_ref}`;
+    const key = `${context.requestId}:${context.generation}:${intent.run_id}:${intent.invocation_id}`;
     if (consumed.has(key))
       return {
         dispatch: "not_dispatched",
@@ -37,22 +38,13 @@ export const createPageMethodRunner = (deps: Dependencies) => {
       };
     const document = deps.documentFor(intent.tab_id, 0);
     const scope = deps.scope(intent.tab_id);
-    const expected = pageMethodApprovalDigest({
-      kind: intent.kind,
-      origin: intent.origin,
-      request_generation: intent.request_generation,
-      source_evidence_id: intent.source_evidence_id,
-      ...(intent.plan_id ? { plan_id: intent.plan_id } : {}),
-      ...(intent.plan_revision === undefined
-        ? {}
-        : { plan_revision: intent.plan_revision }),
-      method: intent.method,
-      arguments: intent.arguments,
-      arguments_digest: intent.arguments_digest,
-      capability: intent.capability,
-    });
+    const expected = pageMethodApprovalDigest(intent);
     if (
       intent.kind !== "page_method" ||
+      typeof intent.invocation_id !== "string" ||
+      !intent.invocation_id ||
+      !intent.request_id ||
+      intent.request_id !== context.requestId ||
       intent.capability !== "page_method" ||
       intent.approval_digest !== expected ||
       intent.request_generation !== context.generation ||
@@ -114,6 +106,7 @@ export const createPageMethodRunner = (deps: Dependencies) => {
         };
       await deps.beforeDispatch(intent.tab_id, context);
       check();
+      if (consumed.has(key)) throw new ContractError("POLICY_DENIED");
       consumed.add(key);
       dispatch = "unknown";
       const injected = await withDeadline(
@@ -127,6 +120,7 @@ export const createPageMethodRunner = (deps: Dependencies) => {
             intent.method.method_name,
             intent.method.arity,
             intent.arguments,
+            registryKey,
           ],
         }),
         10_000,
@@ -143,11 +137,8 @@ export const createPageMethodRunner = (deps: Dependencies) => {
           invocation: "unknown",
           code: "PAGE_SCOPE_STALE",
         };
-      const result = injected[0].result as {
-        status?: string;
-        value?: unknown;
-        truncated?: boolean;
-      };
+      const result = injected[0]
+        .result as import("../contracts/page-method-types.js").MainPageMethodOutcome;
       if (result?.status === "returned") {
         dispatch = "dispatched";
         return {
@@ -156,6 +147,8 @@ export const createPageMethodRunner = (deps: Dependencies) => {
           return_data: {
             available: true,
             value: result.value,
+            kind: result.kind,
+            unsupported: result.unsupported,
             ...(result.truncated === undefined
               ? {}
               : { truncated: result.truncated }),

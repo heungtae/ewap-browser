@@ -68,7 +68,7 @@ export type ParsedPageMethodProposal = {
   sourceEvidenceId: string;
 };
 
-const boundedJson = (input: unknown): boolean => {
+export const boundedJson = (input: unknown): boolean => {
   let nodes = 0;
   const visit = (value: unknown, depth: number): boolean => {
     if (++nodes > 256 || depth > 6) return false;
@@ -95,7 +95,11 @@ const boundedJson = (input: unknown): boolean => {
   return visit(input, 0);
 };
 
-const sensitiveJson = (input: unknown): boolean => {
+export const sensitiveJson = (input: unknown): boolean => {
+  if (typeof input === "string")
+    return /(?:bearer\s+[A-Za-z0-9._~+/-]{8,}|(?:sk-|rk_|pk_)[A-Za-z0-9_-]{12,}|(?:api[_ -]?key|authorization|password|비밀번호|otp)\s*[:=]\s*\S+)/i.test(
+      input,
+    );
   if (Array.isArray(input)) return input.some(sensitiveJson);
   if (!isPlainObject(input)) return false;
   return Object.entries(input).some(
@@ -112,6 +116,11 @@ export const parsePageMethodProposal = (
   origin: string,
   sourceEvidence: ReadonlyMap<string, string>,
   binding: {
+    requestId?: string;
+    runId?: string;
+    tabId?: number;
+    documentEpoch?: string;
+    pageScopeEpoch?: string;
     requestGeneration?: number;
     planId?: string;
     planRevision?: number;
@@ -140,6 +149,7 @@ export const parsePageMethodProposal = (
     typeof value.method_ref !== "string" ||
     typeof value.source_evidence_id !== "string" ||
     !Array.isArray(value.arguments) ||
+    value.arguments.length > 32 ||
     !boundedJson(value.arguments) ||
     typeof value.purpose !== "string" ||
     !value.purpose.trim() ||
@@ -153,6 +163,7 @@ export const parsePageMethodProposal = (
   if (sensitiveJson(value.arguments)) return fail("POLICY_DENIED");
   const method = methods.find((item) => item.method_ref === value.method_ref);
   if (!method) return fail("TARGET_STALE");
+  if (value.arguments.length < method.arity) return fail("INVALID_ARGUMENT");
   const sourceText = sourceEvidence.get(value.source_evidence_id);
   if (
     !sourceText ||
@@ -167,6 +178,12 @@ export const parsePageMethodProposal = (
   const requestGeneration = binding.requestGeneration ?? 0;
   const approvalDigest = digestCanonical({
     kind: "page_method",
+    run_id: binding.runId ?? "",
+    tab_id: binding.tabId ?? 0,
+    document_epoch: binding.documentEpoch ?? "",
+    page_scope_epoch: binding.pageScopeEpoch ?? "",
+    invocation_id: call.id,
+    request_id: binding.requestId ?? "",
     origin,
     request_generation: requestGeneration,
     source_evidence_id: value.source_evidence_id,

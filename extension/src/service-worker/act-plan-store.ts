@@ -1,8 +1,13 @@
+import {
+  validateMethodPlanStep,
+  assertMethodPlanBinding,
+} from "./page-method-plan.js";
 import { opaqueId } from "../security/canonical.js";
 import { isPlainObject, fail } from "../security/validation.js";
 import {
   validateSubmitPlan,
   type SubmitPlanInput,
+  type PlanStepInput,
 } from "../page-act-harness/plan-contract.js";
 import {
   grantApproval,
@@ -12,15 +17,8 @@ import type { ActSession, ActProposal } from "./act-session-types.js";
 import type { ProviderToolCall } from "../providers/types.js";
 import { assertRequestActive } from "./request-context.js";
 
-export type StoredActPlan = {
-  input: SubmitPlanInput;
-  revision: number;
-  documentEpoch: string;
-  toolCallId: string;
-  reviewId: string;
-  approved: boolean;
-  completedSteps: number;
-};
+import type { StoredActPlan } from "./act-plan-types.js";
+export type { StoredActPlan } from "./act-plan-types.js";
 const boundedText = (value: unknown, max = 2000): value is string =>
   typeof value === "string" && value.trim().length > 0 && value.length <= max;
 const keys = (obj: Record<string, unknown>, allowed: string[]) =>
@@ -73,6 +71,8 @@ export const storeSubmittedPlan = (opts: {
         "capability",
         "target_evidence_id",
         "user_input",
+        "method_ref",
+        "arguments",
         "side_effects",
         "postcondition",
       ]) ||
@@ -88,6 +88,7 @@ export const storeSubmittedPlan = (opts: {
           !step.side_effects.every((item) => boundedText(item))))
     )
       return fail("INVALID_ARGUMENT");
+    validateMethodPlanStep(step as PlanStepInput, opts.session);
   }
   const input = validateSubmitPlan(
     { ...value, plan_id: opaqueId() } as SubmitPlanInput,
@@ -157,7 +158,7 @@ export const assertApprovedPlan = (
 ): void => {
   const plan = session.plan;
   if (!plan) return;
-  const step = plan.input.steps[plan.completedSteps];
+  const step = plan.input.steps[plan.nextStep ?? plan.completedSteps];
   const names: Record<string, string> = {
     click_by_ref: "propose_click",
     navigate: "propose_navigate",
@@ -166,6 +167,7 @@ export const assertApprovedPlan = (
     set_checked_by_ref: "propose_set_checked",
     press_key_by_ref: "propose_press_key",
     call_page_api: "propose_page_api",
+    call_page_method: "propose_page_method_call",
   };
   if (
     !plan.approved ||
@@ -181,4 +183,5 @@ export const assertApprovedPlan = (
           : proposal.value))
   )
     return fail("CONFIRMATION_INVALID");
+  assertMethodPlanBinding(step, proposal, plan);
 };

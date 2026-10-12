@@ -1,7 +1,14 @@
 import type { MainPageMethodCandidate } from "../contracts/page-method-types.js";
 
 /** Serialized into the current MAIN document; returns labels, never code or page values. */
-export const discoverPageMethodsMain = (): MainPageMethodCandidate[] => {
+export const discoverPageMethodsMain = (
+  registryKey = "__contextPilotMethodTestRegistry",
+): MainPageMethodCandidate[] => {
+  const registry = Object.getOwnPropertyDescriptor(globalThis, registryKey)
+    ?.value as
+    | { register(owner: object, fn: unknown, path: string[]): string }
+    | undefined;
+  if (!registry) return [];
   const isNative = (fn: unknown): boolean =>
     Function.prototype.toString.call(fn).includes("[native code]");
   const hiddenRoots = new Set([
@@ -51,17 +58,6 @@ export const discoverPageMethodsMain = (): MainPageMethodCandidate[] => {
     value.length > 0 &&
     value.length <= 100 &&
     !["__proto__", "prototype", "constructor"].includes(value);
-  const revisionOf = (
-    fn: (...args: never[]) => unknown,
-    name: string,
-    arity: number,
-  ): string => {
-    const source = Function.prototype.toString.call(fn);
-    let hash = 2166136261;
-    for (let index = 0; index < source.length; index++)
-      hash = Math.imul(hash ^ source.charCodeAt(index), 16777619);
-    return `${name}:${arity}:${source.length}:${(hash >>> 0).toString(16)}`;
-  };
   const found: MainPageMethodCandidate[] = [];
   const visited = new WeakSet<object>();
   const rootList = Object.getOwnPropertyNames(globalThis);
@@ -129,11 +125,7 @@ export const discoverPageMethodsMain = (): MainPageMethodCandidate[] => {
           method_name: name.slice(0, 100) || key,
           arity: Math.min(arity, 32),
           function_kind: "unknown",
-          locator_revision: revisionOf(
-            member as (...args: never[]) => unknown,
-            name,
-            Math.min(arity, 32),
-          ),
+          locator_revision: registry.register(value, member, methodPath),
         });
       } else if (
         depth < 2 &&
@@ -146,6 +138,8 @@ export const discoverPageMethodsMain = (): MainPageMethodCandidate[] => {
   };
   for (const root of roots) {
     if (
+      root === registryKey ||
+      root.startsWith("__contextPilotMethods_") ||
       hiddenRoots.has(root) ||
       hiddenMethods.has(root) ||
       !validSegment(root) ||
@@ -181,11 +175,9 @@ export const discoverPageMethodsMain = (): MainPageMethodCandidate[] => {
           method_name: name.slice(0, 100) || root,
           arity: Math.min(arity, 32),
           function_kind: "unknown",
-          locator_revision: revisionOf(
-            descriptor.value as (...args: never[]) => unknown,
-            name,
-            Math.min(arity, 32),
-          ),
+          locator_revision: registry.register(globalThis, descriptor.value, [
+            root,
+          ]),
         });
     } else if (
       typeof descriptor.value === "object" &&

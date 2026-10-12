@@ -21,7 +21,7 @@ describe("page method proposal contract", () => {
       {
         role: "tool",
         tool_call_id: "read-call-abcdefghijkl",
-        content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({ status: "AVAILABLE", evidence_id: "source-evidence-abcdefghijkl", content: { text: "function read(input) {}" } })}\n[/UNTRUSTED_TOOL_RESULT]`,
+        content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({ status: "AVAILABLE", kind: "external_script", request_revision: 1, evidence_id: "source-evidence-abcdefghijkl", content: { text: "function read(input) {}" } })}\n[/UNTRUSTED_TOOL_RESULT]`,
       },
       {
         role: "assistant",
@@ -37,7 +37,7 @@ describe("page method proposal contract", () => {
       {
         role: "tool",
         tool_call_id: "other-call-abcdefghijkl",
-        content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({ status: "AVAILABLE", evidence_id: "foreign-evidence-abcdefgh", content: { text: "function read(input) {}" } })}\n[/UNTRUSTED_TOOL_RESULT]`,
+        content: `[UNTRUSTED_TOOL_RESULT]\n${JSON.stringify({ status: "AVAILABLE", kind: "external_script", request_revision: 1, evidence_id: "foreign-evidence-abcdefgh", content: { text: "function read(input) {}" } })}\n[/UNTRUSTED_TOOL_RESULT]`,
       },
     ]);
     expect(evidence.has("source-evidence-abcdefghijkl")).toBe(true);

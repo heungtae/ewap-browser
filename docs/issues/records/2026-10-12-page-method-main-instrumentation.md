@@ -9,3 +9,5 @@
 - 완료 조건: 통제 Chrome에서 앱 메서드가 노출되고 실제 1회 실행되며 returned 결과가 같은 Provider 대화로 이어짐. 충족.
 - 검증: typecheck/lint, unit 180 files/853 tests, fixture/e2e 각 1, module boundaries, instrumentation regression, package build/validation, S23 controlled Chrome PASS.
 - [실행 범위와 실패 이력](../../evidence/s23-provider-page-method-2026-10-11.md). 수정 commit은 아직 생성하지 않았다. 전체 Sprint qualification은 별도 미완료다.
+
+2026-10-12 후속: MAIN registry도 계측 제외 회귀에 포함했다. 기존 수정은 `6da726b4b`에 포함됐으며, 후속 미커밋 작업의 [행렬·실제 Provider holdout](../../evidence/s23-page-method-review-2026-10-12.md)은 별도 범위로 기록한다.

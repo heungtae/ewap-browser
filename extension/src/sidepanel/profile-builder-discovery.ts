@@ -79,7 +79,7 @@ export const createProfileBuilderDiscovery = (dependencies: Dependencies) => {
       return;
     }
     summary.textContent = result.candidates.length
-      ? `${result.candidates.length}개의 비실행 힌트가 있습니다. adapter 검토가 필요합니다.`
+      ? `${result.candidates.length}개의 등록 API 검토용 비실행 힌트가 있습니다. 페이지 메서드 호출은 Act에서 script 근거와 별도 승인을 통해 진행합니다.`
       : "공개 힌트를 찾지 못했습니다. API 부재의 증거는 아닙니다.";
     for (const [index, candidate] of result.candidates.entries()) {
       if (

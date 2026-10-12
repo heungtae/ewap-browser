@@ -18,6 +18,7 @@ export type PermissionMode =
   | "skip_all_permission_checks";
 export type AgentPreferences = {
   approval_policy?: ApprovalPolicy;
+  page_method_enabled?: boolean;
   permission_mode: PermissionMode;
   default_read_scope: PageReadScope;
   screenshot_policy: "manual_or_model" | "manual_only" | "disabled";
@@ -62,6 +63,7 @@ export const validateAgentPreferences = (value: unknown): AgentPreferences => {
   if (!isPlainObject(value)) return fail("INVALID_ARGUMENT");
   const keys = [
     "approval_policy",
+    "page_method_enabled",
     "permission_mode",
     "default_read_scope",
     "screenshot_policy",
@@ -71,6 +73,8 @@ export const validateAgentPreferences = (value: unknown): AgentPreferences => {
   if (Object.keys(value).some((key) => !keys.includes(key)))
     return fail("INVALID_ARGUMENT");
   if (
+    (value.page_method_enabled !== undefined &&
+      typeof value.page_method_enabled !== "boolean") ||
     typeof value.permission_mode !== "string" ||
     !modes.has(value.permission_mode as PermissionMode) ||
     typeof value.default_read_scope !== "string" ||
@@ -82,6 +86,7 @@ export const validateAgentPreferences = (value: unknown): AgentPreferences => {
   )
     return fail("INVALID_ARGUMENT");
   return {
+    page_method_enabled: value.page_method_enabled !== false,
     approval_policy:
       value.approval_policy === undefined
         ? migrateApprovalPolicy(value.permission_mode as string)
@@ -107,6 +112,8 @@ export const gatePermission = (
   runId: string,
   approvedPlanOrigins: ReadonlySet<string> = new Set(),
 ): PermissionGateResult => {
+  if (capability === "page_method" && preferences.page_method_enabled === false)
+    return "DENY";
   permissionHost(url);
   const origin = new URL(url).origin;
   const stored = manager.check(capability, url, runId);

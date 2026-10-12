@@ -365,7 +365,17 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       }
       const pageScope = dependencies.pageScope(active);
       let runtimeMethodsAllowed = false;
+      const methodDiscoveryEnabled =
+        !session.sourceReadOnly &&
+        !session.componentReadOnly &&
+        !session.feedbackOnly &&
+        dependencies.preferences().page_method_enabled !== false;
+      if (!methodDiscoveryEnabled) {
+        session.pageMethods = [];
+        session.pageMethodDiscoveryStatus = "disabled";
+      }
       if (
+        methodDiscoveryEnabled &&
         dependencies.discoverPageMethods &&
         (!session.pageMethods ||
           session.pageMethods.length === 0 ||
@@ -468,6 +478,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                 .map((tool) => tool.function.name),
               requestRevision,
               [observationId],
+              session.pageMethods?.map((method) => method.method_ref) ?? [],
             ),
           );
         if (session.executionEvidence?.length)
@@ -911,8 +922,13 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                   targetCall,
                   pageMethods,
                   active.origin,
-                  pageMethodSourceEvidence(session.messages),
+                  pageMethodSourceEvidence(session.messages, requestRevision),
                   {
+                    requestId: session.requestContext?.requestId ?? "",
+                    runId: run.id,
+                    tabId: run.tabId,
+                    documentEpoch: run.documentEpoch,
+                    pageScopeEpoch: pageScope.page_scope_epoch,
                     requestGeneration: session.requestContext?.generation ?? 0,
                     ...(session.plan
                       ? {

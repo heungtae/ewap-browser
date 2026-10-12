@@ -13,6 +13,8 @@ export type PageMethodRef = PageMethodDescriptor;
 
 export type PageMethodIntent = {
   kind: "page_method";
+  invocation_id: string;
+  request_id: string;
   run_id: string;
   tab_id: number;
   document_id: string;
@@ -30,14 +32,30 @@ export type PageMethodIntent = {
   approval_digest: string;
 };
 
+export type PageMethodReturnData = {
+  available: boolean;
+  value?: unknown;
+  truncated?: boolean;
+  kind?: "undefined" | "null" | "json" | "unsupported";
+  unsupported?: boolean;
+  masked?: boolean;
+  utf8_bytes?: number;
+};
+
 export type PageMethodResult = {
   dispatch: "not_dispatched" | "dispatched" | "unknown";
   invocation: "not_started" | "returned" | "threw" | "timed_out" | "unknown";
-  return_data?: { available: boolean; value?: unknown; truncated?: boolean };
+  return_data?: PageMethodReturnData;
   code?: string;
 };
 
 export type MainPageMethodCandidate = Omit<PageMethodDescriptor, "method_ref">;
 export type MainPageMethodOutcome =
-  | { status: "returned"; value: unknown; truncated: boolean }
+  | {
+      status: "returned";
+      value: unknown;
+      truncated: boolean;
+      kind: "undefined" | "null" | "json" | "unsupported";
+      unsupported: boolean;
+    }
   | { status: "not_found" | "stale" | "threw" | "invalid" };

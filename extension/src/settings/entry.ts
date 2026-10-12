@@ -829,7 +829,11 @@ const applyPreferences = (value: unknown): void => {
     const field = preferenceField(name);
     if (typeof preferences[name] === "string") field.value = preferences[name];
   }
-  for (const name of ["group_tools_in_timeline", "show_tool_debug_details"]) {
+  for (const name of [
+    "group_tools_in_timeline",
+    "show_tool_debug_details",
+    "page_method_enabled",
+  ]) {
     const field = preferenceField(name);
     if (
       field instanceof HTMLInputElement &&
@@ -868,6 +872,9 @@ agentPreferencesForm?.addEventListener("submit", (event) => {
           approval_policy: readApprovalSettings(),
           default_read_scope: preferenceField("default_read_scope").value,
           screenshot_policy: preferenceField("screenshot_policy").value,
+          page_method_enabled: (
+            preferenceField("page_method_enabled") as HTMLInputElement
+          ).checked,
           group_tools_in_timeline: (
             preferenceField("group_tools_in_timeline") as HTMLInputElement
           ).checked,

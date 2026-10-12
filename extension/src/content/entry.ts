@@ -369,7 +369,9 @@ const boundedTextContent = (
   ) {
     const parent = node.parentElement;
     if (
-      !(skipControls && parent?.closest("input,select,textarea,button")) &&
+      parent &&
+      !sensitiveComponentElement(parent) &&
+      !(skipControls && parent.closest("input,select,textarea,button")) &&
       (!skipNonContent ||
         (parent &&
           !sensitiveComponentElement(parent) &&

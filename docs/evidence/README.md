@@ -55,3 +55,5 @@ JSON 증거는 각 기록에서 연결한다.
 - [ISS-20261011-003 일반 클릭 사전 차단 수정](iss-20261011-003-generic-click-fix-2026-10-11.json): 승인·UNKNOWN receipt·모델 확인을 포함한 통제 Chrome S21 9/9; 실제 사이트/live provider·배포 제외.
 
 S21/S22 추가 구현의 [커밋 전 검증과 남은 범위](s21-s22-precommit-2026-10-11.md).
+
+- [S23 리뷰 후 구현·검증 — 2026-10-12](s23-page-method-review-2026-10-12.md): identity/중복/계획/반환 보강, controlled matrix, live OpenRouter holdout 및 OpenAI UI PASS. Browser-local Completed; 최초 429/503 실패 보존.

@@ -1,3 +1,4 @@
+import { preparePageMethodReturnData } from "./page-method-return-data.js";
 import { requestSourceConsent } from "./source-consent.js";
 import { allowsModelScreenshot } from "../policy/permission-mode.js";
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
@@ -31,7 +32,6 @@ import {
 } from "./runtime-execution.js";
 import type { PageApiIntent } from "../contracts/page-api-types.js";
 import type { PageMethodIntent } from "../contracts/page-method-types.js";
-import { redactForChat } from "../security/chat-redaction.js";
 import {
   chatRunLifecycle,
   chatRequests,
@@ -374,6 +374,8 @@ const proposalExecutor = createActProposalExecutor({
       };
     const intent: PageMethodIntent = {
       kind: "page_method",
+      invocation_id: proposal.toolCallId,
+      request_id: context.requestId ?? "",
       run_id: run.id,
       tab_id: run.tabId,
       document_id: document.documentId,
@@ -420,21 +422,18 @@ const proposalExecutor = createActProposalExecutor({
           outcome: "UNKNOWN",
           ok: false,
         };
-      const raw = JSON.stringify(result.return_data.value) ?? "undefined";
+      context.check();
+      const returnData = preparePageMethodReturnData(result.return_data);
       return {
         ...result,
-        return_data: {
-          available: true,
-          value: redactForChat(raw, 8192),
-          truncated: result.return_data.truncated,
-        },
+        return_data: returnData,
         outcome: "UNKNOWN",
         ok: false,
       };
     }
     return {
       ...result,
-      outcome: result.dispatch === "dispatched" ? "UNKNOWN" : "FAILED",
+      outcome: result.dispatch === "not_dispatched" ? "FAILED" : "UNKNOWN",
       ok: false,
     };
   },

@@ -1101,6 +1101,7 @@ try {
           approvalCount++;
         }
         await button("확인하고 실행");
+        await button("이번 요청에 허용");
         if (current.deny) await button("거부");
         else await button("이번만 허용");
         if (readingSuite) {
@@ -1184,8 +1185,13 @@ try {
           s18ReviewTerminal ||
           s18NoActionTerminal ||
           !current.workflow ||
-          (s18Suite && current.mismatch) ||
-          (await state()).result === "Preview generated for Detailed.";
+          (s18Suite &&
+            current.mismatch &&
+            calls
+              .slice(start)
+              .some((call) => call.reviewVerdict === "mismatch")) ||
+          (!current.mismatch &&
+            (await state()).result === "Preview generated for Detailed.");
         // A plan approval closes one run before its next provider turn starts.
         // The transient idle state is not the S17 request's final feedback.
         const s17Finished =

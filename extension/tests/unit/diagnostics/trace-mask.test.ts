@@ -170,3 +170,16 @@ it("redacts streamed provider bodies and reasoning that echo input values", () =
   });
   expect(JSON.stringify(result)).not.toContain(raw);
 });
+
+it("withholds dynamic method identities and raw return projections", () => {
+  const result = maskTraceValue({
+    method_ref: "METHOD_PRIVATE_REF",
+    locator_revision: "METHOD_PRIVATE_HANDLE",
+    object_path: ["METHOD_PRIVATE_OBJECT"],
+    registryKey: "METHOD_PRIVATE_REGISTRY",
+    return_data: { value: { sum: "METHOD_PRIVATE_VALUE" } },
+    dispatch: "dispatched",
+  });
+  expect(JSON.stringify(result)).not.toContain("METHOD_PRIVATE_");
+  expect(result.data).toMatchObject({ dispatch: "dispatched" });
+});

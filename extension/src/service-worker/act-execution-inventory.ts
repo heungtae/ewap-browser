@@ -88,12 +88,21 @@ export const actExecutionInventory = (opts: {
       object_path: method.object_path,
       method_name: method.method_name,
       arity: method.arity,
-      locator_revision: method.locator_revision,
       permission: "page_method",
       side_effect: "unknown; R2 approval required",
-      persistence: "request-local; single-use",
+      persistence: "request-local; separate approval per call; never replay",
     })),
     page_method_discovery: opts.session.pageMethodDiscoveryStatus ?? "pending",
+    page_method_support: {
+      top_document_only: true,
+      own_properties_only: true,
+      max_candidates: 48,
+      max_keys_per_object: 40,
+      max_path_depth: 3,
+      scan_complete: false,
+      proxy_reflection: "may_trigger_page_traps",
+      reference_model: "document_local_function_and_receiver_identity",
+    },
     page_methods_truncated: opts.session.pageMethodsTruncated ?? false,
     arbitrary_functions:
       "Only currently discovered own-property methods are exposed through propose_page_method_call; other functions UNSUPPORTED",
@@ -129,6 +138,8 @@ export const actExecutionInventory = (opts: {
           approved: opts.session.plan.approved,
           approval_scope: opts.session.plan.input.approval_scope,
           completed_steps: opts.session.plan.completedSteps,
+          next_step:
+            opts.session.plan.nextStep ?? opts.session.plan.completedSteps,
           steps: opts.session.plan.input.steps,
         }
       : null,

@@ -1,3 +1,4 @@
+import { advancePlanStep } from "./page-method-plan.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import type { ProviderMessage } from "../providers/types.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
@@ -16,7 +17,7 @@ export const acceptActionAssessment = (
   evidence.observed = true;
   evidence.confirmation = "llm_evidence";
   evidence.assessment_id = opaqueId();
-  if (session.plan) session.plan.completedSteps++;
+  if (session.plan) advancePlanStep(session.plan, true);
   delete session.feedbackOnly;
   session.messages.push({
     role: "user",

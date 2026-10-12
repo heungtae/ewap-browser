@@ -1,5 +1,7 @@
 # S23 Provider 페이지 메서드 구현·통합 확인 — 2026-10-11
 
+후속 구현과 최신 검증은 [2026-10-12 리뷰 후 증거](s23-page-method-review-2026-10-12.md)를 참조한다. 아래 결과는 당시 revision의 이력이다.
+
 ## 범위와 판정
 
 - 기준 HEAD: `67f38c098c518490b6ba980a7575c87320c00bb1`; 구현 작업 트리는 uncommitted이며 패키지 버전 `0.1.106`을 유지했다.
@@ -22,7 +24,7 @@
 | Source-bundled MAIN scanner direct injection                            | PASS, diagnostic only       | 같은 Chrome fixture에서 `mergeFigures` 후보가 반환됨. 이 DevTools 진단은 production Act inventory 연결 증거가 아님                      |
 | Live Provider S23                                                       | NOT RUN                     | controlled Chrome gate가 실패해 semantic qualification을 시도하지 않음                                                                  |
 
-## 남은 blocking 조건
+## 당시 남은 blocking 조건 (후속 수정 전)
 
 `page_method_discovery` 상태는 `empty`이고 Act가 method inventory 0개를 제공한다. 같은 fixture의 별도 DevTools MAIN-world injection은 `reportTools.mergeFigures`를 찾으므로, source fixture·method 자체보다 runtime Act discovery와 session inventory 사이의 통합 경계를 더 추적해야 한다. 호출 승인, dispatch exactly-once, return-data denial/allow, same-call-ID result continuation, 후속 goal judgement를 Chrome에서 입증하지 못했다.
 

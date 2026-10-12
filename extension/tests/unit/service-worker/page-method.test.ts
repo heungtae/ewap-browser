@@ -1,8 +1,13 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   discoverPageMethodsMain,
   invokePageMethodMain,
 } from "../../../src/service-worker/page-method-main.js";
+
+import { installPageMethodRegistryMain } from "../../../src/service-worker/page-method-registry-main.js";
+beforeEach(() =>
+  installPageMethodRegistryMain("__contextPilotMethodTestRegistry"),
+);
 
 const root = "__contextPilotS23Fixture";
 afterEach(() => Reflect.deleteProperty(globalThis, root));
@@ -25,19 +30,17 @@ describe("page method MAIN-world helpers", () => {
         (item) => item.object_path.join(".") === `${root}.read`,
       ),
     ).toBe(true);
-    const method = api.read;
-    const source = Function.prototype.toString.call(method);
-    let hash = 2166136261;
-    for (let index = 0; index < source.length; index++)
-      hash = Math.imul(hash ^ source.charCodeAt(index), 16777619);
+    const method = discoverPageMethodsMain().find(
+      (item) => item.object_path.join(".") === `${root}.read`,
+    )!;
     const result = await invokePageMethodMain(
       [root, "read"],
-      `read:1:${source.length}:${(hash >>> 0).toString(16)}`,
+      method.locator_revision,
       "read",
       1,
       ["data"],
     );
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       status: "returned",
       value: { value: "page:data" },
       truncated: false,
@@ -104,7 +107,7 @@ describe("page method MAIN-world helpers", () => {
       read.arity,
       [],
     );
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       status: "returned",
       value: [null, null, "third"],
       truncated: true,
@@ -130,7 +133,7 @@ describe("page method MAIN-world helpers", () => {
         read.arity,
         [],
       ),
-    ).resolves.toEqual({
+    ).resolves.toMatchObject({
       status: "returned",
       value: "[UNSUPPORTED_OBJECT]",
       truncated: true,

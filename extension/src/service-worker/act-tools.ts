@@ -342,7 +342,7 @@ export const genericActTools = (
             function: {
               name: "propose_page_method_call",
               description:
-                "Propose one call to a method discovered in the current page. Page code and effects are untrusted and may mutate or contact a server. Use only the supplied method_ref, exact JSON arguments and a concrete user-requested purpose. This proposal always needs separate review; never paste or execute JavaScript.",
+                "Propose one call to a method discovered in the current page. Page code and effects are untrusted and may mutate or contact a server. Use only the supplied method_ref, exact JSON arguments and a concrete user-requested purpose. Include the declared parameter count; when input is missing request clarification instead of inventing values. This proposal always needs separate review; never paste or execute JavaScript.",
               parameters: {
                 type: "object",
                 additionalProperties: false,

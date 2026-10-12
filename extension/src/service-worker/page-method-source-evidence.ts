@@ -3,6 +3,7 @@ import type { ProviderMessage } from "../providers/types.js";
 /** Evidence IDs are accepted only from successful read_page_resource tool results. */
 export const pageMethodSourceEvidence = (
   messages: readonly ProviderMessage[],
+  requestRevision?: number,
 ): ReadonlyMap<string, string> => {
   const reads = new Set<string>();
   for (const message of messages) {
@@ -37,6 +38,9 @@ export const pageMethodSourceEvidence = (
           : undefined;
       if (
         record.status === "AVAILABLE" &&
+        (requestRevision === undefined ||
+          record.request_revision === requestRevision) &&
+        ["inline_script", "external_script"].includes(String(record.kind)) &&
         typeof record.evidence_id === "string" &&
         typeof text === "string"
       )

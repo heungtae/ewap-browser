@@ -1,3 +1,4 @@
+import { advancePlanStep } from "./page-method-plan.js";
 import { mutationBinding } from "./act-mutation-history.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import type { PageScope } from "../state/tab-chat-session-store.js";
@@ -32,10 +33,16 @@ export const recordActExecution = (
       : {}),
     ...mutationBinding(session, proposal, session.assessmentBaseline),
     dispatch,
+    ...(proposal.tool === "call_page_method"
+      ? {
+          page_method_invocation:
+            executed.invocation as import("../contracts/page-method-types.js").PageMethodResult["invocation"],
+        }
+      : {}),
     logical_step_id:
       session.recoveryStep?.logicalStepId ??
       (session.plan
-        ? `${session.plan.input.plan_id}:${session.plan.revision}:${session.plan.completedSteps}`
+        ? `${session.plan.input.plan_id}:${session.plan.revision}:${session.plan.nextStep ?? session.plan.completedSteps}`
         : proposal.id),
     raw_outcome: outcome,
     ...(outcome === "VERIFIED"
@@ -75,7 +82,14 @@ export const recordActExecution = (
     evidence,
     executed.verified_scope as PageScope | undefined,
   );
-  if (session.plan && outcome === "VERIFIED") session.plan.completedSteps += 1;
+  if (
+    session.plan &&
+    (outcome === "VERIFIED" ||
+      (proposal.tool === "call_page_method" &&
+        executed.dispatch === "dispatched" &&
+        executed.invocation === "returned"))
+  )
+    advancePlanStep(session.plan, outcome === "VERIFIED");
   session.messages.push({
     role: "tool",
     tool_call_id: proposal.toolCallId,

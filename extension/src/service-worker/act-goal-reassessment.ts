@@ -58,7 +58,7 @@ export const reassessGoal = async (opts: {
     );
   opts.messages.push({
     role: "user",
-    content: `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\nCurrent observation_id: ${observationId}. Only report_goal_status is available; action results remain unchanged. You MUST call report_goal_status, even for unknown or incomplete. A plain-text answer does not confirm the goal. Use the original request and current typed execution outcome; accepted structured confirmations may resolve historical raw unknown local UI results.`,
+    content: `[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(model.snapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\nCurrent observation_id: ${observationId}. Only report_goal_status is available; action results remain unchanged. You MUST call report_goal_status, even for unknown or incomplete. A plain-text answer does not confirm the goal. Use the original request and current typed execution outcome; For a page-method calculation/query, approved returned data can establish the data-only goal without any UI change while action UNKNOWN remains unchanged. Missing business-effect evidence is not missing calculation data; do not claim server persistence. For other mutations, accepted structured confirmations may resolve historical raw unknown local UI results.`,
   });
   opts.messages.push({
     role: "user",

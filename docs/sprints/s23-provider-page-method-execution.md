@@ -2,11 +2,11 @@
 
 ## 상태와 착수 근거
 
-**In Progress — 2026-10-12 리뷰 수정. C1~C7 구현과 통제 Chrome 호출 경로를 확인했다.**
-MAIN 주입 함수의 빌드 계측 의존성을 제거해 inventory 누락을 수정했다.
-통제 fixture에서 script 검색·읽기, 메서드 1회 실행, 동일 call ID 결과 반환과
-후속 완료 판단이 통과했다. 실제 Provider qualification과 R01~R20 전체 evidence는
-남아 있으므로 Completed가 아니다. 이전 실패는 evidence에 보존한다.
+**Completed — 2026-10-12, Browser-local 지원 범위.**
+구현 보강·통제 Chrome 회귀·실제 OpenRouter 데이터 holdout 및 OpenAI `gpt-6-luna`
+독립 UI/수동 승인 qualification이 통과했다. 최초 429/503 실패는 보존한다.
+[리뷰 후 증거와 수용 범위](../evidence/s23-page-method-review-2026-10-12.md)를 참조한다.
+운영 사이트·임의 모델·회사/Platform·설치/배포는 별도 backlog이며 이 완료 판정에 포함하지 않는다.
 
 사용자는 사이트별 adapter를 작성하는 방식 대신, 페이지 script를 Provider가 읽고
 필요한 메서드와 인자를 판단하면 확장이 호출하고 결과를 같은 대화에 반환하도록 요청했다.
@@ -18,8 +18,8 @@ MAIN 주입 함수의 빌드 계측 의존성을 제거해 inventory 누락을 �
 | 확인 범위     | 기존 Sprint 목록·진행 기록, S10/Discovery·S16~S22 및 관련 승인·분석·실행 계약      |
 | 현재 기반     | script 목록·검색·부분 읽기, Act 계획·승인·실행 결과 반환, request/document binding |
 | 신규 범위     | Browser-local Act의 동적 메서드 확인·호출 제안·실행·반환 데이터 전송·후속 판단     |
-| 구현 기준점   | 현재 변경 중인 작업 트리; HEAD `67f38c098c518490b6ba980a7575c87320c00bb1`, 0.1.106 |
-| 상태의 의미   | 구현 중. 통제 Chrome vertical slice PASS; live Provider·전체 행렬 미검증           |
+| 구현 기준점   | 현재 변경 중인 작업 트리; HEAD `6da726b4b`, 0.1.106 |
+| 상태의 의미   | Completed. 명시한 Browser-local 범위의 통제·live holdout/UI PASS           |
 
 현재 동작은 [코드 탐색 안내](../source-guide.md)와 코드·계약·설정이 SSOT다.
 기존 Completed 기록은 당시 revision과 검증 범위로 보존한다. 이 계획으로 과거의
@@ -82,7 +82,7 @@ Provider가 작성한 JavaScript를 실행 입력으로 받지 않는다. 번들
 | 카드   | 작업·주요 연결 위치                                                                         | 종료 조건·선행 조건                                                                                                                                                                                                                                                     |
 | ------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | S23-C1 | 실행 모델/참조 수명/영향 미확인 정책/외부 계약 영향 결정, 계약·schema·result 상태 정의      | runtime 함수/receiver handle 유지 또는 호출 직전 경로 해석의 의미를 명시. 동일 소스=동일 객체로 간주하지 않음. 최소 Chrome 실증으로 유효성을 확인한 뒤 C2~C7 착수. 미결정은 이름만 가진 도구를 callable로 노출하지 않음                                                 |
-| S23-C2 | consent-gated MAIN-world inventory, 기존 source reader의 근거 ID 결속, 동적 proposal schema | 별도 list/describe tool 대신 동의 후 요청별 inventory enum을 제공하고 검색·읽기된 source evidence로 proposal을 묶는다. candidate inventory는 runtime locator이며 호출 보증이 아니다. Chrome Act inventory wiring은 통제 fixture에서 재검증 PASS; live Provider는 미검증 |
+| S23-C2 | consent-gated MAIN-world inventory, 기존 source reader의 근거 ID 결속, 동적 proposal schema | 별도 list/describe tool 대신 동의 후 요청별 inventory enum을 제공하고 검색·읽기된 source evidence로 proposal을 묶는다. candidate inventory는 runtime locator이며 호출 보증이 아니다. Chrome Act inventory wiring은 통제 fixture와 실제 OpenRouter/OpenAI에서 PASS |
 | S23-C3 | `propose_page_method_call`·새 capability·plan/inventory/proposal/parser·enterprise 인가     | JSON 인자 전체와 method/plan/request revision 결속. source 사실·Provider 추정·권한 판정 구분. 미확인 영향을 무조건 R1로 취급하지 않음                                                                                                                                   |
 | S23-C4 | 원래 요청에 결속된 호출기·dispatch receipt·timeout/exception·중복 방지                      | 원래 `this`, 호출 ID/논리 단계 단일 소비. await/dispatch 직전 검사. 함수 예외 뒤 부분 효과·timeout·restart는 no-retry. 같은 인자가 필요한 별도 승인 단계와 재전송을 구분                                                                                                |
 | S23-C5 | 반환 데이터 전송 category·설정/strict schema 이전·동의·bounded serializer·마스킹            | 실행/전송 허용을 분리. 코드 전송 grant를 반환 데이터에 재사용하지 않음. 기존 full/ask/custom/deny 이전·revision/Provider 결속. getter/toJSON/custom iterator와 무제한 객체 직렬화 방지                                                                                  |
@@ -161,4 +161,4 @@ Provider schema·동일 call ID·실제 dispatch 횟수·반환 데이터의 마
   Planned/In Progress 또는 범위를 명시한 Partial로 유지하며 기존 Sprint 완료 상태를 대신 사용하지 않는다.
 
 운영 사이트·임의 Provider/모델·Platform 통합·설치·배포는 별도 증거 없이 완료로 확대하지 않는다.
-현재 실행 결과는 [S23 구현·통합 확인](../evidence/s23-provider-page-method-2026-10-11.md)에 기록한다.
+최종 실행 결과는 [S23 리뷰 후 증거](../evidence/s23-page-method-review-2026-10-12.md)에 기록한다. [이전 구현·실패 기록](../evidence/s23-provider-page-method-2026-10-11.md)은 당시 revision의 이력으로 보존한다.

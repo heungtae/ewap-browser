@@ -91,3 +91,7 @@ Provider의 최종 completed 수용은 [goal finalizer](../extension/src/service
 [completion 계약](../extension/src/contracts/act-completion.ts), [완료 표시](../extension/src/sidepanel/act-completion-view.ts)에서 확인한다.
 로컬 이동 UNKNOWN의 목적지 결합 확인은 [navigation confirmation](../extension/src/service-worker/act-navigation-confirmation.ts)과
 [ISS-20261011-004](issues/records/2026-10-11-navigation-provider-confirmation.md)에서 확인한다.
+
+동적 Page Method의 함수/receiver identity는 [MAIN registry](../extension/src/service-worker/page-method-registry-main.ts),
+정확한 계획·인수 결속은 [plan binding](../extension/src/service-worker/page-method-plan.ts),
+반환 privacy/크기는 [return projection](../extension/src/service-worker/page-method-return-data.ts)에서 확인한다.

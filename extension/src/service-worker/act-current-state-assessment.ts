@@ -1,3 +1,4 @@
+import { advancePlanStep } from "./page-method-plan.js";
 import type { ActSession, ActProposal } from "./act-session-types.js";
 import type { ActExecutionEvidence } from "./act-execution-feedback.js";
 import type { ActivePage } from "./page-context-runtime.js";
@@ -40,6 +41,6 @@ export const assessCurrentState = (
   evidence.observed = true;
   evidence.confirmation = "current_state";
   evidence.stateSatisfied = true;
-  if (session.plan) session.plan.completedSteps++;
+  if (session.plan) advancePlanStep(session.plan, true);
   delete session.feedbackOnly;
 };

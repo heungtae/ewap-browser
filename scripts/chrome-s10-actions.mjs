@@ -84,7 +84,10 @@ export const checkS10Actions = async ({
       "(() => {document.querySelector('#mode-act').click();document.querySelector('#chat-input').value='Select High variant';document.querySelector('#chat-form').requestSubmit();return true;})()",
     );
     await waitFor(
-      () => hasButton("이번 단계 실행"),
+      async () => {
+        await button("이번 요청에 허용");
+        return hasButton("이번 단계 실행");
+      },
       15000,
       "S10 review absent",
     ).catch(async (error) => {

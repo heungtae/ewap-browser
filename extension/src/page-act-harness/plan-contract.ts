@@ -9,6 +9,8 @@ export type PlanStepInput = {
   intent: string;
   target_evidence_id?: string;
   user_input?: string;
+  method_ref?: string;
+  arguments?: unknown[];
   side_effects?: string[];
   capability: string;
   postcondition: string;

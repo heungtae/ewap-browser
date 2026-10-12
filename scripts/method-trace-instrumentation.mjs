@@ -6,7 +6,7 @@ import { readFile } from "node:fs/promises";
 import { relative, resolve, dirname } from "node:path";
 
 const excluded =
-  /(?:diagnostics|execution-diagnostics|diagnostic-|\/zip\.ts$|page-api-main|page-method-(?:discovery|invoke)-main|extension-version|browser-api|types|dependencies|runtime-message-router)/;
+  /(?:diagnostics|execution-diagnostics|diagnostic-|\/zip\.ts$|page-api-main|page-method-(?:discovery|invoke|registry)-main|extension-version|browser-api|types|dependencies|runtime-message-router)/;
 export const isTraceSource = (file) => {
   const path = file.replaceAll("\\", "/");
   if (!path.includes("extension/src/") || excluded.test(path)) return false;

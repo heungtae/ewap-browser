@@ -100,7 +100,7 @@ export const runPlanSubmissionTurns = async (opts: {
     dependencies.coordinator.runs.transition(run.id, "PROPOSING");
     dependencies.publish(run.id, {
       type: "assistant_delta",
-      text: `계획: ${plan.input.goal}\n근거 범위: ${plan.input.coverage_note}\n출처: ${plan.input.provenance}\n${plan.input.origin_diff ?? ""}\n${plan.input.steps.map((step, index) => `${index + 1}. ${step.intent} [${step.capability}]\n입력: ${step.user_input ?? "없음"}\n부작용: ${(step.side_effects ?? []).join(", ") || "미기재"}\n검증: ${step.postcondition}`).join("\n")}\n계획 승인 후에도 각 동작의 승인과 권한 확인이 필요합니다.`,
+      text: `계획: ${plan.input.goal}\n근거 범위: ${plan.input.coverage_note}\n출처: ${plan.input.provenance}\n${plan.input.origin_diff ?? ""}\n${plan.input.steps.map((step, index) => `${index + 1}. ${step.intent} [${step.capability}]\n입력: ${step.arguments === undefined ? (step.user_input ?? "없음") : "단계 실행 검토에서 확인"}\n부작용: ${(step.side_effects ?? []).join(", ") || "미기재"}\n검증: ${step.postcondition}`).join("\n")}\n계획 승인 후에도 각 동작의 승인과 권한 확인이 필요합니다.`,
     });
     const decision = approvalDecision(
       "plan_approval",

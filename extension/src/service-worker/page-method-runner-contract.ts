@@ -30,18 +30,16 @@ export type Dependencies = {
 };
 
 export const pageMethodApprovalDigest = (
-  intent: Omit<
-    PageMethodIntent,
-    | "approval_digest"
-    | "run_id"
-    | "tab_id"
-    | "document_id"
-    | "document_epoch"
-    | "page_scope_epoch"
-  >,
+  intent: Omit<PageMethodIntent, "approval_digest" | "document_id">,
 ): string =>
   digestCanonical({
     kind: intent.kind,
+    run_id: intent.run_id,
+    tab_id: intent.tab_id,
+    document_epoch: intent.document_epoch,
+    page_scope_epoch: intent.page_scope_epoch,
+    invocation_id: intent.invocation_id,
+    request_id: intent.request_id,
     origin: intent.origin,
     request_generation: intent.request_generation,
     source_evidence_id: intent.source_evidence_id,
