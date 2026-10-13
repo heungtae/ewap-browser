@@ -24,9 +24,11 @@
 | 요소·action·목표의 추가 판단 구현·검증 | [Browser Act S21 — 현재 자료에 기반한 LLM 추가 판단](evidence/s21-assessment-2026-10-11.md) — Browser-local 구현, qualification 제한 |
 | 외부 제품 비교 배경                    | [비규범 참고자료](references/README.md)                                                                                              |
 
-[성공한 Ask/Act 요청의 페이지 프로필 자동 저장·재사용 S24](sprints/s24-learned-page-profiles.md)는
+[페이지 프로필 자동 저장·재사용과 작업별 명령 S24](sprints/s24-learned-page-profiles.md)는
 2026-10-13 설계한 Planned 작업이다. 저장된 방법 실패 시 Provider 대안 탐색·성공 갱신과
-Options 항목별 관리·내용 보기를 포함하며 제품 코드 미구현이다.
+Options 항목별 관리·내용 보기를 포함한다. 페이지 명령의 profile 저장·help/Schema
+생성·현재 요청 재결속·기존 읽기/Act 실행·dry-run·명령/recipe 원자적 갱신까지
+C1~C12/R01~R44로 통합했으며 제품 코드 미구현이다.
 
 [Provider의 script 분석과 동적 메서드 호출 S23 계획](sprints/s23-provider-page-method-execution.md)은
 구현 전 Planned 작업이다. 기존 Sprint와의 충돌·전환 조건과 선행 결정·검증 행렬을 함께 기록한다.

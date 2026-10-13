@@ -18,6 +18,13 @@ C1~C8/R01~R18을 기록했다.
 상세 내용/마스킹 JSON/변경 이력을 구체화했다. 현재 계획은 C1~C9/R01~R28이다.
 문서 검토 범위이며 제품 코드·runtime·Provider·배포 검증은 수행하지 않았다.
 
+2026-10-13 CLI-Anything 분석 후속 설계에서 페이지별 작업 명령을 LearnedPageProfile의
+commands로 통합했다. 명령과 recipe의 연결·제한된 입력/결과 계약에서 help/Schema/
+검증기를 생성하고, 현재 페이지 재결속 후 기존 읽기 또는 Act 계획/proposal로 처리한다.
+S23는 영속 함수 경로 없이 Act method_hint 재탐색을 사용한다. dry-run의 무실행,
+명령/recipe 원자적 repair와 Options 명령 상세/연결 관리를 포함한 현재 계획은
+C1~C12/R01~R44다. Planned를 유지하며 제품 코드는 변경하지 않았다.
+
 ## Browser Act S23 — 2026-10-12 리뷰 수정
 
 **Completed — Browser-local 구현·검증 범위.**

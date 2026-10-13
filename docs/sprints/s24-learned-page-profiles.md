@@ -1,4 +1,4 @@
-# Browser Agent S24 — 성공한 Ask/Act 요청의 페이지 프로필 자동 저장·재사용
+# Browser Agent S24 — 페이지 프로필 자동 저장·재사용과 작업별 명령
 
 ## 상태와 범위
 
@@ -6,6 +6,11 @@
 
 2026-10-13 후속 요구를 반영해 **저장된 방법의 실패 → Provider 대안 탐색 → 성공한
 대안으로 해당 프로필 갱신**과 **Options 항목별 관리·내용 보기**를 보강했다.
+
+같은 날짜의 CLI-Anything 분석 후속 요구로 **페이지별 작업 명령을 프로필에 저장하고,
+명령 계약에서 help·Provider 도구·입력 검증을 생성하는 기능**을 S24에 통합했다.
+명령 생성·현재 페이지 재결속·기존 실행 경로·recipe와 함께 갱신하는 범위는
+[페이지 명령 설계](#페이지-명령과-profile-통합)에 기록한다. 모두 Planned다.
 
 사용자는 오류가 발생하지 않은 요청에서 페이지 프로필을 자동 저장하고,
 다음 동일한 페이지의 요청에서 활용하기를 요청했다. 대상은 **Ask와 Act 모두**다.
@@ -15,6 +20,8 @@
 초기 범위는 같은 Chrome profile의 Browser-local 저장·재사용이다. 페이지를
 방문하는 것만으로 작업을 시작하지 않으며, 사용자가 제출한 다음 요청에서 자동 조회한다.
 외부 Resolver/Platform 등록, 조직 서명, 클라우드 동기화는 후속 범위다.
+명령도 Browser-local LearnedPageProfile의 일부다. OS 실행 파일 설치·Native Host의
+shell 실행·외부 CLI 패키지 배포 없이 현재 사용자 요청의 Ask/Act 도구로 사용한다.
 
 ## 기대 동작
 
@@ -31,30 +38,40 @@
    해당 recipe를 새 revision으로 갱신한다. 다음 요청부터 성공한 대안을 사용한다.
 6. Options에서 프로필과 recipe를 각각 선택해 내용을 보고, 이름·활성 여부·자동 갱신·
    삭제·다음 요청의 재탐색을 관리한다. 최초 실패와 변경 전후 내용도 확인할 수 있다.
+7. 성공한 표 읽기·검색·필터 작업에 대응하는 명령을 같은 프로필에 자동 생성한다.
+   다음 요청에서 Provider는 명령 목록·help·입력 계약을 보고 현재 값으로 선택한다.
+   사용자에게 터미널 입력을 요구하지 않으며 명령 이름만으로 실행 권한을 만들지 않는다.
+8. 명령에 연결된 방법이 실패하면 현재 요청에서 안전한 대안을 처리하고, 성공한
+   recipe와 명령 계약을 같은 revision 변경으로 갱신한다. Options에서 명령의 입력·
+   결과·연결된 방법·사용 가능 상태와 실패/변경 이력을 함께 확인할 수 있다.
 
 ## 확인한 현재 연결점
 
-2026-10-13 작업 트리에서 확인했다. 기준 HEAD는 `c0ae91f72`이고 미커밋 변경을
-포함하므로 아래 분석을 clean commit 전체의 검증 결과로 해석하지 않는다.
+2026-10-13 최초 설계는 HEAD `c0ae91f72`, 페이지 명령 확장 확인은 HEAD `f86daac57`의
+작업 트리에서 수행했다. 미커밋 변경을 포함하므로 아래 분석을 clean commit 전체의
+검증 결과로 해석하지 않는다.
 
-| 영역                | 코드와 설계에 미치는 영향                                                                                                                                                                                                                                                                                                                                              |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 외부 Profile        | [Resolver](../../extension/src/profile/resolver.ts), [Profile 계약](../../extension/src/profile/profile-types.ts), [설정](../../extension/src/settings/profile-settings.ts): 현재 페이지에 결속된 서명 응답을 조회한다. 로컬 학습 기록을 이 타입으로 위장하지 않는다.                                                                                                  |
-| 페이지 읽기·binding | [page context runtime](../../extension/src/service-worker/page-context-runtime.ts), [fingerprint](../../extension/src/profile/fingerprint.ts): 최신 snapshot을 확보한다. 기존 fingerprint는 이름을 category로 줄이므로 작업 대상의 의미 일치까지 보장하지 않는다.                                                                                                      |
-| Ask                 | [runner](../../extension/src/service-worker/ask-chat-runner.ts), [executor](../../extension/src/service-worker/ask-tool-executor.ts): 답변 정상 종료와 adapter 검토 종료가 모두 VERIFIED가 될 수 있다. 화면의 tool_finished VERIFIED만으로 실제 읽기 성공을 판단하지 않는다.                                                                                           |
-| Act 완료            | [goal finalizer](../../extension/src/service-worker/act-goal-finalizer.ts), [completion 계약](../../extension/src/contracts/act-completion.ts), [실행 feedback](../../extension/src/service-worker/act-execution-feedback.ts): 최종 goal 완료와 원래 action receipt를 함께 확인한다.                                                                                   |
-| 대안 실행·중복 방지 | [논리 결과](../../extension/src/service-worker/act-logical-results.ts), [mutation history](../../extension/src/service-worker/act-mutation-history.ts): 현재 pre-dispatch TARGET_NOT_ACTIONABLE/TARGET_STALE의 대안 1회와 UNKNOWN/동일 mutation 반복 차단을 유지한다. 다른 method로 같은 효과를 중복 실행하지 않는다.                                                  |
-| Options 관리 권한   | [preferences handler](../../extension/src/service-worker/preferences-message-handler.ts), [Options](../../extension/src/settings/index.html): Settings sender 확인·strict fields·revision·직렬 mutation을 사용한다. 프로필 관리도 같은 소유권 원칙으로 새 전용 경로를 연결한다.                                                                                        |
-| 요청 종료·복구      | [request lifecycle](../../extension/src/service-worker/chat-request-lifecycle.ts), [run lifecycle](../../extension/src/service-worker/chat-run-lifecycle.ts), [request store](../../extension/src/service-worker/request-store.ts): finish에서 controller를 abort하며 복구 시 prompt·mode 전체를 보존하지 않는다. 종료 후 기존 active-context 검사로 저장하면 안 된다. |
-| 기존 Workflow       | [catalog](../../extension/src/service-worker/workflow-catalog-runtime.ts), [declaration](../../extension/src/contracts/workflow.ts), [save handler](../../extension/src/service-worker/workflow-save-message-handler.ts): 사용자 저장 경로와 제한된 v1 도구 계약이 있다. 학습 프로필을 기존 catalog에 자동 삽입하지 않는다.                                            |
-| 설정·storage        | [preferences](../../extension/src/policy/permission-mode.ts), [bootstrap](../../extension/src/service-worker/storage-bootstrap.ts): strict validator와 TRUSTED_CONTEXTS 저장 경계를 유지한다.                                                                                                                                                                          |
-| 동적 메서드         | [Page Method 계약](../../extension/src/contracts/page-method-types.ts), [S23](s23-provider-page-method-execution.md): method_ref·함수/receiver identity·인자·승인은 현재 요청 소유다. 다음 요청에서 재발급한다.                                                                                                                                                        |
+| 영역                | 코드와 설계에 미치는 영향                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 외부 Profile        | [Resolver](../../extension/src/profile/resolver.ts), [Profile 계약](../../extension/src/profile/profile-types.ts), [설정](../../extension/src/settings/profile-settings.ts): 현재 페이지에 결속된 서명 응답을 조회한다. 로컬 학습 기록을 이 타입으로 위장하지 않는다.                                                                                                      |
+| 페이지 읽기·binding | [page context runtime](../../extension/src/service-worker/page-context-runtime.ts), [fingerprint](../../extension/src/profile/fingerprint.ts): 최신 snapshot을 확보한다. 기존 fingerprint는 이름을 category로 줄이므로 작업 대상의 의미 일치까지 보장하지 않는다.                                                                                                          |
+| Ask                 | [runner](../../extension/src/service-worker/ask-chat-runner.ts), [executor](../../extension/src/service-worker/ask-tool-executor.ts): 답변 정상 종료와 adapter 검토 종료가 모두 VERIFIED가 될 수 있다. 화면의 tool_finished VERIFIED만으로 실제 읽기 성공을 판단하지 않는다.                                                                                               |
+| Act 완료            | [goal finalizer](../../extension/src/service-worker/act-goal-finalizer.ts), [completion 계약](../../extension/src/contracts/act-completion.ts), [실행 feedback](../../extension/src/service-worker/act-execution-feedback.ts): 최종 goal 완료와 원래 action receipt를 함께 확인한다.                                                                                       |
+| 대안 실행·중복 방지 | [논리 결과](../../extension/src/service-worker/act-logical-results.ts), [mutation history](../../extension/src/service-worker/act-mutation-history.ts): 현재 pre-dispatch TARGET_NOT_ACTIONABLE/TARGET_STALE의 대안 1회와 UNKNOWN/동일 mutation 반복 차단을 유지한다. 다른 method로 같은 효과를 중복 실행하지 않는다.                                                      |
+| Options 관리 권한   | [preferences handler](../../extension/src/service-worker/preferences-message-handler.ts), [Options](../../extension/src/settings/index.html): Settings sender 확인·strict fields·revision·직렬 mutation을 사용한다. 프로필 관리도 같은 소유권 원칙으로 새 전용 경로를 연결한다.                                                                                            |
+| 요청 종료·복구      | [request lifecycle](../../extension/src/service-worker/chat-request-lifecycle.ts), [run lifecycle](../../extension/src/service-worker/chat-run-lifecycle.ts), [request store](../../extension/src/service-worker/request-store.ts): finish에서 controller를 abort하며 복구 시 prompt·mode 전체를 보존하지 않는다. 종료 후 기존 active-context 검사로 저장하면 안 된다.     |
+| 기존 Workflow       | [catalog](../../extension/src/service-worker/workflow-catalog-runtime.ts), [declaration](../../extension/src/contracts/workflow.ts), [save handler](../../extension/src/service-worker/workflow-save-message-handler.ts): 사용자 저장 경로와 제한된 v1 도구 계약이 있다. 학습 프로필을 기존 catalog에 자동 삽입하지 않는다.                                                |
+| 설정·storage        | [preferences](../../extension/src/policy/permission-mode.ts), [bootstrap](../../extension/src/service-worker/storage-bootstrap.ts): strict validator와 TRUSTED_CONTEXTS 저장 경계를 유지한다.                                                                                                                                                                              |
+| 동적 메서드         | [Page Method 계약](../../extension/src/contracts/page-method-types.ts), [S23](s23-provider-page-method-execution.md): method_ref·함수/receiver identity·인자·승인은 현재 요청 소유다. 다음 요청에서 재발급한다.                                                                                                                                                            |
+| 명령 도구 생성      | [read registry](../../extension/src/service-worker/act-read-tool-registry.ts), [Act schema](../../extension/src/service-worker/act-tools.ts), [plan schema](../../extension/src/service-worker/act-plan-schema.ts): 실행기가 연결된 도구만 제공하며 명령은 현재 관찰에 근거한 읽기 또는 기존 action plan으로 변환한다. 명령 자체를 새 action capability로 등록하지 않는다. |
 
 ## 설계 결정
 
 **저장 단위는 페이지별 공통 힌트와 작업별 처리 방법을 가진 별도
 `LearnedPageProfile`이다.** 과거 답변이나 업무 데이터가 아니라 처리 절차를 저장한다.
 한 페이지에 여러 작업 recipe를 둘 수 있으며 Ask와 Act의 recipe는 구분한다.
+작업별 명령은 같은 프로필의 `commands`에 저장하고 recipe를 참조한다. 처리 단계를
+명령에 복제하지 않으며 명령·recipe·관리 상태의 revision을 함께 검증한다.
 
 **프로필의 자동 사용은 탐색·계획 수립을 돕는다.** 실제 읽기·값 판단·계획·승인·
 dispatch·검증은 기존 실행 경로를 이용한다. 사용자가 Full Permission을 선택했다면
@@ -72,16 +89,16 @@ Enterprise의 로컬 저장·자료 전송 제한은 적용한다.
 Worker는 디버그 설정과 무관하게 실행 중 최소한의 typed evidence와 오류 여부를
 수집한다. 일반 trace 문자열·UI 메시지·HTTP 200·`ok: true` 하나를 성공 근거로 쓰지 않는다.
 
-| 요청 결과                         | 자동 저장 판정                                                                                                                                                                                                            |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ask 정상 답변                     | 전체 답변이 정상 종료했고 유효한 현재 페이지 증거와 재사용할 읽기 방법이 있으며 필요한 읽기 결과가 정상인 경우 저장한다. 답변 내용의 사실성을 별도로 인증한 것으로 표시하지 않는다.                                       |
-| Act 모드의 정보·script 읽기       | read-only runner의 정상 답변 기준을 적용하되 mode=act와 read-only 성격을 기록한다.                                                                                                                                        |
-| Act UI 작업                       | 최종 goal_status=completed이고 실제 사용한 단계의 raw receipt가 정상 검증되었으며 unresolved mutation이 없을 때 처리 순서를 저장한다. no-op은 실제 실행 단계로 만들지 않는다.                                             |
-| 동적 메서드의 데이터 요청         | invocation=returned, 필요한 반환 projection이 정상이며 현재 데이터 목표 완료가 확인되면 **재탐색 힌트만** 저장할 수 있다. UNKNOWN 업무 효과를 성공한 mutation recipe로 저장하지 않는다.                                   |
-| 대기·검토·미완료                  | WORKFLOW_CANDIDATES, ANALYSIS_ADAPTER_REVIEW_REQUIRED, WAITING_USER, checking/incomplete/unknown, 빈 답변, 도구 예산 종료는 저장하지 않는다.                                                                              |
-| 실패·취소·불확실한 실행           | 실패한 방법을 성공 recipe로 저장하지 않는다. 사용자 거부, Stop, worker restart, 해결되지 않은 stale binding·mutation UNKNOWN은 신규 저장/대안 승격 대상에서 제외한다. 오류 기록과 안전한 repair 가능성은 별도로 판단한다. |
-| 저장된 방법의 실패 후 성공한 대안 | 아래 repair 조건을 통과한 대안으로 최종 요청이 완료되면 기존 프로필/recipe를 갱신한다. 실패한 시도는 보존하고 성공한 처리 절차만 새 revision에 반영한다.                                                                  |
-| 재사용 정보 없음                  | 정상 답변이어도 안전하게 일반화할 정보가 없으면 저장하지 않고 NO_REUSABLE_HINT를 기록한다.                                                                                                                                |
+| 요청 결과                         | 자동 저장 판정                                                                                                                                                                                                                               |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ask 정상 답변                     | 전체 답변이 정상 종료했고 유효한 현재 페이지 증거와 재사용할 읽기 방법이 있으며 필요한 읽기 결과가 정상인 경우 저장한다. 답변 내용의 사실성을 별도로 인증한 것으로 표시하지 않는다.                                                          |
+| Act 모드의 정보·script 읽기       | read-only runner의 정상 답변 기준을 적용하되 mode=act와 read-only 성격을 기록한다.                                                                                                                                                           |
+| Act UI 작업                       | 최종 goal_status=completed이고 실제 사용한 단계의 raw receipt가 정상 검증되었으며 unresolved mutation이 없을 때 처리 순서를 저장한다. no-op은 실제 실행 단계로 만들지 않는다.                                                                |
+| 동적 메서드의 데이터 요청         | invocation=returned, 필요한 반환 projection이 정상이며 현재 데이터 목표 완료가 확인되면 재탐색 힌트와 이를 참조하는 Act method_hint 명령을 저장할 수 있다. 영속 method 실행 단계·UNKNOWN 업무 효과를 성공 mutation recipe로 저장하지 않는다. |
+| 대기·검토·미완료                  | WORKFLOW_CANDIDATES, ANALYSIS_ADAPTER_REVIEW_REQUIRED, WAITING_USER, checking/incomplete/unknown, 빈 답변, 도구 예산 종료는 저장하지 않는다.                                                                                                 |
+| 실패·취소·불확실한 실행           | 실패한 방법을 성공 recipe로 저장하지 않는다. 사용자 거부, Stop, worker restart, 해결되지 않은 stale binding·mutation UNKNOWN은 신규 저장/대안 승격 대상에서 제외한다. 오류 기록과 안전한 repair 가능성은 별도로 판단한다.                    |
+| 저장된 방법의 실패 후 성공한 대안 | 아래 repair 조건을 통과한 대안으로 최종 요청이 완료되면 기존 프로필/recipe를 갱신한다. 실패한 시도는 보존하고 성공한 처리 절차만 새 revision에 반영한다.                                                                                     |
+| 재사용 정보 없음                  | 정상 답변이어도 안전하게 일반화할 정보가 없으면 저장하지 않고 NO_REUSABLE_HINT를 기록한다.                                                                                                                                                   |
 
 사용자의 “오류가 발생하지 않은 요청”은 실제 Provider·필수 도구·실행·검증 오류가
 없다는 뜻으로 적용한다. **최초 자동 학습**에서는 실패 후 재시도로 완료한 요청도
@@ -141,6 +158,7 @@ URL template·동적 행 수를 무시하는 fingerprint·서로 다른 URL 간 
 | page_match | origin, keyed URL digest, scope, fingerprint 알고리즘/값, 안전한 context guard digest. raw URL/path/query/hash는 저장하지 않는다.                                                                                                                                         |
 | page_hints | 읽기 채널·collection/source 탐색 순서·coverage 확인 종류. 안정적인 공개 UI label은 Worker의 허용·민감값 검사 후 제한적으로 저장하고 그 외는 digest만 저장한다.                                                                                                            |
 | recipes    | 최대 5개. stable recipe_id/recipe_revision, mode, 작업 descriptor, input slot 종류, 단계별 guard·tool 종류·semantic target descriptor, 목표 확인 종류. 최대 12단계. recipe별 enabled/auto_update와 실패 격리 상태를 둔다.                                                 |
+| commands   | 최대 5개이며 recipe당 최대 1개. command_id/command_revision, 안전한 namespace/name, 연결 recipe_id/recipe_revision, mode, 제한된 입력 계약·결과 계약·재결속 종류. 단계·실제 입력·현재 ref·승인은 제외한다. 아래 명령 계약과 공통 저장 예산을 적용한다.                    |
 | provenance | 원래 request/run의 opaque digest, completion/confirmation 종류, receipt 요약 enum, 최초/최근 성공 시각·횟수. acquisition_kind=first_success/repaired_success, repair_id, 이전 revision·실패 단계/reason·대안 성공 근거와 repair 횟수를 둔다. raw trace·prompt는 제외한다. |
 | lifecycle  | enabled, active/stale/quarantined/disabled, expires_at, last_used_at, revision별 mismatch·실패 이유와 횟수. 새 내용은 새 revision으로 저장한다. repairing은 현재 요청에서만 표시하는 진행 상태다.                                                                         |
 | management | 표시 이름·메모, profile별 auto_update, force_discovery_next_request, 관리 revision. 메모는 Options 표시용이며 Provider instruction으로 전달하지 않는다.                                                                                                                   |
@@ -160,6 +178,187 @@ permission·verifier 정의를 새 권한 규칙으로 저장하지 않는다.
 작업 의미의 일반화가 필요하면 이미 동의된 같은 Provider 대화 안에서 bounded 구조화
 후보를 만들 수 있다. 후보 생성 자체는 성공 판정·저장 권한이 아니며 추가 page 읽기·
 mutation을 수행하지 않는다. 의미가 불명확하거나 예산이 없으면 해당 recipe를 생략한다.
+
+## 페이지 명령과 Profile 통합
+
+### CLI-Anything에서 적용하는 범위
+
+분석 기준은 [CLI-Anything revision 34f5195](https://github.com/HKUDS/CLI-Anything/tree/34f519533bc175d2fe287ab8316b0dd99bb9cc43)다.
+[앱 소스 분석·명령 설계·실제 backend 검증 방법](https://github.com/HKUDS/CLI-Anything/blob/34f519533bc175d2fe287ab8316b0dd99bb9cc43/cli-anything-plugin/HARNESS.md)과
+[Safari의 Schema → 명령/옵션 생성](https://github.com/HKUDS/CLI-Anything/blob/34f519533bc175d2fe287ab8316b0dd99bb9cc43/safari/agent-harness/cli_anything/safari/safari_cli.py#L246)을 참고했다.
+웹에서는 S24의 성공 recipe가 처리 방법이고, 명령은 그 방법을 선택·입력하는 계약이다.
+Provider가 매 사이트의 Python/JavaScript 실행 파일을 생성·설치하지 않는다.
+
+페이지 방문이나 발견한 함수 목록만으로 모든 업무 명령을 등록하지 않는다.
+첫 요청에서는 Provider가 현재 DOM·collection·component·허용된 script를 분석해
+request-local 후보를 만들고 기존 도구로 처리한다. 최초 학습 또는 repair 적격 성공에서만
+Worker가 재사용 가능한 recipe와 명령을 함께 commit한다. 전체 앱 소스가 없거나
+모듈/closure 내부 메서드가 발견되지 않으면 지원되는 UI/읽기 경로를 선택하며,
+명령 목록을 그 앱의 전체 기능 목록으로 설명하지 않는다.
+
+초기 pilot은 **한 페이지의 help·table read·search**다. 이후 filter apply 등도 동일
+계약으로 표현하되 검증된 recipe가 있어야 등록한다. namespace의 `orders` 같은 이름은
+표시·선택용이며 exact page key·context guard의 적용 범위를 다른 URL로 넓히지 않는다.
+
+### 저장 명령과 현재 호출 계약
+
+아래 `PageCommandDefinition`, `BoundPageCommand`, `PageCommandInvocation`은 예정 타입이다.
+기존 서명 Profile·Workflow의 wire schema를 변경하지 않고 LearnedPageProfile에 추가한다.
+한 recipe에는 명령 최대 1개를 연결하고, 처리 단계는 recipe에만 둔다.
+mode는 연결 recipe와 같아야 하며 read_recipe만 effect=read가 될 수 있다.
+ui_recipe는 Act/ui_change, method_hint는 Act/method_unknown으로 고정한다.
+
+| 구분                       | 예정 필드·제약                                                                                                                                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 영속 identity              | command_id/command_revision, 안전한 namespace/name, recipe_id/recipe_revision. 이름은 최대 64자의 소문자 ASCII·숫자·하이픈이며 중복 이름은 자동 합치지 않는다.                                                                                    |
+| 영속 입력 계약             | 최대 8개의 named slot, required 여부, Worker가 허용한 string/finite number/boolean/enum 종류와 상한. plain object·additionalProperties=false. string 최대 4,096자, 중첩 임의 object/array·코드 template·과거 값 default는 초기 계약에서 제외한다. |
+| enum과 값 출처             | 영속 enum은 viewport/full 같은 Worker의 고정 vocabulary만 허용한다. 페이지 option의 실제 값·ID는 저장하지 않고 현재 관찰에서 새 enum을 만든다. 업무 입력은 current_request slot으로 확보하며 현재 value_source_revision에 결속한다.               |
+| 영속 의미·결과             | mode=ask/act, effect=read/ui_change/method_unknown, 작업 descriptor, coverage/결과 종류, 기존 검증 경로 종류. effect와 검증 경로는 Worker가 실제 backend로 결정하며 Provider의 read-only 주장이나 임의 verifier 코드를 채택하지 않는다.           |
+| 영속 재결속 종류           | read_recipe/ui_recipe/method_hint. method_hint는 작업 의미·입력 slot 종류·재탐색 채널만 보관한다. function path/name·함수/receiver·source text·메서드 인수 mapping을 저장하지 않는다.                                                             |
+| 요청 내부 BoundPageCommand | command_ref, profile/recipe/command/catalog/관리 revision, request_id/generation, tab/document/page scope, 최신 evidence와 실행기 등록. page_match·mode·현재 guard·executor를 통과한 명령만 callable이다.                                         |
+| 요청 내부 invocation       | opaque command_usage_id, command_ref, 현재 named inputs와 value source, 현재 계획/승인 연결, 논리 단계·동작 이력. 실제 inputs·refs·source evidence·승인은 요청 종료 시 폐기한다.                                                                  |
+
+input/result Schema의 구조와 help는 이 검증된 계약에서 생성한다. 자유 서술 help나
+LLM이 반환한 임의 JSON Schema를 그대로 영속 instruction/validator로 사용하지 않는다.
+관찰한 성공 입력 하나로 모든 입력 타입·필수 인수·부작용이 입증됐다고 보지 않는다.
+안전한 slot·결과 형태를 정할 수 없으면 COMMAND_NOT_GENERALIZABLE로 명령 생성을
+생략하고 유효한 공통 힌트·recipe 저장은 유지한다. 문자열 help의 업무 의미도 비신뢰
+자료로 전달하며 현재 사용자 요청·관찰·Worker 정책을 우선한다.
+
+commands가 없는 예정 v1 기록은 빈 목록으로 읽으며 기존 recipe를 보존한다. 과거
+history에서 성공을 추측해 명령을 만들지 않고 이후 적격한 독립 요청에서 생성한다.
+잘못된 command/recipe revision 연결은 그 명령을 unavailable로 두고 재생성 대상과
+이유를 표시한다. envelope 손상·미지원 schema의 공통 복구 규칙은 유지한다.
+
+### 명령 생성·도구 노출·실행
+
+명령 예시는 **예정 문법**이다. help의 입력 예시는 placeholder로 만들며 실제 업무
+입력·이전 반환 데이터를 채우지 않는다. 기본 사용자 흐름은 자연어 Ask/Act다.
+
+```text
+page orders help
+page orders table-read --scope full
+page orders search --query "<current query>"
+page orders search --query "<current query>" --dry-run
+```
+
+명령 registry 하나에서 아래 진입점의 Schema·help·입력 검증·executor routing을
+생성한다. 저장 명령을 발견하는 것과 현재 호출 가능한 도구를 제공하는 것은 구분한다.
+
+| 진입점                               | 노출·결과                                                                                                                                                                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| list_page_commands/read_page_command | Ask/Act의 read-only metadata 도구. 현재 page/mode에 맞는 명령과 blocked reason, 입력/help·연결 recipe를 bounded pagination으로 제공한다. metadata 조회만으로 script 읽기·Provider 추가 호출·mutation을 시작하지 않는다.                     |
+| 명령별 generated function tools      | 현재 BoundPageCommand에서 생성한 요청 내부 이름과 정확한 inputs Schema를 제공한다. 읽기는 기존 획득 경로로 실행하고 Act 명령은 기존 action plan/proposal의 초안을 반환한다. 같은 등록정보로 Schema와 runtime validator를 만든다.            |
+| page_command                         | 동일 registry의 제한된 문자열 진입점. 현재 요청에 제공된 namespace/name·현재 input 계약만 해석한다. Ask에서는 read 명령만 허용하며 Act의 ui_change/method_unknown은 PROPOSED로 반환한다. 결과는 generated tool과 동일 호출 계약을 사용한다. |
+
+1. snapshot 확보와 S24 조회 후 Worker가 profile/recipe/command revision과 page guard를
+   검사한다. 목록에는 아직 재결속되지 않은 명령의 상태를 표시할 수 있지만 실제
+   executor가 없거나 current evidence가 부족한 명령의 실행 도구는 제공하지 않는다.
+2. Provider는 명령 상세를 필요할 때 읽고 현재 요청에 맞는 명령을 선택한다.
+   필요한 DOM·source 탐색은 기존 도구로 수행하며 다음 Provider turn에서 검증된
+   새 callable Schema를 제공한다. 함수 이름·인수 개수만으로 method 명령을 열지 않는다.
+3. generated tool과 문자열 입력을 같은 PageCommandInvocation으로 변환한다.
+   명시적인 명령 문법의 flag parsing만 수행하며 자연어 사용자 요청에서 regex/keyword로
+   업무 값을 추출하지 않는다. 누락·모호한 값은 기존 clarification 경로로 확보한다.
+   현재 enum·형식 검증 뒤 실제 user_input/arguments를 결속하며 두 진입점의 coercion과
+   인수 순서를 동일하게 유지한다. dry_run은 공통 호출 envelope의 별도 제어 값이고
+   업무 slot 이름과 충돌할 수 없으며 typed tool과 --dry-run이 같은 무실행 경로를 사용한다.
+4. read_recipe는 기존 acquisition/source selection·reader·동의·coverage·budget으로
+   현재 데이터를 읽는다. UI 검색/필터처럼 화면 상태를 바꾸는 작업은 읽기로 분류하지 않는다.
+5. ui_recipe는 현재 target·input·evidence로 기존 submit_plan의 허용 action 단계에
+   변환한다. read·verifier·승인·명령 호출 자체를 새 action step으로 넣지 않는다.
+   PROPOSED는 계획 초안의 결과이며 실행 성공이 아니다. 실제 계획 제출·승인·단계별
+   proposal·dispatch·검증은 현재 S17/S21/S22 실행 경로가 담당한다.
+6. method_hint는 Act에서만 S23 discovery·현재 source 읽기·함수/receiver identity·
+   fresh method_ref·현재 arguments를 확보한다. 현재 입력 slot과 메서드 인수의 관계를
+   재판단하고 기존 propose_page_method_call/계획 결속을 사용한다. 이전 method를
+   직접 호출하는 영속 실행 단계로 변환하지 않는다.
+7. 각 도구 결과를 원래 tool_call_id로 같은 conversation에 반환한다. mutation 명령의
+   초안 결과 PROPOSED와 이후 실행 feedback을 command_usage_id/현재 계획으로 연결한다.
+   계획이 바뀌면 이전 승인을 폐기하며 중간 페이지 변화마다 다음 단계의 대상을 다시 찾는다.
+8. source/반환 데이터 동의, permission·managed DENY·민감 페이지·R3·Stop·request 수명은
+   기존 backend와 동일하게 적용한다. 명령 이름·프로필 성공 횟수·명령 호출 승인을
+   단계별 실행 권한으로 대체하지 않는다. Full Permission은 현재 정책이 처리한다.
+
+command_usage_id는 결과 상관관계용이며 새 ID로 중복 실행을 허용하지 않는다.
+명령과 직접 DOM/method proposal은 같은 논리 단계·업무 효과·현재 입력 digest를 기존
+mutation history에 연결한다. 다른 명령 별칭·다른 실행 수단·새 tool_call_id로 이미
+VERIFIED이거나 unresolved UNKNOWN인 효과를 다시 실행하지 않는다.
+
+명령 결과는 closed envelope로 status(AVAILABLE/PROPOSED/NEEDS_CONTEXT/STALE/
+DENIED/UNSUPPORTED/FAILED/CANCELLED/INCOMPLETE), command_usage_id, 실제 dispatch/
+invocation/검증 receipt, coverage·truncation과 현재 goal_status를 구분한다.
+UNKNOWN receipt는 보존하며 invocation=returned·JSON 출력·PROPOSED 하나를
+목표 완료나 서버 영속 반영의 근거로 사용하지 않는다. 결과 데이터는 기존 consent·
+masking·byte limit을 거쳐 현재 conversation에만 전달한다.
+
+문자열 진입점은 한 번에 명령 하나만 받는다. shell·eval·임의 JS·파이프·명령 연결·
+리다이렉션·명령 치환·임의 endpoint를 실행하지 않으며 알 수 없는 flag·중복 flag·
+이름 충돌·다른 page namespace·schema 밖 입력을 dispatch 전에 거절한다.
+parser 단계부터 raw 명령문·값을 diagnostics/storage에 남기지 않는다.
+인용된 업무 값의 공백·Unicode·기호는 값으로만 처리하며 shell로 전달하지 않는다.
+구문 오류 응답은 bounded error code/안전한 설명으로 만들고 raw 명령문을 반사하지 않는다.
+
+**--dry-run은 계획만 만든다.** 현재 확보된 증거와 metadata에서 입력·대상·지원
+상태와 계획 초안을 반환하며 추가 페이지 읽기·MAIN 호출·network/scroll·동의 소비·
+mutation을 하지 않는다. 증거가 부족하면 NEEDS_CONTEXT다. 데이터 반환·목표 완료·
+학습 성공으로 처리하지 않고 통계/TTL·recipe·명령 내용을 바꾸지 않는다.
+dry_run 분기는 새 discovery·재결속을 시작하기 전에 적용하고 현재 요청이 이미
+확보한 snapshot/evidence·metadata만 사용한다. fresh evidence가 필요하면 읽기를
+대신 수행하지 않고 NEEDS_CONTEXT로 종료한다.
+CLI-Anything의 [파일 session dry-run](https://github.com/HKUDS/CLI-Anything/blob/34f519533bc175d2fe287ab8316b0dd99bb9cc43/cli-anything-plugin/guides/auto-save-dry-run.md#L72)은
+명령을 실행하고 자동 저장만 생략하므로 웹에는 이 의미를 적용하지 않는다.
+
+```mermaid
+flowchart TD
+  A[첫 요청의 현재 화면과 script 분석] --> B[기존 읽기 또는 Act 실행]
+  B --> C{학습 적격 성공인가}
+  C -->|예| D[recipe와 명령 계약을 함께 저장]
+  C -->|아니오| E[후보 폐기 및 원래 결과 유지]
+  D --> F[다음 요청의 같은 페이지 프로필 조회]
+  F --> G[현재 evidence로 명령 재결속]
+  G --> H[help와 실제 callable Schema 제공]
+  H --> I[현재 입력으로 읽기 또는 계획 초안]
+  I --> J[기존 승인 실행 검증]
+  J -->|적격 대안 성공| K[같은 recipe와 명령을 원자적 갱신]
+  J -->|실행 효과 불확실| L[receipt 보존 및 읽기 재확인]
+```
+
+### recipe 갱신·Options·상한의 통합
+
+명령·recipe의 사용/auto_update/격리/삭제·재탐색은 같은 관리 단위다. 명령 전용
+별도 실행 승인·성공 저장 queue·자동 갱신 설정을 만들지 않는다. Options에서 명령의
+사용/자동 갱신/삭제/재탐색을 선택하면 연결된 recipe의 현재 관리 계약을 사용하며
+영향 범위를 표시한다. profile의 공통 힌트와 다른 recipe/명령은 보존한다.
+명령 namespace/name·입력/결과 Schema·backend·검증 근거는 읽기 전용이다.
+
+repair는 원래 command_usage_id·recipe·revision과 실제 실패한 논리 단계를 연결한다.
+읽기 실패나 not_dispatched가 확인된 실패만 현재 예산 안에서 대안을 실행할 수 있다.
+이미 dispatch한 효과가 UNKNOWN이면 다른 UI/method 명령으로 같은 효과를 반복하지 않는다.
+성공한 대안이 원래 작업 의미·입력 slot·결과 계약을 보존하면 같은 command_id의
+새 command_revision과 recipe_revision을 **한 storage commit**에서 갱신한다.
+task/effect/입력 의미가 달라지면 같은 명령 이름으로 자동 교체하지 않는다.
+현재 요청은 완료할 수 있지만 기존 명령은 quarantined로 유지하고 다른 작업의
+명령 학습은 별도 적격한 독립 요청에서 수행한다.
+
+명령 관리 변경은 profile/recipe 관리 revision과 같은 queue·tombstone·generation으로
+처리한다. 상세 화면에서 변경한 disable/delete/auto_update off·다른 탭의 먼저 끝난
+repair가 선행하면 늦은 Schema 활성화·옛 revision 실행·명령 부활·overwrite를 거절한다.
+명령 Schema는 원래 typed receipt와 최신 관리 revision에서 재생성하며 Provider가
+영속 registry를 직접 쓰지 않는다. 끄기·Worker restart·navigation 이후 이전 command_ref는 폐기한다.
+
+Options의 기존 프로필 상세에 `페이지 명령` 항목을 추가한다. namespace/name·help·
+placeholder 예시·mode·입력 slot·결과/coverage·연결 recipe·effect·현재 지원 상태와
+생성/사용/실패/repair commit 이력을 함께 보여준다. command 조회·Provider 노출·선택·
+proposal·dispatch·목표 완료·프로필 commit을 구분하며 보기만으로 명령을 실행하지 않는다.
+새 terminal UI나 명령 자동 실행 버튼은 초기 범위에 포함하지 않는다.
+
+명령당 serialized UTF-8 최대 4 KiB, 프로필당 최대 5개이며 공통 32 KiB/2 MiB 상한에
+포함한다. 최초 Provider의 metadata는 기존 4 KiB 예산에 포함하고, 한 turn의 추가
+명령 Schema 합계는 최대 8 KiB이며 기존 전체 request budget도 적용한다.
+예산이 부족하면 명령 단위로 생략·pagination하고 Schema의 일부를 잘라 제공하지 않는다.
+명령 상세의 read 응답은 최대 8 KiB다. history·명령 예시도 공통 저장 예산에 포함한다.
+CLI-Anything이나 외부 registry의 명령을 자동 다운로드·등록하는 경로는 만들지 않는다.
 
 ## 저장과 재사용 흐름
 
@@ -208,9 +407,10 @@ flowchart TD
    먼저 있으므로 기존 위치에 붙이는 것만으로 collection 재사용이 된다고 볼 수 없다.
 2. mode와 페이지 guard가 맞는 page hints를 제한된 UNTRUSTED_LEARNED_PAGE_PROFILE
    자료로 제공한다. 현재 관찰과 현재 사용자 요청이 우선이며 system instruction으로 넣지 않는다.
-3. 첫 Provider 요청에는 최대 4 KiB의 metadata·공통 힌트만 넣는다. 상세 recipe는
-   read-only list/read 도구로 필요할 때 읽는다. Ask/Act 각각 schema → executor → 현재
-   request-local catalog → 같은 tool_call_id 결과 → continuation 연결을 검증한다.
+3. 첫 Provider 요청에는 최대 4 KiB의 metadata·공통 힌트·명령 요약만 넣는다.
+   상세 recipe·명령은 read-only list/read 도구로 필요할 때 읽는다. Ask/Act 각각
+   schema → executor → 현재 request-local catalog → 같은 tool_call_id 결과 →
+   continuation 연결을 검증한다. 재결속된 명령의 추가 Schema는 위의 별도 상한을 적용한다.
 4. recipe의 입력 slot을 현재 요청 값에 결속하고 각 단계의 target·capability를 재발견한다.
    자료 수집은 현재 coverage/continuation·전송 동의를 확인하고 과거 결과를 답변에 쓰지 않는다.
 5. Act에서는 recipe를 계획 초안의 근거로만 사용한다. 신규 submit_plan·action proposal·
@@ -218,7 +418,8 @@ flowchart TD
    저장된 Workflow 선택이나 계획 승인을 이미 받은 것으로 간주하지 않는다.
 6. S23 힌트는 필요한 script/method의 재발견을 돕는다. 새 source evidence와 함수/receiver
    identity·method_ref·인자·승인을 확보한다. 초기 버전은 method 호출 자체를 영속 recipe
-   실행 단계로 자동 변환하지 않는다. 이 제한은 서명 Workflow v1 계약도 유지한다.
+   실행 단계로 자동 변환하지 않는다. Act method_hint 명령도 같은 재탐색 절차를
+   사용하며 현재 입력 mapping이 불명확하면 실행하지 않는다. 서명 Workflow v1 계약도 유지한다.
 7. 같은 페이지/문맥에서 guard가 불일치하거나 저장된 방법이 실패하면 해당 revision의
    사용을 중단하고 아래 Provider repair 경로로 연결한다. URL·계정·tenant가 바뀌면
    원래 프로필을 덮어쓰지 않고 다른 페이지의 기존 탐색으로 진행한다.
@@ -263,13 +464,17 @@ dispatch 여부를 연결한다. **cache hit만 있었던 요청의 모든 오�
 6. 다음 시작 화면에서 쓸 수 있는 전체 recipe를 구성한다. 원래 요청의 검증된 정상
    단계와 성공한 대안을 결합하며 실패한 단계·지금만 유효한 ref·과거 값은 포함하지 않는다.
    중간 상태의 성공한 suffix만 있고 시작 화면의 guard·절차를 재구성할 수 없으면
-   요청 완료는 유지하되 recipe 갱신은 생략한다. S23는 기존 재탐색 힌트 범위를 유지한다.
+   요청 완료는 유지하되 recipe 갱신은 생략한다. S23는 재탐색 힌트와 이를 참조하는
+   Act 명령 범위를 유지하며 함수 호출을 영속 실행 단계로 저장하지 않는다.
 7. eligible repaired_success receipt를 봉인하고, 같은 profile_id/recipe_id의 revision을
    증가시킨다. 성공한 대안의 procedure·guard·목표와 provenance/history를 원자적으로
    반영한다. 다른 정상 recipe와 프로필 이름·메모·enabled/auto_update 설정은 보존한다.
 8. 갱신 commit 후 해당 recipe는 active가 되고 다음 독립 요청에서 새 revision을 선택한다.
    대안 실패·예산 종료·취소 시 옛 내용은 남겨 내용 보기에서 확인할 수 있지만,
    결함이 확인된 revision을 다시 자동 선택하지 않는다. 저장 실패도 요청을 재실행하지 않는다.
+
+연결된 명령이 있으면 recipe·command revision을 같은 commit에서 반영한다.
+작업·입력·결과 의미 변경 시의 자동 교체 제한과 명령 격리는 페이지 명령 계약을 따른다.
 
 초기 repair 예산은 요청에서 선택한 recipe의 **대안 후보 1개/논리 단계**, 한 요청의
 자동 repair cycle 최대 1회다. 기존 Provider round·읽기·step/time/byte budget과
@@ -344,6 +549,13 @@ flowchart TD
 사용자 저장 Workflow section은 구분한다. Panel에는 현재 요청의 사용/repair/갱신 상태와
 Options로 가는 링크만 표시하고 별도의 관리 화면을 만들지 않는다.
 
+**Options 기능을 추가할 때 기존 웹 디자인을 유지한다.** 현재 Settings의 폼·버튼·
+목록·상세 영역·타이포그래피·색상·focus 스타일을 재사용하고, 인접 폼 그룹의
+14px 간격을 같은 기준으로 적용한다. 자동 프로필과 페이지 명령을 기존 section
+구조 안에 통합하며 별도의 디자인 체계나 terminal 형태로 바꾸지 않는다.
+C7/C12의 스크린샷 검증에서 기존 항목과 추가 항목의 디자인·간격·좁은 화면·
+키보드 focus 일관성을 함께 확인한다.
+
 ### 목록과 상세 화면
 
 목록에는 표시 이름, 안전한 origin·페이지 signature, Ask/Act 작업 종류, 현재 revision,
@@ -353,16 +565,17 @@ active/stale/quarantined/disabled, 최근 성공·사용일, 성공/실패/repai
 
 프로필을 선택하면 같은 Options 안의 상세 영역에서 항목별 내용을 볼 수 있다.
 
-| 상세 항목      | 내용 보기                                                                                                            |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| 기본 정보      | 이름·메모·ID/revision, 로컬 학습 출처, 사용/자동 갱신 상태                                                           |
-| 적용 페이지    | origin, URL digest의 짧은 식별값, 읽기 scope, 구조 fingerprint 알고리즘/값, 문맥 guard·불일치 이유                   |
-| 공통 탐색 힌트 | 채널 종류·collection/source 찾기 순서·coverage 확인 방법과 현재 사용 가능 상태                                       |
-| 작업별 recipe  | recipe별 이름·ID/revision·mode·작업 descriptor·입력 slot·단계 번호/도구/semantic 대상/guard/목표 확인 방법           |
-| 성공 근거      | 최초/최근 성공 시각, completion/confirmation 종류, 마스킹된 receipt 요약과 성공 횟수                                 |
-| 실패·갱신 이력 | 실패한 revision/단계/reason·시각, 대안 발견/성공/commit 구분, old/new revision, repair 성공·중단 이유                |
-| 변경 전후      | 보관된 revision의 단계·대상·guard·slot·목표 확인 방식 차이. 실패한 방법과 성공한 대안을 함께 확인                    |
-| 구조 보기      | 현재 기록과 보관된 revision의 마스킹된 JSON을 읽기 전용으로 표시. 로컬 digest 키·전체 storage envelope/ledger는 제외 |
+| 상세 항목      | 내용 보기                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 기본 정보      | 이름·메모·ID/revision, 로컬 학습 출처, 사용/자동 갱신 상태                                                                     |
+| 적용 페이지    | origin, URL digest의 짧은 식별값, 읽기 scope, 구조 fingerprint 알고리즘/값, 문맥 guard·불일치 이유                             |
+| 공통 탐색 힌트 | 채널 종류·collection/source 찾기 순서·coverage 확인 방법과 현재 사용 가능 상태                                                 |
+| 작업별 recipe  | recipe별 이름·ID/revision·mode·작업 descriptor·입력 slot·단계 번호/도구/semantic 대상/guard/목표 확인 방법                     |
+| 페이지 명령    | namespace/name·help·placeholder 예시·입력/결과 계약·mode/effect·연결 recipe/revision·지원/차단 상태·명령별 사용/실패/갱신 이력 |
+| 성공 근거      | 최초/최근 성공 시각, completion/confirmation 종류, 마스킹된 receipt 요약과 성공 횟수                                           |
+| 실패·갱신 이력 | 실패한 revision/단계/reason·시각, 대안 발견/성공/commit 구분, old/new revision, repair 성공·중단 이유                          |
+| 변경 전후      | 보관된 revision의 단계·대상·guard·slot·목표 확인 방식 차이. 실패한 방법과 성공한 대안을 함께 확인                              |
+| 구조 보기      | 현재 기록과 보관된 revision의 마스킹된 JSON을 읽기 전용으로 표시. 로컬 digest 키·전체 storage envelope/ledger는 제외           |
 
 표·단계 설명을 기본으로 제공하고 JSON 구조 보기는 펼치기 영역에 둔다.
 HTML/script 실행 없이 텍스트로 렌더링한다. 페이지 자료·실제 입력·승인 token을
@@ -399,6 +612,8 @@ auto_update=false·disabled 상태를 강제로 켜지 않는다. 실패·취소
 변경 메시지는 authenticated Settings sender, strict allowed fields, profile_id/recipe_id,
 expected profile/recipe/management revision을 검증하고 Worker의 공통 mutation queue로 처리한다.
 Options가 storage.local을 직접 덮어쓰거나 Provider가 관리 메시지를 호출하지 않는다.
+명령 목록/상세 projection과 command_revision을 함께 제공한다. 명령 관리 동작은
+연결된 recipe의 동일 관리 경로로 처리하며 명령만 별도 권한·queue에서 변경하지 않는다.
 
 상세 화면을 연 사이 자동 repair가 commit되면 새 revision 표시와 변경 이력을 갱신한다.
 오래된 화면의 저장/삭제가 충돌하면 실제 저장 성공이라고 표시하지 않고 최신 항목을
@@ -409,32 +624,39 @@ Options의 프로필·recipe 상세/동작별 스크린샷과 키보드 선택·
 
 ## 기존 기능과의 관계
 
-| 경계                    | 보존·연결 결정                                                                                                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 서명 Profile·Enterprise | 별도 store/type을 사용한다. 현행 서명·만료·정책 검사를 유지하고 로컬 기록으로 실패한 검증/Enterprise DENY를 우회하지 않는다. 후속 revocation 계약을 대체하지 않으며 조직 규칙과 충돌하는 힌트는 버린다. |
-| S18 Workflow            | source/status enum과 사용자 원본을 유지한다. 로컬 recipe 도구는 별도 advisory catalog다. 원본을 읽고 적합성을 판단하는 원칙을 지키며 자동 등록·자동 선택 승인으로 표시하지 않는다.                      |
-| S21 완료                | 요청 최종 완료와 raw 실행 이력, 프로필 저장 적격을 따로 기록한다. 원래 UNKNOWN/FAILED를 성공 recipe로 바꾸지 않는다.                                                                                    |
-| S22 승인                | Full Permission/custom/ask, stored DENY, 정책 revision과 현재 일회 grant를 유지한다. 학습 설정과 승인 설정은 별개다.                                                                                    |
-| S23 동적 호출           | locator·코드·함수/receiver·인자·반환값을 영속 실행 능력으로 저장하지 않는다. 새로운 요청에서 동의·발견·binding·dispatch를 수행한다.                                                                     |
-| 페이지·LLM 비신뢰 자료  | Worker가 최소 자료·schema·민감값·현재 요청 관계를 검사한다. 반복 성공 횟수로 instruction·권한·arbitrary JS 실행을 승인하지 않는다.                                                                      |
+| 경계                    | 보존·연결 결정                                                                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 서명 Profile·Enterprise | 별도 store/type을 사용한다. 현행 서명·만료·정책 검사를 유지하고 로컬 기록으로 실패한 검증/Enterprise DENY를 우회하지 않는다. 후속 revocation 계약을 대체하지 않으며 조직 규칙과 충돌하는 힌트는 버린다.   |
+| S18 Workflow            | source/status enum과 사용자 원본을 유지한다. 로컬 recipe 도구는 별도 advisory catalog다. 원본을 읽고 적합성을 판단하는 원칙을 지키며 자동 등록·자동 선택 승인으로 표시하지 않는다.                        |
+| S21 완료                | 요청 최종 완료와 raw 실행 이력, 프로필 저장 적격을 따로 기록한다. 원래 UNKNOWN/FAILED를 성공 recipe로 바꾸지 않는다.                                                                                      |
+| S22 승인                | Full Permission/custom/ask, stored DENY, 정책 revision과 현재 일회 grant를 유지한다. 학습 설정과 승인 설정은 별개다.                                                                                      |
+| S23 동적 호출           | locator·코드·함수/receiver·인자·반환값을 영속 실행 능력으로 저장하지 않는다. 새로운 요청에서 동의·발견·binding·dispatch를 수행한다.                                                                       |
+| 페이지 명령             | LearnedPageProfile 안의 advisory 계약에서 help/Schema를 생성한다. 기존 recipe를 현재 읽기/계획/proposal로 변환하고 명령 자체에 별도 action authority를 부여하지 않는다. S23는 Act method_hint만 저장한다. |
+| 페이지·LLM 비신뢰 자료  | Worker가 최소 자료·schema·민감값·현재 요청 관계를 검사한다. 반복 성공 횟수로 instruction·권한·arbitrary JS 실행을 승인하지 않는다.                                                                        |
 
 ## 구현 카드와 순서
 
-| 카드   | 상태    | 범위                                                                                  | 완료 조건                                                                                                                                            |
-| ------ | ------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| S24-C1 | Planned | 최초 학습·repair 적격 판정, typed 오류 분류, profile/recipe/관리/history/receipt 계약 | 오류 없는 최초 저장과 실패 이력을 보존한 repaired_success 승격을 분리하고 필드/크기·권한 제한을 executable checks로 고정                             |
-| S24-C2 | Planned | exact 페이지 key·로컬 digest 키·구조/대상/context guard·작업 descriptor               | query/hash·계정/tenant·같은 구조의 다른 의미·불완전 snapshot을 오탐 재사용하지 않음                                                                  |
-| S24-C3 | Planned | Worker catalog·직렬 저장/repair commit·dedup·TTL/LRU·변경 이력·복구·관리 revision     | 두 탭 완료/repair·반복 terminal·quota·corruption·restart·delete/disable/auto_update 경합과 이전 내용/설정 보존 검증                                  |
-| S24-C4 | Planned | Ask/Act 수집·정상 종료 hook·마스킹·recipe 추출                                        | 실제 완료 전 내용 저장 0, 최초 오류 요청의 성공 recipe 저장 0, raw 입력/자료 0. 검증된 repair만 해당 recipe를 1회 갱신                               |
-| S24-C5 | Planned | 공통 조회를 읽기 준비 앞에 연결·Provider envelope·상세 read-only 도구·recipe 선택     | Ask와 Act 실제 offered schema/executor/continuation에서 저장한 방법을 현재 요청에 사용함                                                             |
-| S24-C6 | Planned | Act plan·입력 slot·최신 target·승인·목표 검증, S23 재탐색                             | 이전 값/ref/grant 재사용 0, Ask mutation 0, UNKNOWN mutation 재실행 0, 동일 요청의 현재 값으로 처리                                                  |
-| S24-C7 | Planned | Options 목록/필터·profile/recipe별 관리·내용/JSON/변경 이력·관리 메시지·Panel 상태    | 상세 내용과 실패→대안→commit 확인, 항목별 이름/사용/갱신/삭제/재탐색·revision 충돌, Settings 외 mutation 0, UI 스크린샷                              |
-| S24-C8 | Planned | unit/fixture·통제 Chrome·live Provider·holdout 및 기존 회귀                           | 아래 행렬의 결과·revision·환경·실패·미검증 범위 기록. 실제 재사용 경로와 오탐 방지 확인                                                              |
-| S24-C9 | Planned | 같은 Provider conversation의 failure feedback·대안 탐색·안전한 실행·repair 판정/승격  | 성공 대안만 동일 profile_id/recipe_id의 새 revision으로 반영, 실패/UNKNOWN 중복 mutation 0, 이미 검증된 단계 반복 0, 다음 독립 요청에서 새 방법 사용 |
+| 카드    | 상태    | 범위                                                                                                           | 완료 조건                                                                                                                                            |
+| ------- | ------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S24-C1  | Planned | 최초 학습·repair 적격 판정, typed 오류 분류, profile/recipe/command/관리/history/receipt 계약                  | 오류 없는 최초 저장과 실패 이력을 보존한 repaired_success 승격을 분리하고 필드/크기·권한 제한을 executable checks로 고정                             |
+| S24-C2  | Planned | exact 페이지 key·로컬 digest 키·구조/대상/context guard·작업 descriptor                                        | query/hash·계정/tenant·같은 구조의 다른 의미·불완전 snapshot을 오탐 재사용하지 않음                                                                  |
+| S24-C3  | Planned | Worker catalog·직렬 recipe/명령 저장·repair commit·dedup·TTL/LRU·변경 이력·복구·관리 revision                  | 두 탭 완료/repair·반복 terminal·quota·corruption·restart·delete/disable/auto_update 경합과 이전 내용/설정 보존 검증                                  |
+| S24-C4  | Planned | Ask/Act 수집·정상 종료 hook·마스킹·recipe 추출                                                                 | 실제 완료 전 내용 저장 0, 최초 오류 요청의 성공 recipe 저장 0, raw 입력/자료 0. 검증된 repair만 해당 recipe를 1회 갱신                               |
+| S24-C5  | Planned | 공통 조회를 읽기 준비 앞에 연결·Provider envelope·상세 read-only 도구·recipe 선택                              | Ask와 Act 실제 offered schema/executor/continuation에서 저장한 방법을 현재 요청에 사용함                                                             |
+| S24-C6  | Planned | Act plan·입력 slot·최신 target·승인·목표 검증, S23 재탐색                                                      | 이전 값/ref/grant 재사용 0, Ask mutation 0, UNKNOWN mutation 재실행 0, 동일 요청의 현재 값으로 처리                                                  |
+| S24-C7  | Planned | Options 목록/필터·profile/recipe별 관리·내용/JSON/변경 이력·관리 메시지·Panel 상태                             | 상세 내용과 실패→대안→commit 확인, 항목별 이름/사용/갱신/삭제/재탐색·revision 충돌, Settings 외 mutation 0, UI 스크린샷                              |
+| S24-C8  | Planned | unit/fixture·통제 Chrome·live Provider·holdout 및 기존 회귀                                                    | 아래 행렬의 결과·revision·환경·실패·미검증 범위 기록. 실제 재사용 경로와 오탐 방지 확인                                                              |
+| S24-C9  | Planned | 같은 Provider conversation의 failure feedback·대안 탐색·안전한 실행·repair 판정/승격                           | 성공 대안만 동일 profile_id/recipe_id의 새 revision으로 반영, 실패/UNKNOWN 중복 mutation 0, 이미 검증된 단계 반복 0, 다음 독립 요청에서 새 방법 사용 |
+| S24-C10 | Planned | PageCommandDefinition·성공 recipe에서 후보 생성·Worker 제한 Schema·help 생성·명령/recipe 연결                  | 적격 성공에서만 명령 생성, 단계 복제 0, COMMAND_NOT_GENERALIZABLE의 recipe 보존, 잘못된 effect/Schema/명령 이름과 영속 코드·locator·값 0             |
+| S24-C11 | Planned | 현재 명령 재결속·metadata 도구·generated tools·page_command parser·공통 invocation·기존 읽기/plan 변환·dry-run | 실제 offered schema/executor/동일 call ID continuation, 현재 값/대상/동의·승인, Ask mutation 0, dry-run의 페이지 읽기/호출/동의 소비/저장 0          |
+| S24-C12 | Planned | 명령/recipe 원자적 repair·Options 명령 상세/연결 관리·명령 상태/이력·통제 pilot 및 cold/warm 비교              | 같은 command ID의 안전한 갱신·변경 의미 차단, 관리 경합/부활 0, 독립 다음 요청의 명령 사용, UI 증거와 탐색/Provider/token/time 실제 비교             |
 
-순서는 C1 → C2/C3 → C4 → C5/C6 → C9/C7 → C8이다. C5/C6/C9는 먼저 사용 중인
-S21/S22/S23 구현과 계약을 재확인한다. 신규 production 모듈은 199줄·module boundary를
-지키며 runner/entry 대형 파일에 기능 전체를 추가하지 않는다.
+순서는 C1/C10 → C2/C3 → C4 → C5/C6 → C11 → C9/C7/C12 → C8이다.
+C5/C6/C9/C11은 먼저 사용 중인 S21/S22/S23 구현과 계약을 재확인한다.
+명령 후보·Schema/validator·parser·재결속·실행 bridge·storage·Options를 모듈로 나누고
+신규 production 모듈은 199줄·module boundary를 지킨다. runner/entry 대형 파일에
+기능 전체를 추가하지 않는다. C10~C12의 코드 존재만으로 명령 기능 전체를
+Completed로 기록하지 않으며 C8의 실제 검증 범위를 함께 기록한다.
 
 ## 검증 행렬
 
@@ -445,7 +667,7 @@ S21/S22/S23 구현과 계약을 재확인한다. 신규 production 모듈은 199
 | R03 | 동일 페이지의 다른 작업, Ask/Act 전환, 작업 후보 모호                     | 맞는 recipe만 사용하거나 공통 힌트/기존 탐색, 자동 mutation/추측 값 0                                                                           |
 | R04 | 오류 없는 검토·선택·추가 입력 대기·미완료·빈 답변                         | 정상 성공으로 오인한 저장 0                                                                                                                     |
 | R05 | PROVIDER_COMPLETED와 원래 FAILED/해결 안 된 mutation UNKNOWN              | 기존 목표 완료 표시/최초 실패 보존. repair 적격 없이 실패를 승격한 recipe 저장 0, unresolved mutation의 대안 재실행 0                           |
-| R06 | S23 정상 데이터 반환, throw/timeout, 함수 교체                            | 정상 데이터는 재탐색 힌트만, 실패 저장 0, 다음 요청에서 fresh identity·동의·method_ref                                                          |
+| R06 | S23 정상 데이터 반환, throw/timeout, 함수 교체                            | 정상 데이터는 힌트/Act method_hint 명령, 영속 method 실행 단계·실패 저장 0, 다음 요청에서 fresh identity·동의·method_ref                        |
 | R07 | exact URL/query/hash/port 변경, 계정/tenant guard 변경                    | 다른 페이지/컨텍스트로 판정, 기록 자동 공유 0                                                                                                   |
 | R08 | 구조 같음·label 의미 변경·중복 대상·hidden/disabled·새 문서 ref           | 의미/최신성 검사, 모호한 target dispatch 0, 이전 ref 사용 0                                                                                     |
 | R09 | partial/truncated snapshot·동적 행 수·TTL·지원 schema 변경                | 안전한 miss/stale, 전체 데이터·지원 범위를 잘못 주장하지 않음                                                                                   |
@@ -468,6 +690,22 @@ S21/S22/S23 구현과 계약을 재확인한다. 신규 production 모듈은 199
 | R26 | Options 이름/메모·profile/recipe별 사용/갱신·개별 삭제·강제 재탐색        | 지정 항목만 변경, recipe 나머지 보존, 메모의 Provider instruction 사용 0, 토글로 quarantined 자동 승격 0                                        |
 | R27 | 실패/대안 성공/commit 이력·old/new 내용 차이·3 revision/20 요약/byte 상한 | 실제 근거별 표시, 최초 실패 보존, cap에 따른 명확한 history 삭제/빈 상태, 전체 저장 예산 준수                                                   |
 | R28 | 강제 재탐색과 auto_update off·Options stale revision·위조 sender          | 다음 실제 사용자 요청에서만 재탐색, lock 존중, 성공 commit 시만 flag 소비, 충돌/비Settings 변경 거절                                            |
+| R29 | 첫 요청 성공 → recipe/명령 저장 → 독립 요청에서 help/명령 선택            | 같은 profile의 명령 생성·현재 callable 도구·현재 값/새 데이터 사용을 확인. 저장 seed·cache hit·help 조회만으로 재사용 PASS 0                    |
+| R30 | 명령 계약 → help/Provider Schema/parser/validator 생성·잘못된 입력        | required/type/enum/상한의 동등성, unknown/중복 flag·명령 이름 충돌·schema 밖 입력의 dispatch 0                                                  |
+| R31 | 명령 없는 기록·비일반화 가능 입력·깨진 command/recipe revision            | 기존 정상 recipe 보존·unavailable 이유 표시, 과거 history 기반 추측 명령 생성 0, 이후 적격 요청에서만 생성                                      |
+| R32 | Ask read 명령·UI 검색/필터·get 이름의 부작용 method·위조 read-only        | Worker backend 기준 분류, Ask action/method_unknown 노출·호출 0, 현재 정책/명시 DENY 우회 0                                                     |
+| R33 | UI 다단계 명령·S23 method_hint·입력/계획 변경                             | 기존 action capability/submit_plan/proposal/승인으로 처리, 새 source/receiver/인수 binding, 명령 자체를 action step으로 dispatch 0              |
+| R34 | generated tool과 page_command의 동일 작업·metadata/help만 조회            | 동일 invocation·입력/결과/권한 의미와 call ID continuation. metadata/help 조회에 의한 추가 페이지 읽기·mutation 0                               |
+| R35 | dry-run·읽기/Act 명령·증거 부족·요청 종료                                 | 명령 실행 구간의 추가 페이지 읽기/MAIN/network/scroll·동의 소비·mutation·학습/통계/TTL 변경 0, 부족 증거는 NEEDS_CONTEXT                        |
+| R36 | 목록 이후 navigation/Worker restart·함수 교체·관리 revision 변경          | 옛 command_ref/target/method/Schema 사용 0, 현재 재탐색·재결속 또는 STALE/UNSUPPORTED 처리                                                      |
+| R37 | 이름/help/Schema prompt injection·shell syntax·임의 URL/code              | Worker closed 계약·한 명령 parser, 임의 실행/권한/endpoint·저장 instruction 승격 0, 원래 사용자 목표 유지                                       |
+| R38 | 명령문 실제 값·source/반환 데이터·민감 enum·diagnostics ZIP               | 영속 입력/명령문/함수 경로/source/반환 데이터 0, 현재 전달은 동의·마스킹·byte/coverage 제한 적용                                                |
+| R39 | 명령 사용 실패 → 안전한 대안 성공 → 세 번째 독립 요청                     | 최초 실패 보존, 동일 command/recipe ID의 revision을 단일 commit, 세 번째 요청에서 새 명령/방법 사용, UNKNOWN 효과 중복 0                        |
+| R40 | repair 대안의 작업·effect·입력 slot/결과 의미 변경                        | 같은 명령의 자동 의미 교체 0, quarantined 유지, 현재 요청 결과와 command 갱신 여부를 구분                                                       |
+| R41 | Options 명령별 관리와 recipe 공유·늦은 repair/Schema 제공                 | 지정 recipe와 명령만 함께 변경, sibling 보존, 삭제/disable/off 뒤 늦은 활성화·overwrite·부활 0                                                  |
+| R42 | 명령 목록·Schema 제공·PROPOSED·dispatch·receipt·최종 목표·commit          | 단계별 typed 상태·usage/계획 상관관계와 UI 표시, 반환/PROPOSED만으로 실행·서버 반영·학습 성공 표시 0                                            |
+| R43 | 동일 pilot의 cold/warm/off·기존 DOM 경로·미학습 holdout                   | 성공률·탐색 호출·Provider round/input-output tokens·Schema bytes·총 지연 기록. 최신 읽기/검증 유지, 성능 개선 미측정 주장 0                     |
+| R44 | 5명령/8slot/명령 4 KiB/Schema 8 KiB·상세 8 KiB·공통 저장 상한             | 명령 단위 생략/pagination·일관된 registry·예산 준수, 잘린 Schema·executor 없는 callable 노출 0                                                  |
 
 통제 Chrome은 **첫 번째 실행과 독립된 두 번째 요청**을 실제 Panel로 제출해 저장·
 자동 조회·Provider 소비·신규 실행/답변을 확인한다. seed한 storage나 cache hit만으로
@@ -475,6 +713,10 @@ R01/R02를 통과했다고 기록하지 않는다. 같은 UI에서 off/delete와
 R19/R20은 실제 저장 방법을 실패시키고 동일 Provider 대화에서 대안을 처리한 다음,
 **세 번째 독립 요청**에서 새 revision의 방법 사용을 확인한다. Options에서도 내용·
 실패 이력·변경 차이와 항목별 관리 결과를 확인한다. JSON seed로 이 경로를 대체하지 않는다.
+R29/R39는 명령 목록·도움말·실제 outgoing Schema·입력·원래 call ID 결과까지 확인한다.
+pilot의 같은 페이지에서 table-read·search를 cold/warm/off로 실행하고 generated tool과
+문자열 진입점을 각각 검증한다. dry-run은 backend call counter·승인 소비·storage
+diff로 무실행을 확인한다. Options의 페이지 명령 상세·연결 recipe 관리 화면을 캡처한다.
 
 live 검증은 OpenRouter 우선, 가용성/의미 검증 실패 시 OpenAI `gpt-6-luna`로 전환하고
 첫 실패를 보존한다. Ask 읽기·Act 입력·정보 읽기·S23 재탐색과 미학습 holdout을 분리한다.
@@ -489,9 +731,12 @@ S18 Workflow, S21 완료, S22 승인, S23 메서드·취소/민감값 회귀를 
 
 이번 작업의 완료 조건은 사용자 요구·성공 기준·데이터/identity 계약·기존 연결점·
 재사용/저장·Provider 대안/성공 갱신·Options 항목 관리/내용 보기·실패/경합·
-구현 카드·검증 기준이 문서로 검토 가능한 것이다.
+페이지 명령의 profile 저장 계약/생성/help/Schema/재결속/기존 실행/dry-run/원자적 갱신·
+C1~C12/R01~R44가 문서로 검토 가능한 것이다.
 코드 작성·빌드·runtime 검증·commit/push·배포는 수행하지 않는다.
 
 S24 구현 이후에도 외부 Resolver 등록·서명 Profile 승격, 여러 URL/사용자 간 학습 공유,
 시각/소스 원문 캐시, 영속 동적 method 실행 recipe, Platform/Enterprise 활성화와
-대외 배포는 별도 backlog다. 기존 교차 저장소 과제의 원래 날짜·범위를 유지한다.
+대외 배포는 별도 backlog다. OS CLI 배포·Native Host shell gateway·전체 사이트 기능의
+자동 추출·외부 command registry 설치도 초기 범위 밖이다. 기존 교차 저장소 과제의
+원래 날짜·범위를 유지한다.
