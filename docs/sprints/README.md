@@ -14,6 +14,10 @@
 
 ## 신규 구현 계획
 
+- [Browser Agent S24 — 성공한 Ask/Act 요청의 페이지 프로필 자동 저장·재사용](s24-learned-page-profiles.md)
+  — Planned, 2026-10-13. 오류 없는 정상 완료의 학습 적격 기준, 동일 페이지·작업 판정,
+  로컬 저장·자동 재사용·Provider 대안 성공 시 해당 방법 갱신·Options 항목별 관리/내용 보기와
+  C1~C9/R01~R28을 설계했다. 코드 미구현.
 - [Browser Act S23 — Provider의 페이지 스크립트 분석과 메서드 호출](s23-provider-page-method-execution.md)
   — In Progress, 2026-10-12. 빌드 계측으로 발생한 Chrome inventory 누락을 수정했다.
   통제 Chrome 호출·결과 continuation은 통과했으며 실제 Provider·R01~R20 qualification은 미완료다.

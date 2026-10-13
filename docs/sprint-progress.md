@@ -4,6 +4,20 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S24 — 2026-10-13 설계
+
+**Planned — 제품 코드 미구현.**
+[S24 설계](sprints/s24-learned-page-profiles.md)는 오류 없는 정상 완료의 Ask와 Act에서
+처리 방법을 자동 저장하고, 동일 페이지의 다음 사용자 요청에서 사용하는 로컬 기능이다.
+페이지·작업 guard, 현재 값·대상·승인 재결속, 저장 제외 기준, TTL/경합/삭제와
+C1~C8/R01~R18을 기록했다.
+
+2026-10-13 후속 설계에서 저장된 방법의 오류를 같은 Provider 대화로 전달하고,
+대안 성공 후 동일 profile/recipe의 새 revision으로 갱신하는 repair 경로를 추가했다.
+최초 실패 보존·UNKNOWN mutation 반복 차단·관리 경합과 Options의 항목별 사용/갱신/삭제·
+상세 내용/마스킹 JSON/변경 이력을 구체화했다. 현재 계획은 C1~C9/R01~R28이다.
+문서 검토 범위이며 제품 코드·runtime·Provider·배포 검증은 수행하지 않았다.
+
 ## Browser Act S23 — 2026-10-12 리뷰 수정
 
 **Completed — Browser-local 구현·검증 범위.**
