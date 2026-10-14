@@ -61,7 +61,8 @@ export const createChatRunLifecycle = (dependencies: Dependencies) => {
   const publish = (runId: string, payload: ChatEventPayload): void => {
     if (
       !dependencies.events.has(runId) ||
-      dependencies.events.terminal(runId)
+      (dependencies.events.terminal(runId) &&
+        payload.type !== "learned_profile_status")
     ) {
       return;
     }

@@ -1,3 +1,4 @@
+import { learnedProfileMessageHandler } from "./learned-profile-message-handler.js";
 import { createDomainMessageRouter } from "./domain-message-router.js";
 import { createRuntimeMessageRouter } from "./runtime-message-router.js";
 import {
@@ -105,6 +106,7 @@ export const registerServiceWorker = (): void => {
     handlers: [
       pageLifecycleMessageHandler,
       profile,
+      learnedProfileMessageHandler,
       preferences,
       provider,
       runControl,

@@ -1,0 +1,155 @@
+{
+  "scope": "controlled_chrome_fixture",
+  "checks": [
+    "save",
+    "request_local_command_schema",
+    "same_tool_call_id_continuation",
+    "reuse",
+    "privacy",
+    "trusted_settings_sender",
+    "options_14px_spacing",
+    "separate_profile_window_reused",
+    "profile_search_selection_pagination",
+    "profile_rename_delete_pagination_recovery",
+    "profile_notes_enabled_auto_update_rediscovery",
+    "options_manager_feature_sync",
+    "stale_editor_rejection_and_recovery",
+    "recipe_delete_clear_confirmations",
+    "manager_responsive_layout",
+    "off_retains_records",
+    "stale_management_rejection",
+    "delete"
+  ],
+  "provider_turns": [
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "tool_call_ids": [],
+      "statuses": [],
+      "returned_tools": [
+        "describe_learned_task"
+      ],
+      "returned_ids": [
+        "call-s24-000000000001"
+      ]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "tool_call_ids": [
+        "call-s24-000000000001"
+      ],
+      "statuses": [
+        {
+          "tool_call_id": "call-s24-000000000001",
+          "status": "AVAILABLE",
+          "dry_run": false
+        }
+      ],
+      "returned_tools": [],
+      "returned_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0"
+      ],
+      "tool_call_ids": [],
+      "statuses": [],
+      "returned_tools": [
+        "page_cmd_0"
+      ],
+      "returned_ids": [
+        "call-s24-000000000003"
+      ]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0"
+      ],
+      "tool_call_ids": [
+        "call-s24-000000000003"
+      ],
+      "statuses": [
+        {
+          "tool_call_id": "call-s24-000000000003",
+          "status": "AVAILABLE",
+          "dry_run": false
+        }
+      ],
+      "returned_tools": [],
+      "returned_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch"
+      ],
+      "tool_call_ids": [],
+      "statuses": [],
+      "returned_tools": [],
+      "returned_ids": []
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { beginLearnedProfile } from "./learned-profile-runtime.js";
 import {
   approvalModeLabel,
   migrateApprovalPolicy,
@@ -132,6 +133,27 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           "act",
         );
     session.runId = run.id;
+    if (!session.learnedProfileStarted) {
+      session.learnedProfileStarted = true;
+      const learned = await beginLearnedProfile(
+        active,
+        "act",
+        () => !session.requestContext?.signal.aborted,
+        (status) =>
+          dependencies.publish(session.runId ?? run.id, {
+            type: "learned_profile_status",
+            status,
+          }),
+      );
+      if (learned) session.learnedProfile = learned;
+    }
+    session.learnedProfile?.setNotify((status) =>
+      dependencies.publish(session.runId ?? run.id, {
+        type: "learned_profile_status",
+        status,
+      }),
+    );
+    session.learnedProfile?.bind(active);
     try {
       session.lastObservationScope = dependencies.pageScope(active);
       dependencies.bindRun(
@@ -317,6 +339,8 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                 tool.function.name,
               )),
         ) ?? [];
+      if (!session.feedbackOnly && session.learnedProfile)
+        harnessReads.push(...session.learnedProfile.tools);
       const resourceInventory = await harnessExecutor
         ?.bootstrap?.()
         .catch(() => ({ status: "UNSUPPORTED" }));
@@ -339,6 +363,11 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             }
           : {}),
       });
+      if (session.learnedProfile)
+        messages.push({
+          role: "user",
+          content: session.learnedProfile.context,
+        });
       if (resourceInventory)
         messages.push({
           role: "user",
@@ -685,7 +714,34 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           messages,
           offeredTools: [...harnessReads, ...tools],
           readNames: harnessReads.map((tool) => tool.function.name),
-          executeRead: (call) => harnessExecutor(call),
+          readCost: (call) =>
+            session.learnedProfile?.handles(call.name)
+              ? session.learnedProfile.readCost({
+                  name: call.name,
+                  arguments: call.args,
+                })
+              : 1,
+          executeRead: async (call) => {
+            const learned = session.learnedProfile;
+            if (learned?.handles(call.name))
+              return learned.execute(
+                { name: call.name, arguments: call.args },
+                (nested) =>
+                  harnessExecutor({
+                    name: nested.name,
+                    args: nested.arguments,
+                  }),
+              );
+            const result = await harnessExecutor(call).catch(
+              (error: unknown) => ({
+                status: "FAILED",
+                code:
+                  error instanceof ContractError ? error.code : "READ_FAILED",
+              }),
+            );
+            learned?.observe(call.name, result);
+            return result;
+          },
           serialise: dependencies.serialise,
           expectedRevision: session.requestContext
             ? toHarnessRevision(session.requestContext.generation)
@@ -867,6 +923,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         traceDecision("page-act-harness.outcome.terminal_kind", {
           kind: terminal.kind,
         });
+        void session.learnedProfile?.seal(!session.executionEvidence?.length);
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
         dependencies.publish(run.id, {
           type: "assistant_delta",

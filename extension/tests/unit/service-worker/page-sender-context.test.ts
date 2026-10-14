@@ -15,6 +15,54 @@ const setup = (contexts: Array<{ documentId: string; windowId: number }>) => {
   return { context: createPageSenderContext(chrome), query, getContexts };
 };
 describe("bound panel context", () => {
+  it("authenticates the profile manager without granting general Settings authority", () => {
+    const chrome = {
+      runtime: {
+        id: "test",
+        getURL: (path: string) => `chrome-extension://test/${path}`,
+      },
+    } as unknown as BrowserChromeApi;
+    const context = createPageSenderContext(chrome);
+    const sender = {
+      id: "test",
+      url: "chrome-extension://test/settings/learned-profiles.html",
+    };
+    expect(context.isLearnedProfileManagerSender(sender)).toBe(true);
+    expect(context.isSettingsSender(sender)).toBe(false);
+    expect(context.isPanelOrSettingsSender(sender)).toBe(false);
+    for (const candidate of [
+      { ...sender, id: "foreign" },
+      { ...sender, url: "https://example.test/settings/learned-profiles.html" },
+      { ...sender, url: `${sender.url}?untrusted=1` },
+      { ...sender, url: panel },
+    ])
+      expect(context.isLearnedProfileManagerSender(candidate)).toBe(false);
+  });
+  it("recovers the panel's bound tab while another window is focused", async () => {
+    const query = vi.fn(async (options: { windowId?: number }) => [
+      { id: options.windowId === 4 ? 7 : 99 },
+    ]);
+    const chrome = {
+      runtime: {
+        id: "test",
+        getURL: () => panel,
+        getContexts: async () => [
+          { contextType: "SIDE_PANEL", documentId: "doc", windowId: -1 },
+        ],
+      },
+      tabs: { query },
+    } as unknown as BrowserChromeApi;
+    const context = createPageSenderContext(chrome);
+    await expect(
+      context.activeTabForPanel({
+        id: "test",
+        url: panel,
+        documentId: "doc",
+        panelWindowId: 4,
+      }),
+    ).resolves.toEqual({ id: 7 });
+    expect(query).toHaveBeenCalledWith({ active: true, windowId: 4 });
+  });
   it("resolves a browser-authenticated unique panel when sender document ID is absent", async () => {
     const { context, query, getContexts } = setup([
       { documentId: "doc", windowId: 4 },

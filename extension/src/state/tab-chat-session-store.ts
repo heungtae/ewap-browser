@@ -112,6 +112,8 @@ const diagnosticEvent = (event: ChatEvent): Record<string, unknown> => {
     case "confirmation_required":
     case "page_scope_changed":
       return base;
+    case "learned_profile_status":
+      return { ...base, status: event.status };
     case "run_terminal":
       return {
         ...base,

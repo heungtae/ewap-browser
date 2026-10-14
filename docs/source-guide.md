@@ -1,5 +1,10 @@
 # 코드 탐색 안내
 
+## S24 learned page profiles
+
+Runtime: [learned-profile](../extension/src/learned-profile), [Worker bootstrap](../extension/src/service-worker/learned-profile-runtime.ts), [trusted management messages](../extension/src/service-worker/learned-profile-message-handler.ts). UI: [Options launcher and feature setting](../extension/src/settings/learned-profile-options.ts), [separate management window](../extension/src/settings/learned-profiles.html), [list and selection controller](../extension/src/settings/learned-profile-management.ts), [detail and history](../extension/src/settings/learned-profile-detail.ts). Checks: [unit tests](../extension/tests/unit/learned-profile), [management window evidence](evidence/s24-profile-manager-2026-10-14.md), [learning delivery evidence](evidence/s24-learned-page-profiles-2026-10-13.md).
+
+
 현재 동작과 계약은 아래 소스에서 확인한다. 이 문서는 진입점 안내이며 별도의
 기능 명세나 완료 상태표가 아니다. 실제 Provider에 제공되는 도구는 schema 구성,
 등록된 executor, 호출 결과의 후속 turn을 함께 따라가며 확인한다.

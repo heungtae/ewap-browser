@@ -42,6 +42,10 @@ export type ChatActionView = {
   workflow_total?: number;
 };
 export type ChatEventPayload =
+  | {
+      type: "learned_profile_status";
+      status: "REUSED" | "SAVED" | "FALLBACK" | "STORE_FAILED" | "REPAIRED";
+    }
   | { type: "user_message"; text: string }
   | { type: "page_scope_changed" }
   | { type: "run_started"; mode: ChatMode; permission_mode: string }

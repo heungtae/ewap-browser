@@ -1,7 +1,7 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.106",
+  "version": "0.1.109",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -52,7 +52,9 @@
     "test:chrome-s21": "node --experimental-websocket scripts/chrome-s21-smoke.mjs",
     "test:chrome-s22": "node --experimental-websocket scripts/chrome-s22-smoke.mjs",
     "test:chrome-s23": "node --experimental-websocket scripts/chrome-s23-page-method-smoke.mjs",
-    "test:chrome-s23-matrix": "node scripts/chrome-s23-matrix.mjs"
+    "test:chrome-s23-matrix": "node scripts/chrome-s23-matrix.mjs",
+    "test:chrome-s24": "node --experimental-websocket scripts/chrome-s24-smoke.mjs",
+    "test:chrome-s24-act": "node --experimental-websocket scripts/chrome-s24-act-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

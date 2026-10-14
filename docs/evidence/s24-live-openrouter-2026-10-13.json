@@ -1,0 +1,371 @@
+{
+  "scope": "live_provider_isolated_chrome_fixture",
+  "checks": [
+    "save",
+    "request_local_command_schema",
+    "same_tool_call_id_continuation",
+    "reuse",
+    "privacy",
+    "trusted_settings_sender",
+    "options_14px_spacing",
+    "off_retains_records",
+    "stale_management_rejection",
+    "delete"
+  ],
+  "provider_turns": [
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "tool_call_ids": [],
+      "statuses": [],
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_status": 200,
+      "usage": {
+        "prompt_tokens": 2562,
+        "completion_tokens": 262,
+        "total_tokens": 2824,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 2096,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 203,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "returned_tools": ["describe_learned_task"],
+      "argument_shapes": [
+        {
+          "tool": "describe_learned_task",
+          "fields": ["kind", "input", "target", "coverage"],
+          "fixed_values": {
+            "kind": "help",
+            "input": "none",
+            "target": "page",
+            "coverage": "visible"
+          },
+          "dry_run": false,
+          "empty_recipe": false,
+          "null_recipe": false
+        }
+      ],
+      "returned_ids": ["call-fc6cb625-4f4a-488a-a9e3-c7e1d06bf67c"]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "tool_call_ids": ["call-fc6cb625-4f4a-488a-a9e3-c7e1d06bf67c"],
+      "statuses": [
+        {
+          "tool_call_id": "call-fc6cb625-4f4a-488a-a9e3-c7e1d06bf67c",
+          "status": "AVAILABLE",
+          "dry_run": false
+        }
+      ],
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_status": 200,
+      "usage": {
+        "prompt_tokens": 2666,
+        "completion_tokens": 363,
+        "total_tokens": 3029,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 2096,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 100,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "returned_tools": [],
+      "argument_shapes": [],
+      "returned_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0"
+      ],
+      "tool_call_ids": [],
+      "statuses": [],
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_status": 200,
+      "usage": {
+        "prompt_tokens": 3226,
+        "completion_tokens": 415,
+        "total_tokens": 3641,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 315,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "returned_tools": ["describe_learned_task"],
+      "argument_shapes": [
+        {
+          "tool": "describe_learned_task",
+          "fields": ["coverage", "kind", "target", "input", "recipe_id"],
+          "fixed_values": {
+            "coverage": "visible",
+            "kind": "help",
+            "target": "page",
+            "input": "none"
+          },
+          "dry_run": false,
+          "empty_recipe": false,
+          "null_recipe": false
+        }
+      ],
+      "returned_ids": ["call-6e2c39de-89ac-497e-8c81-79f1c1a247f1"]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0"
+      ],
+      "tool_call_ids": ["call-6e2c39de-89ac-497e-8c81-79f1c1a247f1"],
+      "statuses": [
+        {
+          "tool_call_id": "call-6e2c39de-89ac-497e-8c81-79f1c1a247f1",
+          "status": "AVAILABLE",
+          "dry_run": false
+        }
+      ],
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_status": 200,
+      "usage": {
+        "prompt_tokens": 3371,
+        "completion_tokens": 157,
+        "total_tokens": 3528,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 2096,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 128,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "returned_tools": ["page_cmd_0"],
+      "argument_shapes": [
+        {
+          "tool": "page_cmd_0",
+          "fields": ["dry_run"],
+          "fixed_values": {},
+          "dry_run": false,
+          "empty_recipe": false,
+          "null_recipe": false
+        }
+      ],
+      "returned_ids": ["call-85b9fe96-d11b-444d-a60d-486bfc67f89c"]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0"
+      ],
+      "tool_call_ids": [
+        "call-6e2c39de-89ac-497e-8c81-79f1c1a247f1",
+        "call-85b9fe96-d11b-444d-a60d-486bfc67f89c"
+      ],
+      "statuses": [
+        {
+          "tool_call_id": "call-6e2c39de-89ac-497e-8c81-79f1c1a247f1",
+          "status": "AVAILABLE",
+          "dry_run": false
+        },
+        {
+          "tool_call_id": "call-85b9fe96-d11b-444d-a60d-486bfc67f89c",
+          "status": "AVAILABLE",
+          "dry_run": false
+        }
+      ],
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_status": 200,
+      "usage": {
+        "prompt_tokens": 3875,
+        "completion_tokens": 582,
+        "total_tokens": 4457,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 2096,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 203,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "returned_tools": [],
+      "argument_shapes": [],
+      "returned_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch"
+      ],
+      "tool_call_ids": [],
+      "statuses": [],
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "upstream_status": 200,
+      "usage": {
+        "prompt_tokens": 2503,
+        "completion_tokens": 597,
+        "total_tokens": 3100,
+        "cost": 0,
+        "is_byok": false,
+        "prompt_tokens_details": {
+          "cached_tokens": 0,
+          "cache_write_tokens": 0,
+          "audio_tokens": 0,
+          "video_tokens": 0
+        },
+        "cost_details": {
+          "upstream_inference_cost": 0,
+          "upstream_inference_prompt_cost": 0,
+          "upstream_inference_completions_cost": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 67,
+          "image_tokens": 0,
+          "audio_tokens": 0
+        }
+      },
+      "returned_tools": [],
+      "argument_shapes": [],
+      "returned_ids": []
+    }
+  ]
+}

@@ -277,6 +277,7 @@ export const runHarnessReadTurns = async (opts: {
   expectedRevision: number;
   maxRounds?: number;
   maxReads?: number;
+  readCost?(call: ActReadCall): number;
   sourceReadOnly?: boolean;
   isCancelled?: (() => boolean) | undefined;
 }): Promise<HarnessReadTurnResult> =>
@@ -418,7 +419,23 @@ export const runHarnessReadTurns = async (opts: {
             exhausted: false,
           };
         }
-        if (reads + readCalls.length > (opts.maxReads ?? 24))
+        const readCost = (call: {
+          name: string;
+          arguments: Record<string, unknown>;
+        }) => {
+          const cost =
+            opts.readCost?.({
+              name: call.name,
+              args: JSON.stringify(call.arguments),
+            }) ?? 1;
+          if (!Number.isInteger(cost) || cost < 1 || cost > 12)
+            throw new ContractError("INVALID_ARGUMENT");
+          return cost;
+        };
+        if (
+          reads + readCalls.reduce((total, call) => total + readCost(call), 0) >
+          (opts.maxReads ?? 24)
+        )
           return {
             messages: opts.messages,
             calls: [],
@@ -438,6 +455,7 @@ export const runHarnessReadTurns = async (opts: {
             name: call.name,
             arguments: call.arguments,
           })),
+          readable,
         );
         const imageMessages: ProviderMessage[] = [];
         for (const batch of batches) {
@@ -458,7 +476,7 @@ export const runHarnessReadTurns = async (opts: {
             }
             if (opts.isCancelled?.()) throw fail("TARGET_STALE");
             sourceGuard?.observe(call.name, call.arguments, result);
-            reads += 1;
+            reads += readCost(call);
             const visual = visionReadMessages(call.name, result);
             opts.messages.push({
               role: "tool",

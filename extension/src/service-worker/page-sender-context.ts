@@ -105,6 +105,9 @@ export const createPageSenderContext = (chrome?: BrowserChromeApi) => {
     activeTabForBoundPanel,
     isPanelSender,
     isSettingsSender,
+    isLearnedProfileManagerSender: (sender: BrowserSender): boolean =>
+      sender.id === chrome?.runtime.id &&
+      sender.url === chrome?.runtime.getURL("settings/learned-profiles.html"),
     isPanelOrSettingsSender: (sender: BrowserSender) =>
       isPanelSender(sender) || isSettingsSender(sender),
     pageOrigin,

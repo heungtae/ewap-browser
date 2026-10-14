@@ -40,6 +40,7 @@ const envelope = [
 ];
 const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   user_message: ["text"],
+  learned_profile_status: ["status"],
   page_scope_changed: [],
   run_started: ["mode", "permission_mode"],
   activity_started: ["stage"],

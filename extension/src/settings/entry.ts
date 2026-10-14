@@ -1,3 +1,4 @@
+import { initializeLearnedProfileOptions } from "./learned-profile-options.js";
 import {
   applyApprovalSettings,
   readApprovalSettings,
@@ -917,3 +918,5 @@ agentPreferencesForm?.addEventListener("submit", (event) => {
           : "Browser Agent 설정을 저장하지 못했습니다.";
   });
 });
+
+if (runtime) initializeLearnedProfileOptions(runtime);

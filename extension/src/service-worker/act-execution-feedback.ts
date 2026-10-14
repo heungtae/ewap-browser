@@ -1,3 +1,4 @@
+import { isPlainObject } from "../security/validation.js";
 import { advancePlanStep } from "./page-method-plan.js";
 import { mutationBinding } from "./act-mutation-history.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
@@ -68,6 +69,33 @@ export const recordActExecution = (
       executed.already_satisfied === true,
   };
   (session.executionEvidence ??= []).push(evidence);
+  const operation =
+    proposal.tool === "call_page_method"
+      ? "method-rediscovery"
+      : proposal.tool === "navigate"
+        ? "navigate"
+        : proposal.tool === "set_text_by_ref"
+          ? "set-text"
+          : proposal.tool === "select_option_by_ref"
+            ? "select"
+            : proposal.tool === "set_checked_by_ref"
+              ? "check"
+              : "click";
+  if (["call_page_api", "press_key_by_ref"].includes(proposal.tool))
+    session.learnedProfile?.failure();
+  session.learnedProfile?.action(
+    {
+      channel: proposal.tool === "call_page_method" ? "method" : "ui",
+      operation,
+    },
+    outcome === "VERIFIED" ||
+      (proposal.tool === "call_page_method" &&
+        executed.dispatch === "dispatched" &&
+        executed.invocation === "returned" &&
+        isPlainObject(executed.return_data) &&
+        executed.return_data.available === true),
+    dispatch === "not_dispatched" && outcome === "FAILED",
+  );
   traceDecision("act.dispatch.receipt", {
     logical_step_id: evidence.logical_step_id,
     attempt_id: evidence.action_id,

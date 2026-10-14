@@ -45,6 +45,24 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
     run_id: opaque(value.run_id),
     sequence,
   };
+  if (value.type === "learned_profile_status") {
+    if (
+      !["REUSED", "SAVED", "FALLBACK", "STORE_FAILED", "REPAIRED"].includes(
+        String(value.status),
+      )
+    )
+      return fail("INVALID_ARGUMENT");
+    return {
+      ...base,
+      type: "learned_profile_status",
+      status: value.status as
+        | "REUSED"
+        | "SAVED"
+        | "FALLBACK"
+        | "STORE_FAILED"
+        | "REPAIRED",
+    };
+  }
   if (value.type === "user_message") {
     if (typeof value.text !== "string") return fail("INVALID_ARGUMENT");
     return { ...base, type: "user_message", text: string(value.text, 16_000) };

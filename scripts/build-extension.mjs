@@ -11,6 +11,7 @@ await build({
     content: "extension/src/content/entry.ts",
     panel: "extension/src/sidepanel/entry.ts",
     settings: "extension/src/settings/entry.ts",
+    "learned-profiles": "extension/src/settings/learned-profiles-entry.ts",
     offscreen: "extension/src/offscreen/entry.ts",
   },
   plugins: [methodTracePlugin(methodInventory)],
@@ -56,6 +57,15 @@ await cp(
   "extension/src/settings/index.html",
   new URL("settings/index.html", output),
 );
+for (const file of [
+  "learned-profiles.html",
+  "learned-profiles.css",
+  "learned-profile-layout.css",
+])
+  await cp(
+    `extension/src/settings/${file}`,
+    new URL(`settings/${file}`, output),
+  );
 await mkdir(new URL("offscreen/", output), { recursive: true });
 await cp(
   "extension/src/offscreen/index.html",

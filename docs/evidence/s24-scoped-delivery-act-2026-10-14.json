@@ -1,0 +1,282 @@
+{
+  "scope": "controlled_chrome_act",
+  "checks": [
+    "eligible_verified_act_save",
+    "ui_command_proposed_only",
+    "fresh_submit_plan",
+    "fresh_current_input",
+    "normal_approval_path",
+    "atomic_command_revision",
+    "no_persistent_input_values"
+  ],
+  "turns": [
+    {
+      "offered": [],
+      "returned": [],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan"
+      ],
+      "returned": [
+        "describe_learned_task"
+      ],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan"
+      ],
+      "returned": [
+        "submit_plan"
+      ],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan"
+      ],
+      "returned": [
+        "propose_set_text"
+      ],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan",
+        "report_goal_status"
+      ],
+      "returned": [
+        "report_goal_status"
+      ],
+      "receipts": [
+        {
+          "raw_outcome": "VERIFIED",
+          "outcome": "VERIFIED",
+          "dispatch": "dispatched"
+        }
+      ]
+    },
+    {
+      "offered": [],
+      "returned": [],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan"
+      ],
+      "returned": [
+        "page_cmd_0"
+      ],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan"
+      ],
+      "returned": [
+        "submit_plan"
+      ],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan"
+      ],
+      "returned": [
+        "propose_set_text"
+      ],
+      "receipts": []
+    },
+    {
+      "offered": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "page_cmd_0",
+        "propose_set_text",
+        "request_clarification",
+        "submit_plan",
+        "report_goal_status"
+      ],
+      "returned": [
+        "report_goal_status"
+      ],
+      "receipts": [
+        {
+          "raw_outcome": "VERIFIED",
+          "outcome": "VERIFIED",
+          "dispatch": "dispatched"
+        }
+      ]
+    }
+  ]
+}

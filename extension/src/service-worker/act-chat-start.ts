@@ -1,3 +1,4 @@
+import { beginLearnedProfile } from "./learned-profile-runtime.js";
 import { validateWorkflowDeclaration } from "../contracts/workflow.js";
 import { profileActionTools } from "../profile/profile.js";
 import { profileModelContext } from "../profile/profile-model-context.js";
@@ -260,6 +261,13 @@ export const createActChatStart =
         definitions: selected.definitions,
         profileDefinitions: matchedProfile?.definitions ?? [],
       };
+      session.learnedProfileStarted = true;
+      const learned = await beginLearnedProfile(
+        active,
+        "act",
+        () => !context?.signal.aborted,
+      );
+      if (learned) session.learnedProfile = learned;
       attachHarnessCapabilities(
         session,
         value.prompt,
@@ -295,6 +303,7 @@ export const createActChatStart =
           return analysisData;
         }
         if (analysisData) {
+          session.learnedProfile?.observe("read_component_data", analysisData);
           session.analysisData = analysisData;
           session.analysisScope = analysisScope;
         }

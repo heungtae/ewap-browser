@@ -213,6 +213,7 @@ export const validateToolCallBinding = (
 
 export const orderReads = (
   calls: ToolCallInput[],
+  registeredReads: ReadonlySet<string> = READ_TOOLS,
 ): { batches: ToolCallInput[][]; sequential: boolean } =>
   traceMethod(
     "page-act-harness/read-loop.ts:orderReads",
@@ -220,7 +221,7 @@ export const orderReads = (
     () => {
       // Only pure read turns batch. Anything else (mutation, submit_plan,
       // clarification) runs sequentially via the orchestrator.
-      const nonRead = calls.filter((call) => !READ_TOOLS.has(call.name));
+      const nonRead = calls.filter((call) => !registeredReads.has(call.name));
       if (nonRead.length > 0)
         throw new Error(
           `NON_READ_BATCHED:${nonRead.map((call) => call.name).join(",")}`,

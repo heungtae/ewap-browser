@@ -303,6 +303,11 @@
           padding: 16px;
         }
       }
+      .learned-profile-controls {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
     </style>
   </head>
   <body>
@@ -497,6 +502,27 @@
           </div>
         </form>
         <output id="profile-status" aria-live="polite"></output>
+      </section>
+      <section class="settings-card" id="learned-profile-section">
+        <h2>학습된 페이지 프로필</h2>
+        <p>
+          성공한 Ask/Act의 재사용 가능한 읽기·작업 정보를 이 Chrome profile에
+          저장합니다. 페이지 원문과 입력값은 저장하지 않으며, 실행 승인은 기존
+          설정을 따릅니다.
+        </p>
+        <div class="learned-profile-controls">
+          <label class="checkbox-row"
+            ><input id="learned-profile-enabled" type="checkbox" checked />자동
+            저장 및 재사용</label
+          >
+          <div class="button-row">
+            <button id="learned-profile-open" type="button">
+              프로파일 관리
+            </button>
+          </div>
+          <p id="learned-profile-summary"></p>
+          <output id="learned-profile-status" aria-live="polite"></output>
+        </div>
       </section>
       <section class="settings-card">
         <h2>저장된 워크플로우</h2>

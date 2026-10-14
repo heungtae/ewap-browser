@@ -4,26 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
-## Browser Agent S24 — 2026-10-13 설계
+## Browser Agent S24 — 2026-10-13 구현
 
-**Planned — 제품 코드 미구현.**
-[S24 설계](sprints/s24-learned-page-profiles.md)는 오류 없는 정상 완료의 Ask와 Act에서
-처리 방법을 자동 저장하고, 동일 페이지의 다음 사용자 요청에서 사용하는 로컬 기능이다.
-페이지·작업 guard, 현재 값·대상·승인 재결속, 저장 제외 기준, TTL/경합/삭제와
-C1~C8/R01~R18을 기록했다.
+**Browser-local 구현 제공, 전체 qualification In Progress.**
+성공한 Ask/Act에서 로컬 recipe와 명령을 저장하고 다음 요청의 도구로 제공한다.
+명령의 읽기는 기존 reader를 사용하며 UI/method는 현재 입력·대상·계획·승인을 요구한다.
+Options에 기존 디자인을 유지한 관리·JSON·변경 이력을 추가했다.
 
-2026-10-13 후속 설계에서 저장된 방법의 오류를 같은 Provider 대화로 전달하고,
-대안 성공 후 동일 profile/recipe의 새 revision으로 갱신하는 repair 경로를 추가했다.
-최초 실패 보존·UNKNOWN mutation 반복 차단·관리 경합과 Options의 항목별 사용/갱신/삭제·
-상세 내용/마스킹 JSON/변경 이력을 구체화했다. 현재 계획은 C1~C9/R01~R28이다.
-문서 검토 범위이며 제품 코드·runtime·Provider·배포 검증은 수행하지 않았다.
-
-2026-10-13 CLI-Anything 분석 후속 설계에서 페이지별 작업 명령을 LearnedPageProfile의
-commands로 통합했다. 명령과 recipe의 연결·제한된 입력/결과 계약에서 help/Schema/
-검증기를 생성하고, 현재 페이지 재결속 후 기존 읽기 또는 Act 계획/proposal로 처리한다.
-S23는 영속 함수 경로 없이 Act method_hint 재탐색을 사용한다. dry-run의 무실행,
-명령/recipe 원자적 repair와 Options 명령 상세/연결 관리를 포함한 현재 계획은
-C1~C12/R01~R44다. Planned를 유지하며 제품 코드는 변경하지 않았다.
+194개 파일 918개 unit/fixture/e2e 검사, 통제 Chrome Ask/Act 및 실제 OpenRouter Ask
+재사용 경로를 검증했다. 원래 C1~C12/R01~R44 설계와 미검증 범위는
+[S24 전달 기록](sprints/s24-learned-page-profiles.md), 실행 환경·실패 이력은
+[검증 증거](evidence/s24-learned-page-profiles-2026-10-13.md)에 연결한다.
+데이터가 바뀐 페이지의 재사용, S24 live method/repair 및 holdout 전 범위를 완료로 표시하지 않는다.
 
 ## Browser Act S23 — 2026-10-12 리뷰 수정
 

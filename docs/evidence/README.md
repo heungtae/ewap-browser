@@ -1,5 +1,17 @@
 # 검증 증거 안내
 
+[S24 scoped commit verification](s24-scoped-delivery-2026-10-14.md): 다른 미커밋 변경을 제외한 커밋 후보의 빌드·96개 테스트·통제 Chrome Ask/Act 재검증.
+
+## 2026-10-14 S24 관리 창
+
+[Separate profile management window](s24-profile-manager-2026-10-14.md): 목록·상세 편집,
+검색·페이지 이동·삭제·동시 편집, 대화 복구의 창 바인딩, 통제 Chrome Ask/Act와 화면 증거.
+
+## 2026-10-13 S24
+
+[Learned profiles and page commands](s24-learned-page-profiles-2026-10-13.md): controlled Chrome Ask/Act, live OpenRouter Ask and Options evidence; qualification limits recorded.
+
+
 이 디렉터리는 실행 당시의 revision·환경·명령·결과·실패·미검증 범위를 보존한다.
 현재 기능의 SSOT는 [코드](../source-guide.md)이며, 과거 PASS를 현재 revision의
 검증 결과로 재사용하지 않는다. 재현 명령은 [테스트 가이드](../test.md)를 따른다.

@@ -27,6 +27,8 @@ export type ActProposal =
   | ParsedPageMethodProposal;
 
 export type ActSession = {
+  learnedProfile?: import("../learned-profile/session.js").LearnedSession;
+  learnedProfileStarted?: true;
   recoveryStep?: { logicalStepId: string; attempts: number };
   assessmentBudget?: import("./act-assessment-budget.js").AssessmentBudget;
   assessmentBaselineScope?: PageScope;

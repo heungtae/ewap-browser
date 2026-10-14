@@ -1461,7 +1461,27 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     );
     return;
   }
+  if (event.type === "learned_profile_status") {
+    const view = document.querySelector<HTMLOutputElement>(
+      "#learned-profile-activity",
+    );
+    if (view)
+      view.textContent = {
+        REUSED: "학습 프로필을 참고하고 있습니다.",
+        SAVED: "재사용 가능한 페이지 프로필을 저장했습니다.",
+        FALLBACK:
+          "프로필 경로를 사용할 수 없어 현재 페이지에서 다시 탐색합니다.",
+        STORE_FAILED:
+          "프로필 기록을 저장하지 못했습니다. 요청의 실행 결과는 별도로 확인해 주세요.",
+        REPAIRED: "성공한 대체 경로로 프로필을 갱신했습니다.",
+      }[event.status];
+    return;
+  }
   if (event.type === "run_started") {
+    const learnedView = document.querySelector<HTMLOutputElement>(
+      "#learned-profile-activity",
+    );
+    if (learnedView) learnedView.textContent = "";
     activeRunId = event.run_id;
     if (stopRequested) {
       stoppedRuns.add(event.run_id);
@@ -1711,7 +1731,7 @@ const updatePageLabel = (page: unknown): void => {
 const recoverChatEvents = async (attempt = 0): Promise<void> => {
   const recoveryId = ++latestRecoveryId;
   try {
-    const response = await runtime?.sendMessage({ kind: "CHAT_RECOVER" });
+    const response = await sendRuntime({ kind: "CHAT_RECOVER" });
     if (
       recoveryId === latestRecoveryId &&
       typeof response === "object" &&

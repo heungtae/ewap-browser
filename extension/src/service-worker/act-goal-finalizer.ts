@@ -152,6 +152,14 @@ export const finaliseGoal = (opts: {
     provider_completed: providerCompleted,
     ...completion,
   });
+  void session.learnedProfile?.seal(
+    completion.goal_status === "completed" &&
+      (session.executionEvidence ?? []).length > 0 &&
+      (action === "VERIFIED" ||
+        (session.executionEvidence ?? []).every(
+          (r) => r.page_method_invocation === "returned",
+        )),
+  );
   dependencies.coordinator.runs.terminal(run.id, outcome, code);
   dependencies.publish(run.id, { type: "assistant_delta", text: message });
   dependencies.publish(run.id, {

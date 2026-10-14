@@ -14,10 +14,14 @@ const required = [
   "js/content.js",
   "js/panel.js",
   "js/settings.js",
+  "js/learned-profiles.js",
   "js/offscreen.js",
   "managed-storage-schema.json",
   "sidepanel/index.html",
   "settings/index.html",
+  "settings/learned-profiles.html",
+  "settings/learned-profiles.css",
+  "settings/learned-profile-layout.css",
   "offscreen/index.html",
 ];
 if (

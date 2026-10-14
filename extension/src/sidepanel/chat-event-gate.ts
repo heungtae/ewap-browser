@@ -15,7 +15,8 @@ export const shouldRenderChatEvent = (
     event.type !== "page_scope_changed"
   )
     return false;
-  if (terminalRuns.has(event.run_id)) return false;
+  if (terminalRuns.has(event.run_id) && event.type !== "learned_profile_status")
+    return false;
   if (stoppedRuns.has(event.run_id) && event.type !== "run_terminal")
     return false;
   return true;
