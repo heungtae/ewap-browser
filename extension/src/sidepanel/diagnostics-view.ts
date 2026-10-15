@@ -1,3 +1,4 @@
+import { createExecutionActivityLog } from "./execution-activity-log.js";
 import {
   methodTraceSnapshot,
   setMethodTraceLevel,
@@ -61,9 +62,16 @@ export const createDiagnosticsView = (options: {
   const setActivityStatus = options.activity;
   const showFailure = options.failure;
   const activityLabel = options.label;
-  const setExecutionTrace = (text: string): void => {
+  const activityLog = createExecutionActivityLog();
+  let traceText = "";
+  const renderTrace = (): void => {
+    const text = [...activityLog.lines(), traceText].filter(Boolean).join("\n");
     if (executionTrace) executionTrace.textContent = text;
     if (diagnosticsDialogTrace) diagnosticsDialogTrace.textContent = text;
+  };
+  const setExecutionTrace = (text: string): void => {
+    traceText = text;
+    renderTrace();
   };
   const showDiagnosticsDialog = (): void => {
     if (!diagnosticsDialog || !diagnosticsDialogTrace) return;
@@ -463,6 +471,19 @@ export const createDiagnosticsView = (options: {
   }, 1_000);
 
   return {
+    collection(text: string): void {
+      activityLog.collection(text);
+      if (executionDetails) executionDetails.hidden = false;
+      renderTrace();
+    },
+    providerStart(runId: string): void {
+      activityLog.providerStart(runId);
+    },
+    providerResponse(runId: string, text: string): void {
+      activityLog.providerResponse(runId, text);
+      if (executionDetails) executionDetails.hidden = false;
+      renderTrace();
+    },
     refresh: refreshTrace,
     download: downloadDiagnostics,
     open: (): void => {
@@ -495,6 +516,7 @@ export const createDiagnosticsView = (options: {
       );
     },
     reset: () => {
+      activityLog.clear();
       panelMessages.splice(0, panelMessages.length);
       lastBundleSections = undefined;
       setExecutionTrace("아직 기록된 실행이 없습니다.");

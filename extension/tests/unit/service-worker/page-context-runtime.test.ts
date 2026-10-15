@@ -3,19 +3,23 @@ import { createPageContextRuntime } from "../../../src/service-worker/page-conte
 
 describe("page context runtime", () => {
   it("reads_a_newly_registered_document_even_if_a_late_url_event_left_a_stale_mark", async () => {
-    const sendMessage = vi.fn(async () => ({
-      ok: true,
-      snapshot: {
-        origin: "https://code.visualstudio.com",
-        snapshot: {
-          schema_version: 2,
+    const sendMessage = vi.fn(
+      async (_tab: number, message: { part: string }) => ({
+        ok: true,
+        binding: {
           document_epoch: "epoch-abcdefghijklmnop",
-          frame_id: 0,
-          nodes: [],
-          visible_text: "Remote Development using SSH",
+          page_scope_epoch: "scope-abcdefghijklmnop",
+          url: "https://code.visualstudio.com/docs/remote/ssh",
         },
-      },
-    }));
+        ...(message.part === "document"
+          ? { origin: "https://code.visualstudio.com" }
+          : {}),
+        ...(message.part === "nodes" ? { nodes: [], truncated: false } : {}),
+        ...(["visible_text", "article_text"].includes(message.part)
+          ? { text: "Destination" }
+          : {}),
+      }),
+    );
     const runtime = createPageContextRuntime({
       chrome: {
         tabs: {
@@ -41,6 +45,6 @@ describe("page context runtime", () => {
       path: "/docs/remote/ssh",
       snapshot: { document_epoch: "epoch-abcdefghijklmnop" },
     });
-    expect(sendMessage).toHaveBeenCalledOnce();
+    expect(sendMessage).toHaveBeenCalledTimes(5);
   });
 });

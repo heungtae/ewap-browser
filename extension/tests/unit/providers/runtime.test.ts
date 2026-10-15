@@ -81,7 +81,7 @@ describe("provider runtime", () => {
     );
   });
 
-  it("given_plugin_disable_then_provider_can_be_reenabled", async () => {
+  it("given_provider_disable_then_saved_provider_can_be_reenabled", async () => {
     let stored: Record<string, unknown> = {};
     const runtime = new ProviderRuntime({
       async get() {
@@ -92,19 +92,16 @@ describe("provider runtime", () => {
       },
     });
     await runtime.handle("PROVIDER_SAVE", { id: "local", config });
-    await runtime.handle("PLUGIN_SET_ENABLED", {
-      plugin_id: "contextpilot.openai-compatible",
-      enabled: false,
+    await runtime.handle("PROVIDER_REMOVE", {
+      id: "local",
+      delete_secret: false,
     });
     const disabled = await runtime.handle("PROVIDER_LIST", undefined);
     expect(
       (disabled.providers as Record<string, { enabled: boolean }>)["local"]
         ?.enabled,
     ).toBe(false);
-    await runtime.handle("PLUGIN_SET_ENABLED", {
-      plugin_id: "contextpilot.openai-compatible",
-      enabled: true,
-    });
+    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
     const enabled = await runtime.handle("PROVIDER_LIST", undefined);
     expect(
       (enabled.providers as Record<string, { enabled: boolean }>)["local"]

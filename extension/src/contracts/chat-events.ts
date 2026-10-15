@@ -1,3 +1,4 @@
+import { validateProviderActivity } from "./provider-activity.js";
 import {
   approvalCategories,
   type ApprovalCategory,
@@ -45,6 +46,12 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
     run_id: opaque(value.run_id),
     sequence,
   };
+  if (value.type === "provider_activity")
+    return {
+      ...base,
+      type: "provider_activity",
+      ...validateProviderActivity(value),
+    };
   if (value.type === "learned_profile_status") {
     if (
       !["REUSED", "SAVED", "FALLBACK", "STORE_FAILED", "REPAIRED"].includes(
@@ -121,12 +128,17 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
       ...(value.type === "activity_progress" && value.completion !== undefined
         ? { completion: validateActCompletion(value.completion) }
         : {}),
-    };
+    } as ChatEvent;
   }
   if (value.type === "assistant_delta") {
-    if (typeof value.text !== "string") return fail("INVALID_ARGUMENT");
+    if (
+      typeof value.text !== "string" ||
+      (value.source !== undefined && value.source !== "provider")
+    )
+      return fail("INVALID_ARGUMENT");
     return {
       ...base,
+      ...(value.source === "provider" ? { source: "provider" as const } : {}),
       type: "assistant_delta",
       text: string(value.text, 16_000),
     };
@@ -227,6 +239,7 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
           "component-vision",
           "runtime-methods",
           "runtime-result",
+          "jev-decision",
         ].includes(String(value.purpose))) ||
       typeof value.request_id !== "string" ||
       typeof value.host !== "string" ||
@@ -249,7 +262,8 @@ export const validateChatEvent = (value: unknown): ChatEvent => {
               | "component-scroll"
               | "component-vision"
               | "runtime-methods"
-              | "runtime-result",
+              | "runtime-result"
+              | "jev-decision",
           }),
     };
   }

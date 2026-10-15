@@ -4,11 +4,9 @@ import type { BrowserSender } from "./browser-api.js";
 type Respond = (response: unknown) => void;
 const providerMessageKinds = new Set([
   "PROVIDER_LIST",
-  "PLUGIN_INSTALL",
-  "PLUGIN_SET_ENABLED",
-  "PLUGIN_REMOVE",
   "PROVIDER_SAVE",
   "PROVIDER_SET_ACTIVE",
+  "PROVIDER_SET_ROUTING",
   "PROVIDER_REMOVE",
   "PROVIDER_TEST",
   "PROVIDER_MODELS",

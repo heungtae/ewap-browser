@@ -1,14 +1,13 @@
+import { invalidateProviderWrite } from "./provider-write-binding.js";
 import { fail, isPlainObject } from "../security/validation.js";
 import { ProviderSettings } from "../settings/provider-settings.js";
 import { parseProviderBody } from "./provider-body.js";
-import { ProviderPluginStore } from "./plugin-store.js";
-import {
-  handleProviderLifecycle,
-  lifecycleKinds,
-} from "./provider-lifecycle.js";
 import { parseChatResponse } from "./provider-response.js";
-import { ProviderRegistry } from "./registry.js";
-import { testProvider } from "./provider-test.js";
+import { resolveOpenAiCompatible } from "./resolve-openai-compatible.js";
+import { handleManagement } from "./runtime-management.js";
+import { ModelBindings } from "./model-bindings.js";
+import { decide } from "./decision-coordinator.js";
+import type { DecisionTask, ModelRequestOptions } from "./jev-types.js";
 import { CoreProviderTransport } from "./transport.js";
 import type {
   ProviderChatResponse,
@@ -27,10 +26,8 @@ export type ProviderRuntimeStorage = {
 };
 
 export class ProviderRuntime {
-  public readonly registry = new ProviderRegistry();
   private readonly settings: ProviderSettings;
-  private readonly pluginStore: ProviderPluginStore;
-  private ready?: Promise<void>;
+  public readonly bindings: ModelBindings;
 
   public constructor(
     storage: ProviderRuntimeStorage,
@@ -39,49 +36,92 @@ export class ProviderRuntime {
     this.settings = new ProviderSettings({
       read: async () =>
         (await storage.get("provider_settings")).provider_settings,
-      write: async (state) => storage.set({ provider_settings: state }),
+      write: async (state) => {
+        await invalidateProviderWrite(
+          this.bindings,
+          (await storage.get("provider_settings")).provider_settings,
+          state,
+        );
+        await storage.set({ provider_settings: state });
+      },
     });
-    this.pluginStore = new ProviderPluginStore(storage, this.registry);
+    this.bindings = new ModelBindings(this.settings);
   }
 
-  private async ensureReady(): Promise<void> {
-    this.ready ??= this.pluginStore.load();
-    await this.ready;
+  public decide(task: DecisionTask, options: ModelRequestOptions) {
+    return decide(this.bindings, this.transport, task, options);
   }
 
   public async chat(
     input: { messages: ProviderMessage[]; tools?: ProviderToolDefinition[] },
-    options: {
-      onDelta?: (text: string) => void;
-      signal?: AbortSignal;
-      onProgress?: () => void;
-    } = {},
+    options: ModelRequestOptions = {},
   ): Promise<ProviderChatResponse> {
-    await this.ensureReady();
-    const config = await this.settings.active();
-    const adapter = this.registry.resolveConfigured(config);
-    const result = await this.transport.send(
-      config,
-      adapter,
-      {
-        wire_api: config.wire_api,
-        model: config.model,
-        messages: input.messages,
-        ...(input.tools ? { tools: input.tools } : {}),
-        stream: options.onDelta !== undefined,
-      },
-      options.signal,
+    const bindingSignal = options.bindingSignal ?? options.signal;
+    const binding = bindingSignal
+      ? await this.bindings.get(bindingSignal)
+      : undefined;
+    if (binding) this.bindings.check(binding);
+    const config = binding?.primary ?? (await this.settings.active());
+    if (binding?.decision)
+      options.onRole?.({
+        provider_role: "primary",
+        stage: "PROCESSING",
+        phase: options.phase ?? "primary_processing",
+      });
+    const controller = new AbortController();
+    const signals = [options.signal, binding?.controller.signal].filter(
+      (s): s is AbortSignal => !!s,
     );
+    const abort = () => controller.abort();
+    for (const source of signals) {
+      source.addEventListener("abort", abort, { once: true });
+      if (source.aborted) abort();
+    }
+    const adapter = resolveOpenAiCompatible(config);
+    let result: Awaited<ReturnType<CoreProviderTransport["send"]>> | undefined;
     try {
+      result = await this.transport.send(
+        config,
+        adapter,
+        {
+          wire_api: config.wire_api,
+          model: config.model,
+          messages: input.messages,
+          ...(input.tools
+            ? {
+                tools: binding?.mutationStopped
+                  ? input.tools.filter(
+                      (t) =>
+                        !t.function.name.startsWith("propose_") &&
+                        t.function.name !== "submit_plan",
+                    )
+                  : input.tools,
+              }
+            : {}),
+          stream: options.onDelta !== undefined,
+        },
+        controller.signal,
+      );
       const response = await parseProviderBody(
         result.body,
-        options.onDelta,
+        binding?.decision ? undefined : options.onDelta,
         result.signal,
         options.onProgress,
       );
-      return parseChatResponse(response);
+      if (binding) this.bindings.check(binding);
+      options.signal?.throwIfAborted();
+      const parsed = parseChatResponse(response);
+      if (
+        binding?.mutationStopped &&
+        parsed.tool_calls.some(
+          (c) => c.name.startsWith("propose_") || c.name === "submit_plan",
+        )
+      )
+        return fail("POLICY_DENIED");
+      return parsed;
     } finally {
-      result.release();
+      result?.release();
+      for (const source of signals) source.removeEventListener("abort", abort);
     }
   }
 
@@ -92,7 +132,6 @@ export class ProviderRuntime {
    */
   public async diagnostics(): Promise<Record<string, unknown>> {
     try {
-      await this.ensureReady();
       const config = await this.settings.active();
       const publicConfig = {
         plugin_id: config.plugin_id,
@@ -121,63 +160,8 @@ export class ProviderRuntime {
     kind: string,
     payload: unknown,
   ): Promise<Record<string, unknown>> {
-    await this.ensureReady();
-    if (kind === "PROVIDER_LIST")
-      return {
-        ok: true,
-        plugins: this.registry.snapshot(),
-        providers: await this.settings.list(),
-      };
-    if (lifecycleKinds.has(kind))
-      return handleProviderLifecycle(
-        kind,
-        payload,
-        this.registry,
-        this.pluginStore,
-        this.settings,
-      );
-    if (kind === "PROVIDER_SAVE") return this.saveProvider(payload);
-    if (kind === "PROVIDER_EXPORT")
-      return { ok: true, export: await this.settings.exportPublic() };
-    if (kind === "PROVIDER_TEST") return this.testProvider(payload);
-    if (kind === "PROVIDER_MODELS") return this.listModels(payload);
     if (kind === "CHAT_SEND") return this.sendChat(payload);
-    return fail("INVALID_ARGUMENT");
-  }
-
-  private async saveProvider(
-    payload: unknown,
-  ): Promise<Record<string, unknown>> {
-    const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
-    const id = value.id;
-    const config = isPlainObject(value.config)
-      ? value.config
-      : fail("INVALID_ARGUMENT");
-    if (typeof id !== "string") fail("INVALID_ARGUMENT");
-    this.registry.resolveConfigured(config);
-    await this.settings.saveWriteOnly(id as string, config);
-    return { ok: true, providers: await this.settings.list() };
-  }
-
-  private async testProvider(
-    payload: unknown,
-  ): Promise<Record<string, unknown>> {
-    return testProvider(payload, {
-      resolveConfig: (id) => this.settings.resolve(id),
-      resolveAdapter: (config) => this.registry.resolveConfigured(config),
-      send: (config, adapter, request) =>
-        this.transport.send(config, adapter, request),
-    });
-  }
-
-  private async listModels(payload: unknown): Promise<Record<string, unknown>> {
-    const value = isPlainObject(payload) ? payload : fail("INVALID_ARGUMENT");
-    const id = value.id;
-    if (typeof id !== "string") fail("INVALID_ARGUMENT");
-    const config = await this.settings.resolve(id as string);
-    this.registry.resolveConfigured(config);
-    const result = await this.transport.listModels(config, "/models");
-    return { ok: true, status: result.status, models: result.models };
+    return handleManagement(kind, payload, this.settings, this.transport);
   }
 
   private async sendChat(payload: unknown): Promise<Record<string, unknown>> {

@@ -1,3 +1,7 @@
+import { reviewPreparedTask } from "./prepared-task-review.js";
+import { reviewAskAnswer } from "./ask-model-decision.js";
+import { modelGoalDecision } from "./model-goal-decision.js";
+import { workflowModelDecision } from "./workflow-model-decision.js";
 import { beginLearnedProfile } from "./learned-profile-runtime.js";
 import {
   approvalModeLabel,
@@ -536,6 +540,17 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           ? toHarnessRevision(session.requestContext.generation)
           : session.harnessReview.request_revision;
         const gate = await runWorkflowReviewGate({
+          judge: () =>
+            workflowModelDecision(
+              dependencies,
+              session,
+              projection,
+              () =>
+                harnessExecutor?.reviewReady?.(
+                  session.workflow!.declaration,
+                  session.harnessReview?.candidate_id,
+                ) ?? Promise.resolve(true),
+            ),
           chat: (gateMessages, gateTools) =>
             dependencies.provider.chat(
               {
@@ -545,6 +560,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               session.requestContext
                 ? {
                     signal: session.requestContext.signal,
+                    bindingSignal: session.requestContext.signal,
+                    onRole: (event) =>
+                      dependencies.publish(run.id, {
+                        type: "provider_activity",
+                        ...event,
+                      }),
                     onProgress: () =>
                       session.requestContext?.progress?.("PROVIDER_BODY"),
                   }
@@ -574,6 +595,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           publishDelta: (text) =>
             dependencies.publish(run.id, {
               type: "assistant_delta",
+              source: "provider",
               text,
             }),
           isCancelled: () =>
@@ -684,6 +706,12 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               session.requestContext
                 ? {
                     signal: session.requestContext.signal,
+                    bindingSignal: session.requestContext.signal,
+                    onRole: (event) =>
+                      dependencies.publish(run.id, {
+                        type: "provider_activity",
+                        ...event,
+                      }),
                     onProgress: () =>
                       session.requestContext?.progress?.("PROVIDER_BODY"),
                   }
@@ -698,6 +726,30 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               throw new ContractError("PROVIDER_PLUGIN_FAILED");
             }),
         );
+      if (session.feedbackOnly && session.executionEvidence?.length) {
+        const nativeReport = await modelGoalDecision(
+          dependencies,
+          session,
+          run,
+          observation,
+          observationId,
+          model.snapshot.nodes.map((n) => n.model_ref),
+          Date.now() + 15_000,
+        );
+        if (nativeReport)
+          return finishGoalFeedback({
+            dependencies,
+            session,
+            run,
+            response: { content: "", tool_calls: [] },
+            observationId,
+            observation,
+            observationScope,
+            modelRefs: model.snapshot.nodes.map((n) => n.model_ref),
+            messages,
+            nativeReport,
+          });
+      }
       const readTranscriptStart = messages.length;
       let response: { content: string; tool_calls: ProviderToolCall[] };
       if (harnessReads.length === 0 || !harnessExecutor) {
@@ -803,6 +855,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           if (loop.content) {
             dependencies.publish(run.id, {
               type: "assistant_delta",
+              source: "provider",
               text: loop.content,
             });
           }
@@ -911,6 +964,20 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         throw fail("POLICY_DENIED");
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
+        if (
+          !(await reviewAskAnswer(
+            dependencies,
+            run.id,
+            session.prompt,
+            response.content,
+            session.requestContext,
+            messages,
+          ))
+        )
+          return fail(
+            "PROVIDER_UNAVAILABLE",
+            "prepared answer requires further read-only work",
+          );
         if (session.awaitingExpandedMenuSelection)
           return fail("TARGET_NOT_ACTIONABLE");
         // Non-authoritative harness record: a tool-less answer is never a
@@ -927,6 +994,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
         dependencies.publish(run.id, {
           type: "assistant_delta",
+          source: "provider",
           text: response.content,
         });
         dependencies.publish(run.id, {
@@ -1070,6 +1138,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           if (response.content)
             dependencies.publish(run.id, {
               type: "assistant_delta",
+              source: "provider",
               text: response.content,
             });
           dependencies.publish(run.id, {
@@ -1199,6 +1268,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               messages: correctionMessages,
               tools: offeredTools,
               observationId,
+              projection: currentModel.snapshot,
               stepId: call.id,
               refresh: async (deadline) => {
                 const latest = await withDeadline(
@@ -1235,6 +1305,33 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
                 };
               },
             });
+            if (assessment.nativeSummary) {
+              dependencies.coordinator.runs.terminal(
+                run.id,
+                "UNKNOWN",
+                "TARGET_NOT_ACTIONABLE",
+              );
+              dependencies.publish(run.id, {
+                type: "assistant_delta",
+                text: assessment.nativeSummary,
+              });
+              dependencies.publish(run.id, {
+                type: "activity_finished",
+                stage: "COMPLETED",
+              });
+              dependencies.publish(run.id, {
+                type: "run_terminal",
+                outcome: "UNKNOWN",
+                code: "TARGET_NOT_ACTIONABLE",
+              });
+              dependencies.endSession(session);
+              return {
+                ok: true,
+                state: "UNKNOWN",
+                message: assessment.nativeSummary,
+                code: "TARGET_NOT_ACTIONABLE",
+              };
+            }
             response = assessment.response;
             offeredTools = assessment.tools;
             observationId = assessment.observationId;
@@ -1285,6 +1382,19 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         active.snapshot.document_epoch,
         requestRevision,
       );
+      if (
+        !(await reviewPreparedTask(dependencies, session, {
+          tool: proposal.tool,
+          target_name: proposal.targetName,
+          ...("argument" in proposal ? { argument: proposal.argument } : {}),
+          plan_revision: session.plan?.revision,
+          approval_status: "not_granted",
+        }))
+      )
+        return fail(
+          "PROVIDER_UNAVAILABLE",
+          "prepared action requires further investigation",
+        );
       if (session.awaitingExpandedMenuSelection) {
         const target =
           "refId" in proposal
@@ -1358,6 +1468,7 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       if (response.content)
         dependencies.publish(run.id, {
           type: "assistant_delta",
+          source: "provider",
           text: response.content,
         });
       dependencies.publish(run.id, {

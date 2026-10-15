@@ -1,3 +1,4 @@
+import { reviewPreparedTask } from "./prepared-task-review.js";
 import { approvalDecision, createApprovalGrant } from "./approval-runtime.js";
 import { storeSubmittedPlan } from "./act-plan-store.js";
 import { safeChatText } from "../state/tab-chat-session-store.js";
@@ -83,6 +84,19 @@ export const runPlanSubmissionTurns = async (opts: {
       response = await chatOnce(tools);
       assertRequestActive(session.requestContext);
       continue;
+    }
+    if (
+      !(await reviewPreparedTask(dependencies, session, {
+        plan: plan.input,
+        plan_revision: plan.revision,
+        approval_status: "not_granted",
+      }))
+    ) {
+      delete session.plan;
+      return fail(
+        "PROVIDER_UNAVAILABLE",
+        "prepared plan requires further investigation",
+      );
     }
     const fresh = await dependencies.readActive(undefined, session.tabId);
     assertRequestActive(session.requestContext);

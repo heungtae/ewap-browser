@@ -1,0 +1,310 @@
+{
+  "result": "PASS",
+  "scope": "controlled fixtures; no live model qualification",
+  "checks": [
+    "primary-only no native contact",
+    "native finite Ask; no primary call",
+    "real primary tool ID continuation and native result selection",
+    "Act native intent/goal with one approved dispatch",
+    "configured 503 fallback preserves primary outcome and masks rejected input",
+    "routing off has zero native calls",
+    "Options kind-specific form, role filters and write-only key"
+  ],
+  "primary_turns": [
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [],
+      "returned_tools": [
+        "get_page_text"
+      ],
+      "call_ids": [
+        "s25-primary-1-abcdefghijklmnop"
+      ]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [
+        "s25-primary-1-abcdefghijklmnop"
+      ],
+      "returned_tools": [],
+      "call_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [],
+      "returned_tools": [
+        "get_page_text"
+      ],
+      "call_ids": [
+        "s25-primary-3-abcdefghijklmnop"
+      ]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [
+        "s25-primary-3-abcdefghijklmnop"
+      ],
+      "returned_tools": [],
+      "call_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "list_page_resources",
+        "search_page_resources",
+        "read_page_resource",
+        "list_workflow_resources",
+        "read_workflow_resource",
+        "describe_component",
+        "read_component_data",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command",
+        "propose_click",
+        "submit_plan"
+      ],
+      "returned_ids": [],
+      "returned_tools": [
+        "propose_click"
+      ],
+      "call_ids": [
+        "s25-primary-5-abcdefghijklmnop"
+      ]
+    },
+    {
+      "tools": [
+        "assess_action_result",
+        "read_control_observation"
+      ],
+      "returned_ids": [
+        "s25-primary-5-abcdefghijklmnop"
+      ],
+      "returned_tools": [],
+      "call_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [],
+      "returned_tools": [
+        "get_page_text"
+      ],
+      "call_ids": [
+        "s25-primary-7-abcdefghijklmnop"
+      ]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [
+        "s25-primary-7-abcdefghijklmnop"
+      ],
+      "returned_tools": [],
+      "call_ids": []
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [],
+      "returned_tools": [
+        "get_page_text"
+      ],
+      "call_ids": [
+        "s25-primary-9-abcdefghijklmnop"
+      ]
+    },
+    {
+      "tools": [
+        "read_semantic_projection",
+        "read_page",
+        "get_page_text",
+        "find",
+        "screenshot",
+        "zoom",
+        "tabs_context",
+        "read_batch",
+        "describe_learned_task",
+        "list_learned_page_profiles",
+        "read_learned_page_profile",
+        "list_page_commands",
+        "read_page_command",
+        "page_command"
+      ],
+      "returned_ids": [
+        "s25-primary-9-abcdefghijklmnop"
+      ],
+      "returned_tools": [],
+      "call_ids": []
+    }
+  ],
+  "native_calls": [
+    {
+      "phase": "connection",
+      "question_count": 1,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "intent",
+      "question_count": 3,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "candidate_selection",
+      "question_count": 4,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "intent",
+      "question_count": 3,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "result_acceptance",
+      "question_count": 3,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "intent",
+      "question_count": 3,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "result_acceptance",
+      "question_count": 3,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "goal_assessment",
+      "question_count": 3,
+      "failed": false,
+      "status": 200
+    },
+    {
+      "phase": "intent",
+      "question_count": 3,
+      "failed": true,
+      "status": 503
+    }
+  ],
+  "base_revision": "946d46d93d7c49c7586b0d508c4d49f9b4b23bcd",
+  "revision_scope": "combined dirty worktree; not an isolated commit",
+  "extension_version": "0.1.109",
+  "chrome_version": "147.0.7727.15"
+}

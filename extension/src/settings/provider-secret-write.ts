@@ -8,9 +8,9 @@ export const mergeWriteOnlyProvider = (
   const value = isPlainObject(input) ? input : fail("INVALID_ARGUMENT");
   if (!Array.isArray(value.headers)) fail("INVALID_ARGUMENT");
   const sameBoundary =
-    previous !== undefined &&
-    previous.plugin_id === value.plugin_id &&
-    previous.plugin_version === value.plugin_version &&
+    isPlainObject(previous) &&
+    (previous.kind ?? "openai_compatible") ===
+      (value.kind ?? "openai_compatible") &&
     previous.base_url === value.base_url &&
     previous.api_key_header === value.api_key_header;
   if (value.api_key_header === "none" && value.api_key)
@@ -21,7 +21,9 @@ export const mergeWriteOnlyProvider = (
       : typeof value.api_key === "string" && value.api_key.length > 0
         ? value.api_key
         : sameBoundary
-          ? previous.api_key
+          ? typeof previous.api_key === "string"
+            ? previous.api_key
+            : ""
           : "";
   const inputHeaders = value.headers as unknown[];
   const headers = inputHeaders.map((raw: unknown) => {
@@ -29,11 +31,15 @@ export const mergeWriteOnlyProvider = (
       return fail("INVALID_ARGUMENT");
     const name = raw.name as string;
     const supplied = raw.value;
-    const preserved = sameBoundary
-      ? previous.headers.find(
-          (item) => item.name.toLowerCase() === name.toLowerCase(),
-        )?.value
-      : undefined;
+    const preserved =
+      sameBoundary && Array.isArray(previous.headers)
+        ? previous.headers.find(
+            (item) =>
+              isPlainObject(item) &&
+              typeof item.name === "string" &&
+              item.name.toLowerCase() === name.toLowerCase(),
+          )?.value
+        : undefined;
     return {
       name,
       value:

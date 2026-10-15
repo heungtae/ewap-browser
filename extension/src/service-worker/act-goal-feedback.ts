@@ -1,3 +1,4 @@
+import { modelGoalDecision } from "./model-goal-decision.js";
 import { withDeadline } from "../security/deadline.js";
 import type { PageScope } from "../state/tab-chat-session-store.js";
 import type {
@@ -35,6 +36,7 @@ export const finishGoalFeedback = async (opts: {
   observationScope: PageScope;
   modelRefs: string[];
   messages: ProviderMessage[];
+  nativeReport?: ReturnType<typeof parseGoalReport>;
 }): Promise<Record<string, unknown>> => {
   const { dependencies, session, run } = opts;
   let response = opts.response,
@@ -53,13 +55,21 @@ export const finishGoalFeedback = async (opts: {
     const eligibleRefs = observation.snapshot.nodes.flatMap((node, index) =>
       node.visible ? [refs[index]!] : [],
     );
-    const report = parseGoalReport(
-      response,
-      session,
-      observationId,
-      refs,
-      eligibleRefs,
-    );
+    const nativeReport =
+      reassessments === 0 && opts.nativeReport
+        ? opts.nativeReport
+        : await modelGoalDecision(
+            dependencies,
+            session,
+            run,
+            observation,
+            observationId,
+            refs,
+            deadline,
+          );
+    const report =
+      nativeReport ??
+      parseGoalReport(response, session, observationId, refs, eligibleRefs);
     const active = await withDeadline(
       dependencies.readActive(undefined, session.tabId),
       Math.max(0, deadline - Date.now()),
@@ -111,9 +121,11 @@ export const finishGoalFeedback = async (opts: {
             : "OBSERVATION_UNAVAILABLE",
       );
     const missingReport =
-      response.tool_calls.length === 0 && report.status === "unknown";
+      !nativeReport &&
+      response.tool_calls.length === 0 &&
+      report.status === "unknown";
     if (current && !missingReport) {
-      if (response.tool_calls[0])
+      if (!nativeReport && response.tool_calls[0])
         session.messages.push(
           {
             role: "assistant",

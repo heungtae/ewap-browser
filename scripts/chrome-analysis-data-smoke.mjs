@@ -109,27 +109,6 @@ try {
       })})`,
     );
   if (!process.env.S13_CHECK_ONLY) {
-    const discover = await panelRequest({ kind: "COLLECTION_DISCOVER" });
-    const table = discover?.collections?.find(
-      (item) => item.object_kind === "table",
-    );
-    if (!table)
-      throw new Error(`table was not discovered: ${JSON.stringify(discover)}`);
-    let permission = await panelRequest({
-      kind: "COLLECTION_READ_START",
-      request: { collection_ref: table.collection_ref, mode: "full" },
-    });
-    if (permission?.code !== "REQUIRE_PERMISSION")
-      throw new Error(
-        `collection permission was not requested: ${JSON.stringify(permission)}`,
-      );
-    permission = await panelRequest({
-      kind: "PERMISSION_DECISION",
-      permission_request_id: permission.request_id,
-      decision: "always",
-    });
-    if (permission?.ok !== true)
-      throw new Error("collection permission was not persisted");
     await evaluate(
       panel,
       `chrome.storage.local.set({provider_settings:{schema_version:1,providers:{fixture:{plugin_id:'contextpilot.openai-compatible',plugin_version:'1.0.0',label:'fixture',base_url:'https://analysis.fixture.test:${fixturePort}/v1',wire_api:'chat_completions',model:'fixture',api_key:'',api_key_header:'none',headers:[],timeout_ms:120000,enabled:true}},active_provider:'fixture'}})`,
@@ -139,7 +118,23 @@ try {
         panel,
         `(() => { document.querySelector('#mode-${mode}').click(); document.querySelector('#chat-input').value=${JSON.stringify(prompt)}; document.querySelector('#chat-form').requestSubmit(); return true; })()`,
       );
+    const allowCollectionRead = async () => {
+      await waitFor(
+        () =>
+          evaluate(
+            panel,
+            "[...document.querySelectorAll('#chat-messages button')].some(button => !button.disabled && button.textContent?.includes('이번 요청에서 허용'))",
+          ),
+        10_000,
+        "analysis did not request collection permission",
+      );
+      await evaluate(
+        panel,
+        "[...document.querySelectorAll('#chat-messages button')].reverse().find(button => !button.disabled && button.textContent?.includes('이번 요청에서 허용')).click()",
+      );
+    };
     await submit("ask", "이 페이지 표 데이터를 분석 요약해");
+    await allowCollectionRead();
     await waitFor(
       () =>
         evaluate(
@@ -150,6 +145,7 @@ try {
       "Ask did not complete through the controlled provider",
     );
     await submit("act", "표 데이터를 분석하고 저장해");
+    await allowCollectionRead();
     await waitFor(
       () =>
         evaluate(

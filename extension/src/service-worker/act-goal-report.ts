@@ -31,6 +31,18 @@ export const parseGoalReport = (
   } catch {
     return fail("INVALID_ARGUMENT");
   }
+  return validateGoalReportValue(value, observationId, refs, eligibleRefs);
+};
+export const validateGoalReportValue = (
+  value: unknown,
+  observationId: string,
+  refs: string[],
+  eligibleRefs: string[] = refs,
+): {
+  status: "completed" | "incomplete" | "unknown";
+  summary: string;
+  indexes: number[];
+} => {
   if (
     !isPlainObject(value) ||
     Object.keys(value).some(

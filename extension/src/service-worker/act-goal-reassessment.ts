@@ -79,6 +79,18 @@ export const reassessGoal = async (opts: {
         },
         {
           signal: controller.signal,
+          ...(session.requestContext
+            ? { bindingSignal: session.requestContext.signal }
+            : {}),
+          ...(session.runId
+            ? {
+                onRole: (event) =>
+                  dependencies.publish(session.runId!, {
+                    type: "provider_activity",
+                    ...event,
+                  }),
+              }
+            : {}),
           onProgress: () => session.requestContext?.progress?.("PROVIDER_BODY"),
         },
       ),

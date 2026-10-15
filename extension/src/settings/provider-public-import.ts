@@ -1,4 +1,5 @@
 export type PublicProvider = {
+  kind?: "openai_compatible" | "typesafe_jev";
   plugin_id: string;
   plugin_version: string;
   label: string;
@@ -15,6 +16,7 @@ export type PublicProvider = {
 const plain = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 const allowed = new Set([
+  "kind",
   "plugin_id",
   "plugin_version",
   "label",
@@ -34,7 +36,7 @@ export const parsePublicProviderImport = (
 ): { id: string; config: PublicProvider } => {
   if (
     !plain(input) ||
-    input.schema_version !== 1 ||
+    (input.schema_version !== 1 && input.schema_version !== 2) ||
     !plain(input.providers) ||
     Object.keys(input).some(
       (key) =>
@@ -50,6 +52,8 @@ export const parsePublicProviderImport = (
     !/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(id) ||
     !plain(value) ||
     Object.keys(value).some((key) => !allowed.has(key)) ||
+    (value.kind !== undefined &&
+      !["openai_compatible", "typesafe_jev"].includes(String(value.kind))) ||
     typeof value.plugin_id !== "string" ||
     typeof value.plugin_version !== "string" ||
     typeof value.label !== "string" ||

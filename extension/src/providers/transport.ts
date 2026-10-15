@@ -1,4 +1,5 @@
-import { fail } from "../security/validation.js";
+import { readNativeJson } from "./native-json-body.js";
+import { ContractError, fail } from "../security/validation.js";
 import { assertSafeRequestPlan } from "./openai-compatible.js";
 import {
   providerHeaders,
@@ -65,13 +66,37 @@ export class CoreProviderTransport {
     request: NormalizedProviderRequest,
     signal?: AbortSignal,
   ): Promise<TransportResult> {
+    const plan = adapter.plan(request);
+    assertSafeRequestPlan(plan);
+    return this.dispatch(config, plan, signal);
+  }
+
+  public async sendNative(
+    config: ProviderConfig,
+    body: Record<string, unknown>,
+    signal?: AbortSignal,
+  ): Promise<TransportResult> {
+    if (config.kind !== "typesafe_jev" || JSON.stringify(body).length > 32_768)
+      fail("INVALID_ARGUMENT");
+    return this.dispatch(
+      config,
+      { path: "/systemone", body },
+      signal,
+      /application\/json/i,
+    );
+  }
+
+  private async dispatch(
+    config: ProviderConfig,
+    plan: { path: string; body: Record<string, unknown> },
+    signal?: AbortSignal,
+    contentType = /(application\/json|text\/event-stream)/i,
+  ): Promise<TransportResult> {
     if (!config.enabled) fail("PROVIDER_NOT_CONFIGURED");
     const base = validateProviderBaseUrl(
       config.base_url,
       config.private_network_opt_in,
     );
-    const plan = adapter.plan(request);
-    assertSafeRequestPlan(plan);
     const url = new URL(
       `${base.pathname.replace(/\/$/, "")}${plan.path}`,
       base,
@@ -99,7 +124,7 @@ export class CoreProviderTransport {
         credentials: "omit",
         redirect: "error",
       });
-      await assertResponse(response, /(application\/json|text\/event-stream)/i);
+      await assertResponse(response, contentType);
       const result = {
         status: response.status,
         body: response.body,
@@ -109,7 +134,10 @@ export class CoreProviderTransport {
       transferred = true;
       return result;
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith("PROVIDER_"))
+      if (
+        error instanceof ContractError ||
+        (error instanceof Error && error.message.startsWith("PROVIDER_"))
+      )
         throw error;
       return providerFailure(error);
     } finally {
@@ -142,7 +170,11 @@ export class CoreProviderTransport {
         redirect: "error",
       });
       await assertResponse(response, /application\/json/i);
-      const value = JSON.parse(await response.text()) as {
+      const value = (
+        config.kind === "typesafe_jev"
+          ? await readNativeJson(response.body, controller.signal)
+          : JSON.parse(await response.text())
+      ) as {
         data?: Array<{ id?: unknown }>;
         models?: Array<{ name?: unknown }>;
       };
@@ -152,7 +184,10 @@ export class CoreProviderTransport {
       ].filter((model): model is string => typeof model === "string");
       return { status: response.status, models };
     } catch (error) {
-      if (error instanceof Error && error.message.startsWith("PROVIDER_"))
+      if (
+        error instanceof ContractError ||
+        (error instanceof Error && error.message.startsWith("PROVIDER_"))
+      )
         throw error;
       return providerFailure(error);
     } finally {

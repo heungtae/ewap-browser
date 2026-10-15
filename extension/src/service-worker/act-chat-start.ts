@@ -49,7 +49,11 @@ type PendingSelection = {
 
 type Dependencies = {
   pageScope(active: ActivePage): PageScope;
-  readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
+  readActive(
+    scope?: undefined,
+    tabId?: number,
+    context?: RequestContext,
+  ): Promise<ActivePage>;
   resolveProfile(active: ActivePage): Promise<ResolvedProfile>;
   candidates(
     active: ActivePage,
@@ -165,7 +169,11 @@ export const createActChatStart =
     )
       return fail("INVALID_ARGUMENT");
     assertRequestActive(context);
-    const active = await dependencies.readActive(undefined, context?.tabId);
+    const active = await dependencies.readActive(
+      undefined,
+      context?.tabId,
+      context,
+    );
     assertRequestActive(context);
     if (
       context?.documentEpoch &&

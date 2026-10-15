@@ -1,3 +1,7 @@
+import {
+  pageSnapshotPartLabels,
+  pageSnapshotParts,
+} from "../contracts/page-snapshot-parts.js";
 import { approvalLabels } from "../policy/approval-policy.js";
 import {
   observeApprovalMode,
@@ -26,7 +30,6 @@ import { shouldRenderChatEvent } from "./chat-event-gate.js";
 import { RequestClient } from "./request-client.js";
 import { createDiagnosticsView } from "./diagnostics-view.js";
 import { InputHistory } from "./input-history.js";
-import { createProfileBuilderDiscovery } from "./profile-builder-discovery.js";
 
 type BrowserRuntime = {
   getManifest?(): { version: string };
@@ -86,8 +89,6 @@ const newChatDialog = byId<HTMLDialogElement>("new-chat-dialog");
 const newChatConfirm = byId<HTMLButtonElement>("new-chat-confirm");
 const newChatCancel = byId<HTMLButtonElement>("new-chat-cancel");
 const workflowRecordButton = byId<HTMLButtonElement>("workflow-record");
-const pageApiDiscoveryButton = byId<HTMLButtonElement>("page-api-discovery");
-const collectionDiscoverButton = byId<HTMLButtonElement>("collection-discover");
 const permissionModeBadge = byId<HTMLElement>("permission-mode-badge");
 const threadScope = byId<HTMLElement>("thread-scope");
 
@@ -126,8 +127,6 @@ let skipNextLiveUserMessage = false;
 let activeThreadTabId: number | undefined;
 let latestRecoveryId = 0;
 let workflowRecordingId: string | undefined;
-let collectionReadActive = false;
-let collectionProgressTimer: number | undefined;
 let lastRequest: Record<string, unknown> | undefined;
 const inputHistory = new InputHistory();
 
@@ -538,195 +537,6 @@ const sendRuntime = async (
       ? (response as { code: string }).code
       : "INTERNAL_FAILURE";
   throw new Error(code);
-};
-const discoveryDialog = byId<HTMLDialogElement>("discovery-dialog");
-const discoveryScan = byId<HTMLButtonElement>("discovery-scan");
-const discoveryStop = byId<HTMLButtonElement>("discovery-stop");
-const discoveryClose = byId<HTMLButtonElement>("discovery-close");
-const discoverySummary = byId<HTMLElement>("discovery-summary");
-const discoveryCandidates = byId<HTMLElement>("discovery-candidates");
-const profileBuilderDiscovery =
-  discoveryDialog &&
-  pageApiDiscoveryButton &&
-  discoveryScan &&
-  discoveryStop &&
-  discoveryClose &&
-  discoverySummary &&
-  discoveryCandidates
-    ? createProfileBuilderDiscovery({
-        dialog: discoveryDialog,
-        openButton: pageApiDiscoveryButton,
-        scanButton: discoveryScan,
-        stopButton: discoveryStop,
-        closeButton: discoveryClose,
-        summary: discoverySummary,
-        candidates: discoveryCandidates,
-        send: sendRuntime,
-        status: setStatus,
-        canScan: () => !runActive,
-      })
-    : undefined;
-
-type CollectionSummary = {
-  collection_ref: string;
-  object_kind: string;
-  estimated_total?: number;
-  has_virtual_scroll: boolean;
-  has_pagination: boolean;
-  sample_row_count: number;
-};
-const isCollectionSummary = (value: unknown): value is CollectionSummary =>
-  typeof value === "object" &&
-  value !== null &&
-  typeof (value as { collection_ref?: unknown }).collection_ref === "string" &&
-  typeof (value as { object_kind?: unknown }).object_kind === "string" &&
-  typeof (value as { has_virtual_scroll?: unknown }).has_virtual_scroll ===
-    "boolean" &&
-  typeof (value as { has_pagination?: unknown }).has_pagination === "boolean";
-
-const renderCollectionResult = (
-  collection: CollectionSummary,
-  result: Record<string, unknown>,
-): void => {
-  const coverage =
-    typeof result.coverage === "string" ? result.coverage : "unavailable";
-  const count =
-    typeof result.collected_count === "number" ? result.collected_count : 0;
-  const reason = typeof result.reason === "string" ? ` · ${result.reason}` : "";
-  const item = card(
-    "collection",
-    "데이터 읽기 결과",
-    `${collection.object_kind} · ${coverage} · ${count}개${reason}`,
-  );
-  append(item);
-  setStatus(`데이터 읽기 결과: ${coverage} (${count}개)`);
-};
-
-const renderCollectionPermission = (
-  collection: CollectionSummary,
-  mode: "viewport" | "full",
-  requestId: string,
-): void => {
-  const item = card(
-    "permission",
-    "데이터 읽기 권한",
-    "이 사이트의 읽기 작업을 허용할까요?",
-  );
-  const row = actionRow(item);
-  const decide = async (
-    decision: "once" | "always" | "deny",
-  ): Promise<void> => {
-    for (const button of row.querySelectorAll<HTMLButtonElement>("button"))
-      button.disabled = true;
-    await sendRuntime({
-      kind: "PERMISSION_DECISION",
-      permission_request_id: requestId,
-      decision,
-    });
-    if (decision === "deny") {
-      setStatus("데이터 읽기 권한을 거부했습니다.");
-      return;
-    }
-    await startCollectionRead(collection, mode);
-  };
-  row.append(
-    actionButton("이번만 허용", "primary", () => void decide("once")),
-    actionButton("항상 허용", "", () => void decide("always")),
-    actionButton("거부", "danger", () => void decide("deny")),
-  );
-  append(item);
-};
-
-const startCollectionRead = async (
-  collection: CollectionSummary,
-  mode: "viewport" | "full",
-): Promise<void> => {
-  if (collectionReadActive) return;
-  collectionReadActive = true;
-  if (collectionDiscoverButton) collectionDiscoverButton.textContent = "■";
-  collectionProgressTimer = window.setInterval(() => {
-    void sendRuntime({ kind: "COLLECTION_READ_STATE" })
-      .then((response) => {
-        const state = response.state;
-        if (!state || typeof state !== "object") return;
-        const count = (state as { collectedCount?: unknown }).collectedCount;
-        const step = (state as { stepCount?: unknown }).stepCount;
-        if (typeof count === "number" && typeof step === "number")
-          setStatus(`데이터 수집 중 · ${count}개 · ${step} 단계`);
-      })
-      .catch(() => undefined);
-  }, 500);
-  setStatus(
-    mode === "full"
-      ? "전체 데이터를 읽고 원래 위치로 복구합니다."
-      : "현재 화면 데이터를 읽고 있습니다.",
-  );
-  try {
-    const response = await sendRuntime({
-      kind: "COLLECTION_READ_START",
-      request: { collection_ref: collection.collection_ref, mode },
-    });
-    if (
-      response.code === "REQUIRE_PERMISSION" &&
-      typeof response.request_id === "string"
-    ) {
-      renderCollectionPermission(collection, mode, response.request_id);
-      return;
-    }
-    const result = response.result;
-    if (typeof result !== "object" || result === null)
-      throw new Error(
-        typeof response.code === "string" ? response.code : "INTERNAL_FAILURE",
-      );
-    renderCollectionResult(collection, result as Record<string, unknown>);
-  } finally {
-    collectionReadActive = false;
-    if (collectionProgressTimer !== undefined) {
-      clearInterval(collectionProgressTimer);
-      collectionProgressTimer = undefined;
-    }
-    if (collectionDiscoverButton) collectionDiscoverButton.textContent = "▤";
-  }
-};
-
-const renderCollectionChoices = (collections: CollectionSummary[]): void => {
-  const item = card(
-    "collection",
-    "페이지 데이터",
-    collections.length
-      ? `${collections.length}개 객체를 찾았습니다. 읽을 범위를 선택하세요.`
-      : "읽을 수 있는 table, grid, list 또는 chart를 찾지 못했습니다.",
-  );
-  for (const collection of collections) {
-    const row = actionRow(item);
-    const label = [
-      collection.object_kind,
-      collection.estimated_total === undefined
-        ? undefined
-        : `예상 ${collection.estimated_total}개`,
-      collection.has_virtual_scroll ? "가상 스크롤" : undefined,
-      collection.has_pagination ? "페이지 전환" : undefined,
-    ]
-      .filter((value): value is string => !!value)
-      .join(" · ");
-    const heading = document.createElement("p");
-    heading.className = "failure-guidance";
-    heading.textContent = label;
-    item.append(heading);
-    row.append(
-      actionButton(
-        "현재 화면",
-        "",
-        () => void startCollectionRead(collection, "viewport"),
-      ),
-      actionButton(
-        "전체 읽기",
-        "primary",
-        () => void startCollectionRead(collection, "full"),
-      ),
-    );
-  }
-  append(item);
 };
 const actionSummary = (action: ChatActionView): string =>
   action.tool === "submit_plan"
@@ -1449,9 +1259,6 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   if (event.type === "page_scope_changed") {
-    profileBuilderDiscovery?.invalidate(
-      "페이지가 변경되어 힌트를 폐기했습니다.",
-    );
     append(
       card(
         "page-scope",
@@ -1459,6 +1266,19 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
         "페이지가 변경되어 이전 페이지 근거가 만료되었습니다.",
       ),
     );
+    return;
+  }
+  if (event.type === "provider_activity") {
+    const text = {
+      DECIDING: "Jev 판단 중",
+      DELEGATING: "기존 모델에 위임",
+      PROCESSING: "기존 모델 처리 중",
+      REVIEWING: "Jev 결과 확인",
+      FALLBACK: "Jev 호출 실패 · 기존 모델로 위임",
+      STOPPED: "Jev 판단 실패 · 요청 중단",
+    }[event.stage];
+    diagnosticsView.collection(text + (event.code ? ` (${event.code})` : ""));
+    setActivityStatus(text);
     return;
   }
   if (event.type === "learned_profile_status") {
@@ -1501,6 +1321,8 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
       (event.type === "activity_progress"
         ? actCompletionView(event.completion)?.message
         : undefined) ?? activityLabel(event.stage);
+    if (event.stage === "CONTACTING_PROVIDER")
+      diagnosticsView.providerStart(event.run_id);
     setStatus(detail);
     setActivityStatus(detail);
     if (event.type === "activity_finished") {
@@ -1524,6 +1346,8 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
     return;
   }
   if (event.type === "assistant_delta") {
+    if (event.source === "provider")
+      diagnosticsView.providerResponse(event.run_id, event.text);
     pendingDeltas.set(
       event.run_id,
       (pendingDeltas.get(event.run_id) ?? "") + event.text,
@@ -1593,18 +1417,22 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
           ? "화면 이미지 전달 동의"
           : event.purpose === "runtime-methods"
             ? "페이지 메서드 목록 전달 동의"
-            : event.purpose === "runtime-result"
-              ? "페이지 메서드 반환 자료 전달 동의"
-              : "페이지 소스 전달 동의",
+            : event.purpose === "jev-decision"
+              ? "Jev 판단 서비스 전달 동의"
+              : event.purpose === "runtime-result"
+                ? "페이지 메서드 반환 자료 전달 동의"
+                : "페이지 소스 전달 동의",
       event.purpose === "component-scroll"
         ? `${event.host}의 선택한 component를 제한된 스크롤로 읽고 원래 위치로 복구합니다. 수집 범위와 복구 결과를 확인합니다.`
         : event.purpose === "component-vision"
           ? `${event.host}의 현재 화면 이미지를 모델에 전달합니다. Chrome 화면 캡처 권한도 요청합니다. 민감한 화면은 지원하지 않으며 이미지를 동작 좌표로 사용하지 않습니다.`
           : event.purpose === "runtime-methods"
             ? `${event.host}에서 확인한 메서드 이름·경로·인자 수를 모델에 전달합니다. 페이지 메서드 실행은 별도의 검토를 거칩니다.`
-            : event.purpose === "runtime-result"
-              ? `${event.host}의 페이지 메서드 반환 자료를 제한·마스킹한 뒤 모델에 전달합니다.`
-              : `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
+            : event.purpose === "jev-decision"
+              ? `현재 요청에 필요한 페이지·결과 정보를 마스킹한 뒤 ${event.host}의 Jev 판단 서비스로 전달합니다. 기존 모델의 전달 동의와 별도로 적용됩니다.`
+              : event.purpose === "runtime-result"
+                ? `${event.host}의 페이지 메서드 반환 자료를 제한·마스킹한 뒤 모델에 전달합니다.`
+                : `${event.host}의 script ${event.resource_count}개를 마스킹한 뒤 모델에 전달할까요? 소스를 실행하지 않습니다.`,
     );
     const row = actionRow(item);
     let selected = false;
@@ -1703,7 +1531,6 @@ const applyChatEvent = (raw: unknown, recovered = false): void => {
 };
 const selectThread = (tabId: number): void => {
   if (activeThreadTabId === tabId) return;
-  profileBuilderDiscovery?.close(false);
   activeThreadTabId = tabId;
   clearConversation();
   if (threadScope) threadScope.textContent = "이 탭의 문맥";
@@ -1801,6 +1628,27 @@ modeAct?.addEventListener("click", () => {
   setStatus("실행 모드입니다.");
 });
 const receiveChatEvent = (message: unknown): void => {
+  if (typeof message === "object" && message !== null) {
+    const progress = message as {
+      kind?: unknown;
+      tab_id?: unknown;
+      part?: unknown;
+    };
+    if (progress.kind === "PAGE_COLLECTION_PROGRESS") {
+      const part = pageSnapshotParts.find((part) => part === progress.part);
+      if (
+        runActive &&
+        (activeThreadTabId === undefined ||
+          progress.tab_id === activeThreadTabId) &&
+        part
+      ) {
+        diagnosticsView.collection(pageSnapshotPartLabels[part]);
+        setStatus(pageSnapshotPartLabels[part]);
+        setActivityStatus(pageSnapshotPartLabels[part]);
+      }
+      return;
+    }
+  }
   if (
     typeof message === "object" &&
     message !== null &&
@@ -1838,14 +1686,7 @@ if (runtime) {
 }
 runtime?.onMessage.addListener(receiveChatEvent);
 chromeApi?.tabs?.onActivated?.addListener(() => {
-  profileBuilderDiscovery?.close(false);
   void recoverChatEvents();
-});
-chromeApi?.tabs?.onUpdated?.addListener((tabId, changeInfo) => {
-  if (tabId === activeThreadTabId && changeInfo.url)
-    profileBuilderDiscovery?.invalidate(
-      "페이지가 변경되어 힌트를 폐기했습니다.",
-    );
 });
 attachmentTrigger?.addEventListener("click", () => attachmentInput?.click());
 suggestedPrompt?.addEventListener("click", () => {
@@ -1972,35 +1813,6 @@ workflowRecordButton?.addEventListener("click", () => {
     .catch((error) =>
       showFailure(error instanceof Error ? error.message : undefined),
     );
-});
-collectionDiscoverButton?.addEventListener("click", () => {
-  if (collectionReadActive) {
-    void sendRuntime({ kind: "COLLECTION_READ_CANCEL" })
-      .then(() => setStatus("데이터 읽기 중단을 요청했습니다."))
-      .catch((error) =>
-        showFailure(error instanceof Error ? error.message : undefined),
-      );
-    return;
-  }
-  collectionDiscoverButton.disabled = true;
-  setStatus("페이지의 읽기 가능한 데이터 객체를 확인하고 있습니다.");
-  void sendRuntime({ kind: "COLLECTION_DISCOVER" })
-    .then((response) => {
-      if (!Array.isArray(response.collections))
-        throw new Error(
-          typeof response.code === "string"
-            ? response.code
-            : "INTERNAL_FAILURE",
-        );
-      renderCollectionChoices(response.collections.filter(isCollectionSummary));
-      setStatus("데이터 객체를 선택하세요.");
-    })
-    .catch((error) =>
-      showFailure(error instanceof Error ? error.message : undefined),
-    )
-    .finally(() => {
-      if (collectionDiscoverButton) collectionDiscoverButton.disabled = false;
-    });
 });
 const cancelRun = (): void => {
   if (!runActive || stopRequested) return;

@@ -162,3 +162,17 @@ Provider schema·동일 call ID·실제 dispatch 횟수·반환 데이터의 마
 
 운영 사이트·임의 Provider/모델·Platform 통합·설치·배포는 별도 증거 없이 완료로 확대하지 않는다.
 최종 실행 결과는 [S23 리뷰 후 증거](../evidence/s23-page-method-review-2026-10-12.md)에 기록한다. [이전 구현·실패 기록](../evidence/s23-provider-page-method-2026-10-11.md)은 당시 revision의 이력으로 보존한다.
+
+## 후속 UI 정리 — 2026-10-12
+
+X01/C6/R19의 기존 수동 API 힌트 진입점을 제거한다. 버튼·후보 검토 dialog·전용
+Side Panel controller와 START/STOP 메시지 handler를 삭제하고, 기존 Chrome 검사를
+UI 부재·폐기된 메시지 거부 회귀로 전환한다. 분석 API 가용성 확인에 사용하는
+공용 Discovery scanner와 S23 Act 동적 메서드 탐색·승인·호출은 유지한다.
+과거 S10/S23 증거는 당시 revision의 기록으로 보존한다.
+
+검증: pnpm 9.15.4의 typecheck·lint·module-boundaries, 관련 unit 12파일/68개,
+버전 유지 빌드·package validation을 통과했다. Chrome for Testing의
+`pnpm test:chrome-page-api-discovery`는 실제 Side Panel에서 버튼/dialog 부재와
+START/STOP의 `INVALID_ARGUMENT` 거부를 확인했다. 확장 버전은 0.1.108로 유지했다.
+이 후속 검증에서는 실제 Provider 호출·운영 사이트·배포를 재검증하지 않았다.

@@ -23,7 +23,11 @@ export type AskChatDependencies = {
   coordinator: ServiceCoordinator;
   provider: ProviderRuntime;
   preferences(): AgentPreferences;
-  readActive(scope?: undefined, tabId?: number): Promise<ActivePage>;
+  readActive(
+    scope?: undefined,
+    tabId?: number,
+    context?: RequestContext,
+  ): Promise<ActivePage>;
   resolveProfile(active: ActivePage): Promise<ResolvedProfile>;
   threadContext(tabId: number): ProviderMessage[];
   pageScope(active: ActivePage): PageScope;

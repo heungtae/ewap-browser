@@ -339,3 +339,27 @@ Live 독립 사례는 `S23_VARIANT=holdout`(데이터) 또는 `S23_VARIANT=ui S2
 
 `S23_CASE=ask`는 Act 수동 승인 설정을 검사한다. Ask 모드 자체의 호출 금지 검사는
 `S23_CASE=ask-mode`이며 method tool 미제공·실제 호출 0회를 확인한다.
+
+
+## S25 Jev 판단과 기존 모델 라우팅
+
+버전 변경 없이 패키지를 만든 뒤 통제 Chrome 검증을 실행한다.
+
+```bash
+pnpm exec tsc -p tsconfig.build.json && node scripts/build-extension.mjs && node scripts/validate-package.mjs
+CHROME_FOR_TESTING_BIN=/path/to/chrome S25_REPORT=/tmp/s25-chrome.json pnpm test:chrome-s25
+```
+
+이 스크립트는 두 HTTPS fixture와 일시적인 Chrome profile을 사용한다.
+Provider 역할·설정 화면, 기존 모델 단독 처리, 유한 Ask 판단, 실제 도구 ID의
+후속 연결, 승인된 Save 1회와 목표 판단, 실패 시 위임을 검증한다.
+실제 TypeSafe 모델 호출이나 정확도·성능 qualification을 의미하지 않는다.
+
+실제 쌍을 검증하려면 Options에서 OpenAI 호환 기존 처리 Provider와
+TypeSafe Jev 판단 Provider를 각각 저장하고 역할을 지정한다. Jev는 네이티브
+endpoint와 고정 버전(`jev-1.13.0` 등)을 사용하며 API key는 write-only다.
+연결 테스트의 유한 판단을 확인한 뒤 `Jev 자동 판단 사용`을 적용한다.
+페이지·결과 전달은 별도의 Jev 동의를 요구하며 기존 승인 정책을 따른다.
+동일 요청의 단독/이중 처리 결과, 실제 provider/model 버전, 최초 실패,
+한국어·영어 holdout, 호출 수·사용량·지연을 기록한다. 키와 원문 payload는 기록하지 않는다.
+현재 실행 범위와 미검증 항목은 [S25 증거](evidence/s25-jev-routing-2026-10-14.md)를 따른다.

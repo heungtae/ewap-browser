@@ -11,11 +11,7 @@ import {
   pageLifecycleMessageHandler,
 } from "./runtime-core-handlers.js";
 import { panelPortLifecycle } from "./runtime-lifecycle.js";
-import {
-  chromeApi,
-  enterprisePolicy,
-  pageSenderContext,
-} from "./runtime-platform.js";
+import { chromeApi, pageSenderContext } from "./runtime-platform.js";
 import { safeFailure } from "./runtime-state.js";
 import { startStorage, storageReady } from "./runtime-storage.js";
 import {
@@ -29,19 +25,6 @@ import {
   workflowSelectionMessageHandler,
   workflowStartMessageHandler,
 } from "./runtime-workflow-handlers.js";
-import { createCollectionReadDomainHandler } from "./collection-read-domain-handler.js";
-import { createPageApiDiscoveryDomainHandler } from "./page-api-discovery-domain-handler.js";
-import { createDiscoveryController } from "../page-api/discovery/discovery-controller.js";
-import { withDeadline } from "../security/deadline.js";
-import {
-  localPageProfile,
-  permissions,
-  permissionRequests,
-  pageScopes,
-  registered,
-  registrationKey,
-} from "./runtime-state.js";
-
 export const registerServiceWorker = (): void => {
   startStorage();
   chromeApi?.tabs.onActivated?.addListener(({ tabId, windowId }) => {
@@ -49,59 +32,6 @@ export const registerServiceWorker = (): void => {
   });
   const { profile, preferences, provider, runControl } = coreMessageHandlers;
   const { review, start } = actDomainHandlers;
-  const collectionReadHandler = createCollectionReadDomainHandler({
-    chrome: chromeApi!,
-    permissions,
-    requests: permissionRequests,
-    activeTabForBoundPanel: pageSenderContext.activeTabForBoundPanel,
-    documentFor: (tabId) => registered.get(registrationKey(tabId, 0)),
-    scopeFor: (tabId) => pageScopes.get(tabId),
-    isPanelSender: pageSenderContext.isPanelSender,
-    isPanelOrSettingsSender: pageSenderContext.isPanelOrSettingsSender,
-    safeFailure,
-  });
-  const pageApiDiscovery = createDiscoveryController({
-    scripting: chromeApi?.scripting,
-    documentFor: (tabId) => registered.get(registrationKey(tabId, 0)),
-    scopeFor: (tabId) => pageScopes.get(tabId),
-  });
-  const pageApiDiscoveryHandler = createPageApiDiscoveryDomainHandler({
-    activeTabForBoundPanel: pageSenderContext.activeTabForBoundPanel,
-    isPanelSender: pageSenderContext.isPanelSender,
-    ensureDocument: async (tabId) => {
-      const response = await withDeadline(
-        chromeApi!.tabs.sendMessage(tabId, {
-          kind: "CONTENT_DOCUMENT_CONTEXT",
-        }),
-        5_000,
-        "DOCUMENT_NOT_REGISTERED",
-      );
-      if (
-        typeof response !== "object" ||
-        response === null ||
-        (response as { ok?: unknown }).ok !== true
-      )
-        throw new Error("DOCUMENT_NOT_REGISTERED");
-    },
-    documentFor: (tabId) => registered.get(registrationKey(tabId, 0)),
-    scopeFor: (tabId) => pageScopes.get(tabId),
-    authorize: async ({ tabId, documentEpoch, origin }) =>
-      enterprisePolicy
-        .authorize({
-          run_id: crypto.randomUUID(),
-          tab_id: tabId,
-          document_epoch: documentEpoch,
-          origin,
-          capability: "page_api",
-          risk: "R0",
-          profile: localPageProfile,
-        })
-        .then((decision) => decision.decision === "ALLOW")
-        .catch(() => false),
-    start: pageApiDiscovery.start,
-    cancel: pageApiDiscovery.cancel,
-    safeFailure,
-  });
   const routeDomain = createDomainMessageRouter({
     handlers: [
       pageLifecycleMessageHandler,
@@ -122,8 +52,6 @@ export const registerServiceWorker = (): void => {
       workflowStartMessageHandler,
       workflowRecordStopMessageHandler,
       start,
-      collectionReadHandler,
-      pageApiDiscoveryHandler,
     ],
     safeFailure,
   });

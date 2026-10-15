@@ -1,3 +1,4 @@
+import type { PageSnapshotPart } from "../contracts/page-snapshot-parts.js";
 import { configureApprovalRuntime } from "./approval-runtime.js";
 import {
   defaultAgentPreferences,
@@ -68,8 +69,17 @@ configureApprovalRuntime(
 export const setAgentPreferences = (value: AgentPreferences): void => {
   agentPreferences = value;
 };
+let pageReadProgress:
+  | ((tabId: number, part: PageSnapshotPart) => void)
+  | undefined;
+export const setPageReadProgress = (
+  callback: typeof pageReadProgress,
+): void => {
+  pageReadProgress = callback;
+};
 export const pageContextRuntime = createPageContextRuntime({
   chrome: chromeApi,
+  progress: (tabId, part) => pageReadProgress?.(tabId, part),
   defaultScope: () => agentPreferences.default_read_scope,
   isRegistered: (tabId, epoch) =>
     registered.get(registrationKey(tabId, 0))?.epoch === epoch,

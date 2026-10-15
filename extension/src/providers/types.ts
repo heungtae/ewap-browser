@@ -7,18 +7,9 @@ export const AUTH_SCHEMES = [
 export type AuthScheme = (typeof AUTH_SCHEMES)[number];
 export const WIRE_APIS = ["chat_completions", "responses"] as const;
 export type WireApi = (typeof WIRE_APIS)[number];
-export type ProviderPluginManifest = {
-  schema_version: 1;
-  plugin_id: string;
-  plugin_version: string;
-  api_version: 1;
-  label: string;
-  adapter_id: string;
-  wire_apis: WireApi[];
-  auth_schemes: AuthScheme[];
-  default_base_url?: string;
-};
+export type ProviderKind = "openai_compatible" | "typesafe_jev";
 export type ProviderConfig = {
+  kind?: ProviderKind;
   plugin_id: string;
   plugin_version: string;
   label: string;

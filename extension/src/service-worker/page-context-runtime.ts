@@ -1,3 +1,4 @@
+import { assertRequestActive, type RequestContext } from "./request-context.js";
 import { validateSemanticSnapshot } from "../contracts/semantic-snapshot.js";
 import {
   validateWorkflowDeclaration,
@@ -14,7 +15,8 @@ import { validateProfileResolverSettings } from "../settings/profile-settings.js
 import type { PageScope } from "../state/tab-chat-session-store.js";
 import type { BrowserChromeApi } from "./browser-api.js";
 import type { ContentScriptRecovery } from "./content-script-recovery.js";
-import { withDeadline } from "../security/deadline.js";
+import { readPageSnapshotParts } from "./page-snapshot-reader.js";
+import type { PageSnapshotPart } from "../contracts/page-snapshot-parts.js";
 
 export type ActivePage = {
   tabId: number;
@@ -29,6 +31,7 @@ export type ActivePage = {
 type Dependencies = {
   chrome: BrowserChromeApi | undefined;
   defaultScope(): PageReadScope;
+  progress?(tabId: number, part: PageSnapshotPart): void;
   isRegistered(tabId: number, epoch: string): boolean;
   pageOrigin(url: string | undefined): string;
   recovery: ContentScriptRecovery;
@@ -47,7 +50,9 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
   const read = async (
     scope = dependencies.defaultScope(),
     fixedTabId?: number,
+    context?: RequestContext,
   ): Promise<ActivePage> => {
+    assertRequestActive(context);
     const chrome = dependencies.chrome!;
     const tabs =
       fixedTabId === undefined
@@ -63,40 +68,49 @@ export const createPageContextRuntime = (dependencies: Dependencies) => {
     let origin = dependencies.pageOrigin(tab.url);
     let result: unknown;
     try {
-      result = await withDeadline(
-        chrome.tabs.sendMessage(tabId, {
-          kind: "CONTENT_SNAPSHOT",
-          scope,
-        }),
-        10_000,
-        "PAGE_SNAPSHOT_TIMEOUT",
+      result = await readPageSnapshotParts(
+        chrome.tabs,
+        tabId,
+        scope,
+        (tabId, part) => {
+          assertRequestActive(context);
+          dependencies.progress?.(tabId, part);
+        },
       );
     } catch (error) {
       if (
         error instanceof ContractError &&
-        error.code === "PAGE_SNAPSHOT_TIMEOUT"
+        ["PAGE_SNAPSHOT_TIMEOUT", "PAGE_SCOPE_STALE", "POLICY_DENIED"].includes(
+          error.code,
+        )
       )
         throw error;
       if (!(await dependencies.recovery.recover(tabId)))
         throw new ContractError("DOCUMENT_NOT_REGISTERED");
       try {
-        result = await withDeadline(
-          chrome.tabs.sendMessage(tabId, {
-            kind: "CONTENT_SNAPSHOT",
-            scope,
-          }),
-          10_000,
-          "PAGE_SNAPSHOT_TIMEOUT",
+        result = await readPageSnapshotParts(
+          chrome.tabs,
+          tabId,
+          scope,
+          (tabId, part) => {
+            assertRequestActive(context);
+            dependencies.progress?.(tabId, part);
+          },
         );
       } catch (error) {
         if (
           error instanceof ContractError &&
-          error.code === "PAGE_SNAPSHOT_TIMEOUT"
+          [
+            "PAGE_SNAPSHOT_TIMEOUT",
+            "PAGE_SCOPE_STALE",
+            "POLICY_DENIED",
+          ].includes(error.code)
         )
           throw error;
         throw new ContractError("DOCUMENT_NOT_REGISTERED");
       }
     }
+    assertRequestActive(context);
     if (
       typeof result !== "object" ||
       result === null ||

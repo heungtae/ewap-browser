@@ -11,7 +11,7 @@
     "test:fixture": "vitest run extension/tests/fixture",
     "test:e2e": "vitest run extension/tests/e2e",
     "test:chrome-extension": "node --experimental-websocket scripts/chrome-extension-smoke.mjs",
-    "test:chrome-collection": "node --experimental-websocket scripts/chrome-collection-read-smoke.mjs",
+    "test:chrome-collection": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-diagnostics-zip": "node --experimental-websocket scripts/chrome-diagnostics-zip-smoke.mjs",
     "test:chrome-analysis-data": "node --experimental-websocket scripts/chrome-analysis-data-smoke.mjs",
     "test:chrome-s1": "node --experimental-websocket scripts/chrome-s1-smoke.mjs",
@@ -54,7 +54,8 @@
     "test:chrome-s23": "node --experimental-websocket scripts/chrome-s23-page-method-smoke.mjs",
     "test:chrome-s23-matrix": "node scripts/chrome-s23-matrix.mjs",
     "test:chrome-s24": "node --experimental-websocket scripts/chrome-s24-smoke.mjs",
-    "test:chrome-s24-act": "node --experimental-websocket scripts/chrome-s24-act-smoke.mjs"
+    "test:chrome-s24-act": "node --experimental-websocket scripts/chrome-s24-act-smoke.mjs",
+    "test:chrome-s25": "node --experimental-websocket scripts/chrome-s25-smoke.mjs"
   },
   "devDependencies": {
     "@types/node": "^20.17.0",

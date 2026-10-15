@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S25 — 2026-10-14 구현
+
+**Browser-local 구현 제공, 실제 모델 쌍 qualification 미완료.**
+기존 처리 Provider와 Jev 판단 Provider의 설정·이관, 네이티브 판단과 위임,
+결과 확인, 요청 결속·취소·별도 전달 동의·재실행 방지를 연결했다.
+Jev 미설정·불완전·비활성 상태는 기존 모델 경로를 사용한다.
+[실행 검사와 통제 Chrome 증거](evidence/s25-jev-routing-2026-10-14.md)를 제공한다.
+TypeSafe 키가 없는 실행 환경으로 실제 모델 쌍·holdout·비용/지연 비교는 미검증이다.
+
 ## Browser Agent S24 — 2026-10-13 구현
 
 **Browser-local 구현 제공, 전체 qualification In Progress.**
@@ -32,6 +41,11 @@ unit 186 files/882 tests, S10/S16/S17/S18/S19 및 rollback 회귀가 통과했�
 **구현·검증 진행 중.** Options와 공통 승인 정책의 구현 및 회귀 테스트를 추가했다.
 [검증 기록](evidence/s21-s22-precommit-2026-10-11.md)에 현재 확인 범위와 live 실패를 보존한다.
 [S22](sprints/s22-unified-approval-policy.md)의 전체 qualification은 아직 완료하지 않았다.
+
+2026-10-12 무료 OpenRouter 검증의 실패·429를 보존하고 OpenAI `gpt-6-luna`로 전환했다.
+기본 최초 8/9와 검증 조건 수정 후 재실행 1/1, holdout 15/15, 혼합 2/2 PASS.
+최초 검사 실패와 HTTP 500, [재실행 결과·남은 전체 qualification](evidence/s22-live-openai-2026-10-12.md)을
+구분한다. 제품 runtime과 버전 0.1.106을 유지했으며 S22 진행 중 상태를 유지한다.
 
 ## Browser Act S21 — 2026-10-11
 

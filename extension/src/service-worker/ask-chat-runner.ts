@@ -1,3 +1,4 @@
+import { decideAskAnswer, reviewAskAnswer } from "./ask-model-decision.js";
 import { beginLearnedProfile } from "./learned-profile-runtime.js";
 import {
   approvalModeLabel,
@@ -59,7 +60,11 @@ export const createAskChatRunner =
     )
       return fail("INVALID_ARGUMENT");
     assertRequestActive(context);
-    const active = await dependencies.readActive(undefined, context?.tabId);
+    const active = await dependencies.readActive(
+      undefined,
+      context?.tabId,
+      context,
+    );
     assertRequestActive(context);
     if (
       context?.documentEpoch &&
@@ -208,6 +213,38 @@ export const createAskChatRunner =
         content: `${learned?.context ?? ""}\n${modelContext ? `[UNTRUSTED_PAGE_PROFILE_CONTEXT]\n${dependencies.serialise(modelContext)}\n[/UNTRUSTED_PAGE_PROFILE_CONTEXT]\n\n` : ""}[UNTRUSTED_PAGE_PROJECTION]\n${dependencies.serialise(modelSnapshot)}\n[/UNTRUSTED_PAGE_PROJECTION]\n\n${analysisData ? `[UNTRUSTED_ANALYSIS_DATA]\n${dependencies.serialise(analysisData)}\n[/UNTRUSTED_ANALYSIS_DATA]\n\n` : ""}User question: ${safeChatText(value.prompt)}`,
       },
     ];
+    const direct =
+      !collectedAnalysisData && !options?.analysisRequested
+        ? await decideAskAnswer(
+            dependencies,
+            run.id,
+            value.prompt,
+            modelSnapshot,
+            context,
+          )
+        : undefined;
+    if (direct) {
+      const latest = await dependencies.readActive(
+        undefined,
+        active.tabId,
+        context,
+      );
+      assertRequestActive(context);
+      if (digestCanonical(latest.snapshot) !== digestCanonical(active.snapshot))
+        return fail("PAGE_SCOPE_STALE");
+      dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
+      dependencies.releaseVision(run.id);
+      dependencies.publish(run.id, { type: "assistant_delta", text: direct });
+      dependencies.publish(run.id, {
+        type: "activity_finished",
+        stage: "COMPLETED",
+      });
+      dependencies.publish(run.id, {
+        type: "run_terminal",
+        outcome: "VERIFIED",
+      });
+      return { ok: true, message: direct };
+    }
     const mcp = new BusinessMcpClient(dependencies.providerFetch);
     const executor = createAskToolExecutor({
       snapshot: modelSnapshot,
@@ -345,6 +382,7 @@ export const createAskChatRunner =
           dependencies.publish(run.id, {
             type: "assistant_delta",
             text,
+            source: "provider",
           });
       };
       const response = await (async () => {
@@ -359,6 +397,12 @@ export const createAskChatRunner =
               ...(context
                 ? {
                     signal: context.signal,
+                    bindingSignal: context.signal,
+                    onRole: (event) =>
+                      dependencies.publish(run.id, {
+                        type: "provider_activity",
+                        ...event,
+                      }),
                     onProgress: () => context.progress?.("PROVIDER_BODY"),
                   }
                 : {}),
@@ -398,6 +442,31 @@ export const createAskChatRunner =
       });
       if (response.tool_calls.length === 0) {
         if (!response.content) return fail("PROVIDER_UNAVAILABLE");
+        if (
+          !(await reviewAskAnswer(
+            dependencies,
+            run.id,
+            value.prompt,
+            response.content,
+            context,
+            messages,
+          ))
+        ) {
+          if (step === 3)
+            return fail(
+              "PROVIDER_UNAVAILABLE",
+              "answer review requires further work; read budget exhausted",
+            );
+          messages.push(
+            { role: "assistant", content: response.content },
+            {
+              role: "user",
+              content:
+                "The prepared answer has not been published. Recheck the original request with the available read-only tools, investigate missing evidence, and state any remaining limits. Preserve the exact original user values.",
+            },
+          );
+          continue;
+        }
         const learnedSave = learned?.seal(true);
         void learnedSave;
         dependencies.coordinator.runs.terminal(run.id, "VERIFIED");
@@ -405,6 +474,7 @@ export const createAskChatRunner =
         if (!streamed)
           dependencies.publish(run.id, {
             type: "assistant_delta",
+            source: "provider",
             text: response.content,
           });
         dependencies.publish(run.id, {

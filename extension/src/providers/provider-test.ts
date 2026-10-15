@@ -18,7 +18,12 @@ type Dependencies = {
     config: ProviderConfig,
     adapter: ProviderAdapter,
     request: NormalizedProviderRequest,
-  ): Promise<{ status: number; body: ReadableStream<Uint8Array> | null }>;
+  ): Promise<{
+    status: number;
+    body: ReadableStream<Uint8Array> | null;
+    signal?: AbortSignal;
+    release?(): void;
+  }>;
 };
 
 const sensitiveDiagnosticKey =
@@ -117,7 +122,12 @@ export const testProvider = async (
       request as unknown as NormalizedProviderRequest,
     );
     phase = "response parsing";
-    const response = await parseProviderBody(result.body);
+    let response: unknown;
+    try {
+      response = await parseProviderBody(result.body, undefined, result.signal);
+    } finally {
+      result.release?.();
+    }
     parseChatResponse(response);
     return {
       ok: true,

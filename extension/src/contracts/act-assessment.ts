@@ -22,6 +22,19 @@ export const parseActAssessment = (
   } catch {
     return fail("INVALID_ARGUMENT");
   }
+  return validateActAssessmentValue(
+    value,
+    observationId,
+    attemptId,
+    evidenceIds,
+  );
+};
+export const validateActAssessmentValue = (
+  value: unknown,
+  observationId: string,
+  attemptId: string,
+  evidenceIds: string[],
+): ActAssessment => {
   const keys = [
     "phase",
     "observation_id",

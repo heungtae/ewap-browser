@@ -75,7 +75,9 @@ export const verifyS21Result = ({
   if (["delayed", "replacement"].includes(id)) assert.ok(assessmentCalls > 0);
   if (id.startsWith("generic-")) {
     assert.ok(assessmentCalls > 0);
-    assert.equal(finalGoal, id === "generic-click" ? "completed" : "unknown");
+    if (id === "generic-click") assert.equal(finalGoal, "completed");
+    else if (model) assert.ok(["unknown", "incomplete"].includes(finalGoal));
+    else assert.equal(finalGoal, "unknown");
     assert.equal(accepted?.completion?.goal_status, finalGoal);
   }
   if (id === "not-completed") {

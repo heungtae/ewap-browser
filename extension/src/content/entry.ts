@@ -1,3 +1,4 @@
+import { createSnapshotPartReader } from "./snapshot-part-reader.js";
 import { ariaBooleanState } from "./boolean-state.js";
 import { controlActions, controlSupportReason } from "./control-capability.js";
 import {
@@ -715,6 +716,27 @@ const projection = (scope: ReadScope = "all_dom"): unknown => {
     ...(workflow === undefined ? {} : { workflow }),
   };
 };
+const readSnapshotPart = createSnapshotPartReader({
+  binding: () => ({
+    document_epoch: documentEpoch,
+    page_scope_epoch: pageScopeEpoch,
+  }),
+  origin: () => location.origin,
+  url: () => location.href,
+  prepare: async () => {
+    if (observedPageUrl !== location.href) {
+      observedPageUrl = location.href;
+      clearPageScopeRefs();
+      pageScopeEpoch = base64Url(crypto.getRandomValues(new Uint8Array(18)));
+      await registerPageScope();
+    }
+    return registerDocument();
+  },
+  nodes: projectionNodes,
+  workflow: workflowDeclaration,
+  visibleText: visiblePageText,
+  articleText: articlePageText,
+});
 const uiCompletion = createUiCompletionObserver({
   epoch: () => documentEpoch,
   resolve: actionableRef,
@@ -1372,6 +1394,16 @@ runtime?.onMessage.addListener((message, sender, sendResponse) => {
       snapshot.node_count = snapshot.nodes.length;
       respond({ ok: true, snapshot: result });
     });
+    return true;
+  }
+  if (
+    typeof message === "object" &&
+    message !== null &&
+    (message as { kind?: unknown }).kind === "CONTENT_SNAPSHOT_PART"
+  ) {
+    void readSnapshotPart(message)
+      .then(respond)
+      .catch(() => respond({ ok: false, code: "DOCUMENT_NOT_REGISTERED" }));
     return true;
   }
   if (

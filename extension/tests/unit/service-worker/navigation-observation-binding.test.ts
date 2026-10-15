@@ -16,17 +16,20 @@ const setup = (change: "none" | "url" | "registration") => {
             url: change === "url" ? "https://fixture.test/wrong" : url,
           };
         },
-        sendMessage: async () => ({
+        sendMessage: async (_tab: number, message: { part: string }) => ({
           ok: true,
-          snapshot: {
-            origin: "https://fixture.test",
-            snapshot: {
-              document_epoch: "epoch-abcdefghijklmnop",
-              frame_id: 0,
-              nodes: [],
-              visible_text: "Destination",
-            },
+          binding: {
+            document_epoch: "epoch-abcdefghijklmnop",
+            page_scope_epoch: "scope-abcdefghijklmnop",
+            url: url,
           },
+          ...(message.part === "document"
+            ? { origin: "https://fixture.test" }
+            : {}),
+          ...(message.part === "nodes" ? { nodes: [], truncated: false } : {}),
+          ...(["visible_text", "article_text"].includes(message.part)
+            ? { text: "Destination" }
+            : {}),
         }),
       },
     } as never,

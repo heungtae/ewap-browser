@@ -39,6 +39,7 @@ const envelope = [
   "sequence",
 ];
 const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
+  provider_activity: ["provider_role", "stage", "phase", "code"],
   user_message: ["text"],
   learned_profile_status: ["status"],
   page_scope_changed: [],
@@ -46,7 +47,7 @@ const payloadFields: Record<ChatEvent["type"], readonly string[]> = {
   activity_started: ["stage"],
   activity_progress: ["stage", "completion"],
   activity_finished: ["stage"],
-  assistant_delta: ["text"],
+  assistant_delta: ["text", "source"],
   approval_decision: [
     "category",
     "approval_source",

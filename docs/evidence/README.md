@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S25 Jev routing](s25-jev-routing-2026-10-14.md): built-in roles/migration, native contract, request binding, controlled Chrome Ask/Act and Options; real TypeSafe pairing remains unqualified.
+
 [S24 scoped commit verification](s24-scoped-delivery-2026-10-14.md): 다른 미커밋 변경을 제외한 커밋 후보의 빌드·96개 테스트·통제 Chrome Ask/Act 재검증.
 
 ## 2026-10-14 S24 관리 창
@@ -68,4 +70,12 @@ JSON 증거는 각 기록에서 연결한다.
 
 S21/S22 추가 구현의 [커밋 전 검증과 남은 범위](s21-s22-precommit-2026-10-11.md).
 
+- [S22 OpenAI live 재검증 — 2026-10-12](s22-live-openai-2026-10-12.md): 기본 최초 8/9와
+  검사 수정 후 재실행 1/1, holdout 15/15, 혼합 2/2. 최초 실패·HTTP 500 보존, 전체 qualification 진행 중.
+
+- [S22 무료 OpenRouter live 검증 — 2026-10-12](s22-live-free-2026-10-12.md): 통제 9/9,
+  기본 live 3/3, 추가·holdout·혼합의 실패와 driver 수정·429 재검증 제한. 전체 qualification 미완료.
+
 - [S23 리뷰 후 구현·검증 — 2026-10-12](s23-page-method-review-2026-10-12.md): identity/중복/계획/반환 보강, controlled matrix, live OpenRouter holdout 및 OpenAI UI PASS. Browser-local Completed; 최초 429/503 실패 보존.
+
+- 2026-10-12: [페이지 수집 단위별 제한·진행 표시와 ai 응답 표시](../issues/records/2026-10-12-page-collection-timeout.md) — 관련 unit 557 tests 및 통제 Chrome PASS; 원래 사이트·실제 Provider·배포 미검증.

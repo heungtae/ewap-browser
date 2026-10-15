@@ -303,6 +303,30 @@
           padding: 16px;
         }
       }
+      #approval-categories {
+        display: grid;
+        gap: 14px;
+      }
+      #approval-constraints:empty {
+        display: none;
+      }
+      .provider-management-controls {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+      .provider-role-field {
+        display: grid;
+        gap: 6px;
+      }
+      label[hidden] {
+        display: none;
+      }
+      .provider-active-row select {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+      }
       .learned-profile-controls {
         display: grid;
         gap: 14px;
@@ -321,15 +345,25 @@
       </header>
       <section class="settings-card">
         <h2>LLM Provider</h2>
-        <p>제품 계정이나 OAuth 없이 현재 Chrome profile에만 저장합니다.</p>
+        <p>
+          OpenAI 호환 처리 모델과 TypeSafe Jev 판단 모델을 현재 Chrome profile에
+          저장합니다.
+        </p>
         <form id="provider-form">
+          <label
+            >Provider 유형
+            <select name="provider_kind">
+              <option value="openai_compatible">OpenAI 호환</option>
+              <option value="typesafe_jev">TypeSafe Jev</option>
+            </select>
+          </label>
           <label
             >Provider ID <input name="provider_id" required value="local"
           /></label>
-          <label
-            >Plugin
-            <select name="plugin_id" id="provider-plugin-select"></select
-          ></label>
+          <label class="checkbox-row"
+            ><input name="enabled" type="checkbox" checked />Provider
+            사용</label
+          >
           <label class="checkbox-row"
             ><input name="private_network_opt_in" type="checkbox" />사설 IPv4
             endpoint 허용</label
@@ -389,6 +423,13 @@
           <div class="button-row">
             <button type="submit">저장</button>
             <button id="provider-test" type="button">연결 테스트</button>
+            <button
+              id="provider-export"
+              type="button"
+              title="API key와 header 값은 제외됩니다."
+            >
+              Provider 내보내기
+            </button>
           </div>
           <label class="checkbox-row"
             ><input id="provider-test-messages" type="checkbox" />요청 및 응답
@@ -399,51 +440,55 @@
         <output id="settings-status" aria-live="polite"></output>
       </section>
       <section class="settings-card">
-        <h2>Provider와 Plugin 관리</h2>
-        <p>Plugin manifest는 선언형 JSON이며 실행 코드는 가져오지 않습니다.</p>
-        <div class="button-row">
-          <input
-            id="plugin-manifest-file"
-            type="file"
-            accept="application/json,.json"
-            aria-label="Plugin manifest JSON"
-          />
-          <button id="plugin-install" type="button">Plugin 설치</button>
-          <button id="plugin-enable" type="button">Plugin 활성화</button>
-          <button id="plugin-disable" type="button">Plugin 비활성화</button>
-          <button id="plugin-remove-keep" type="button">
-            Plugin 제거·secret 보존
-          </button>
-          <button id="plugin-remove-delete" type="button">
-            Plugin 제거·secret 삭제
-          </button>
-        </div>
-        <label
-          >활성 Provider
-          <select id="provider-active-select"></select
-        ></label>
-        <div class="button-row">
+        <h2>LLM Provider 관리</h2>
+        <div class="provider-management-controls">
+          <label
+            >관리할 Provider
+            <select id="provider-active-select"></select
+          ></label>
+          <div class="provider-role-field">
+            <label for="provider-primary-select">기존 처리 Provider</label>
+            <div class="button-row provider-active-row">
+              <select id="provider-primary-select"></select>
+              <button id="provider-activate" type="button">적용</button>
+            </div>
+          </div>
+          <label
+            >Jev 판단 Provider
+            <select id="provider-decision-select"></select
+          ></label>
+          <label class="checkbox-row"
+            ><input id="provider-jev-enabled" type="checkbox" />Jev 자동 판단
+            사용</label
+          >
+          <label
+            >Jev 호출 실패 시
+            <select id="provider-jev-failure">
+              <option value="primary">실행 전 기존 모델로 위임</option>
+              <option value="stop">실행 전 중단</option>
+            </select>
+          </label>
+          <div class="button-row">
+            <button id="provider-routing-apply" type="button">적용</button>
+          </div>
+          <output id="provider-routing-status" aria-live="polite"></output>
           <input
             id="provider-public-file"
             type="file"
             accept="application/json,.json"
-            aria-label="secret 없는 Provider 설정 JSON"
+            aria-label="LLM Provider 설정 JSON"
+            hidden
           />
-          <button id="provider-import" type="button">공개 설정 가져오기</button>
-          <button id="provider-activate" type="button">
-            활성 Provider 선택
-          </button>
-          <button id="provider-remove-keep" type="button">
-            Provider 비활성화·secret 보존
-          </button>
-          <button id="provider-remove-delete" type="button">
-            Provider 삭제·secret 삭제
-          </button>
-          <button id="provider-export" type="button">
-            secret 없는 설정 내보내기
-          </button>
+          <div class="button-row">
+            <button id="provider-import" type="button">
+              LLM Provider 설정 가져오기
+            </button>
+            <button id="provider-remove-delete" type="button">
+              Provider 삭제
+            </button>
+          </div>
+          <output id="provider-management-status" aria-live="polite"></output>
         </div>
-        <output id="provider-management-status" aria-live="polite"></output>
       </section>
       <dialog
         id="provider-model-selection-dialog"

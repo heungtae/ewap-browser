@@ -12,6 +12,7 @@ import {
   providerTransport,
 } from "./runtime-platform.js";
 import {
+  setPageReadProgress,
   cdpAuthorizedRuns,
   chatEvents,
   coordinator,
@@ -59,6 +60,8 @@ export const chatRequests = new ChatRequestLifecycle(
       : undefined,
   ),
 );
+chatRequests.markModelDispatch = (signal) =>
+  providerRuntime?.bindings.dispatched(signal) ?? Promise.resolve();
 export const chatRunLifecycle = createChatRunLifecycle({
   chrome: chromeApi,
   events: chatEvents,
@@ -81,4 +84,20 @@ registerTabLifecycle({
   publishCancelled: chatRunLifecycle.publishCancelled,
   removeChat: (tabId) => chatEvents.removeTab(tabId),
   flushChat: chatRunLifecycle.flush,
+});
+
+setPageReadProgress((tabId, part) => {
+  for (const panel of panelPorts.values()) {
+    void chromeApi?.tabs
+      .query({ active: true, windowId: panel.windowId })
+      .then((tabs) => {
+        if (tabs[0]?.id === tabId)
+          panel.port.postMessage?.({
+            kind: "PAGE_COLLECTION_PROGRESS",
+            tab_id: tabId,
+            part,
+          });
+      })
+      .catch(() => undefined);
+  }
 });

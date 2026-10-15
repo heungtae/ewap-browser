@@ -43,6 +43,27 @@ export type ChatActionView = {
 };
 export type ChatEventPayload =
   | {
+      type: "provider_activity";
+      provider_role: "primary" | "decision";
+      stage:
+        | "DECIDING"
+        | "DELEGATING"
+        | "PROCESSING"
+        | "REVIEWING"
+        | "FALLBACK"
+        | "STOPPED";
+      phase:
+        | "intent"
+        | "workflow_suitability"
+        | "candidate_selection"
+        | "element_assessment"
+        | "action_assessment"
+        | "goal_assessment"
+        | "result_acceptance"
+        | "primary_processing";
+      code?: string;
+    }
+  | {
       type: "learned_profile_status";
       status: "REUSED" | "SAVED" | "FALLBACK" | "STORE_FAILED" | "REPAIRED";
     }
@@ -56,7 +77,7 @@ export type ChatEventPayload =
       completion?: ActCompletion;
     }
   | { type: "activity_finished"; stage: ActivityStage }
-  | { type: "assistant_delta"; text: string }
+  | { type: "assistant_delta"; text: string; source?: "provider" }
   | {
       type: "approval_decision";
       category: ApprovalCategory;
@@ -102,7 +123,8 @@ export type ChatEventPayload =
         | "component-scroll"
         | "component-vision"
         | "runtime-methods"
-        | "runtime-result";
+        | "runtime-result"
+        | "jev-decision";
       host: string;
     }
   | {

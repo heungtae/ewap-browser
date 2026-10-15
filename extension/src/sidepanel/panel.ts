@@ -62,10 +62,10 @@ export const userMessage: Record<ErrorCode, string> = {
   VISION_CAPTURE_UNAVAILABLE:
     "현재 페이지에서 screenshot을 안전하게 캡처할 수 없습니다.",
   PAGE_TEXT_UNAVAILABLE: "읽을 수 있는 본문 텍스트를 찾지 못했습니다.",
-  PROVIDER_PLUGIN_NOT_FOUND: "선택한 provider plugin을 찾을 수 없습니다.",
+  PROVIDER_PLUGIN_NOT_FOUND: "선택한 LLM Provider를 찾을 수 없습니다.",
   PROVIDER_PLUGIN_INCOMPATIBLE:
-    "provider plugin 버전이 현재 확장과 호환되지 않습니다.",
-  PROVIDER_PLUGIN_FAILED: "provider plugin 요청을 처리하지 못했습니다.",
+    "LLM Provider 설정이 현재 확장과 호환되지 않습니다.",
+  PROVIDER_PLUGIN_FAILED: "LLM Provider 요청을 처리하지 못했습니다.",
   PROVIDER_NOT_CONFIGURED: "사용할 provider를 먼저 설정해야 합니다.",
   PROVIDER_AUTH_FAILED: "provider API key 또는 header를 확인해 주세요.",
   PROVIDER_UNAVAILABLE: "provider에 연결할 수 없습니다.",

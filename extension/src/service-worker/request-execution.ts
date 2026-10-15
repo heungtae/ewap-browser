@@ -9,6 +9,9 @@ import { ContractError } from "../security/validation.js";
 import type { RequestContext } from "./request-context.js";
 import { RequestBudget } from "./request-budget.js";
 export abstract class RequestExecution extends RequestStore {
+  public markModelDispatch:
+    | ((signal: AbortSignal) => Promise<void>)
+    | undefined;
   public validateDocument:
     | ((tabId: number, epoch: string) => boolean)
     | undefined;
@@ -60,6 +63,8 @@ export abstract class RequestExecution extends RequestStore {
     if (!request || (bound && request.request_id !== bound.requestId))
       throw new ContractError("POLICY_DENIED");
     const context = bound ?? this.context(request.request_id);
+    context.check();
+    await this.markModelDispatch?.(context.signal);
     context.check();
     request.dispatch_started = true;
     this.progress(tabId, "DISPATCH");

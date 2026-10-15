@@ -691,6 +691,7 @@ export const runWorkflowReviewGate = async (opts: {
   // caller already failed stale bindings upstream.
   refreshBinding?: () => Promise<boolean>;
   requireOriginalRead?: () => Promise<boolean>;
+  judge?: () => Promise<SuitabilityVerdict | undefined>;
 }): Promise<WorkflowReviewGateResult> =>
   traceMethod(
     "service-worker/act-harness-turns.ts:runWorkflowReviewGate",
@@ -809,29 +810,44 @@ export const runWorkflowReviewGate = async (opts: {
             )),
         `current step ${workflow.count + 1} proposes ${workflow.step.tool}.`,
       ].join("\n");
-      const verdict: SuitabilityVerdict = await runSuitabilityReview({
-        chat: opts.chat,
-        requestText: opts.session.prompt,
-        candidateSummary,
-        projection: opts.projection,
-        serialise: opts.serialise,
-        readTools: opts.readTools,
-        executeRead: opts.executeRead,
-        expectedRevision,
-        maxRounds: opts.maxRounds ?? 2,
-        isCancelled: opts.isCancelled,
-      }).catch((error: unknown) => {
-        // Cancelled mid-review (Stop): clarify instead of failing loudly
-        // with no user-facing message. Transport errors still throw.
-        if (error instanceof ContractError && error.code === "POLICY_DENIED") {
-          return {
-            verdict: "needs_context" as const,
-            rationale: "Review was stopped before a verdict.",
-            missing: ["review"],
-          };
-        }
-        throw error;
-      });
+      const originalReadyAtEntry =
+        !opts.requireOriginalRead ||
+        (await opts.requireOriginalRead().catch(() => false));
+      const nativeVerdict = originalReadyAtEntry
+        ? await opts.judge?.()
+        : undefined;
+      const verdict: SuitabilityVerdict =
+        nativeVerdict ??
+        (await runSuitabilityReview({
+          chat: opts.chat,
+          requestText: opts.session.prompt,
+          candidateSummary,
+          projection: opts.projection,
+          serialise: opts.serialise,
+          readTools: opts.readTools,
+          executeRead: opts.executeRead,
+          expectedRevision,
+          maxRounds: opts.maxRounds ?? 2,
+          isCancelled: opts.isCancelled,
+        }).catch((error: unknown) => {
+          // Cancelled mid-review (Stop): clarify instead of failing loudly
+          // with no user-facing message. Transport errors still throw.
+          if (
+            error instanceof ContractError &&
+            error.code === "POLICY_DENIED"
+          ) {
+            return {
+              verdict: "needs_context" as const,
+              rationale: "Review was stopped before a verdict.",
+              missing: ["review"],
+            };
+          }
+          throw error;
+        }));
+      if (!originalReadyAtEntry) {
+        const reviewed = await opts.judge?.();
+        if (reviewed) Object.assign(verdict, reviewed);
+      }
       // Re-verify the page binding after the review turns: a navigation or
       // scope change mid-review must not proceed on stale evidence. Without
       // a refresher (tests) the caller's upstream stale checks own this.

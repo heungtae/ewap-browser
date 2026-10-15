@@ -207,10 +207,30 @@ providerModelSelectionConfirm?.addEventListener("click", () => {
   })();
 });
 
+const updateProviderKind = (reset: boolean): void => {
+  const jev = field("provider_kind").value === "typesafe_jev";
+  field("wire_api").closest("label")?.toggleAttribute("hidden", jev);
+  field("api_key_header").disabled = jev;
+  if (jev) field("api_key_header").value = "authorization_bearer";
+  if (reset) {
+    field("api_key").value = "";
+    headersContainer?.replaceChildren();
+    appendHeaderRow();
+    field("base_url").value = jev ? "https://api.typesafe.ai/v1" : "";
+    field("model").value = jev ? "jev-1.13.0" : "";
+    field("api_key_header").value = jev ? "authorization_bearer" : "none";
+  }
+};
+field("provider_kind").addEventListener("change", () =>
+  updateProviderKind(true),
+);
+
 if (runtime)
   management = initializeProviderManagement(runtime, (id, current) => {
+    field("provider_kind").value = current.kind ?? "openai_compatible";
+    updateProviderKind(false);
+    (field("enabled") as HTMLInputElement).checked = current.enabled !== false;
     field("provider_id").value = id;
-    field("plugin_id").value = current.plugin_id;
     field("base_url").value = current.base_url;
     field("model").value = current.model;
     field("api_key_header").value = current.api_key_header;
@@ -293,28 +313,38 @@ const saveProvider = async (): Promise<{
   } catch {
     throw new Error("HTTP header name과 value를 함께 입력해 주세요.");
   }
+  const jev = field("provider_kind").value === "typesafe_jev";
   const provider = {
-    plugin_id: field("plugin_id").value,
-    plugin_version: management?.pluginVersion() ?? "1.0.0",
+    kind: jev ? "typesafe_jev" : "openai_compatible",
+    plugin_id: jev
+      ? "contextpilot.typesafe-jev"
+      : "contextpilot.openai-compatible",
+    plugin_version: "1.0.0",
     label: field("provider_id").value,
     base_url: baseUrl,
-    wire_api: (field("wire_api").value === "auto"
-      ? ollamaEndpoint
-        ? "chat_completions"
-        : "responses"
-      : field("wire_api").value) as "chat_completions" | "responses",
+    wire_api: (jev
+      ? "chat_completions"
+      : field("wire_api").value === "auto"
+        ? ollamaEndpoint
+          ? "chat_completions"
+          : "responses"
+        : field("wire_api").value) as "chat_completions" | "responses",
     model,
     api_key: apiKey,
     api_key_header: apiKeyHeader,
     headers,
     timeout_ms: 120_000,
-    enabled: true,
+    enabled: (field("enabled") as HTMLInputElement).checked,
     private_network_opt_in: optIn instanceof HTMLInputElement && optIn.checked,
   };
   if (!runtime) throw new Error("확장 프로그램 런타임에 연결할 수 없습니다.");
   const response = (await runtime.sendMessage({
     kind: "PROVIDER_SAVE",
-    payload: { id: field("provider_id").value, config: provider },
+    payload: {
+      id: field("provider_id").value,
+      config: provider,
+      ...(management ? { revision: management.revision() } : {}),
+    },
   })) as Record<string, unknown>;
   if (response?.ok !== true)
     throw new Error(

@@ -1,3 +1,4 @@
+import type { RequestContext } from "./request-context.js";
 import { preparePageMethodReturnData } from "./page-method-return-data.js";
 import { requestSourceConsent } from "./source-consent.js";
 import { allowsModelScreenshot } from "../policy/permission-mode.js";
@@ -159,7 +160,29 @@ const askChatDependencies: AskChatDependencies = {
   releaseVision: chatRunLifecycle.releaseVision,
   collectAnalysisData: analysisDataAcquisition,
 };
-export const runAskChat = createAskChatRunner(askChatDependencies);
+const bindModels = async (context?: RequestContext): Promise<void> => {
+  if (!context || !providerRuntime) return;
+  context.check();
+  await providerRuntime.bindings.get(context.signal, () => {
+    if (context.requestId && context.generation !== undefined)
+      chatRequests.finish(
+        context.requestId,
+        context.generation,
+        "CANCELLED",
+        "POLICY_DENIED",
+      );
+  });
+  context.check();
+};
+const askRunner = createAskChatRunner(askChatDependencies);
+export const runAskChat: typeof askRunner = async (
+  payload,
+  context,
+  options,
+) => {
+  await bindModels(context);
+  return askRunner(payload, context, options);
+};
 const runActReadOnly = createAskChatRunner({
   ...askChatDependencies,
   mode: "act",
@@ -265,7 +288,7 @@ const actStepRunner = createActStepRunner({
     actSessions.delete(session.id);
   },
 });
-export const runActChat = createActChatStart({
+const actChatStart = createActChatStart({
   pageScope: chatPageScope,
   readActive: readActiveSnapshot,
   resolveProfile: resolveProfileFor,
@@ -282,6 +305,14 @@ export const runActChat = createActChatStart({
   runReadOnly: runActReadOnly,
   collectAnalysisData: analysisDataAcquisition,
 });
+export const runActChat: typeof actChatStart = async (
+  payload,
+  context,
+  options,
+) => {
+  await bindModels(context);
+  return actChatStart(payload, context, options);
+};
 const proposalExecutor = createActProposalExecutor({
   coordinator,
   permissions,

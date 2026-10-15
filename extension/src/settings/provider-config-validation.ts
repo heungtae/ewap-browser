@@ -5,7 +5,7 @@ import { providerHeaders } from "../providers/provider-request.js";
 import { validateProviderBaseUrl } from "../providers/provider-network-url.js";
 
 export const providerIdentifier = (value: string): string =>
-  /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(value)
+  typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(value)
     ? value
     : fail("INVALID_ARGUMENT");
 
@@ -15,6 +15,7 @@ export const validateProviderConfig = (config: ProviderConfig): void => {
     Object.keys(config).some(
       (key) =>
         ![
+          "kind",
           "plugin_id",
           "plugin_version",
           "label",
@@ -29,6 +30,8 @@ export const validateProviderConfig = (config: ProviderConfig): void => {
           "private_network_opt_in",
         ].includes(key),
     ) ||
+    (config.kind !== undefined &&
+      !["openai_compatible", "typesafe_jev"].includes(config.kind)) ||
     !/^\d+\.\d+\.\d+$/.test(config.plugin_version) ||
     !WIRE_APIS.includes(config.wire_api) ||
     !AUTH_SCHEMES.includes(config.api_key_header) ||
@@ -56,5 +59,14 @@ export const validateProviderConfig = (config: ProviderConfig): void => {
       typeof header.value !== "string"
     )
       fail("INVALID_ARGUMENT");
+  if (
+    config.kind === "typesafe_jev" &&
+    (config.api_key_header !== "authorization_bearer" ||
+      !/^jev-\d+\.\d+\.\d+$/.test(config.model))
+  )
+    fail(
+      "INVALID_ARGUMENT",
+      "TypeSafe Jev requires Bearer authentication and a pinned model version (jev-x.y.z)",
+    );
   providerHeaders(config);
 };

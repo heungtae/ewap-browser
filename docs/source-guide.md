@@ -38,16 +38,16 @@ Act의 읽기 경로, Act 시작·step 실행·proposal 실행이 조립된다.
 
 ## 페이지와 데이터 읽기
 
-| 영역                                 | 확인할 코드                                                                                                                                                                                                                                                                  |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DOM/ARIA projection·대상 binding     | [content entry](../extension/src/content/entry.ts), [collector](../extension/src/content/semantic-collector.ts), [ref registry](../extension/src/content/ref-registry.ts)                                                                                                    |
-| 공통 분석 데이터 획득                | [acquisition](../extension/src/service-worker/analysis-data-acquisition.ts), [source selection](../extension/src/service-worker/analysis-source-selection.ts), [source consent](../extension/src/service-worker/source-consent.ts)                                           |
-| Collection reader 선택·수집          | [registry](../extension/src/service-worker/collection-reader-registry.ts), [orchestrator](../extension/src/service-worker/collection-read-orchestrator.ts), [readers](../extension/src/service-worker/readers)                                                               |
-| Script 목록·검색·부분 읽기           | [schemas](../extension/src/service-worker/page-resource-schemas.ts), [executor](../extension/src/service-worker/page-resource-tools.ts), [content resources](../extension/src/content/page-resources.ts)                                                                     |
-| 동적 Page Method 탐색·제안·실행        | [method contracts](../extension/src/contracts/page-method-types.ts), [MAIN discovery/invoker](../extension/src/service-worker/page-method-main.ts), [request-bound runner](../extension/src/service-worker/page-method-runner.ts), [proposal schema/parser](../extension/src/service-worker/act-tools.ts), [execution and return consent](../extension/src/service-worker/runtime-chat.ts) |
-| Component·대체 읽기 채널·vision      | [schemas](../extension/src/service-worker/component-tool-schemas.ts), [executor](../extension/src/service-worker/component-tools.ts), [observation](../extension/src/content/component-observation.ts), [vision read](../extension/src/service-worker/act-vision-read.ts)    |
-| Page API discovery·등록 adapter·실행 | [discovery controller](../extension/src/page-api/discovery/discovery-controller.ts), [registry](../extension/src/page-api/registry.ts), [runner](../extension/src/service-worker/page-api-runner.ts), [read runner](../extension/src/service-worker/page-api-read-runner.ts) |
-| Screenshot·zoom                      | [vision capture](../extension/src/service-worker/vision-capture.ts), [Ask vision executor](../extension/src/service-worker/ask-vision-tool-executor.ts)                                                                                                                      |
+| 영역                                 | 확인할 코드                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DOM/ARIA projection·대상 binding     | [content entry](../extension/src/content/entry.ts), [collector](../extension/src/content/semantic-collector.ts), [ref registry](../extension/src/content/ref-registry.ts)                                                                                                                                                                                                                  |
+| 공통 분석 데이터 획득                | [acquisition](../extension/src/service-worker/analysis-data-acquisition.ts), [source selection](../extension/src/service-worker/analysis-source-selection.ts), [source consent](../extension/src/service-worker/source-consent.ts)                                                                                                                                                         |
+| Collection reader 선택·수집          | [registry](../extension/src/service-worker/collection-reader-registry.ts), [orchestrator](../extension/src/service-worker/collection-read-orchestrator.ts), [readers](../extension/src/service-worker/readers)                                                                                                                                                                             |
+| Script 목록·검색·부분 읽기           | [schemas](../extension/src/service-worker/page-resource-schemas.ts), [executor](../extension/src/service-worker/page-resource-tools.ts), [content resources](../extension/src/content/page-resources.ts)                                                                                                                                                                                   |
+| 동적 Page Method 탐색·제안·실행      | [method contracts](../extension/src/contracts/page-method-types.ts), [MAIN discovery/invoker](../extension/src/service-worker/page-method-main.ts), [request-bound runner](../extension/src/service-worker/page-method-runner.ts), [proposal schema/parser](../extension/src/service-worker/act-tools.ts), [execution and return consent](../extension/src/service-worker/runtime-chat.ts) |
+| Component·대체 읽기 채널·vision      | [schemas](../extension/src/service-worker/component-tool-schemas.ts), [executor](../extension/src/service-worker/component-tools.ts), [observation](../extension/src/content/component-observation.ts), [vision read](../extension/src/service-worker/act-vision-read.ts)                                                                                                                  |
+| Page API discovery·등록 adapter·실행 | [discovery controller](../extension/src/page-api/discovery/discovery-controller.ts), [registry](../extension/src/page-api/registry.ts), [runner](../extension/src/service-worker/page-api-runner.ts), [read runner](../extension/src/service-worker/page-api-read-runner.ts)                                                                                                               |
+| Screenshot·zoom                      | [vision capture](../extension/src/service-worker/vision-capture.ts), [Ask vision executor](../extension/src/service-worker/ask-vision-tool-executor.ts)                                                                                                                                                                                                                                    |
 
 ## Workflow와 Profile
 
@@ -71,15 +71,32 @@ Act의 읽기 경로, Act 시작·step 실행·proposal 실행이 조립된다.
 | 대상 재검사·DOM/CDP dispatch        | [preflight](../extension/src/content/preflight.ts), [execution routing](../extension/src/service-worker/act-execution-runtime.ts), [content executor](../extension/src/content/executor.ts), [bounded CDP](../extension/src/cdp/bounded-adapter.ts) |
 | 동작 결과 관찰·검증                 | [postcondition verifier](../extension/src/service-worker/act-postcondition-verifier.ts), [UI completion](../extension/src/content/ui-completion.ts), [proposal completion](../extension/src/service-worker/act-proposal-completion.ts)              |
 
+## S25 built-in model roles
+
+Settings and migration: [provider settings](../extension/src/settings/provider-settings.ts),
+[private schema decoder](../extension/src/settings/provider-state.ts),
+[role controls](../extension/src/settings/provider-role-controls.ts).
+Native decisions: [Jev client](../extension/src/providers/jev-client.ts),
+[question templates](../extension/src/providers/decision-questions.ts),
+[response validation](../extension/src/providers/jev-response.ts).
+Request lifetime: [model bindings](../extension/src/providers/model-bindings.ts),
+[settings write invalidation](../extension/src/providers/provider-write-binding.ts),
+[decision coordinator](../extension/src/providers/decision-coordinator.ts).
+Worker judgments and disclosure: [decision entry](../extension/src/service-worker/model-decision.ts),
+[Ask routing and answer review](../extension/src/service-worker/ask-model-decision.ts),
+[Act judgment adapter](../extension/src/service-worker/act-model-judgment.ts),
+[prepared-task review](../extension/src/service-worker/prepared-task-review.ts).
+[Verification and limitations](evidence/s25-jev-routing-2026-10-14.md).
+
 ## Provider와 진단
 
-| 영역                             | 확인할 코드                                                                                                                                                                                                                                                      |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Provider plugin·설정·secret 쓰기 | [manifest validator](../extension/src/providers/manifest.ts), [registry](../extension/src/providers/registry.ts), [secret write](../extension/src/settings/provider-secret-write.ts)                                                                             |
-| Provider 전송·wire·stream        | [runtime](../extension/src/providers/runtime.ts), [request](../extension/src/providers/provider-request.ts), [transport](../extension/src/providers/transport.ts), [offscreen bridge](../extension/src/service-worker/offscreen-provider-bridge.ts)              |
-| 진단 수집·추적·마스킹·ZIP        | [diagnostics handler](../extension/src/service-worker/diagnostics-message-handler.ts), [trace](../extension/src/diagnostics/method-trace.ts), [mask](../extension/src/diagnostics/trace-mask.ts), [Panel export](../extension/src/sidepanel/diagnostics-view.ts) |
-| 선택적 evidence 전송             | [runtime evidence](../extension/src/service-worker/runtime-evidence.ts), [audit contract](../extension/src/security/audit.ts)                                                                                                                                    |
-| 빌드·추적 coverage·패키지        | [build](../scripts/build-extension.mjs), [coverage checker](../scripts/check-method-trace-coverage.mjs), [package validation](../scripts/validate-package.mjs), [release smoke](../scripts/release-smoke.mjs)                                                    |
+| 영역                                  | 확인할 코드                                                                                                                                                                                                                                                      |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OpenAI 호환 Provider·설정·secret 쓰기 | [adapter resolver](../extension/src/providers/resolve-openai-compatible.ts), [settings](../extension/src/settings/provider-settings.ts), [secret write](../extension/src/settings/provider-secret-write.ts)                                                      |
+| Provider 전송·wire·stream             | [runtime](../extension/src/providers/runtime.ts), [request](../extension/src/providers/provider-request.ts), [transport](../extension/src/providers/transport.ts), [offscreen bridge](../extension/src/service-worker/offscreen-provider-bridge.ts)              |
+| 진단 수집·추적·마스킹·ZIP             | [diagnostics handler](../extension/src/service-worker/diagnostics-message-handler.ts), [trace](../extension/src/diagnostics/method-trace.ts), [mask](../extension/src/diagnostics/trace-mask.ts), [Panel export](../extension/src/sidepanel/diagnostics-view.ts) |
+| 선택적 evidence 전송                  | [runtime evidence](../extension/src/service-worker/runtime-evidence.ts), [audit contract](../extension/src/security/audit.ts)                                                                                                                                    |
+| 빌드·추적 coverage·패키지             | [build](../scripts/build-extension.mjs), [coverage checker](../scripts/check-method-trace-coverage.mjs), [package validation](../scripts/validate-package.mjs), [release smoke](../scripts/release-smoke.mjs)                                                    |
 
 검증 명령은 [test.md](test.md), 결과의 revision·환경·미검증 범위는
 [evidence](evidence/README.md)에서 확인한다.
@@ -100,3 +117,13 @@ Provider의 최종 completed 수용은 [goal finalizer](../extension/src/service
 동적 Page Method의 함수/receiver identity는 [MAIN registry](../extension/src/service-worker/page-method-registry-main.ts),
 정확한 계획·인수 결속은 [plan binding](../extension/src/service-worker/page-method-plan.ts),
 반환 privacy/크기는 [return projection](../extension/src/service-worker/page-method-return-data.ts)에서 확인한다.
+
+수동 “Page API 힌트 검색” 버튼과 후보 검토 창은 제거됐다. Act의 동적 Page Method
+탐색·호출은 별도 경로로 유지한다. Discovery controller/scanner는
+[분석 API 가용성 확인](../extension/src/service-worker/analysis-api-availability.ts)에서
+계속 사용하며, 후보 자체는 실행 권한이 아니다.
+
+수동 “페이지 데이터 읽기” 버튼과 COLLECTION_DISCOVER/READ 전용 패널 경로도
+제거됐다. Ask/Act 분석 및 Component 도구의 collection 발견·reader·orchestrator는
+유지한다. `pnpm test:chrome-collection`은 수동 UI 부재와 폐기된 메시지 거부를,
+`pnpm test:chrome-analysis-data`는 유지된 Ask/Act 분석 경로를 검증한다.

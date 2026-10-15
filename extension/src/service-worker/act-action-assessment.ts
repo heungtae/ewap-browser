@@ -1,6 +1,7 @@
+import { modelActionDecision } from "./model-action-decision.js";
 import { readAdditionalAction } from "./act-assessment-read.js";
 import { settledAssessmentTranscript } from "./assessment-transcript.js";
-import { assessmentChat } from "./act-assessment-provider.js";
+import { actionAssessmentTurn } from "./action-assessment-turn.js";
 import { assessCurrentState } from "./act-current-state-assessment.js";
 import { checkingCompletion } from "./act-goal-finalizer.js";
 import {
@@ -14,10 +15,6 @@ import { withDeadline } from "../security/deadline.js";
 import { parseActAssessment } from "../contracts/act-assessment.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
 import { assertRequestActive } from "./request-context.js";
-import {
-  actionAssessmentTool,
-  controlObservationTool,
-} from "./act-assessment-schema.js";
 import { consumeAssessment } from "./act-assessment-budget.js";
 import { actionObservation } from "./act-assessment-observation.js";
 import type { ActSession } from "./act-session-types.js";
@@ -96,37 +93,31 @@ export const assessPendingAction = async (
       if (!goalBindingCurrent(dependencies, session, active, baselineScope))
         break;
       const observation = actionObservation(dependencies, session, run, active);
-      messages.push({
-        role: "user",
-        content: `[UNTRUSTED_ACTION_EVIDENCE]\n${dependencies.serialise(observation.packet)}\n[/UNTRUSTED_ACTION_EVIDENCE]`,
-      });
-      const response = await assessmentChat(
+      const native = observation.evidenceIds.length
+        ? await modelActionDecision(
+            dependencies,
+            session,
+            observation,
+            evidence,
+            deadline,
+            check,
+          )
+        : undefined;
+      if (native) {
+        if (native.changed) {
+          active = native.latest;
+          continue;
+        }
+        break;
+      }
+      const call = await actionAssessmentTurn(
         dependencies,
         session,
         messages,
-        [
-          actionAssessmentTool(
-            observation.packet.observation_id,
-            proposal.id,
-            observation.evidenceIds,
-          ),
-          controlObservationTool,
-        ],
+        observation,
         deadline,
       );
       check();
-      const call = response.tool_calls[0];
-      if (
-        response.tool_calls.length !== 1 ||
-        !call?.id ||
-        messages.some((m) => m.tool_call_id === call.id)
-      )
-        throw new ContractError("INVALID_ARGUMENT");
-      messages.push({
-        role: "assistant",
-        content: response.content,
-        tool_calls: response.tool_calls,
-      });
       if (call.name === "read_control_observation") {
         const args: unknown = JSON.parse(call.arguments);
         if (!isPlainObject(args) || Object.keys(args).length)

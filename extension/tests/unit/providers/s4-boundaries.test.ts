@@ -4,20 +4,11 @@ import {
   providerHttpHostPattern,
 } from "../../../src/providers/provider-network-url.js";
 import { ProviderRuntime } from "../../../src/providers/runtime.js";
-import { BUILTIN_OPENAI_COMPATIBLE } from "../../../src/providers/registry.js";
-import type {
-  ProviderConfig,
-  ProviderPluginManifest,
-} from "../../../src/providers/types.js";
+import type { ProviderConfig } from "../../../src/providers/types.js";
 
-const plugin: ProviderPluginManifest = {
-  ...BUILTIN_OPENAI_COMPATIBLE,
-  plugin_id: "fixture.local-provider",
-  label: "Fixture local provider",
-};
 const config: ProviderConfig = {
-  plugin_id: plugin.plugin_id,
-  plugin_version: plugin.plugin_version,
+  plugin_id: "contextpilot.openai-compatible",
+  plugin_version: "1.0.0",
   label: "local",
   base_url: "http://localhost:11434/v1",
   wire_api: "chat_completions",
@@ -78,54 +69,31 @@ describe("S4 provider settings and local network", () => {
       );
   });
 
-  it("persists secret-free plugin manifest and lifecycle across worker restart", async () => {
+  it("preserves legacy provider secrets when saving with the builtin identity", async () => {
     const area = storage();
+    await area.set({
+      provider_settings: {
+        schema_version: 1,
+        active_provider: "local",
+        providers: { local: { ...config, plugin_id: "fixture.legacy" } },
+      },
+    });
     const runtime = new ProviderRuntime(area);
-    await runtime.handle("PLUGIN_INSTALL", plugin);
-    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
-    expect(JSON.stringify(area.snapshot().provider_plugins)).not.toContain(
-      "a-private",
-    );
-    expect(
-      JSON.stringify(await runtime.handle("PROVIDER_EXPORT", undefined)),
-    ).not.toContain("a-private");
-    const restarted = new ProviderRuntime(area);
-    const listed = await restarted.handle("PROVIDER_LIST", undefined);
-    expect(
-      (listed.plugins as Array<{ manifest: { plugin_id: string } }>).some(
-        (item) => item.manifest.plugin_id === plugin.plugin_id,
-      ),
-    ).toBe(true);
-    expect(JSON.stringify(listed)).not.toContain("a-private");
-    await restarted.handle("PLUGIN_SET_ENABLED", {
-      plugin_id: plugin.plugin_id,
-      enabled: false,
+    await runtime.handle("PROVIDER_SAVE", {
+      id: "local",
+      config: {
+        ...config,
+        api_key: "",
+        headers: [{ name: "x-workspace", value: "" }],
+      },
     });
-    await expect(
-      restarted.handle("PROVIDER_SET_ACTIVE", { id: "local" }),
-    ).rejects.toThrow("PROVIDER_NOT_CONFIGURED");
-    await restarted.handle("PLUGIN_SET_ENABLED", {
-      plugin_id: plugin.plugin_id,
-      enabled: true,
-    });
-    await restarted.handle("PROVIDER_SET_ACTIVE", { id: "local" });
-    await restarted.handle("PLUGIN_REMOVE", {
-      plugin_id: plugin.plugin_id,
-      delete_linked_secrets: false,
-    });
-    expect(JSON.stringify(area.snapshot().provider_settings)).toContain(
-      "a-private-key",
-    );
-    const afterRemove = new ProviderRuntime(area);
-    await expect(
-      afterRemove.handle("PROVIDER_SET_ACTIVE", { id: "local" }),
-    ).rejects.toThrow("PROVIDER_NOT_CONFIGURED");
+    expect(JSON.stringify(area.snapshot())).toContain("a-private-key");
+    expect(JSON.stringify(area.snapshot())).toContain("a-private-header");
   });
 
   it("keeps a secret on a same-boundary blank write and never copies it to a new endpoint", async () => {
     const area = storage();
     const runtime = new ProviderRuntime(area);
-    await runtime.handle("PLUGIN_INSTALL", plugin);
     await runtime.handle("PROVIDER_SAVE", { id: "local", config });
     await runtime.handle("PROVIDER_SAVE", {
       id: "local",
@@ -165,32 +133,30 @@ describe("S4 provider settings and local network", () => {
     );
   });
 
-  it("rejects plugin manifests with execution or account fields", async () => {
-    const runtime = new ProviderRuntime(storage());
-    for (const field of [
-      "entry",
-      "cdp_method",
-      "token_endpoint",
-      "oauth",
-      "account_endpoint",
-    ])
-      await expect(
-        runtime.handle("PLUGIN_INSTALL", { ...plugin, [field]: "x" }),
-      ).rejects.toThrow("INVALID_ARGUMENT");
-  });
-  it("rejects tampered persistent plugin metadata before serving provider commands", async () => {
+  it("ignores retired plugin metadata after restart and rejects plugin commands", async () => {
     const area = storage();
-    await area.set({
-      provider_plugins: {
-        schema_version: 1,
-        builtin_enabled: true,
-        plugins: [],
-        api_key: "leak",
-      },
-    });
+    await area.set({ provider_plugins: { malformed: true } });
     const runtime = new ProviderRuntime(area);
-    await expect(runtime.handle("PROVIDER_LIST", undefined)).rejects.toThrow(
-      "PROVIDER_PLUGIN_INCOMPATIBLE",
-    );
+    await runtime.handle("PROVIDER_SAVE", { id: "local", config });
+    const restarted = new ProviderRuntime(area);
+    const listed = await restarted.handle("PROVIDER_LIST", undefined);
+    expect(listed).not.toHaveProperty("plugins");
+    expect(JSON.stringify(listed)).not.toContain("a-private");
+    for (const kind of [
+      "PLUGIN_INSTALL",
+      "PLUGIN_SET_ENABLED",
+      "PLUGIN_REMOVE",
+    ])
+      await expect(restarted.handle(kind, {})).rejects.toThrow(
+        "INVALID_ARGUMENT",
+      );
+    await restarted.handle("PROVIDER_REMOVE", {
+      id: "local",
+      delete_secret: false,
+    });
+    expect(JSON.stringify(area.snapshot())).toContain("a-private-key");
+    await expect(
+      restarted.handle("PROVIDER_SET_ACTIVE", { id: "local" }),
+    ).rejects.toThrow("PROVIDER_NOT_CONFIGURED");
   });
 });

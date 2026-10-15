@@ -14,6 +14,12 @@
 
 ## 신규 구현 계획
 
+- [Browser Agent S25 — TypeSafe Jev 판단 모델과 기존 LLM 라우팅](s25-jev-model-routing.md)
+  — Browser-local 구현, 2026-10-14. Provider 역할 설정·이관, 네이티브 판단,
+  기존 모델 위임·결과 확인과 취소·승인 경계를 연결했다. Jev가 없거나 불완전하면
+  기존 모델만 사용한다. [통제 검증](../evidence/s25-jev-routing-2026-10-14.md)을 제공하며
+  실제 TypeSafe 모델 쌍과 holdout/cost/latency qualification은 미완료다.
+
 - [Browser Agent S24 — 페이지 프로필과 작업별 명령](s24-learned-page-profiles.md)
   — Browser-local 구현, 2026-10-13. Options 관리와 Ask/Act 통제 Chrome,
   OpenRouter Ask 재사용 검증. 전체 acceptance qualification은 In Progress.
@@ -23,8 +29,10 @@
   통제 Chrome 호출·결과 continuation은 통과했으며 실제 Provider·R01~R20 qualification은 미완료다.
   기존 Sprint와의 충돌/보존 경계 X01~X12를 추적한다.
 - [Browser Agent S22 — 통합 승인 정책과 Full Permission 자동 실행](s22-unified-approval-policy.md)
-  — Planned, 2026-10-11. Options의 승인 모드·항목별 설정을 작업 제안·계획·권한·중요 확인·
-  자료 전송 동의에 연결하는 C1~C8 계획이다. 기존 설정의 안전한 이전과 자동 실행 검증을 포함한다.
+  — 구현·검증 진행 중, 2026-10-12. Options·공통 승인 정책 구현과 일부 무료 Provider live
+  표본을 검증한 뒤 [OpenAI 재검증](../evidence/s22-live-openai-2026-10-12.md)에서
+  holdout 15/15·혼합 2/2와 기본 재검증을 통과했다. 최초 실패를 보존하며
+  C1~C8/R1~R18 전체 qualification은 미완료다.
 - [Browser Act S21 — 현재 관찰·실행 증거에 기반한 LLM 추가 판단](s21-act-evidence-based-llm-assessment.md)
   — Planned, 2026-10-11. 기존 경로를 유지하고 요소 해석·action 완료·전체 목표의
   불명확한 상태를 자료 수집과 LLM 판단으로 확정하는 C1~C8 계획이다.

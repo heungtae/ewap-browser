@@ -85,7 +85,14 @@ try {
           throw new Error(
             `UPSTREAM_HTTP_${recent.find((c) => c.upstream_status >= 400).upstream_status}`,
           );
-        if (idle && (goal || recent.length >= 2)) {
+        const pending = recent.some(
+          (call) => !("answer_hash" in call) && !call.error,
+        );
+        if (
+          idle &&
+          !pending &&
+          (goal || (id === "blocked" && recent.length >= 2))
+        ) {
           settled = true;
           break;
         }

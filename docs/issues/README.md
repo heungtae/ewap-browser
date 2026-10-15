@@ -10,19 +10,23 @@
 이 처리는 실제 사이트·Provider·사용자 설치·배포의 미확인 범위를 검증 완료로 바꾸지 않는다.
 기존 완료 조건의 미충족 항목과 수정·검증 이력은 상세 기록에 보존한다.
 
-| ID               | 발생일     | 이슈                                                                                                | 상태    | 최근 갱신  | 다음 작업                                        |
-| ---------------- | ---------- | --------------------------------------------------------------------------------------------------- | ------- | ---------- | ------------------------------------------------ |
+| ID               | 발생일     | 이슈                                                                                                | 상태    | 최근 갱신  | 다음 작업                                                |
+| ---------------- | ---------- | --------------------------------------------------------------------------------------------------- | ------- | ---------- | -------------------------------------------------------- |
 | ISS-20261014-001 | 2026-10-14 | [프로파일 관리 창과 대화 복구의 창 바인딩](records/2026-10-14-profile-window-chat-recovery.md) | 해결 | 2026-10-14 | 통제 Chrome Ask/관리 창·Act PASS; 배포 미검증 |
-| ISS-20261012-002 | 2026-10-12 | [Intent classifier 원시 페이지 데이터 전송](records/2026-10-12-intent-classifier-page-data.md) | 해결 | 2026-10-12 | 통제 Chrome Provider egress/ZIP PASS; 배포 미검증 |
-| ISS-20261012-001 | 2026-10-11 | [MAIN page-method helper 빌드 계측 실패](records/2026-10-12-page-method-main-instrumentation.md)    | 해결    | 2026-10-12 | 통제 Chrome 검증 완료; 실제 Provider·배포 미검증 |
-| ISS-20261011-006 | 2026-10-11 | [승인 설정과 사이드패널 표시 불일치](records/2026-10-11-approval-mode-badge.md)                     | 검증 중 | 2026-10-11 | Chrome 설정 변경·과거 대화 복원 확인             |
-| ISS-20261011-005 | 2026-10-11 | [거절된 assessment 호출의 tool 결과 누락](records/2026-10-11-assessment-transcript.md)              | 해결    | 2026-10-11 | 지정 Browser-local 검증 완료; 배포 미검증        |
-| ISS-20261011-004 | 2026-10-11 | [이동 UNKNOWN 후 provider 완료 판단 미수용](records/2026-10-11-navigation-provider-confirmation.md) | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                 |
-| ISS-20261011-003 | 2026-10-11 | [웹 컨트롤 후보·실행·검증 지원 범위 불일치](records/2026-10-11-web-control-capability-parity.md)    | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                 |
-| ISS-20261011-002 | 2026-10-11 | [button 기반 ARIA radio 선택 실행 거절](records/2026-10-11-aria-radio-button-execution.md)          | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                 |
-| ISS-20261011-001 | 2026-10-11 | [이동 성공 후 최종 확인에서 오류 표시](records/2026-10-11-act-completion-after-navigation.md)       | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                 |
-| ISS-20260916-001 | 2026-09-16 | [이동 후 결과 snapshot 미확인](2026-09-16-navigation-snapshot-verification.md)                      | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                 |
-| ISS-20260916-002 | 2026-09-16 | [Variant 링크 메뉴 항목 선택 실패](2026-09-16-variant-menu-navigation.md)                           | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                 |
+| ISS-20261012-006 | 2026-10-12 | [수동 페이지 데이터 읽기 기능 제거](records/2026-10-12-manual-collection-retirement.md) | 검증 중 | 2026-10-12 | UI·폐기 메시지·Ask PASS; Act 응답 timeout 확인 |
+| ISS-20261012-005 | 2026-10-12 | [페이지 수집 단위별 시간 제한·진행 표시](records/2026-10-12-page-collection-timeout.md)             | 검증 중 | 2026-10-12 | 항목별 unit·통제 Chrome PASS; 원래 사이트 재현 확인      |
+| ISS-20261012-004 | 2026-10-12 | [live 음성 목표 검증의 상태 제한](records/2026-10-12-s22-live-negative-goal.md)                     | 해결    | 2026-10-12 | 통제 9/9·live 재실행 1/1; 최초 HTTP 500 보존             |
+| ISS-20261012-003 | 2026-10-12 | [S22 live driver의 최종 응답 전 조기 판정](records/2026-10-12-s22-live-driver-settlement.md)        | 해결    | 2026-10-12 | 통제 9/9·동일 live holdout 1/1; 추가 live는 429로 미검증 |
+| ISS-20261012-002 | 2026-10-12 | [Intent classifier 원시 페이지 데이터 전송](records/2026-10-12-intent-classifier-page-data.md)      | 해결    | 2026-10-12 | 통제 Chrome Provider egress/ZIP PASS; 배포 미검증        |
+| ISS-20261012-001 | 2026-10-11 | [MAIN page-method helper 빌드 계측 실패](records/2026-10-12-page-method-main-instrumentation.md)    | 해결    | 2026-10-12 | 통제 Chrome 검증 완료; 실제 Provider·배포 미검증         |
+| ISS-20261011-006 | 2026-10-11 | [승인 설정과 사이드패널 표시 불일치](records/2026-10-11-approval-mode-badge.md)                     | 검증 중 | 2026-10-11 | Chrome 설정 변경·과거 대화 복원 확인                     |
+| ISS-20261011-005 | 2026-10-11 | [거절된 assessment 호출의 tool 결과 누락](records/2026-10-11-assessment-transcript.md)              | 해결    | 2026-10-11 | 지정 Browser-local 검증 완료; 배포 미검증                |
+| ISS-20261011-004 | 2026-10-11 | [이동 UNKNOWN 후 provider 완료 판단 미수용](records/2026-10-11-navigation-provider-confirmation.md) | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                         |
+| ISS-20261011-003 | 2026-10-11 | [웹 컨트롤 후보·실행·검증 지원 범위 불일치](records/2026-10-11-web-control-capability-parity.md)    | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                         |
+| ISS-20261011-002 | 2026-10-11 | [button 기반 ARIA radio 선택 실행 거절](records/2026-10-11-aria-radio-button-execution.md)          | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                         |
+| ISS-20261011-001 | 2026-10-11 | [이동 성공 후 최종 확인에서 오류 표시](records/2026-10-11-act-completion-after-navigation.md)       | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                         |
+| ISS-20260916-001 | 2026-09-16 | [이동 후 결과 snapshot 미확인](2026-09-16-navigation-snapshot-verification.md)                      | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                         |
+| ISS-20260916-002 | 2026-09-16 | [Variant 링크 메뉴 항목 선택 실패](2026-09-16-variant-menu-navigation.md)                           | 완료    | 2026-10-11 | 없음 — 사용자 요청으로 추적 종료                         |
 
 과거 두 건의 최근 갱신일은 사용자 요청에 따른 완료 처리일이다. 원문에 기록된 수정과 테스트는 당시
 범위의 이력이며 현재 구현·사이트 성공을 확정하지 않는다. ISS-20261011-001은 이동 자체가

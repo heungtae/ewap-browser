@@ -1,12 +1,11 @@
 /* global console, fetch, process, URL */
-/** Controlled Chrome evidence for S10-C3's redacted Discovery boundary. */
+/** Regression for retirement of the manual Page API hint and collection entrypoints. */
 import { spawn, execFile } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { createServer } from "node:https";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
-import { checkS10Discovery } from "./chrome-s10-discovery-check.mjs";
 import { openAnalysisPanel } from "./chrome-analysis-panel.mjs";
 import { cdp, evaluate, reservePort, waitFor } from "./chrome-cdp-utils.mjs";
 
@@ -161,58 +160,31 @@ try {
         payload,
       })})`,
     );
-  const discover = async () =>
-    panelRequest({ kind: "PAGE_API_DISCOVERY_START" });
-  const first = await discover();
-  if (
-    first?.result?.terminal !== "COMPLETED" ||
-    first.result.candidates?.length < 3
-  )
-    throw new Error(
-      `Discovery did not return fixture hints: ${JSON.stringify(first)}`,
-    );
-  const serialized = JSON.stringify(first);
-  const forbidden = [
-    "demoControls",
-    "openFixture",
-    "listSummary",
-    "fixture-api",
-    "privateBackdoor",
-    "external-only",
-  ].filter((value) => serialized.includes(value));
-  if (forbidden.length > 0)
-    throw new Error(
-      `Discovery leaked page implementation: ${forbidden.join(", ")}`,
-    );
-  if (
-    !first.result.candidates.every((candidate) =>
-      /^((Public function)|(Inline endpoint)) hint \d+$/.test(candidate.label),
-    )
-  )
-    throw new Error(`Discovery labels were not redacted: ${serialized}`);
-  await evaluate(
-    page,
-    "document.querySelector('#add-oversized-script').click()",
-  );
-  const second = await discover();
-  if (
-    second?.result?.terminal !== "COMPLETED" ||
-    second.result.truncated !== true
-  )
-    throw new Error(
-      `Discovery truncation was not preserved: ${JSON.stringify(second)}`,
-    );
-  await checkS10Discovery({
+  const retiredUi = await evaluate(
     panel,
-    panelWindowId,
-    page,
-    worker,
-    version,
-    cdpPort,
-    fixtureRequests,
-  });
+    "document.querySelector('#page-api-discovery, #discovery-dialog, #collection-discover') === null",
+  );
+  if (!retiredUi) throw new Error("Retired manual data UI is still present");
+  const networkBaseline = fixtureRequests.length;
+  for (const kind of [
+    "PAGE_API_DISCOVERY_START",
+    "PAGE_API_DISCOVERY_STOP",
+    "COLLECTION_DISCOVER",
+    "COLLECTION_READ_START",
+    "COLLECTION_READ_NEXT",
+    "COLLECTION_READ_CANCEL",
+    "COLLECTION_READ_STATE",
+  ]) {
+    const response = await panelRequest({ kind });
+    if (response?.ok !== false || response?.code !== "INVALID_ARGUMENT")
+      throw new Error(`Retired discovery message was accepted: ${kind}`);
+  }
+  if (fixtureRequests.length !== networkBaseline)
+    throw new Error(
+      "Retired discovery message caused fixture network activity",
+    );
   console.log(
-    "Chrome Page API Discovery passed: real Side Panel, redacted hints, no invocation, truncation",
+    "Chrome manual data entrypoint retirement passed: UI absent, messages rejected",
   );
 } finally {
   child?.kill("SIGTERM");
