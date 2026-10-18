@@ -10,6 +10,7 @@ export type PublicProvider = {
   header_names: string[];
   has_api_key: boolean;
   enabled: boolean;
+  timeout_ms?: number;
   private_network_opt_in?: boolean;
 };
 

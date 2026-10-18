@@ -345,16 +345,12 @@
       </header>
       <section class="settings-card">
         <h2>LLM Provider</h2>
-        <p>
-          OpenAI 호환 처리 모델과 TypeSafe Jev 판단 모델을 현재 Chrome profile에
-          저장합니다.
-        </p>
+        <p>OpenAI 호환 처리 모델을 현재 Chrome profile에 저장합니다.</p>
         <form id="provider-form">
           <label
             >Provider 유형
             <select name="provider_kind">
               <option value="openai_compatible">OpenAI 호환</option>
-              <option value="typesafe_jev">TypeSafe Jev</option>
             </select>
           </label>
           <label
@@ -440,6 +436,78 @@
         <output id="settings-status" aria-live="polite"></output>
       </section>
       <section class="settings-card">
+        <h2>Decision LLM Provider</h2>
+        <p>
+          TypeSafe Jev 판단 모델을 설정합니다. 저장 후 판단 Provider를 선택하고
+          적용하세요.
+        </p>
+        <form id="decision-provider-form">
+          <label
+            >Provider 유형
+            <select disabled>
+              <option>TypeSafe Jev</option>
+            </select></label
+          >
+          <label
+            >Provider ID <input id="decision-provider-id" required value="jev"
+          /></label>
+          <label
+            >URL
+            <input
+              id="decision-provider-url"
+              type="url"
+              required
+              value="https://api.typesafe.ai/v1"
+          /></label>
+          <label
+            >Model
+            <input id="decision-provider-model" required value="jev-1.13.0"
+          /></label>
+          <label
+            >API_KEY
+            <span class="secret-field">
+              <input
+                id="decision-provider-key"
+                type="password"
+                autocomplete="off"
+              />
+              <button
+                id="decision-provider-key-toggle"
+                type="button"
+                aria-controls="decision-provider-key"
+                aria-pressed="false"
+              >
+                표시
+              </button>
+            </span>
+            <span id="decision-provider-key-state"
+              >새 API key만 입력하세요.</span
+            >
+          </label>
+          <label class="checkbox-row"
+            ><input
+              id="decision-provider-enabled"
+              type="checkbox"
+              checked
+            />Provider 사용</label
+          >
+          <div class="button-row">
+            <button type="submit">저장</button>
+            <button id="decision-provider-test" type="button">
+              연결 테스트
+            </button>
+            <button
+              id="decision-provider-export"
+              type="button"
+              title="API key와 header 값은 제외됩니다."
+            >
+              Provider 내보내기
+            </button>
+          </div>
+          <output id="decision-provider-status" aria-live="polite"></output>
+        </form>
+      </section>
+      <section class="settings-card">
         <h2>LLM Provider 관리</h2>
         <div class="provider-management-controls">
           <label
@@ -447,29 +515,29 @@
             <select id="provider-active-select"></select
           ></label>
           <div class="provider-role-field">
-            <label for="provider-primary-select">기존 처리 Provider</label>
+            <label for="provider-primary-select">기본 LLM Provider</label>
             <div class="button-row provider-active-row">
               <select id="provider-primary-select"></select>
               <button id="provider-activate" type="button">적용</button>
             </div>
           </div>
           <label
-            >Jev 판단 Provider
+            >판단 LLM Provider
             <select id="provider-decision-select"></select
           ></label>
           <label class="checkbox-row"
             ><input id="provider-jev-enabled" type="checkbox" />Jev 자동 판단
             사용</label
           >
-          <label
-            >Jev 호출 실패 시
-            <select id="provider-jev-failure">
-              <option value="primary">실행 전 기존 모델로 위임</option>
-              <option value="stop">실행 전 중단</option>
-            </select>
-          </label>
-          <div class="button-row">
-            <button id="provider-routing-apply" type="button">적용</button>
+          <div class="provider-role-field">
+            <label for="provider-jev-failure">Jev 호출 실패 시</label>
+            <div class="button-row provider-active-row">
+              <select id="provider-jev-failure">
+                <option value="primary">실행 전 기존 모델로 위임</option>
+                <option value="stop">실행 전 중단</option>
+              </select>
+              <button id="provider-routing-apply" type="button">적용</button>
+            </div>
           </div>
           <output id="provider-routing-status" aria-live="polite"></output>
           <input

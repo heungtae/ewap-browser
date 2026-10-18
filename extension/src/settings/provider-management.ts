@@ -1,3 +1,5 @@
+import { downloadProviderExport } from "./provider-download.js";
+import { createDecisionProviderForm } from "./decision-provider-form.js";
 import { createProviderRoleControls } from "./provider-role-controls.js";
 type Runtime = { sendMessage(message: unknown): Promise<unknown> };
 import {
@@ -36,10 +38,31 @@ export const initializeProviderManagement = (
   );
   let providers: Record<string, PublicProvider> = {};
   const currentProvider = () => activeSelect.value;
+  const decisionSelect = element<HTMLSelectElement>("provider-decision-select");
+  const selectProvider = (id: string, config: PublicProvider) => {
+    if (config.kind === "typesafe_jev") decisionForm.load(id, config);
+    else onSelected(id, config);
+  };
+  const decisionForm = createDecisionProviderForm(
+    (kind, payload) => send(runtime, kind, payload),
+    roles.revision,
+    () => refresh(),
+  );
+  decisionSelect.addEventListener("change", () => {
+    const id = decisionSelect.value;
+    if (providers[id]) decisionForm.load(id, providers[id]);
+  });
   const refresh = async () => {
     const list = await send(runtime, "PROVIDER_LIST");
     roles.refresh(list.providers as Record<string, PublicProvider>, list);
     providers = list.providers as Record<string, PublicProvider>;
+    const decisionId = element<HTMLInputElement>("decision-provider-id").value;
+    const selectedDecision =
+      providers[decisionId]?.kind === "typesafe_jev"
+        ? decisionId
+        : decisionSelect.value;
+    if (providers[selectedDecision])
+      decisionForm.load(selectedDecision, providers[selectedDecision]);
     const previousProvider = activeSelect.value;
     activeSelect.replaceChildren(
       ...Object.entries(providers).map(([id, provider]) => {
@@ -55,7 +78,7 @@ export const initializeProviderManagement = (
         ? previousProvider
         : (exportedState.active_provider ?? "");
     if (activeSelect.value && providers[activeSelect.value])
-      onSelected(activeSelect.value, providers[activeSelect.value]!);
+      selectProvider(activeSelect.value, providers[activeSelect.value]!);
   };
   const action = (
     id: string,
@@ -77,7 +100,7 @@ export const initializeProviderManagement = (
   };
   activeSelect.addEventListener("change", () => {
     const id = currentProvider();
-    if (providers[id]) onSelected(id, providers[id]!);
+    if (providers[id]) selectProvider(id, providers[id]!);
   });
   action("provider-activate", async () => {
     await send(runtime, "PROVIDER_SET_ACTIVE", {
@@ -96,16 +119,7 @@ export const initializeProviderManagement = (
   action(
     "provider-export",
     async () => {
-      const exported = await send(runtime, "PROVIDER_EXPORT");
-      const blob = new Blob([JSON.stringify(exported.export, null, 2)], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "contextpilot-provider-public.json";
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      downloadProviderExport(await send(runtime, "PROVIDER_EXPORT"));
     },
     false,
   );
@@ -126,7 +140,7 @@ export const initializeProviderManagement = (
       const { id, config } = parsePublicProviderImport(
         JSON.parse(await selected.text()) as unknown,
       );
-      onSelected(id, { ...config, has_api_key: false });
+      selectProvider(id, { ...config, has_api_key: false });
       publicFile.value = "";
       status.value =
         "LLM Provider 설정을 양식에 불러왔습니다. API key를 입력하고 저장하세요.";

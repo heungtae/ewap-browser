@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[Live Jev native API](s25-live-jev-2026-10-18.md): real API authentication, strict response parsing, and four English/Korean synthetic decisions passed; live Chrome and primary/decision pairing remain unqualified.
+
 [S25 Jev routing](s25-jev-routing-2026-10-14.md): built-in roles/migration, native contract, request binding, controlled Chrome Ask/Act and Options; real TypeSafe pairing remains unqualified.
 
 [S24 scoped commit verification](s24-scoped-delivery-2026-10-14.md): 다른 미커밋 변경을 제외한 커밋 후보의 빌드·96개 테스트·통제 Chrome Ask/Act 재검증.

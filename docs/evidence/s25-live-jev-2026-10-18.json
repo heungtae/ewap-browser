@@ -1,0 +1,57 @@
+{
+  "time": "2026-10-18T01:52:44.259Z",
+  "scope": "Live native Jev client and strict response parser; synthetic color holdouts; no Chrome or primary LLM qualification",
+  "model": "jev-1.13.0",
+  "results": [
+    {
+      "id": "connection-en",
+      "status": 200,
+      "latency_ms": 263,
+      "model": "jev-1.13.0",
+      "choice": "blue",
+      "expected": "blue",
+      "usage": {
+        "input_tokens": 325,
+        "output_tokens": 31
+      }
+    },
+    {
+      "id": "holdout-en",
+      "status": 200,
+      "latency_ms": 162,
+      "model": "jev-1.13.0",
+      "choice": "red",
+      "expected": "red",
+      "usage": {
+        "input_tokens": 325,
+        "output_tokens": 31
+      }
+    },
+    {
+      "id": "holdout-ko",
+      "status": 200,
+      "latency_ms": 188,
+      "model": "jev-1.13.0",
+      "choice": "blue",
+      "expected": "blue",
+      "usage": {
+        "input_tokens": 345,
+        "output_tokens": 31
+      }
+    },
+    {
+      "id": "holdout-ko-red",
+      "status": 200,
+      "latency_ms": 174,
+      "model": "jev-1.13.0",
+      "choice": "red",
+      "expected": "red",
+      "usage": {
+        "input_tokens": 346,
+        "output_tokens": 31
+      }
+    }
+  ],
+  "source_revision": "e8ebd3f17e6d5e128af476df5bfe179361eb8cd5",
+  "worktree": "Uncommitted Options UI changes present; native Jev client and parser unchanged."
+}
