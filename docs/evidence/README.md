@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[Options UX](options-ux-2026-10-18.md): task navigation, selected Provider actions, draft protection, workflow failure recovery and responsive Chrome verification.
+
 [Live Jev native API](s25-live-jev-2026-10-18.md): real API authentication, strict response parsing, and four English/Korean synthetic decisions passed; live Chrome and primary/decision pairing remain unqualified.
 
 [S25 Jev routing](s25-jev-routing-2026-10-14.md): built-in roles/migration, native contract, request binding, controlled Chrome Ask/Act and Options; real TypeSafe pairing remains unqualified.

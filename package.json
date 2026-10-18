@@ -10,6 +10,7 @@
     "test:unit": "vitest run extension/tests/unit",
     "test:fixture": "vitest run extension/tests/fixture",
     "test:e2e": "vitest run extension/tests/e2e",
+    "test:chrome-options": "node --experimental-websocket scripts/chrome-options-ux-smoke.mjs",
     "test:chrome-extension": "node --experimental-websocket scripts/chrome-extension-smoke.mjs",
     "test:chrome-collection": "node --experimental-websocket scripts/chrome-page-api-discovery-smoke.mjs",
     "test:chrome-diagnostics-zip": "node --experimental-websocket scripts/chrome-diagnostics-zip-smoke.mjs",

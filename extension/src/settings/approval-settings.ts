@@ -38,6 +38,8 @@ for (const category of approvalCategories) {
 }
 const render = () => {
   if (mode) mode.value = policy.mode;
+  if (container instanceof HTMLElement)
+    container.hidden = policy.mode !== "custom";
   for (const category of approvalCategories) {
     const select = form?.elements.namedItem(
       `approval_${category}`,
@@ -58,7 +60,7 @@ const constraints = () => {
     "#approval-constraints",
   );
   if (output)
-    output.value = `${screenshot?.value !== "manual_or_model" ? "현재 Screenshot policy는 모델 화면 전송을 차단합니다. " : ""}저장된 거부·회사 정책·제한 페이지·Chrome 자체 권한을 유지합니다.${policy.tool_scope === "approved_plan" ? " 도구 자동 승인은 승인된 계획의 출처에 한정됩니다." : ""}`;
+    output.value = `${screenshot?.value !== "manual_or_model" ? "현재 화면 캡처 설정은 모델의 화면 전송 요청을 차단합니다. " : ""}저장된 거부·회사 정책·제한 페이지·Chrome 자체 권한을 유지합니다.${policy.tool_scope === "approved_plan" ? " 도구 자동 승인은 승인된 계획의 출처에 한정됩니다." : ""}`;
 };
 form?.addEventListener("change", constraints);
 export const applyApprovalSettings = (

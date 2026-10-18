@@ -363,3 +363,17 @@ endpoint와 고정 버전(`jev-1.13.0` 등)을 사용하며 API key는 write-onl
 동일 요청의 단독/이중 처리 결과, 실제 provider/model 버전, 최초 실패,
 한국어·영어 holdout, 호출 수·사용량·지연을 기록한다. 키와 원문 payload는 기록하지 않는다.
 현재 실행 범위와 미검증 항목은 [S25 증거](evidence/s25-jev-routing-2026-10-14.md)를 따른다.
+
+## Options UI regression
+
+After a version-preserving artifact build, run:
+
+```bash
+CHROME_FOR_TESTING_BIN=/path/to/chrome pnpm test:chrome-options
+```
+
+The isolated Chrome fixtures cover navigation, Provider actions and drafts,
+export/import, workflow failure recovery, profile controls, resolver storage,
+Provider deletion and desktop/narrow layouts. Set `OPTIONS_SCREENSHOT_DIR` to an
+existing directory to capture all four pages at both viewport widths.
+[Scope and dated evidence](evidence/options-ux-2026-10-18.md).

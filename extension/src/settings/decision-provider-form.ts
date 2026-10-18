@@ -1,4 +1,6 @@
+import { settingsErrorMessage } from "./settings-errors.js";
 import { downloadProviderExport } from "./provider-download.js";
+import { markFormSaved } from "./form-feedback.js";
 import type { PublicProvider } from "./provider-public-import.js";
 type Send = (
   kind: string,
@@ -9,7 +11,7 @@ const element = <T extends HTMLElement>(id: string): T =>
 export const createDecisionProviderForm = (
   send: Send,
   revision: () => number,
-  refresh: () => Promise<void>,
+  refresh: (id: string) => Promise<void>,
 ) => {
   const form = element<HTMLFormElement>("decision-provider-form");
   const input = (name: string) =>
@@ -67,14 +69,15 @@ export const createDecisionProviderForm = (
     });
     input("key").value = "";
     hideKey();
-    await refresh();
+    await refresh(id);
+    markFormSaved(form);
     status.value =
       "저장했습니다. 관리 영역에서 판단 Provider를 선택하고 적용하세요.";
     return id;
   };
   const run = (action: () => Promise<void>) => {
     void action().catch((error: unknown) => {
-      status.value = error instanceof Error ? error.message : "작업 실패";
+      status.value = settingsErrorMessage(error);
     });
   };
   form.addEventListener("submit", (event) => {

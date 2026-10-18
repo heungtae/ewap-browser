@@ -127,3 +127,19 @@ Provider의 최종 completed 수용은 [goal finalizer](../extension/src/service
 제거됐다. Ask/Act 분석 및 Component 도구의 collection 발견·reader·orchestrator는
 유지한다. `pnpm test:chrome-collection`은 수동 UI 부재와 폐기된 메시지 거부를,
 `pnpm test:chrome-analysis-data`는 유지된 Ask/Act 분석 경로를 검증한다.
+
+## Options source navigation
+
+[Settings entry](../extension/src/settings/entry.ts) initializes the
+[navigation](../extension/src/settings/settings-navigation.ts),
+[Provider management](../extension/src/settings/provider-management.ts),
+[Provider form](../extension/src/settings/provider-form-save.ts),
+[role-to-form selection](../extension/src/settings/provider-editors.ts),
+[agent preferences](../extension/src/settings/agent-preferences-form.ts),
+[Chrome permissions](../extension/src/settings/settings-permissions.ts),
+[workflow list](../extension/src/settings/workflow-settings.ts) and
+[enterprise resolver form](../extension/src/settings/resolver-form.ts).
+[Options HTML](../extension/src/settings/index.html) includes focused HTML fragments
+at build time through [the extension builder](../scripts/build-extension.mjs).
+Use `pnpm test:chrome-options` with `CHROME_FOR_TESTING_BIN` for the controlled UI
+regression; [dated evidence](evidence/options-ux-2026-10-18.md) records its scope.

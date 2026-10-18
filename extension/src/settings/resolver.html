@@ -1,0 +1,43 @@
+<section class="settings-card">
+  <h2>업무 프로필 서버 (Resolver)</h2>
+  <p>
+    회사에서 제공한 서명된 업무 프로필을 연결하는 선택 설정입니다. 일반 Ask/Act
+    사용에는 필요하지 않습니다. 관리자가 제공한 서버 주소·배포 ID·공개 키를
+    입력하세요.
+  </p>
+  <form id="profile-form">
+    <label
+      >서버 주소 (Resolver URL) <input name="resolver_url" type="url" required
+    /></label>
+    <label
+      >배포 ID (Deployment ID) <input name="deployment_id" required
+    /></label>
+    <label
+      >허용 서버 출처 (한 줄에 하나)
+      <textarea
+        name="allowed_origins"
+        rows="3"
+        required
+        placeholder="https://resolver.company.test"
+      ></textarea>
+    </label>
+    <label
+      >서명 검증용 공개 키 (JWS JSON)
+      <textarea
+        name="key_ring"
+        rows="8"
+        required
+        placeholder='{"k1":"-----BEGIN PUBLIC KEY-----..."}'
+      ></textarea>
+    </label>
+    <p>
+      연결 테스트는 입력한 설정을 먼저 저장한 뒤 현재 페이지의 프로필을
+      조회합니다. 비공개 키와 API key는 입력하지 마세요.
+    </p>
+    <div class="button-row">
+      <button type="submit">Resolver 저장</button>
+      <button id="profile-test" type="button">연결 테스트</button>
+    </div>
+  </form>
+  <output id="profile-status" aria-live="polite"></output>
+</section>

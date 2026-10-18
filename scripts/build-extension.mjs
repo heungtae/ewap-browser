@@ -53,11 +53,20 @@ await cp(
   new URL("sidepanel/index.html", output),
 );
 await mkdir(new URL("settings/", output), { recursive: true });
-await cp(
-  "extension/src/settings/index.html",
-  new URL("settings/index.html", output),
-);
+let settingsHtml = await readFile("extension/src/settings/index.html", "utf8");
+for (const match of settingsHtml.matchAll(
+  /<!-- include: ([a-z-]+\.html) -->/g,
+)) {
+  settingsHtml = settingsHtml.replace(
+    match[0],
+    await readFile(`extension/src/settings/${match[1]}`, "utf8"),
+  );
+}
+await writeFile(new URL("settings/index.html", output), settingsHtml);
 for (const file of [
+  "settings-base.css",
+  "settings-controls.css",
+  "settings-layout.css",
   "learned-profiles.html",
   "learned-profiles.css",
   "learned-profile-layout.css",

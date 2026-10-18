@@ -23,13 +23,13 @@ export const checkS25Settings = async (harness, checks) => {
   );
   const fields = await evaluate(
     settings,
-    `(()=>{const list=document.querySelector('#provider-active-select');list.value='jev';list.dispatchEvent(new Event('change'));return {kind:document.querySelector('[name=provider_kind]').value,decisionId:document.querySelector('#decision-provider-id').value,url:document.querySelector('#decision-provider-url').value,headings:[...document.querySelectorAll('h2')].slice(0,3).map(e=>e.textContent),primary:[...document.querySelector('#provider-primary-select').options].map(o=>o.value),decision:[...document.querySelector('#provider-decision-select').options].map(o=>o.value),key:document.querySelector('#decision-provider-key').value}})()`,
+    `(()=>{const list=document.querySelector('#provider-decision-select');list.value='jev';list.dispatchEvent(new Event('change'));return {kind:document.querySelector('[name=provider_kind]').value,decisionId:document.querySelector('#decision-provider-id').value,url:document.querySelector('#decision-provider-url').value,headings:[...document.querySelectorAll('h2')].slice(0,3).map(e=>e.textContent),primary:[...document.querySelector('#provider-primary-select').options].map(o=>o.value),decision:[...document.querySelector('#provider-decision-select').options].map(o=>o.value),key:document.querySelector('#decision-provider-key').value}})()`,
   );
   assert.deepEqual(fields, {
     kind: "openai_compatible",
     decisionId: "jev",
     url: (await harness.send({ kind: "PROVIDER_LIST" })).providers.jev.base_url,
-    headings: ["LLM Provider", "Decision LLM Provider", "LLM Provider 관리"],
+    headings: ["LLM Provider 관리", "LLM Provider", "판단 LLM Provider (선택)"],
     primary: ["", "fixture"],
     decision: ["", "jev"],
     key: "",
@@ -66,9 +66,16 @@ export const checkS25Settings = async (harness, checks) => {
   assert.ok(!JSON.stringify(saved).includes("s25-fixture-key"));
   const management = await evaluate(
     settings,
-    `['provider-primary-select','provider-decision-select','provider-jev-enabled','provider-jev-failure','provider-routing-apply','provider-import','provider-remove-delete'].every(id=>document.getElementById(id)?.closest('section').querySelector('h2').textContent==='LLM Provider 관리')`,
+    `['provider-primary-select','provider-decision-select','provider-jev-enabled','provider-jev-failure','provider-routing-apply','provider-import'].every(id=>document.getElementById(id)?.closest('section').querySelector('h2').textContent==='LLM Provider 관리')`,
   );
   assert.equal(management, true);
+  assert.equal(
+    await evaluate(
+      settings,
+      "!document.getElementById('provider-active-select') && document.querySelector('#provider-remove-delete').closest('form').id==='provider-form' && document.querySelector('#decision-provider-remove-delete').closest('form').id==='decision-provider-form'",
+    ),
+    true,
+  );
   await evaluate(
     settings,
     "document.querySelector('#decision-provider-test').click()",

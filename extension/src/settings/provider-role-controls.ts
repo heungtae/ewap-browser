@@ -22,7 +22,7 @@ export const createProviderRoleControls = (send: Send) => {
         option.value = id;
         option.textContent = id
           ? `${id}${config?.enabled === false ? " (비활성)" : ""}`
-          : "선택 안 함";
+          : "선택하세요";
         return option;
       }),
     );
@@ -31,6 +31,10 @@ export const createProviderRoleControls = (send: Send) => {
     revision: () => revision,
     primary: () => primary.value,
     async apply() {
+      if (enabled.checked && !decision.value)
+        throw new Error(
+          "자동 판단에 사용할 판단 LLM Provider를 먼저 선택하세요.",
+        );
       await send("PROVIDER_SET_ROUTING", {
         revision,
         routing: {
@@ -65,12 +69,12 @@ export const createProviderRoleControls = (send: Send) => {
       failure.value = routing.pre_dispatch_failure;
       status.value =
         state.primary_configured === false
-          ? "기존 처리 Provider 설정이 필요합니다."
+          ? "기본 LLM Provider를 저장하고 적용하세요."
           : state.effective_mode === "jev"
-            ? "Jev 판단과 기존 모델 처리를 사용합니다."
+            ? "현재 사용: Jev 자동 판단 + 기본 모델 처리"
             : routing.mode === "single"
-              ? "기존 모델만 사용 중 · Jev 자동 판단 꺼짐"
-              : "기존 모델만 사용 중 · Jev 미설정 또는 비활성";
+              ? "현재 사용: 기본 모델만 · Jev 자동 판단 꺼짐"
+              : "현재 사용: 기본 모델만 · Jev 미설정 또는 비활성";
     },
   };
 };

@@ -1,0 +1,138 @@
+input,
+select,
+textarea {
+  width: 100%;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: rgba(11, 14, 23, 0.72);
+  font: inherit;
+  font-weight: 400;
+}
+textarea {
+  resize: vertical;
+  min-height: 78px;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+input::placeholder,
+textarea::placeholder {
+  color: #6e7388;
+}
+button {
+  justify-self: start;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(108, 99, 255, 0.2);
+}
+button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.button-row button[type="button"] {
+  color: var(--accent-2);
+  background: var(--surface);
+  box-shadow: none;
+}
+output {
+  display: block;
+  min-height: 20px;
+  margin-top: 10px;
+  color: #a7f3d0;
+  font-size: 12px;
+}
+dialog {
+  width: min(420px, calc(100vw - 32px));
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px;
+  background: var(--card);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
+}
+dialog::backdrop {
+  background: rgba(3, 6, 15, 0.68);
+  backdrop-filter: blur(3px);
+}
+dialog h2 {
+  margin-bottom: 5px;
+}
+dialog p {
+  margin-bottom: 16px;
+}
+dialog .button-row {
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+dialog #provider-model-selection-cancel {
+  color: var(--accent-2);
+  background: var(--surface);
+  box-shadow: none;
+}
+dialog button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 26px 0 0;
+}
+@media (max-width: 560px) {
+  body {
+    min-width: 0;
+  }
+  main {
+    width: calc(100vw - 24px);
+    padding-top: 22px;
+  }
+  .settings-card {
+    padding: 16px;
+  }
+}
+#approval-categories {
+  display: grid;
+  gap: 14px;
+}
+#approval-constraints:empty {
+  display: none;
+}
+.provider-management-controls {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+.provider-role-field {
+  display: grid;
+  gap: 6px;
+}
+label[hidden] {
+  display: none;
+}
+.provider-active-row select {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+.learned-profile-controls {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
