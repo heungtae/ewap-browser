@@ -13,6 +13,10 @@ import {
   type RoutedMessage,
 } from "./runtime-message-router.js";
 import { extensionVersion } from "./extension-version.js";
+import {
+  developmentDiagnostics,
+  diagnosticsPrivacy,
+} from "../diagnostics/privacy-mode.js";
 
 export const createDiagnosticsMessageHandler = (
   dependencies: Dependencies,
@@ -294,6 +298,7 @@ export const createDiagnosticsMessageHandler = (
         respond({
           ok: true as const,
           data: {
+            ...diagnosticsPrivacy(),
             schema_version: 1,
             request_id: requestIdOpt,
             extension_version: extensionVersion,
@@ -330,6 +335,7 @@ const stringMap = (
 const safeProviderDiagnostics = (value: unknown): Record<string, unknown> => {
   if (!isObject(value) || value.configured !== true)
     return { configured: false };
+  if (developmentDiagnostics()) return value;
   const config = isObject(value.config) ? value.config : value;
   const string = (key: string): string | undefined =>
     typeof config[key] === "string" ? config[key] : undefined;
@@ -485,6 +491,13 @@ const safeContentDiagnosticsSummary = (
       },
     },
     page: {
+      ...(developmentDiagnostics()
+        ? Object.fromEntries(
+            ["url", "title", "referrer"]
+              .filter((key) => typeof page[key] === "string")
+              .map((key) => [key, (page[key] as string).slice(0, 8_000)]),
+          )
+        : {}),
       url_shape: {
         has_query: page.url_shape.has_query,
         has_fragment: page.url_shape.has_fragment,

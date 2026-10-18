@@ -1,12 +1,13 @@
 {
   "name": "context-pilot",
   "private": true,
-  "version": "0.1.113",
+  "version": "0.1.117",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint extension/src extension/tests --max-warnings=0 && prettier --check --ignore-unknown package.json pnpm-workspace.yaml tsconfig.base.json tsconfig.json tsconfig.build.json eslint.config.mjs extension deployment scripts native-host",
     "build": "tsc -p tsconfig.build.json && node scripts/bump-extension-version.mjs && node scripts/build-extension.mjs",
+    "build:release": "tsc -p tsconfig.build.json && node scripts/bump-extension-version.mjs && node scripts/build-extension.mjs --release",
     "test:unit": "vitest run extension/tests/unit",
     "test:fixture": "vitest run extension/tests/fixture",
     "test:e2e": "vitest run extension/tests/e2e",
@@ -36,6 +37,7 @@
     "test": "pnpm typecheck && pnpm lint && pnpm build && pnpm validate:package && pnpm test:unit && pnpm test:fixture && pnpm test:e2e",
     "validate:package": "node scripts/validate-package.mjs",
     "test:release": "node scripts/release-smoke.mjs",
+    "test:diagnostics-mode": "node scripts/test-diagnostics-build-mode.mjs",
     "package:local": "node scripts/package-local.mjs",
     "smoke": "node scripts/smoke.mjs",
     "test:chrome-example-requests": "node --experimental-websocket scripts/chrome-example-requests.mjs",

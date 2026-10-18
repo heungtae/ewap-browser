@@ -85,14 +85,19 @@ pnpm validate:package</code></pre>
             <li>Visit a web page and open the ContextPilot side panel.</li>
           </ol>
           <p>
-            For a local ZIP, run <code>pnpm package:local</code> after building.
-            Extract <code>dist/contextpilot-&lt;version&gt;.zip</code> and load
-            the extracted folder. This is an unpacked installation, not a Chrome
-            Web Store install.
+            For a local ZIP, build with
+            <code>node scripts/build-extension.mjs --release</code>, then run
+            <code>pnpm package:local</code>. Extract
+            <code>dist/contextpilot-&lt;version&gt;.zip</code> and load the
+            extracted folder. This is an unpacked installation, not a Chrome Web
+            Store install.
           </p>
           <aside>
-            The commands above preserve the extension version.
-            <code>pnpm build</code> and <code>pnpm test</code> increment it.
+            Default builds retain unmasked development diagnostics. The
+            <code>--release</code> build masks diagnostics and is required for
+            ZIP packaging. The commands above preserve the extension version.
+            <code>pnpm build</code>, <code>pnpm build:release</code> and
+            <code>pnpm test</code> increment it.
           </aside>
         </section>
         <section id="provider" aria-labelledby="provider-title">

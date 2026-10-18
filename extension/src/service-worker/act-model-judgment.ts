@@ -5,6 +5,7 @@ import {
   judgmentTask,
 } from "../providers/decision-questions.js";
 import { acceptedChoice } from "../providers/jev-response.js";
+import { traceDecision } from "../diagnostics/method-trace.js";
 import type { DecisionPhase, DecisionTask } from "../providers/jev-types.js";
 import type { ActStepDependencies } from "./act-step-dependencies.js";
 import type { ActSession } from "./act-session-types.js";
@@ -65,6 +66,12 @@ export const actModelJudgment = async (
       signal: controller.signal,
     });
     const verdict = judgment ? acceptedChoice(judgment, "verdict") : undefined;
+    traceDecision("act.model_judgment", {
+      phase,
+      reviewer_kind: judgment?.source ?? "unavailable",
+      decision_id: judgment?.decision_id,
+      verdict: verdict ?? "unavailable",
+    });
     return verdict && judgment ? { verdict, judgment } : undefined;
   } finally {
     if (timer !== undefined) clearTimeout(timer);

@@ -90,6 +90,11 @@ Worker judgments and disclosure: [decision entry](../extension/src/service-worke
 
 ## Provider와 진단
 
+Diagnostic build policy is defined in [privacy-mode](../extension/src/diagnostics/privacy-mode.ts):
+development builds preserve captured values through [raw serialization](../extension/src/diagnostics/raw-trace.ts),
+while release builds apply the existing masker. Commands and export fields are
+documented in [method diagnostics](reference/method-execution-diagnostics.md#build-modes).
+
 | 영역                                  | 확인할 코드                                                                                                                                                                                                                                                      |
 | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OpenAI 호환 Provider·설정·secret 쓰기 | [adapter resolver](../extension/src/providers/resolve-openai-compatible.ts), [settings](../extension/src/settings/provider-settings.ts), [secret write](../extension/src/settings/provider-secret-write.ts)                                                      |

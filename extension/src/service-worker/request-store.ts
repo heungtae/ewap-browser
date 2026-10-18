@@ -4,6 +4,7 @@ import type { ExecutionDiagnostics } from "./execution-diagnostics.js";
 import { ContractError } from "../security/validation.js";
 import { digestCanonical } from "../security/canonical.js";
 import { RequestPersistence } from "./request-persistence.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
 export type Request = RequestSnapshot & {
   mode: Mode;
   prompt: string;
@@ -145,6 +146,7 @@ export class RequestStore {
         mode: Mode;
         prompt_length: number;
         prompt_digest: string;
+        prompt?: string;
       })
     | undefined {
     const request = this.requests.get(requestId);
@@ -154,6 +156,7 @@ export class RequestStore {
       mode: request.mode,
       prompt_length: request.prompt.length,
       prompt_digest: digestCanonical(request.prompt),
+      ...(developmentDiagnostics() ? { prompt: request.prompt } : {}),
     };
   }
 }

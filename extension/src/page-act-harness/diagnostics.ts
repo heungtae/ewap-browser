@@ -1,4 +1,5 @@
 import { traceDecision, traceMethod } from "../diagnostics/method-trace.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
 
 export type DiagnosticStage =
   | "bootstrap"
@@ -46,6 +47,7 @@ export const buildDiagnosticBundle = (
         throw new Error("INVALID_DROPPED_EVENTS");
       const serialized = JSON.stringify(bundle);
       if (
+        !developmentDiagnostics() &&
         /password|api[_-]?key|secret|bearer|jwt|cookie|token|otp|ssn|resident|data:image|data:text\/html/i.test(
           serialized,
         )

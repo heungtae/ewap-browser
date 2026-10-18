@@ -3,6 +3,7 @@ import { validateChatEvent } from "../contracts/chat-events.js";
 import { opaqueId } from "../security/canonical.js";
 import { redactForChat } from "../security/chat-redaction.js";
 import { fail } from "../security/validation.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
 
 export type PageScope = {
   document_epoch: string;
@@ -282,11 +283,7 @@ export class TabChatSessionStore {
     };
   }
 
-  /**
-   * Downloadable diagnostics retain lifecycle evidence only. Raw prompts,
-   * model output, action labels/values, origins, paths, and capability tokens
-   * must not leave the extension as support data.
-   */
+  /** Release exports retain metadata; development exports retain captured events. */
   public diagnosticSnapshot(tabId: number): unknown {
     const thread = this.threads.get(tabId);
     if (!thread)
@@ -298,7 +295,10 @@ export class TabChatSessionStore {
         {
           thread_id: thread.thread_id,
           tab_id: thread.tab_id,
-          events: thread.events.map(diagnosticEvent),
+          ...(developmentDiagnostics() ? { scope: clone(thread.scope) } : {}),
+          events: developmentDiagnostics()
+            ? clone(thread.events)
+            : thread.events.map(diagnosticEvent),
         },
       ],
     };

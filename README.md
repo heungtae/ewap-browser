@@ -23,6 +23,10 @@ node scripts/build-extension.mjs
 pnpm validate:package
 ```
 
+This creates a development build with unmasked diagnostic logs. Use
+`node scripts/build-extension.mjs --release` for masked release diagnostics;
+`pnpm build:release` also increments the extension version.
+
 1. Open `chrome://extensions` and enable **Developer mode**.
 2. Select **Load unpacked** and choose this repository's `dist-extension/` folder.
 3. Open the extension's **Settings**, configure your provider endpoint, model, and authentication, then save and test the connection.
@@ -31,7 +35,7 @@ pnpm validate:package
 <details>
 <summary>Creating a local ZIP and updating an installation</summary>
 
-Run `pnpm package:local` after building to create `dist/contextpilot-<version>.zip`. Extract the ZIP into a stable folder and load that folder as an unpacked extension. Close Chrome and back up the folder before replacing its contents for an update or rollback.
+Build with `node scripts/build-extension.mjs --release`, then run `pnpm package:local` to create `dist/contextpilot-<version>.zip`. Packaging rejects unmasked development builds. Extract the ZIP into a stable folder and load that folder as an unpacked extension. Close Chrome and back up the folder before replacing its contents for an update or rollback.
 
 See the [installation guide](docs/site/en/index.html#installation) for details. Local packaging does not publish to the Chrome Web Store.
 

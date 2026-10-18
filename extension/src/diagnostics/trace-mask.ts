@@ -1,8 +1,7 @@
-export type MaskReport = {
-  masked: boolean;
-  fields: Array<{ path: string; reason: string; count: number }>;
-  truncated: boolean;
-};
+import { developmentDiagnostics } from "./privacy-mode.js";
+import { rawTraceValue } from "./raw-trace.js";
+import type { MaskReport } from "./trace-value-types.js";
+export type { MaskReport } from "./trace-value-types.js";
 const knownSecrets = new Set<string>();
 const credentialKey =
   /(?:password|passwd|secret|credential|cookie|authorization|api[_-]?key|access[_-]?token|refresh[_-]?token|private[_-]?key)/i;
@@ -12,6 +11,7 @@ const privateKey =
 export const maskTraceValue = (
   input: unknown,
 ): { data: unknown; masking: MaskReport } => {
+  if (developmentDiagnostics()) return rawTraceValue(input);
   const masking: MaskReport = { masked: false, fields: [], truncated: false };
   const seen = new WeakSet<object>();
   const scanned = new WeakSet<object>();

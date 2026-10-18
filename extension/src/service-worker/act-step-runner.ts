@@ -31,6 +31,11 @@ import type {
   ProviderToolDefinition,
 } from "../providers/types.js";
 import { traceDecision } from "../diagnostics/method-trace.js";
+import {
+  inheritProviderCallTrace,
+  providerCallId,
+  traceProviderHandling,
+} from "../providers/provider-call-diagnostics.js";
 import { nextWorkflowStep } from "../contracts/workflow.js";
 import { fail, ContractError } from "../security/validation.js";
 import { genericActTools } from "./act-tools.js";
@@ -887,7 +892,10 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             rounds: loop.rounds,
           };
         }
-        response = { content: loop.content, tool_calls: loop.calls };
+        response = inheritProviderCallTrace(loop, {
+          content: loop.content,
+          tool_calls: loop.calls,
+        });
       }
       for (const message of messages.slice(readTranscriptStart)) {
         if (message.role === "assistant" || message.role === "tool")
@@ -945,12 +953,14 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
       }
       if (run.phase === "TERMINAL") return fail("POLICY_DENIED");
       traceDecision("act.provider.response", {
+        provider_call_id: providerCallId(response),
         request_id: session.requestContext?.requestId,
         tab_id: session.tabId,
         tool_count: response.tool_calls.length,
+        tool_names: response.tool_calls.map((call) => call.name),
         offered_tool_count: tools.length,
         offered_tools: tools.map((tool) => tool.function.name),
-        response_text: response.content,
+        response_char_count: response.content.length,
         result_kind:
           response.tool_calls.length === 0
             ? "ANSWER_ONLY_NO_PAGE_ACTION"
@@ -959,6 +969,15 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
           response.tool_calls.length === 0
             ? "ANSWER_COMPLETED_NOT_PAGE_MUTATION_VERIFIED"
             : "APPROVAL_AND_DISPATCH_REQUIRED",
+      });
+      traceProviderHandling(response, {
+        phase: "act_step",
+        outcome:
+          response.tool_calls.length === 0
+            ? "answer_review"
+            : "proposal_review",
+        tool_names: response.tool_calls.map((call) => call.name),
+        automatic_execution: false,
       });
       if (session.sourceReadOnly && response.tool_calls.length > 0)
         throw fail("POLICY_DENIED");
@@ -1204,6 +1223,11 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
             }
           }
           proposal = parseProposalCall(call);
+          traceProviderHandling(response, {
+            phase: "act_step",
+            outcome: "proposal_parsed",
+            proposal_tool: proposal.tool,
+          });
           break;
         } catch (error) {
           const recoverable =
@@ -1213,6 +1237,13 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
               error.code === "VALUE_BINDING_INVALID") &&
             session.harnessCapabilities !== undefined &&
             dependencies.coordinator.runs.byId(run.id)?.phase !== "TERMINAL";
+          traceProviderHandling(response, {
+            phase: "act_step",
+            outcome: "proposal_rejected",
+            code:
+              error instanceof ContractError ? error.code : "INVALID_ARGUMENT",
+            correction_turn_offered: recoverable && attempt < 1,
+          });
           if (!recoverable || attempt >= 1) throw error;
           pendingContractError = error;
           assertRequestActive(session.requestContext);
@@ -1382,15 +1413,22 @@ export const createActStepRunner = (dependencies: ActStepDependencies) => {
         active.snapshot.document_epoch,
         requestRevision,
       );
-      if (
-        !(await reviewPreparedTask(dependencies, session, {
-          tool: proposal.tool,
-          target_name: proposal.targetName,
-          ...("argument" in proposal ? { argument: proposal.argument } : {}),
-          plan_revision: session.plan?.revision,
-          approval_status: "not_granted",
-        }))
-      )
+      const reviewAccepted = await reviewPreparedTask(dependencies, session, {
+        tool: proposal.tool,
+        target_name: proposal.targetName,
+        ...("argument" in proposal ? { argument: proposal.argument } : {}),
+        plan_revision: session.plan?.revision,
+        approval_status: "not_granted",
+      });
+      traceProviderHandling(response, {
+        phase: "act_step",
+        outcome: reviewAccepted
+          ? "review_accepted_waiting_for_existing_approval"
+          : "review_blocked_further_work_required",
+        proposal_tool: proposal.tool,
+        automatic_execution: false,
+      });
+      if (!reviewAccepted)
         return fail(
           "PROVIDER_UNAVAILABLE",
           "prepared action requires further investigation",

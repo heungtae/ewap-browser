@@ -1,4 +1,5 @@
 import { createSnapshotPartReader } from "./snapshot-part-reader.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
 import { ariaBooleanState } from "./boolean-state.js";
 import { controlActions, controlSupportReason } from "./control-capability.js";
 import {
@@ -1670,6 +1671,13 @@ runtime?.onMessage.addListener((message, sender, sendResponse) => {
         },
       },
       page: {
+        ...(developmentDiagnostics()
+          ? {
+              url: location.href,
+              title: document.title,
+              referrer: document.referrer,
+            }
+          : {}),
         url_shape: {
           has_query: currentUrl.search.length > 0,
           has_fragment: currentUrl.hash.length > 0,

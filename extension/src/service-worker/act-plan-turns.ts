@@ -13,6 +13,7 @@ import type { ActStepDependencies } from "./act-step-dependencies.js";
 import type { ActSession } from "./act-session-types.js";
 import type { ActivePage } from "./page-context-runtime.js";
 import type { Run } from "../state/run-coordinator.js";
+import { traceProviderHandling } from "../providers/provider-call-diagnostics.js";
 type Response = { content: string; tool_calls: ProviderToolCall[] };
 export const runPlanSubmissionTurns = async (opts: {
   dependencies: ActStepDependencies;
@@ -85,13 +86,19 @@ export const runPlanSubmissionTurns = async (opts: {
       assertRequestActive(session.requestContext);
       continue;
     }
-    if (
-      !(await reviewPreparedTask(dependencies, session, {
-        plan: plan.input,
-        plan_revision: plan.revision,
-        approval_status: "not_granted",
-      }))
-    ) {
+    const reviewAccepted = await reviewPreparedTask(dependencies, session, {
+      plan: plan.input,
+      plan_revision: plan.revision,
+      approval_status: "not_granted",
+    });
+    traceProviderHandling(response, {
+      phase: "plan_submission",
+      outcome: reviewAccepted
+        ? "review_accepted_waiting_for_existing_approval"
+        : "review_blocked_further_work_required",
+      automatic_execution: false,
+    });
+    if (!reviewAccepted) {
       delete session.plan;
       return fail(
         "PROVIDER_UNAVAILABLE",

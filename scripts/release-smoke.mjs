@@ -1,6 +1,7 @@
 import { readFile, readdir, lstat } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
+import { assertReleaseDiagnostics } from "./diagnostics-release-policy.mjs";
 import "./validate-package.mjs";
 
 const manifest = JSON.parse(
@@ -9,7 +10,12 @@ const manifest = JSON.parse(
 const source = JSON.parse(
   await readFile(new URL("../extension/manifest.json", import.meta.url)),
 );
+const buildInfo = JSON.parse(
+  await readFile(new URL("../dist-extension/build-info.json", import.meta.url)),
+);
+assertReleaseDiagnostics(buildInfo, manifest.version);
 const required = [
+  "build-info.json",
   "js/service-worker.js",
   "js/content.js",
   "js/panel.js",

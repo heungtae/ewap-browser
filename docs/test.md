@@ -16,12 +16,16 @@ pnpm test:fixture
 pnpm test:e2e
 ```
 
-`pnpm build`와 `pnpm test`는 extension 버전을 증가시킨다.
+`pnpm build` produces development artifacts with unmasked diagnostic logs.
+`pnpm build:release` produces masked release artifacts. Both increment the
+extension version; `pnpm test` also increments it through the development build.
+`pnpm test:diagnostics-mode` checks both compiled privacy modes and release packaging.
+Use release artifacts for privacy assertions and release/package checks below.
 검증만 수행할 때는 아래 버전 보존 빌드를 사용한다.
 
 ```bash
 pnpm exec tsc -p tsconfig.build.json
-node scripts/build-extension.mjs
+node scripts/build-extension.mjs --release
 pnpm validate:package
 pnpm check:method-trace
 pnpm test:release
@@ -52,7 +56,7 @@ Chrome·live Provider·Platform 통합이나 실제 배포의 성공과 별도�
 
 ```bash
 test -n "${OPENROUTER_API_KEY:-}" || { echo 'OPENROUTER_API_KEY is required'; exit 1; }
-pnpm exec tsc -p tsconfig.build.json && node scripts/build-extension.mjs && node scripts/validate-package.mjs
+pnpm exec tsc -p tsconfig.build.json && node scripts/build-extension.mjs --release && node scripts/validate-package.mjs
 CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome \
 S16_LIVE_MODEL=nvidia/nemotron-3.5-lightning:free \
 S16_REPORT="/tmp/s16-live-nemotron-$(date +%Y%m%d-%H%M%S).json" \
@@ -253,7 +257,7 @@ native Chrome 권한 prompt 승인까지 자동화했다는 뜻은 아니다.
 
 ```bash
 pnpm exec tsc -p tsconfig.build.json
-node scripts/build-extension.mjs
+node scripts/build-extension.mjs --release
 node scripts/validate-package.mjs
 CHROME_FOR_TESTING_BIN=/path/to/chrome S20_REPORT_DIR=/tmp/s20-new-run pnpm test:chrome-s20-qualification
 ```
@@ -346,7 +350,7 @@ Live 독립 사례는 `S23_VARIANT=holdout`(데이터) 또는 `S23_VARIANT=ui S2
 버전 변경 없이 패키지를 만든 뒤 통제 Chrome 검증을 실행한다.
 
 ```bash
-pnpm exec tsc -p tsconfig.build.json && node scripts/build-extension.mjs && node scripts/validate-package.mjs
+pnpm exec tsc -p tsconfig.build.json && node scripts/build-extension.mjs --release && node scripts/validate-package.mjs
 CHROME_FOR_TESTING_BIN=/path/to/chrome S25_REPORT=/tmp/s25-chrome.json pnpm test:chrome-s25
 ```
 

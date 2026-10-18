@@ -2,6 +2,13 @@ import { build } from "esbuild";
 import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { methodTracePlugin } from "./method-trace-instrumentation.mjs";
 const methodInventory = [];
+const args = process.argv.slice(2);
+if (
+  args.some((arg) => !["--release", "--development"].includes(arg)) ||
+  args.length > 1
+)
+  throw new Error("Use --release or --development (default: development)");
+const diagnosticsMode = args.includes("--release") ? "release" : "development";
 const output = new URL("../dist-extension/", import.meta.url);
 await rm(output, { recursive: true, force: true });
 await mkdir(output, { recursive: true });
@@ -18,6 +25,9 @@ await build({
   bundle: true,
   format: "esm",
   target: "chrome106",
+  define: {
+    __CONTEXTPILOT_DIAGNOSTICS_MODE__: JSON.stringify(diagnosticsMode),
+  },
   outdir: new URL("./js/", output).pathname,
   sourcemap: false,
   minify: false,
@@ -34,6 +44,19 @@ await writeFile(
   ),
 );
 const manifest = JSON.parse(await readFile("extension/manifest.json", "utf8"));
+await writeFile(
+  new URL("build-info.json", output),
+  JSON.stringify(
+    {
+      schema_version: 1,
+      extension_version: manifest.version,
+      diagnostics_mode: diagnosticsMode,
+      diagnostics_masked: diagnosticsMode === "release",
+    },
+    null,
+    2,
+  ) + "\n",
+);
 manifest.background.service_worker = "js/service-worker.js";
 manifest.content_scripts[0].js = ["js/content.js"];
 manifest.side_panel.default_path = "sidepanel/index.html";
@@ -80,4 +103,6 @@ await cp(
   "extension/src/offscreen/index.html",
   new URL("offscreen/index.html", output),
 );
-console.log("extension artifact built at dist-extension");
+console.log(
+  `extension artifact built at dist-extension (${diagnosticsMode}; diagnostics masked=${diagnosticsMode === "release"})`,
+);

@@ -1,5 +1,6 @@
 import { getTraceState } from "./trace-recording.js";
 import { correlation } from "./trace-context.js";
+import { diagnosticsPrivacy } from "./privacy-mode.js";
 export const methodTraceSnapshot = (
   scope: "worker" | "panel" | "content" | "offscreen",
   requestId?: string,
@@ -15,6 +16,7 @@ export const methodTraceSnapshot = (
     sampledDropped,
   } = getTraceState();
   return {
+    ...diagnosticsPrivacy(),
     schema_version: 1,
     scope,
     level,

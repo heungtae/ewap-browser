@@ -11,10 +11,16 @@
 
 ```bash
 pnpm exec tsc -p tsconfig.build.json
-node scripts/build-extension.mjs
+node scripts/build-extension.mjs --release
 pnpm validate:package
 pnpm package:local
 ```
+
+For unmasked local development diagnostics, use `pnpm build` or a
+version-preserving `node scripts/build-extension.mjs --development` after
+TypeScript compilation, then load `dist-extension/` unpacked. Release ZIP
+packaging requires a masked `--release` build (`pnpm build:release` also bumps
+the version). The artifact's `build-info.json` records its diagnostic mode.
 
 1. 로컬 개발은 Chrome의 `chrome://extensions`에서 개발자 모드를 켜고
    **압축해제된 확장 프로그램을 로드합니다**로 `dist-extension/`을 선택한다.

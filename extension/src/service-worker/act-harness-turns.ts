@@ -1,4 +1,8 @@
 import { approvedVisionRead, visionReadMessages } from "./act-vision-read.js";
+import {
+  inheritProviderCallTrace,
+  traceProviderHandling,
+} from "../providers/provider-call-diagnostics.js";
 import { createComponentToolExecutor } from "./component-tools.js";
 import { componentToolSchemas } from "./component-tool-schemas.js";
 import {
@@ -410,14 +414,19 @@ export const runHarnessReadTurns = async (opts: {
             rounds,
             reads,
           });
-          return {
+          traceProviderHandling(response, {
+            phase: "harness_read_loop",
+            outcome: "forwarded_non_read_response",
+            tool_names: otherCalls.map((call) => call.name),
+          });
+          return inheritProviderCallTrace(response, {
             messages: opts.messages,
             calls: otherCalls.map((call) => call.source),
             content,
             rounds,
             reads,
             exhausted: false,
-          };
+          });
         }
         const readCost = (call: {
           name: string;
@@ -487,6 +496,12 @@ export const runHarnessReadTurns = async (opts: {
           }
         }
         opts.messages.push(...imageMessages);
+        traceProviderHandling(response, {
+          phase: "harness_read_loop",
+          outcome: "read_results_appended_to_transcript",
+          tool_names: readCalls.map((call) => call.name),
+          result_count: readCalls.length,
+        });
         traceDecision("page-act-harness.read_loop.round", {
           rounds,
           reads,
@@ -494,14 +509,14 @@ export const runHarnessReadTurns = async (opts: {
         if (otherCalls.length > 0) {
           // Mixed turn: reads are now grounded in the transcript; the
           // non-read calls return with them for the caller to rule on.
-          return {
+          return inheritProviderCallTrace(response, {
             messages: opts.messages,
             calls: otherCalls.map((call) => call.source),
             content,
             rounds,
             reads,
             exhausted: false,
-          };
+          });
         }
       }
     },

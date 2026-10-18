@@ -1,4 +1,5 @@
 import { traceDecision } from "../diagnostics/method-trace.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
 import { digestCanonical, opaqueId } from "../security/canonical.js";
 import { ContractError, fail } from "../security/validation.js";
 import { evaluateJev } from "./jev-client.js";
@@ -44,6 +45,16 @@ export const decide = async (
   }
   const started = Date.now();
   const decisionId = opaqueId();
+  traceDecision(`model.decision.requested:${decisionId}`, {
+    ...(developmentDiagnostics() ? { request: task } : {}),
+    decision_id: decisionId,
+    provider_id: binding.decision.plugin_id,
+    model: binding.decision.model,
+    phase: task.phase,
+    request_digest: fingerprint,
+    state_keys: Object.keys(task.state),
+    question_keys: Object.keys(task.questions),
+  });
   try {
     const response = await evaluateJev(
       transport,
@@ -56,7 +67,8 @@ export const decide = async (
     );
     bindings.check(binding);
     options.signal?.throwIfAborted();
-    traceDecision("model.decision.completed", {
+    traceDecision(`model.decision.responded:${decisionId}`, {
+      ...(developmentDiagnostics() ? { response } : {}),
       provider_role: "decision",
       phase: task.phase,
       template_version: 1,
@@ -65,6 +77,24 @@ export const decide = async (
       elapsed_ms: Date.now() - started,
       question_count: Object.keys(task.questions).length,
       usage: response.usage,
+      answers: Object.fromEntries(
+        Object.entries(response.answers).map(([key, answer]) => [
+          key,
+          answer.type === "choice"
+            ? {
+                type: answer.type,
+                choice: answer.choice,
+                confidence: answer.confidence,
+              }
+            : answer.type === "score"
+              ? {
+                  type: answer.type,
+                  score: answer.score,
+                  confidence: answer.confidence,
+                }
+              : { type: answer.type, noul: answer.noul },
+        ]),
+      ),
       calls: binding.decisions,
       settings_revision: binding.revision,
     });
@@ -74,6 +104,11 @@ export const decide = async (
       task.questions.evidence_sufficient &&
       (sufficiency?.type !== "noul" || sufficiency.noul < 0.9)
     ) {
+      traceDecision(`model.decision.handled:${decisionId}`, {
+        decision_id: decisionId,
+        outcome: "delegated_to_primary",
+        reason: "evidence_insufficient",
+      });
       options.onRole?.({
         provider_role: "primary",
         stage: "DELEGATING",
@@ -85,6 +120,11 @@ export const decide = async (
       task.questions.processor &&
       acceptedChoice(response, "processor", 0.8) !== "JEV_DECISION"
     ) {
+      traceDecision(`model.decision.handled:${decisionId}`, {
+        decision_id: decisionId,
+        outcome: "delegated_to_primary",
+        reason: "primary_processor_selected_or_uncertain",
+      });
       options.onRole?.({
         provider_role: "primary",
         stage: "DELEGATING",
@@ -92,6 +132,11 @@ export const decide = async (
       });
       return undefined;
     }
+    traceDecision(`model.decision.handled:${decisionId}`, {
+      decision_id: decisionId,
+      outcome: "decision_accepted",
+      phase: task.phase,
+    });
     return {
       source: "jev",
       phase: task.phase,
@@ -123,7 +168,7 @@ export const decide = async (
       error instanceof ContractError
         ? /^HTTP (\d{3})\b/.exec(error.detail ?? "")?.[1]
         : undefined;
-    traceDecision("model.decision.failed", {
+    traceDecision(`model.decision.failed:${decisionId}`, {
       provider_role: "decision",
       phase: task.phase,
       decision_id: decisionId,

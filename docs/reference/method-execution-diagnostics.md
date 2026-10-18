@@ -1,5 +1,28 @@
 # 메서드별 debug·trace 진단 기록
 
+## Build modes
+
+`pnpm build` produces a development extension with unmasked diagnostics.
+Captured target names, arguments, prompts, LLM/JEV request and response bodies,
+error details, configuration values and chat events are retained in local logs
+and diagnostic ZIPs. Logging still bounds size/depth and does not invoke
+getters or arbitrary `toJSON` methods.
+
+`pnpm build:release` produces a release extension with the redaction described
+below. The mode is fixed in every bundle at build time. Runtime settings and
+page messages cannot enable unmasked diagnostics in a release bundle.
+`build-info.json`, trace snapshots and ZIP manifests identify
+`diagnostics_mode` and `diagnostics_masked`. Release smoke checks and
+`pnpm package:local` reject development artifacts.
+
+For a version-preserving build, compile TypeScript and invoke
+`node scripts/build-extension.mjs --development` or `--release`. Omitting the
+flag selects development. `pnpm test:diagnostics-mode` verifies both compiled
+modes and the release packaging guard. Previously redacted records cannot be
+restored; capture a new request after reloading the development extension.
+
+## Trace collection
+
 [계측 대상 선택](../../scripts/method-trace-instrumentation.mjs)의 `isTraceSource`가
 허용하는 번들 모듈의 함수·메서드·constructor·getter·callback을 빌드 시 계측한다.
 메서드를 추가하면 동일한 계측이 자동 적용된다. 대상·제외 규칙은 코드에서 확인한다.
@@ -20,9 +43,9 @@
 binding으로 필터링한다. Panel/Content/Offscreen은 현재 extension document의
 기록이며 request와 직접 결속되지 않은 기록도 있으므로 realm·시간·parent call을 함께 읽는다.
 Content/Offscreen 조회는 같은 extension의 Worker sender만 허용하고,
-응답은 export에서 다시 검증·마스킹한다. 수집 불가 사유는 다른 realm의 수집을 막지 않는다.
+응답은 export에서 다시 검증하고 릴리스 빌드에서 마스킹한다. 수집 불가 사유는 다른 realm의 수집을 막지 않는다.
 
-민감 필드, 비밀번호·API key·인증 token·cookie·header·입력값·원문 collection
+릴리스 빌드에서는 민감 필드, 비밀번호·API key·인증 token·cookie·header·입력값·원문 collection
 records·실행용 ref/locator·source·이미지는 마스킹한다. 이동 원인 확인을 위한
 URL·origin·host·path·endpoint는 그대로 기록한다. URL 안의 자격증명은 계속 마스킹한다. 알려진 credential의
 다른 필드 재등장, JSON 안의 credential, bearer/JWT, email·일부 개인정보 형식도

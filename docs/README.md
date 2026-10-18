@@ -34,6 +34,12 @@ Options의 프로파일 관리 버튼으로 여는 별도 창에서 목록·상�
 [Provider의 script 분석과 동적 메서드 호출 S23 계획](sprints/s23-provider-page-method-execution.md)은
 구현 전 Planned 작업이다. 기존 Sprint와의 충돌·전환 조건과 선행 결정·검증 행렬을 함께 기록한다.
 
+[Web Codebase Agent migration architecture](architecture/web-codebase-agent-migration.md)
+and its [delivery plan](architecture/web-codebase-agent-migration-plan.md) define the
+proposed full internal migration based on the 2026-10-18 architecture reference,
+while preserving the current UI structure. Both are design-only; implementation
+and runtime qualification are pending.
+
 ## 문서 유지 기준
 
 구현 동작·도구 목록·TypeScript 계약을 설계서에 복제하지 않는다. 모듈이 이동하면

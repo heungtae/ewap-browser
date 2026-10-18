@@ -7,6 +7,10 @@ import type { ActivityStage } from "../contracts/chat-event-types.js";
 import { sha256 } from "../security/canonical.js";
 import { readDiagnostics, type DiagnosticsPage } from "./diagnostics-client.js";
 import { diagnosticZip } from "./zip.js";
+import {
+  developmentDiagnostics,
+  diagnosticsPrivacy,
+} from "../diagnostics/privacy-mode.js";
 type Reply = Record<string, unknown>;
 type PanelDiagnosticMessage = {
   timestamp_ms: number;
@@ -16,18 +20,25 @@ type PanelDiagnosticMessage = {
 };
 const diagnosticsReadme = (): string =>
   [
-    "ContextPilot diagnostics bundle (redacted)",
+    developmentDiagnostics()
+      ? "ContextPilot diagnostics bundle (development, unmasked)"
+      : "ContextPilot diagnostics bundle (redacted)",
     "",
-    "execution-trace.json includes lifecycle and method_trace Worker/Panel/Content debug/trace records, masked inputs/results, branches, caught errors and timing.",
-    "request.json contains mode, public state transitions and prompt length/digest.",
-    "llm-processing.json contains redacted provider configuration and stage timing.",
-    "llm-memory.json contains redacted event metadata, not message or action contents.",
-    "page-data.json contains page-shape metadata, not URLs, source, or scripts.",
+    "execution-trace.json includes lifecycle and method_trace records, inputs/results, branches, errors and timing.",
+    developmentDiagnostics()
+      ? "Development logs preserve captured request/response bodies, arguments, target names, errors and configuration values."
+      : "Release logs mask sensitive input/result fields.",
+    developmentDiagnostics()
+      ? "request.json includes the prompt; llm-processing.json includes Provider configuration; llm-memory.json includes captured chat events."
+      : "request.json contains prompt length/digest; llm-processing.json contains redacted Provider configuration; llm-memory.json contains event metadata.",
+    developmentDiagnostics()
+      ? "page-data.json includes page URL, title and referrer when available; page artifacts remain structural summaries."
+      : "page-data.json contains page-shape metadata, not URLs, source, or scripts.",
     "panel-failures.json records displayed panel codes/messages.",
     "",
     "A section marked unavailable or failed includes its collection code. Truncated means a bounded list was shortened.",
     "Reproduction template: page type; request mode; observed code; expected behavior; actual behavior; time range.",
-    "Sensitive fields and values are masked. Each method record includes masking.masked, fields/reasons/counts and truncated. Safe prompt/answer text and decision details are retained.",
+    "Each method record reports masking.masked and truncated. Bounds and inaccessible objects still apply in development mode.",
   ].join("\n");
 export const createDiagnosticsView = (options: {
   send(value: unknown): Promise<Reply>;
@@ -387,6 +398,7 @@ export const createDiagnosticsView = (options: {
         },
       ];
       const manifest = {
+        ...diagnosticsPrivacy(),
         schema_version: 1,
         extension_version: String(data.extension_version ?? options.version()),
         created_at_ms: data.collected_at_ms,

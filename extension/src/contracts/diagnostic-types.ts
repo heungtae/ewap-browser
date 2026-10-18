@@ -66,8 +66,8 @@ export type BundleSectionStatus =
   | "failed";
 
 /**
- * Content structural summary omits page/script source and titles. Navigation
- * URLs are available separately in execution method traces.
+ * Structural summary omits page/script source. Development diagnostics also
+ * include page URL/title/referrer; release exports retain only their shapes.
  */
 export type ContentDiagnosticsSummary = {
   schema_version: 1;
@@ -96,6 +96,9 @@ export type ContentDiagnosticsSummary = {
     };
   };
   page: {
+    url?: string;
+    title?: string;
+    referrer?: string;
     url_shape: {
       has_query: boolean;
       has_fragment: boolean;

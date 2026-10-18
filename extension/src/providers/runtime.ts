@@ -1,5 +1,6 @@
 import { invalidateProviderWrite } from "./provider-write-binding.js";
-import { fail, isPlainObject } from "../security/validation.js";
+import { ContractError, fail, isPlainObject } from "../security/validation.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
 import { ProviderSettings } from "../settings/provider-settings.js";
 import { parseProviderBody } from "./provider-body.js";
 import { parseChatResponse } from "./provider-response.js";
@@ -9,6 +10,14 @@ import { ModelBindings } from "./model-bindings.js";
 import { decide } from "./decision-coordinator.js";
 import type { DecisionTask, ModelRequestOptions } from "./jev-types.js";
 import { CoreProviderTransport } from "./transport.js";
+import {
+  createProviderCallTrace,
+  normalizedProviderRequest,
+  providerDiagnosticConfig,
+  traceProviderCallEvent,
+  traceProviderRequest,
+  traceProviderResponse,
+} from "./provider-call-diagnostics.js";
 import type {
   ProviderChatResponse,
   ProviderMessage,
@@ -79,38 +88,38 @@ export class ProviderRuntime {
     }
     const adapter = resolveOpenAiCompatible(config);
     let result: Awaited<ReturnType<CoreProviderTransport["send"]>> | undefined;
+    let phase = "transport";
+    const request = normalizedProviderRequest(
+      config,
+      input.messages,
+      input.tools,
+      binding?.mutationStopped ?? false,
+      options.onDelta !== undefined,
+    );
+    const callTrace = createProviderCallTrace(config, options.phase);
+    traceProviderRequest(callTrace, request);
     try {
       result = await this.transport.send(
         config,
         adapter,
-        {
-          wire_api: config.wire_api,
-          model: config.model,
-          messages: input.messages,
-          ...(input.tools
-            ? {
-                tools: binding?.mutationStopped
-                  ? input.tools.filter(
-                      (t) =>
-                        !t.function.name.startsWith("propose_") &&
-                        t.function.name !== "submit_plan",
-                    )
-                  : input.tools,
-              }
-            : {}),
-          stream: options.onDelta !== undefined,
-        },
+        request,
         controller.signal,
+        callTrace,
       );
+      phase = "response_body";
       const response = await parseProviderBody(
         result.body,
         binding?.decision ? undefined : options.onDelta,
         result.signal,
         options.onProgress,
       );
+      if (developmentDiagnostics())
+        traceProviderCallEvent(callTrace, "body_received", { response });
       if (binding) this.bindings.check(binding);
       options.signal?.throwIfAborted();
+      phase = "response_parse";
       const parsed = parseChatResponse(response);
+      traceProviderResponse(callTrace, parsed);
       if (
         binding?.mutationStopped &&
         parsed.tool_calls.some(
@@ -119,37 +128,28 @@ export class ProviderRuntime {
       )
         return fail("POLICY_DENIED");
       return parsed;
+    } catch (error) {
+      const code =
+        error instanceof ContractError ? error.code : "UNEXPECTED_ERROR";
+      traceProviderCallEvent(callTrace, "processing_failed", {
+        ...(developmentDiagnostics() ? { error } : {}),
+        failed_stage: phase,
+        code,
+      });
+      throw error;
     } finally {
       result?.release();
       for (const source of signals) source.removeEventListener("abort", abort);
     }
   }
 
-  /**
-   * Provider state that is safe to put in a diagnostics bundle.  The full
-   * configuration is intentionally never a diagnostic value: API keys,
-   * custom-header values, and endpoint URLs can all be credentials.
-   */
+  /** Release exports redact configuration; development exports keep captured values. */
   public async diagnostics(): Promise<Record<string, unknown>> {
     try {
       const config = await this.settings.active();
-      const publicConfig = {
-        plugin_id: config.plugin_id,
-        plugin_version: config.plugin_version,
-        wire_api: config.wire_api,
-        model: config.model,
-        api_key_header: config.api_key_header,
-        timeout_ms: config.timeout_ms,
-        enabled: config.enabled,
-        ...(config.private_network_opt_in === undefined
-          ? {}
-          : { private_network_opt_in: config.private_network_opt_in }),
-        has_api_key: config.api_key.length > 0,
-        custom_header_count: config.headers.length,
-      };
       return {
         configured: true,
-        config: publicConfig,
+        config: providerDiagnosticConfig(config),
       };
     } catch {
       return { configured: false };

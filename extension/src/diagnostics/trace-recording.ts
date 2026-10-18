@@ -1,4 +1,5 @@
 import { maskTraceValue } from "./trace-mask.js";
+import { developmentDiagnostics } from "./privacy-mode.js";
 import type { DiagnosticsLevel } from "../contracts/diagnostic-types.js";
 import { correlation, type MethodContext } from "./trace-context.js";
 export type RecordEntry = {
@@ -123,7 +124,12 @@ export const append = (
     const owner = correlation(context);
     const key = `${owner.request_id ?? "document"}:${method}:${event}`;
     sizes.set(entry, size);
-    if (size <= 32_000) {
+    const limit =
+      developmentDiagnostics() &&
+      /^(provider\.call\.|model\.decision\.)/.test(method)
+        ? 512_000
+        : 32_000;
+    if (size <= limit) {
       const previous = retained.get(key);
       if (previous) retainedBytes -= sizes.get(previous) ?? 0;
       retained.set(key, entry);

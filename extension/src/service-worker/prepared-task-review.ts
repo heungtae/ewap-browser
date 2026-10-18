@@ -2,6 +2,7 @@ import { actModelJudgment } from "./act-model-judgment.js";
 import { primaryAnswerReview } from "./primary-answer-review.js";
 import type { ActStepDependencies } from "./act-step-dependencies.js";
 import type { ActSession } from "./act-session-types.js";
+import { traceDecision } from "../diagnostics/method-trace.js";
 /** A prepared proposal remains unapproved regardless of either model's verdict. */
 export const reviewPreparedTask = async (
   dependencies: ActStepDependencies,
@@ -29,15 +30,49 @@ export const reviewPreparedTask = async (
       unknown: "Further investigation, explanation or clarification is needed.",
     },
   );
-  if (result?.verdict === "accept") return true;
-  if (result?.verdict === "further_work") return false;
+  if (result?.verdict === "accept" || result?.verdict === "further_work") {
+    traceDecision("act.prepared_task.review", {
+      phase: "result_acceptance",
+      reviewer_kind: result.judgment.source,
+      decision_id: result.judgment.decision_id,
+      verdict: result.verdict,
+      outcome:
+        result.verdict === "accept"
+          ? "accepted_for_existing_gates"
+          : "blocked_for_further_work",
+    });
+    return result.verdict === "accept";
+  }
   // A separate bounded review assignment leaves a suspended proposal's real tool call untouched.
-  return primaryAnswerReview(
-    dependencies.provider,
-    session.prompt,
-    JSON.stringify(prepared),
-    session.runId,
-    dependencies.publish,
-    context,
-  );
+  let accepted: boolean;
+  try {
+    accepted = await primaryAnswerReview(
+      dependencies.provider,
+      session.prompt,
+      JSON.stringify(prepared),
+      session.runId,
+      dependencies.publish,
+      context,
+    );
+  } catch (error) {
+    traceDecision("act.prepared_task.review", {
+      phase: "result_acceptance",
+      reviewer_kind: "primary_answer_review_fallback",
+      outcome: "review_failed",
+      code:
+        error instanceof Error && error.message.startsWith("PROVIDER_")
+          ? error.message.split(":", 1)[0]
+          : "REVIEW_ERROR",
+    });
+    throw error;
+  }
+  traceDecision("act.prepared_task.review", {
+    phase: "result_acceptance",
+    reviewer_kind: "primary_answer_review_fallback",
+    verdict: accepted ? "accept" : "further_work",
+    outcome: accepted
+      ? "accepted_for_existing_gates"
+      : "blocked_for_further_work",
+  });
+  return accepted;
 };

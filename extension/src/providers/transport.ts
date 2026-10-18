@@ -1,5 +1,10 @@
 import { readNativeJson } from "./native-json-body.js";
 import { ContractError, fail } from "../security/validation.js";
+import { developmentDiagnostics } from "../diagnostics/privacy-mode.js";
+import {
+  traceProviderCallEvent,
+  type ProviderCallTrace,
+} from "./provider-call-diagnostics.js";
 import { assertSafeRequestPlan } from "./openai-compatible.js";
 import {
   providerHeaders,
@@ -65,10 +70,11 @@ export class CoreProviderTransport {
     adapter: ProviderAdapter,
     request: NormalizedProviderRequest,
     signal?: AbortSignal,
+    callTrace?: ProviderCallTrace,
   ): Promise<TransportResult> {
     const plan = adapter.plan(request);
     assertSafeRequestPlan(plan);
-    return this.dispatch(config, plan, signal);
+    return this.dispatch(config, plan, signal, undefined, callTrace);
   }
 
   public async sendNative(
@@ -91,6 +97,7 @@ export class CoreProviderTransport {
     plan: { path: string; body: Record<string, unknown> },
     signal?: AbortSignal,
     contentType = /(application\/json|text\/event-stream)/i,
+    callTrace?: ProviderCallTrace,
   ): Promise<TransportResult> {
     if (!config.enabled) fail("PROVIDER_NOT_CONFIGURED");
     const base = validateProviderBaseUrl(
@@ -102,6 +109,26 @@ export class CoreProviderTransport {
       base,
     );
     const headers = providerHeaders(config);
+    const call = {
+      ...(callTrace ?? {
+        provider_call_id: crypto.randomUUID(),
+        provider_id: config.plugin_id,
+        model: config.model,
+        wire_api: config.wire_api,
+        phase: "unspecified",
+      }),
+      provider_id: config.plugin_id,
+      model: config.model,
+      wire_api: config.wire_api,
+      operation: plan.path,
+    };
+    traceProviderCallEvent(
+      call,
+      "dispatched",
+      developmentDiagnostics()
+        ? { endpoint: url.toString(), method: "POST", body: plan.body }
+        : {},
+    );
     const controller = new AbortController();
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
@@ -124,6 +151,9 @@ export class CoreProviderTransport {
         credentials: "omit",
         redirect: "error",
       });
+      traceProviderCallEvent(call, "response_received", {
+        http_status: response.status,
+      });
       await assertResponse(response, contentType);
       const result = {
         status: response.status,
@@ -134,6 +164,21 @@ export class CoreProviderTransport {
       transferred = true;
       return result;
     } catch (error) {
+      traceProviderCallEvent(call, "failed", {
+        ...(developmentDiagnostics() ? { error } : {}),
+        code:
+          error instanceof ContractError
+            ? error.code
+            : error instanceof Error && error.message.startsWith("PROVIDER_")
+              ? error.message.split(":", 1)[0]
+              : "PROVIDER_UNAVAILABLE",
+        reason:
+          error instanceof ContractError && error.detail
+            ? error.detail
+            : error instanceof Error && error.name === "AbortError"
+              ? "request timed out or was aborted"
+              : "network/CORS/PNA request failed",
+      });
       if (
         error instanceof ContractError ||
         (error instanceof Error && error.message.startsWith("PROVIDER_"))
