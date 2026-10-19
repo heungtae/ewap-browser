@@ -5,6 +5,37 @@ Architecture and source baseline: [migration architecture](web-codebase-agent-mi
 
 This plan covers the complete internal migration while preserving the current UI structure. It does not authorize implementation, change current support claims, or mark existing issues resolved. M00's source inspection has begun as part of this design; its runtime baselines and all later work remain unexecuted.
 
+## Detailed implementation Sprint mapping
+
+The [detailed refactoring design](web-codebase-agent-refactoring.md),
+[construction rules and limits](web-codebase-construction.md) and
+[runtime contracts](web-codebase-runtime-contracts.md) expand these migration
+slices into 12 **Planned** Sprints, 63 implementation cards and 72 verification
+scenarios. The baseline for that refinement is clean HEAD
+`8eb08e116cb90c8182d0ac449e6cabace68488cb`; the original inspection below remains
+historical. No implementation or runtime qualification is completed by this
+mapping.
+
+| Sprint                                                  | Slice | Hard prerequisites | Scope                                                    |
+| ------------------------------------------------------- | ----- | ------------------ | -------------------------------------------------------- |
+| [S26](../sprints/s26-migration-baseline.md)             | M00   | None               | Migration baseline and preservation inventory            |
+| [S27](../sprints/s27-jev-controller-contract.md)        | M01   | S26                | JEV controller protocol and feasibility                  |
+| [S28](../sprints/s28-workspace-backend-bridge.md)       | M02   | S26                | Workspace, preserved UI seam and local backend bridge    |
+| [S29](../sprints/s29-semantic-codebase-construction.md) | M03   | S28                | Semantic Codebase construction and repository            |
+| [S30](../sprints/s30-shared-tool-policy-runtime.md)     | M04   | S28, S29           | Shared Tool Registry, policy and browser execution       |
+| [S31](../sprints/s31-durable-task-recovery.md)          | M05   | S30                | Durable tasks, dispatch receipts and recovery            |
+| [S32](../sprints/s32-advanced-browser-collectors.md)    | M06   | S29, S30, S31      | Advanced collectors and data coverage                    |
+| [S33](../sprints/s33-jev-task-orchestration.md)         | M07   | S27, S29, S31      | JEV-owned Ask/Act and workflow orchestration             |
+| [S34](../sprints/s34-gpt-evidence-analysis.md)          | M08   | S33                | GPT evidence analysis and provider-role migration        |
+| [S35](../sprints/s35-mcp-external-adapters.md)          | M09   | S31, S33, S34      | MCP gateway and external integration adapters            |
+| [S36](../sprints/s36-migration-qualification.md)        | M10   | S32, S34, S35      | Data conversion, UI continuity and release qualification |
+| [S37](../sprints/s37-cutover-legacy-retirement.md)      | M11   | S36                | Production cutover and legacy runtime retirement         |
+
+S29 can build deterministic graph structure before S27 live qualification;
+JEV semantic annotations and S33 controller activation require S27. The
+dependencies above govern complete Sprint exit, including the full high-level
+MCP/analysis path in S35. Partial preparatory work does not satisfy those gates.
+
 ## 1. Delivery rules
 
 - Keep one accountable owner per responsibility: browser facts in the extension repository, durable tasks in the backend, execution policy in the shared runtime with browser enforcement, and presentation in the existing UI.
@@ -25,10 +56,15 @@ flowchart LR
   M02 --> M04[M04 Runtime and policy]
   M03 --> M06[M06 Advanced collectors]
   M04 --> M05[M05 Durable execution]
+  M03 --> M04
+  M04 --> M06
+  M05 --> M06
   M03 --> M07
   M05 --> M07
   M07 --> M08[M08 GPT analysis]
   M05 --> M09[M09 MCP and adapters]
+  M07 --> M09
+  M08 --> M09
   M06 --> M10[M10 Migration and qualification]
   M08 --> M10
   M09 --> M10

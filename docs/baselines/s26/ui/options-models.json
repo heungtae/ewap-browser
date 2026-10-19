@@ -1,0 +1,1558 @@
+{
+  "viewport": [
+    1440,
+    1100,
+    1
+  ],
+  "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+  "focus": "settings-content",
+  "elements": [
+    {
+      "tag": "A",
+      "id": "",
+      "role": null,
+      "class": "skip-link",
+      "disabled": false,
+      "rect": [
+        16,
+        -100,
+        134.9,
+        45.7
+      ]
+    },
+    {
+      "tag": "MAIN",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        152.5,
+        0,
+        1120,
+        2146.2
+      ]
+    },
+    {
+      "tag": "HEADER",
+      "id": "",
+      "role": null,
+      "class": "settings-header",
+      "disabled": false,
+      "rect": [
+        152.5,
+        36,
+        1120,
+        57.2
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "brand-mark",
+      "disabled": false,
+      "rect": [
+        152.5,
+        47.6,
+        34,
+        34
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        197.5,
+        36,
+        314.3,
+        57.2
+      ]
+    },
+    {
+      "tag": "H1",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        197.5,
+        36,
+        314.3,
+        35.6
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "settings-subtitle",
+      "disabled": false,
+      "rect": [
+        197.5,
+        74.6,
+        314.3,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "settings-layout",
+      "disabled": false,
+      "rect": [
+        152.5,
+        118.2,
+        1120,
+        1971.9
+      ]
+    },
+    {
+      "tag": "NAV",
+      "id": "",
+      "role": null,
+      "class": "settings-nav",
+      "disabled": false,
+      "rect": [
+        152.5,
+        118.2,
+        200,
+        200.8
+      ]
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        152.5,
+        118.2,
+        200,
+        45.7
+      ]
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        152.5,
+        169.9,
+        200,
+        45.7
+      ]
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        152.5,
+        221.6,
+        200,
+        45.7
+      ]
+    },
+    {
+      "tag": "A",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        152.5,
+        273.3,
+        200,
+        45.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "settings-content",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        380.5,
+        118.2,
+        892,
+        1971.9
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "models",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        380.5,
+        118.2,
+        892,
+        1971.9
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "provider-management",
+      "role": null,
+      "class": "settings-card",
+      "disabled": false,
+      "rect": [
+        380.5,
+        118.2,
+        892,
+        376
+      ]
+    },
+    {
+      "tag": "H2",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        139.2,
+        850,
+        24.8
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        169,
+        850,
+        37.2
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "provider-management-controls",
+      "disabled": false,
+      "rect": [
+        401.5,
+        224.2,
+        850,
+        249
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "provider-role-field",
+      "disabled": false,
+      "rect": [
+        401.5,
+        224.2,
+        850,
+        68.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        224.2,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row provider-active-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        248.8,
+        850,
+        44
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "provider-primary-select",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        248.8,
+        724.9,
+        44
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-activate",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        1134.4,
+        248.8,
+        117.1,
+        44
+      ]
+    },
+    {
+      "tag": "DETAILS",
+      "id": "",
+      "role": null,
+      "class": "advanced-settings",
+      "disabled": false,
+      "rect": [
+        401.5,
+        306.8,
+        850,
+        51.7
+      ]
+    },
+    {
+      "tag": "SUMMARY",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        321.8,
+        820,
+        21.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "settings-fields",
+      "disabled": false,
+      "rect": [
+        416.5,
+        357.5,
+        820,
+        213.4
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        357.5,
+        820,
+        65.6
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "provider-decision-select",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        382.1,
+        820,
+        41
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "checkbox-row",
+      "disabled": false,
+      "rect": [
+        416.5,
+        437.1,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "provider-jev-enabled",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        438.4,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "provider-role-field",
+      "disabled": false,
+      "rect": [
+        416.5,
+        469.7,
+        820,
+        68.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        469.7,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row provider-active-row",
+      "disabled": false,
+      "rect": [
+        416.5,
+        494.3,
+        820,
+        44
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "provider-jev-failure",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        494.3,
+        694.9,
+        44
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-routing-apply",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        1119.4,
+        494.3,
+        117.1,
+        44
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        552.3,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "OUTPUT",
+      "id": "provider-routing-status",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        382.5,
+        850,
+        20
+      ]
+    },
+    {
+      "tag": "HR",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        416.5,
+        850,
+        1
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        431.5,
+        850,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-import",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        431.5,
+        208.7,
+        41.7
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "primary-editor",
+      "role": null,
+      "class": "settings-card",
+      "disabled": false,
+      "rect": [
+        380.5,
+        512.2,
+        892,
+        909.8
+      ]
+    },
+    {
+      "tag": "H2",
+      "id": "primary-title",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        533.2,
+        850,
+        24.8
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        563,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "FORM",
+      "id": "provider-form",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        599.6,
+        850,
+        771.4
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        599.6,
+        850,
+        65.6
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        624.2,
+        850,
+        41
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        679.2,
+        850,
+        65.2
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        703.8,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "checkbox-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        758.4,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        759.7,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        791,
+        850,
+        65.2
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        815.5,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        870.1,
+        850,
+        65.2
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        894.7,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-models-load",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        949.3,
+        105.2,
+        37.7
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1001,
+        850,
+        65.6
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1025.6,
+        850,
+        41
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1080.6,
+        850,
+        89.8
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "secret-field",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1105.2,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "provider-api-key",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1105.2,
+        795.9,
+        40.6
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "api-key-toggle",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        1205.4,
+        1105.2,
+        46.1,
+        40.6
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "api-key-state",
+      "role": null,
+      "class": "field-help",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1151.8,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "DETAILS",
+      "id": "",
+      "role": null,
+      "class": "advanced-settings",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1184.4,
+        850,
+        51.7
+      ]
+    },
+    {
+      "tag": "SUMMARY",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1199.4,
+        820,
+        21.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "settings-fields",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1235.1,
+        820,
+        341
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1235.1,
+        820,
+        65.6
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1259.7,
+        820,
+        41
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1314.7,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "headers-field",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1347.3,
+        820,
+        140.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "headers-heading",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1347.3,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1347.3,
+        83,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "provider-headers",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1373.9,
+        820,
+        43.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "header-row",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1373.9,
+        820,
+        43.7
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1373.9,
+        293.5,
+        43.7
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        718,
+        1373.9,
+        410.9,
+        43.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "header-value-toggle",
+      "disabled": false,
+      "rect": [
+        1137,
+        1377.9,
+        45.8,
+        35.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "header-remove",
+      "disabled": false,
+      "rect": [
+        1190.7,
+        1377.9,
+        45.8,
+        35.7
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1425.5,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "add-header",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1452.1,
+        111.9,
+        35.7
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "checkbox-row",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1501.8,
+        820,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1503.1,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-host-access",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        416.5,
+        1534.4,
+        259.4,
+        41.7
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1250.1,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1282.7,
+        850,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1282.7,
+        121.2,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-test",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        530.7,
+        1282.7,
+        100.3,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-export",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        639,
+        1282.7,
+        147,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "provider-remove-delete",
+      "role": null,
+      "class": "danger-button",
+      "disabled": false,
+      "rect": [
+        794,
+        1282.7,
+        121.2,
+        41.7
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "checkbox-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1338.4,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "provider-test-messages",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1339.7,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": "status",
+      "class": "form-save-state",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1371,
+        850,
+        0
+      ]
+    },
+    {
+      "tag": "OUTPUT",
+      "id": "settings-status",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1381,
+        850,
+        20
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "decision-editor",
+      "role": null,
+      "class": "settings-card",
+      "disabled": false,
+      "rect": [
+        380.5,
+        1440,
+        892,
+        650.2
+      ]
+    },
+    {
+      "tag": "H2",
+      "id": "decision-title",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1461,
+        850,
+        24.8
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1490.8,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "FORM",
+      "id": "decision-provider-form",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1527.3,
+        850,
+        541.8
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1527.3,
+        850,
+        65.6
+      ]
+    },
+    {
+      "tag": "SELECT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": true,
+      "rect": [
+        401.5,
+        1551.9,
+        850,
+        41
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1606.9,
+        850,
+        65.2
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "decision-provider-id",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1631.5,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1686.1,
+        850,
+        65.2
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "decision-provider-url",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1710.7,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1765.3,
+        850,
+        65.2
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "decision-provider-model",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1789.9,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1844.5,
+        850,
+        89.8
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "secret-field",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1869.1,
+        850,
+        40.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "decision-provider-key",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1869.1,
+        795.9,
+        40.6
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "decision-provider-key-toggle",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        1205.4,
+        1869.1,
+        46.1,
+        40.6
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "decision-provider-key-state",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1915.7,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "checkbox-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1948.3,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "decision-provider-enabled",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1949.6,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        1980.9,
+        850,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row",
+      "disabled": false,
+      "rect": [
+        401.5,
+        2013.5,
+        850,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        401.5,
+        2013.5,
+        150.9,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "decision-provider-test",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        560.4,
+        2013.5,
+        100.3,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "decision-provider-export",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        668.7,
+        2013.5,
+        147,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "decision-provider-remove-delete",
+      "role": null,
+      "class": "danger-button",
+      "disabled": true,
+      "rect": [
+        823.7,
+        2013.5,
+        121.2,
+        41.7
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": "status",
+      "class": "form-save-state",
+      "disabled": false,
+      "rect": [
+        401.5,
+        2069.2,
+        850,
+        0
+      ]
+    }
+  ]
+}

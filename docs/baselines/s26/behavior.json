@@ -1,0 +1,651 @@
+{
+  "schema_version": 1,
+  "scope": "Existing public-boundary deterministic fixtures; no live provider claim",
+  "focused": {
+    "result": "PASS",
+    "passed": 98,
+    "failed": 0,
+    "cases": [
+      {
+        "source": "extension/tests/unit/actions/local-session-binding.test.ts",
+        "case": "local fixture session binding given_cross_epoch_binding_when_verifying_then_denied",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/mutation-coordinator.test.ts",
+        "case": "mutation coordinator given_text_proposal_when_value_is_submitted_then_slot_is_consumed_only_on_execution",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/mutation-coordinator.test.ts",
+        "case": "mutation coordinator given_r2_proposal_when_confirmation_is_reused_then_it_is_denied",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/mutation-coordinator.test.ts",
+        "case": "mutation coordinator given_stale_target_when_proposed_then_it_is_denied_before_slot_creation",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/mutation-coordinator.test.ts",
+        "case": "mutation coordinator preserves_a_terminal_navigation_failure_code",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/state.test.ts",
+        "case": "one-time action state given_submitted_slot_when_submitted_twice_then_denied",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/state.test.ts",
+        "case": "one-time action state given_cross_tab_confirmation_when_consuming_then_denied",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/state.test.ts",
+        "case": "one-time action state given_cancelled_run_when_reusing_value_or_confirmation_then_denied",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/actions/state.test.ts",
+        "case": "one-time action state given_dispatched_navigation_when_verifying_then_marks_the_run_without_authorizing_another_action",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/recovery.test.ts",
+        "case": "learned repair and storage recovery returns original failure, isolates the consumed recipe and upgrades only after alternate success",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/recovery.test.ts",
+        "case": "learned repair and storage recovery a second failure, initial failure before selection, or unknown mutation blocks repair",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/recovery.test.ts",
+        "case": "learned repair and storage recovery auto-update off allows request-local fallback while retaining the quarantined prior recipe",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/recovery.test.ts",
+        "case": "learned repair and storage recovery does not replace a disabled page with a new enabled profile",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/recovery.test.ts",
+        "case": "learned repair and storage recovery recovers committed records on restart, rejects corrupt records and supports missing legacy commands",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/recovery.test.ts",
+        "case": "learned repair and storage recovery does not preserve command identity when an effect changes",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions defaults on, learns once, persists no URL/value/evidence identifiers",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions does not resurrect after delete",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions does not resurrect after clear",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions does not resurrect after update",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions does not resurrect after rediscover",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions off retains records and rejects in-flight learning; on preserves settings",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions expires from success, separates scope/context/structure, never extends TTL on lookup",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions serializes competing tab commits",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions isolates consumed recipe failure, atomically repairs its linked command and retains history",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions does not update disabled auto-update recipes or accept raw fields",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/learned-profile/store.test.ts",
+        "case": "local learned profile transactions enforces five recipes per page",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/profile/persistent-profile-replay.test.ts",
+        "case": "persistent Profile replay retains the high-water mark after a new store is constructed",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/profile/persistent-profile-replay.test.ts",
+        "case": "persistent Profile replay rejects damaged state and failed writes",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/profile/persistent-profile-replay.test.ts",
+        "case": "persistent Profile replay serializes concurrent version advances",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing configured failure uses primary policy before dispatch and preserves first failure",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing configured failure uses stop policy before dispatch and preserves first failure",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing after dispatch even stop permits only primary read/judgment recovery and never mutation proposals",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing permission rejection and cancellation never trigger failure fallback",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing freezes primary config across tool subcontrollers and ignores unrelated edits",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing selected edits cancel waiting and live model work, with late results discarded",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing adding Jev affects only the next request, with primary streaming preserved in the bound single request",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-routing.test.ts",
+        "case": "S25 request-bound routing rejects repeated unchanged state and caps decisions without resetting counters",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration migrates v1 without losing IDs, legacy identity, credentials or headers and starts single",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration missing optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration unselected optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration endpoint optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration model optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration key optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration invalid optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration disabled optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration null_config optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration missing_config optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration extra_record optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration off optional Jev preserves primary for both failure policies",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration never inherits another kind or destination's secret",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration rejects decision-as-primary and dual referenced deletion; requires disable first",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration serializes concurrent writes and rejects stale form edits",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/providers/s25-settings.test.ts",
+        "case": "S25 provider roles and migration exports secret-free v2 without routing activation and accepts legacy v1",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/settings/provider-settings.test.ts",
+        "case": "provider settings given_saved_secret_when_reading_or_exporting_then_values_are_redacted",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/settings/provider-settings.test.ts",
+        "case": "provider settings given_remove_without_secret_deletion_then_provider_is_only_disabled",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-goal-observation.test.ts",
+        "case": "goal evidence freshness R02 keeps a complete result region valid when unrelated background text changes",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-goal-observation.test.ts",
+        "case": "goal evidence freshness R03 invalidates changed prices, missing regions, duplicates and incomplete projections",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-goal-observation.test.ts",
+        "case": "goal evidence freshness R06 tolerates reference churn only for reads while retaining semantic relationships",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-goal-observation.test.ts",
+        "case": "goal evidence freshness R02 uses supplied scoped evidence during actual goal reporting without retrying unrelated drift",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion-recovery.test.ts",
+        "case": "Provider completion recovery and presentation restores completed display alongside local UNKNOWN evidence",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion-recovery.test.ts",
+        "case": "Provider completion recovery and presentation restores completed display alongside local FAILED evidence",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion does not interpret ordinary model prose as structured completion for UNKNOWN",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion does not interpret ordinary model prose as structured completion for FAILED",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion accepts completed while retaining local UNKNOWN action history and incomplete action counts",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion accepts completed while retaining local FAILED action history and incomplete action counts",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion accepts the reported pricing URL transition with evidence refs",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion rereads stale completed reports even without a navigation binding",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion rejects reports for an observation the provider was not given",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion preserves UNKNOWN evidence when the provider reports unknown",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+        "case": "ISS-20261011-004 provider decides final goal completion preserves FAILED evidence when the provider reports unknown",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/ask-act-intent-router.test.ts",
+        "case": "Ask/Act intent router accepts only a closed one-field route object",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/ask-act-intent-router.test.ts",
+        "case": "Ask/Act intent router withholds action route when the provider returns a tool call",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/ask-act-intent-router.test.ts",
+        "case": "Ask/Act intent router does not disclose page data to the intent classifier",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/ask-act-intent-router.test.ts",
+        "case": "Ask/Act intent router returns a malformed classification for one closed-contract correction",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/ask-act-intent-router.test.ts",
+        "case": "Ask/Act intent router stays read-only after repeated malformed classifier output",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/ask-act-intent-router.test.ts",
+        "case": "Ask/Act intent router does not accept a correction arriving after Stop",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator reads a static object in the content script and marks an untruncated result complete",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator never claims complete when the content cap truncates a static object",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator does not claim complete for a static table with missing advertised rows",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator does not claim complete for a static list with missing advertised rows",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator collects a virtual grid through the content-owned scroll lifecycle",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator does_not_claim_complete_for_a_virtual grid_without_stable_identity",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator stops a virtual read when the bound page scope changes",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+        "case": "CollectionReadOrchestrator keeps generic SVG and canvas reads viewport-only",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/provider-call-correlation.test.ts",
+        "case": "ISS-20261018-003 provider call correlation keeps the final proposal response linked through the harness and Act projection",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/provider-call-correlation.test.ts",
+        "case": "ISS-20261018-003 provider call correlation keeps the final answer response linked through the harness and Act projection",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/provider-call-correlation.test.ts",
+        "case": "ISS-20261018-003 provider call correlation keeps the final mixed response linked through the harness and Act projection",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/provider-call-correlation.test.ts",
+        "case": "ISS-20261018-003 provider call correlation does not invent a provider ID for an unbound response",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/request-recovery.test.ts",
+        "case": "request recovery and cancellation restores an interrupted request without its prompt and never reruns it",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/request-recovery.test.ts",
+        "case": "request recovery and cancellation retains UNKNOWN after dispatch cancellation and rejects late results",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/request-recovery.test.ts",
+        "case": "request recovery and cancellation keeps approval pending and pauses the automatic budget",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/request-recovery.test.ts",
+        "case": "request recovery and cancellation resumes a pending analysis only for a displayed candidate and same owner",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/request-recovery.test.ts",
+        "case": "request recovery and cancellation denies other panel instances and document epochs",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/request-recovery.test.ts",
+        "case": "request recovery and cancellation does not dispatch when the marker cannot be persisted",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/workflow-catalog.test.ts",
+        "case": "saved workflow catalog keeps only declarative metadata and matches a current page fingerprint",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/workflow-catalog.test.ts",
+        "case": "saved workflow catalog marks a record unavailable when the semantic page structure changes",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/workflow-catalog.test.ts",
+        "case": "saved workflow catalog rejects raw values and unknown persisted fields",
+        "status": "passed"
+      },
+      {
+        "source": "extension/tests/unit/service-worker/workflow-catalog.test.ts",
+        "case": "saved workflow catalog requires exact path segments and complete, valid comparison inputs",
+        "status": "passed"
+      }
+    ]
+  },
+  "full_unit": {
+    "result": "PASS",
+    "files": 202,
+    "passed": 993
+  },
+  "fixture": {
+    "passed": 1
+  },
+  "e2e": {
+    "passed": 1
+  },
+  "storage_characterization": {
+    "passed": 3,
+    "source": "extension/tests/unit/migration/s26-storage-baseline.test.ts"
+  },
+  "regression_ownership": [
+    {
+      "boundary": "no-op/stale/authority",
+      "owner": "RF08/RF11 S30",
+      "suite": "extension/tests/unit/actions",
+      "issues": [
+        "ISS-20261011-002",
+        "ISS-20261011-003"
+      ]
+    },
+    {
+      "boundary": "verified action vs goal unknown/navigation",
+      "owner": "RF06 S30/S31/S33",
+      "suite": "extension/tests/unit/service-worker/act-provider-completion.test.ts",
+      "issues": [
+        "ISS-20261011-001",
+        "ISS-20260916-001",
+        "ISS-20261012-004"
+      ]
+    },
+    {
+      "boundary": "collection partial coverage and cancellation",
+      "owner": "RF12 S29/S32",
+      "suite": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+      "issues": [
+        "ISS-20261012-005",
+        "ISS-20261012-006"
+      ]
+    },
+    {
+      "boundary": "provider fallback and egress",
+      "owner": "RF16/RF17 S27/S34",
+      "suite": "extension/tests/unit/providers/s25-routing.test.ts",
+      "issues": [
+        "ISS-20261012-002"
+      ]
+    },
+    {
+      "boundary": "window/chat binding",
+      "owner": "RF23/RF25 S28/S31",
+      "suite": "extension/tests/unit/service-worker/panel-port-lifecycle.test.ts",
+      "issues": [
+        "ISS-20261014-001"
+      ]
+    },
+    {
+      "boundary": "provider trace correlation",
+      "owner": "RF27 S28/S31/S36",
+      "suite": "extension/tests/unit/service-worker/provider-call-correlation.test.ts",
+      "issues": [
+        "ISS-20261018-003",
+        "ISS-20261018-004"
+      ]
+    }
+  ],
+  "first_failures": [
+    {
+      "stage": "environment",
+      "reason": "Git child process and localhost bind EPERM in sandbox; authorized external execution succeeded"
+    },
+    {
+      "stage": "package manager",
+      "reason": "pnpm registry signature verification unavailable in restricted network; authorized retry succeeded"
+    },
+    {
+      "stage": "UI-driver",
+      "reason": "Profile manager popup followed by extension CDP nonresponse; test processes terminated. Cause unproven; direct manager capture recovered; window interaction qualification separately retained."
+    },
+    {
+      "stage": "UI-driver",
+      "reason": "LEARNED_PROFILE_MANAGE sent by Panel was POLICY_DENIED as designed; changed driver sender to Settings, production unchanged"
+    },
+    {
+      "stage": "UI-driver",
+      "reason": "S5_PERMISSION_BADGE_MISMATCH after adding asynchronous capture observer; removed observer and restored original S5 helper byte-for-byte. Dedicated S26 presentation seam avoids altering original assertions."
+    },
+    {
+      "stage": "UI-driver",
+      "reason": "S26_EVENT_SEAM_READY timeout: Page.enable missing; driver initialized persistent CDP session"
+    },
+    {
+      "stage": "UI-driver",
+      "reason": "Intermediate Stop label read after mock CANCEL immediately settled. Fixture now holds cancel reply for a stable stopping-state capture."
+    },
+    {
+      "stage": "baseline-source-size",
+      "reason": "Existing oversized files remain unchanged; see source-size.json"
+    },
+    {
+      "stage": "format",
+      "reason": "New panel capture helper needed formatting; formatted before final lint"
+    },
+    {
+      "stage": "diagnostics-fixture",
+      "reason": "Legacy ZIP test expects masking; first development-build run contains fixture secret in execution-trace.json by the explicit unmasked development mode. Release-mode verification recorded separately; no raw ZIP retained."
+    },
+    {
+      "stage": "release-diagnostics-fixture",
+      "reason": "Release masks the synthetic secret, but execution-trace.json retains fixture origin; endpoint assertion fails. Original assertion preserved, RF27 regression ownership recorded."
+    }
+  ],
+  "scope_limits": [
+    "No model-pair qualification",
+    "No real MCP continuation",
+    "No OS native-host installation",
+    "No release/deployment",
+    "No user data converted",
+    "Holdout definitions are frozen, not executed S36 release measurements"
+  ],
+  "controlled_chrome": {
+    "S26": {
+      "result": "PASS",
+      "captures": 26,
+      "report": "docs/baselines/s26/ui/report.json"
+    },
+    "S25": {
+      "result": "PASS",
+      "checks": 8,
+      "dispatches": 1,
+      "scope": "local HTTPS fixture providers"
+    },
+    "S24": {
+      "result": "PASS",
+      "scope": "profile popup identity/reuse, manager pagination/editor/toggle and chat restoration/command continuation; existing fixture assertions"
+    },
+    "diagnostics_zip": {
+      "development": "BASELINE_FAILURE: expected masked secret is intentionally visible in development",
+      "release": "BASELINE_FAILURE: fixture origin remains in execution-trace.json",
+      "owner": "RF27 S28/S31/S36",
+      "existing_issues": [
+        "ISS-20261018-004"
+      ],
+      "production_fix": "Not performed; S26 characterizes current baseline only"
+    }
+  }
+}

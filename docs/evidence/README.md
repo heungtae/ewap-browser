@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S26 migration baseline](s26-migration-baseline-2026-10-19.md): exact RF/file inventory, 26 UI captures, storage/consumer catalog and frozen qualification; 993 unit checks and controlled Chrome, with source-size and diagnostics ZIP baseline failures preserved.
+
 [Development diagnostics](development-diagnostics-2026-10-18.md): unmasked development and masked release modes, 990 unit checks, two fixture/E2E checks, compiled policy and release packaging guard; user 0.1.117 export confirms raw values and correlated handling, with a separate prepared-action review failure.
 
 [Provider call correlation](provider-call-correlation-2026-10-18.md): 78 unit checks, local build 0.1.116 and user runtime diagnostics confirm request/response/handling IDs; the separate application review failure remains.

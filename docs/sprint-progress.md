@@ -4,6 +4,37 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S26 — 2026-10-19 baseline implementation
+
+**Completed for characterization; known baseline failures retained.**
+The [S26 evidence](evidence/s26-migration-baseline-2026-10-19.md) and
+[per-file preservation inventory](baselines/s26/README.md) record C1–C5/R01–R06,
+26 controlled UI captures, storage/consumer ownership and frozen qualification.
+Full unit 993/993, fixture/E2E 1/1 each, storage 3/3, type/lint/module boundaries,
+S24 management/window and S25 Ask/Act checks passed. Existing source-size and
+release diagnostics ZIP origin-check failures remain explicit. No production
+runtime or design was changed; S27–S37 remain Planned and live/MCP/OS/release
+qualification is not established.
+
+## Web Codebase Agent S26-S37 — 2026-10-18 design
+
+**Planned — implementation not started.** Created 12 Sprints with 63 implementation
+cards and 72 verification scenarios from the migration architecture.
+[Sprint index](sprints/README.md#web-codebase-agent-migration-s26-s37).
+
+The [detailed refactoring design](architecture/web-codebase-agent-refactoring.md)
+maps current modules to target owners and retirement gates.
+[Codebase construction](architecture/web-codebase-construction.md) specifies
+generation rules, provenance, scope, resource limits and incremental updates.
+[Runtime contracts](architecture/web-codebase-runtime-contracts.md) specify
+bridge/role/tool/approval/task/data-migration boundaries.
+
+UI structure is preserved. No source, tests, runtime configuration, dependency,
+build or generated artifact changes are part of this design delivery. No Chrome,
+provider, MCP, installer or application test was run. Implementation starts with
+[S26 baseline and inventory](sprints/s26-migration-baseline.md), followed by the
+documented dependency gates; current S0–S25 history is preserved below.
+
 ## Browser Agent S25 — 2026-10-14 구현
 
 **Browser-local 구현 제공, 실제 모델 쌍 qualification 미완료.**

@@ -40,6 +40,14 @@ proposed full internal migration based on the 2026-10-18 architecture reference,
 while preserving the current UI structure. Both are design-only; implementation
 and runtime qualification are pending.
 
+Implementation planning is expanded in the
+[detailed refactoring design](architecture/web-codebase-agent-refactoring.md),
+[Codebase construction specification](architecture/web-codebase-construction.md),
+and [runtime contracts](architecture/web-codebase-runtime-contracts.md).
+[S26–S37](sprints/README.md#web-codebase-agent-migration-s26-s37) contain the
+Planned implementation cards, dependencies, verification scenarios and rollback
+conditions. Resource limits are proposed target defaults, not current behavior.
+
 ## 문서 유지 기준
 
 구현 동작·도구 목록·TypeScript 계약을 설계서에 복제하지 않는다. 모듈이 이동하면

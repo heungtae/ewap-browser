@@ -1,0 +1,325 @@
+{
+  "result": "PASS",
+  "scope": "controlled Linux Chrome presentation only; synthetic events do not establish dispatch or live model success",
+  "chrome": "Chrome/147.0.7727.15",
+  "checks": [
+    "navigation, fallback hash, current page semantics, collapsed advanced controls, custom approval controls and dirty/save feedback",
+    "profile manager catalog available; popup-window characterization first failure retained separately",
+    "workflow mutation failure visible, toggle rolls back, controls recover, cancelled delete sends no mutation, failed list can retry",
+    "review/value clearing/confirmation/consent/Stop/dialog focus and Escape assertions"
+  ],
+  "captures": [
+    {
+      "name": "panel-idle",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "434f0a10fe350e5b14d7805120d14c14a633ed8b8e0fffa9691562d057bf9f69",
+      "structure_sha256": "f16523ced14bcd7106796d6e4d56b5636bef6d86b8d55bcb7057e33de04c2bc9",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "options-agent",
+      "viewport": [
+        1440,
+        1100,
+        1
+      ],
+      "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+      "png_sha256": "8144a1b4d72cedecec06edb804e76b2bbca3540ead54020f04a184a212d6d72d",
+      "structure_sha256": "bcacf29d7e29e562cf7d0e057f01ecc7e36ea12080f702e20dc44a1a941a201b",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "options-models",
+      "viewport": [
+        1440,
+        1100,
+        1
+      ],
+      "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+      "png_sha256": "7eabdf3423a7efd7a57e5b9438f722e698407a16260e15560ed2493620a72fcb",
+      "structure_sha256": "4212956a6297fcb45f469360bb35ed021612f819acf5f48c4bbd7c5f3ea670de",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "options-automation",
+      "viewport": [
+        1440,
+        1100,
+        1
+      ],
+      "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+      "png_sha256": "8986e5611e9916b7e5685243559ea539cc12dc08dda3857f30e1601fbc84f2f1",
+      "structure_sha256": "de05a04477974bf4ed1c825fb5695e455c0f9a78044dad98839d1d6b540154aa",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "options-enterprise",
+      "viewport": [
+        1440,
+        1100,
+        1
+      ],
+      "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+      "png_sha256": "95c4a671f6bd84fd4ec37a2c1a0480b0da0c3b78a956b8127bf274dcbd66e6a4",
+      "structure_sha256": "6401a2a54e13bd9f098e0836ad70c4b94ff25b1f797448a420e7e53dcc4df5fd",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "workflow-catalog",
+      "viewport": [
+        1440,
+        1100,
+        1
+      ],
+      "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+      "png_sha256": "8da0d1aea6ddff1ee720a6bf84baf75d996f2e39dfc22789655d51ca2b0bff70",
+      "structure_sha256": "37fc0fba3d3aafe6e1fb49f902f9f6687ba7e1f854171a1223216c871f7d2056",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "profile-manager",
+      "viewport": [
+        1100,
+        800,
+        1
+      ],
+      "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+      "png_sha256": "6f46a861c21aa62cf7fa8bf5dae5971559ee47ef79aff5d4702b4313f0e2ab4f",
+      "structure_sha256": "abb4cc3e8493581792e762bf8b10f4192c2e24593d3afb90d57671ebfd07533b",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-action-review",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "5f5e0c9b5bdb0c2c3809cabc66065b2adb472e2d141e54e2029e2cc9d9ce9d18",
+      "structure_sha256": "55030b7e5c460e4b99d68f5edd3a55e61af1792eee345514b9fe32232a157ae6",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-session-review",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "dfe116877dab600618217f288e66cbb9a9807afa2172e1ff81787c968fbfdac4",
+      "structure_sha256": "bec75b5e0a77c0d2748e2f3e5401af6f83cd1bba3677b16d69da1e2c8a4eac0b",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-permission",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "9ca79a802bda7865ceae498415c2596cf0582c80dd55b5c9d881da6fc2d1b980",
+      "structure_sha256": "4b21ce79855f6091ede7bd0dd847efcc3e86ce48a3411fc1fdd31869bce2ba1e",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-value",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "2470ba5305b5c65c12d7ede0cdb9a0100c96d7c5454d2eb7aba8edf52680adda",
+      "structure_sha256": "1bae8089fad7b7a742eb83b17f45fde4e56da3d2557bfbd346d6bf7e2885c480",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-confirmation",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "83c85e3de511f25c354edb01bb8988c3ad7da90eb0159368ceda1f41a52430ea",
+      "structure_sha256": "1e21625108999f552d966a23bbbef8614a582d8ba88045c181e0b39ebfa86736",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-option-value",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "57822fc3ed1895fee33d41823ef679904dd88140be9511f98cb9d2a556a00212",
+      "structure_sha256": "5a2829489d13babd4e53506441b2a0a4ab2f13d99957a3fbd9f7f73f43fd4fee",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-consent-source",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "d767bca7f39e3c25e25dc7b956112061d7489ac99101aad04f119ac148d9ab6a",
+      "structure_sha256": "ce4bb455b1bc57b443fcdc7aa0772d95269be0aa4869a87c1eff02bfc2d2fb53",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-consent-component-scroll",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "f782f5c912a0a1089150d476c50339791c660828b80686efcd4208ed0ea043cd",
+      "structure_sha256": "198a364017081a4bc12bff562aff56bd90106ceb326b0927327a42d805f49441",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-consent-component-vision",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "22b456e3de018c880430ac7e29559194b4bccb4134199b4591a688bbaecc00a6",
+      "structure_sha256": "0ca6885560b45c757dd6c564b7b614563663e0d014c3b1a7db05b4cff1bc7130",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-consent-runtime-methods",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "a1748e7f864dd6bbeed49fbec22335daff2e15aebc2c26c86c9c3264a9835727",
+      "structure_sha256": "965bd65cfe4a9b50f7323d2c11245a7fbf69358d8f5e3a2ecbf5c3c2114a8750",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-consent-jev-decision",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "b25363cffde77b459704800a9b13b3846054e9286c1a4012dce10d2b56fda8ef",
+      "structure_sha256": "f1af23ee3b5705464f689bac5b476872a50821bc2eb7be9973487ae53ec0d268",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-consent-runtime-result",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "c2c53322dadd87fe6b0d7399a2d8e608a615ed1ae0cdad26abad86588109e440",
+      "structure_sha256": "d8318ce376e0611e58c5ee26d56faeba4c461fd41b5fc9d90d6af31f854d3bc7",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "workflow-plan-review",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "d73543848d44addfa2c951e7bc22e171ee66bd04b4c8ce3a22649fe91eea552c",
+      "structure_sha256": "3dd00067b88458b5a31cb71d7a571cca2c75651235cc39f9374e6eaacac13c3b",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-stopping",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "4a8d8ad39b430bbbc2c48beabc25d96777d5c100e87a92f4b2f0a96d9a59db3b",
+      "structure_sha256": "79df7fc5de223f74d90a9ebea7ed60a5a2f3c13ac50a7b264e282c41c47f6ee1",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "panel-goal-unknown",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "a8dfc3524a87d0545a879b2295e5ec588de8012807cc49a24a9f499e879fa8fc",
+      "structure_sha256": "f9776ce8d2fc86320e7e17062c6e809301b46f4970026a57bdd503ff8b679472",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "new-chat-dialog",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "19e38e814e549d0282f1b82af82432842b647f3b9fd531c85e25ec0175a40fb0",
+      "structure_sha256": "1c4ab1c7fecee11f50b15a38d7c689f4ff42ba7046637c9157983e040cca3aef",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "workflow-candidates",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "055ea6081f3ea8174f898c03046c067240c18689e21d352d500c82e34b9d0277",
+      "structure_sha256": "61a5c9430b2a34f67736b1f388c9ad47c77a6a15c9c8377dad9fa9a7102d980e",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "workflow-preview",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "c7346c2d2725293c398e7abd14ca624eceaaa3ff89ce0fbffadf649654ae893c",
+      "structure_sha256": "e73e9d8c8fea447df9e9b89f3364f9f5a46fae92060101a941faf632404417c3",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    },
+    {
+      "name": "diagnostics-dialog",
+      "viewport": [
+        390,
+        844,
+        1
+      ],
+      "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+      "png_sha256": "c1472736c1a0d2c9f5c36fd023d4acf389c15d63fbc999d54503c750158eac63",
+      "structure_sha256": "88c3f0e998afe8533d1aeb2fa8c5fc25973a5bccfa106d1b6381cfa7b0558cc1",
+      "comparison": "two stable DOM/focus/layout samples; screenshot recorded"
+    }
+  ]
+}

@@ -12,6 +12,40 @@
 착수 전 코드와 최근 실행 증거로 남은 범위를 다시 확인한다. 미구현 기능은 backlog로
 관리하고 기능별 설계서를 현재 구현의 규범으로 유지하지 않는다.
 
+## Web Codebase Agent migration S26-S37
+
+**S26 baseline delivered 2026-10-19; S27–S37 Planned.** These 12 Sprints implement the full internal
+migration while preserving current UI structure. The 63 implementation cards and
+72 verification scenarios define the original scope; completion and runtime evidence are recorded per Sprint.
+
+Start with the [detailed refactoring design](../architecture/web-codebase-agent-refactoring.md),
+[Codebase construction rules and budgets](../architecture/web-codebase-construction.md),
+and [runtime contracts](../architecture/web-codebase-runtime-contracts.md).
+The [migration plan](../architecture/web-codebase-agent-migration-plan.md) retains
+the original M00–M11 phases and release metrics. S26 captures the implementation
+baseline first; S27 qualifies the JEV controller before S33 can complete.
+
+| Sprint                                       | Migration slice | Scope                                                    | Status  | Cards / scenarios |
+| -------------------------------------------- | --------------- | -------------------------------------------------------- | ------- | ----------------- |
+| [S26](s26-migration-baseline.md)             | M00             | Migration baseline and preservation inventory            | Completed | 5 / 6             |
+| [S27](s27-jev-controller-contract.md)        | M01             | JEV controller protocol and feasibility                  | Planned | 5 / 6             |
+| [S28](s28-workspace-backend-bridge.md)       | M02             | Workspace, preserved UI seam and local backend bridge    | Planned | 5 / 6             |
+| [S29](s29-semantic-codebase-construction.md) | M03             | Semantic Codebase construction and repository            | Planned | 7 / 6             |
+| [S30](s30-shared-tool-policy-runtime.md)     | M04             | Shared Tool Registry, policy and browser execution       | Planned | 5 / 6             |
+| [S31](s31-durable-task-recovery.md)          | M05             | Durable tasks, dispatch receipts and recovery            | Planned | 5 / 6             |
+| [S32](s32-advanced-browser-collectors.md)    | M06             | Advanced collectors and data coverage                    | Planned | 5 / 6             |
+| [S33](s33-jev-task-orchestration.md)         | M07             | JEV-owned Ask/Act and workflow orchestration             | Planned | 5 / 6             |
+| [S34](s34-gpt-evidence-analysis.md)          | M08             | GPT evidence analysis and provider-role migration        | Planned | 5 / 6             |
+| [S35](s35-mcp-external-adapters.md)          | M09             | MCP gateway and external integration adapters            | Planned | 5 / 6             |
+| [S36](s36-migration-qualification.md)        | M10             | Data conversion, UI continuity and release qualification | Planned | 6 / 6             |
+| [S37](s37-cutover-legacy-retirement.md)      | M11             | Production cutover and legacy runtime retirement         | Planned | 5 / 6             |
+
+Each Sprint defines source/target ownership, prerequisites, acceptance checks,
+evidence requirements and rollback. The target replaces optional-JEV/primary
+orchestration at cutover; historical S25 behavior and evidence below remain
+unchanged. Advanced collectors, MCP, data migration and installed release
+verification are required for full migration completion.
+
 ## 신규 구현 계획
 
 - [Browser Agent S25 — TypeSafe Jev 판단 모델과 기존 LLM 라우팅](s25-jev-model-routing.md)

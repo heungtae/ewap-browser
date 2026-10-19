@@ -3,6 +3,12 @@
 Status: **Proposed — design only; implementation is not authorized by this document.**
 Date: 2026-10-18. Delivery sequence: [migration plan](web-codebase-agent-migration-plan.md).
 
+Detailed implementation planning: [refactoring seams](web-codebase-agent-refactoring.md),
+[Codebase generation and resource limits](web-codebase-construction.md),
+[runtime contracts](web-codebase-runtime-contracts.md), and
+[Planned S26–S37](../sprints/README.md#web-codebase-agent-migration-s26-s37).
+These detail the pending architecture; they do not change current behavior.
+
 ## 1. Scope and baseline
 
 Replace the current internal architecture with the Web Codebase Agent architecture. Preserve the current UI structure. This is a complete migration of ownership, contracts, persistence, execution, providers, integration, tests, and delivery; relocating the existing Worker orchestration into packages is insufficient.
@@ -349,7 +355,7 @@ Recovery rules:
 - Provider failure: retain the first failure; retry only a bounded model/read step with no new execution authority. JEV failure cannot promote GPT. GPT failure cannot cause recollection or mutation replay merely to regenerate prose.
 - Settings/policy changes: revoke affected task bindings; do not switch models or loosen policy mid-step. Resume under a newly admitted revision or finish safely.
 
-Configure explicit per-task wall-clock, tool-call, JEV-decision, analysis-call, byte, token/cost and recovery budgets. A lack-of-progress signature terminates repeated identical decisions. Exact numeric defaults are versioned configuration qualified in M07; the current hard-coded JEV cap is not inherited as an unexamined target requirement.
+Configure explicit per-task wall-clock, tool-call, JEV-decision, analysis-call, byte, token/cost and recovery budgets. A lack-of-progress signature terminates repeated identical decisions. Initial target values and reservation rules are now specified in the [construction budget table](web-codebase-construction.md#7-initial-resource-budgets); S27/S29/S32/S33 qualify them before production activation. The current hard-coded JEV cap is not treated as measured target capacity.
 
 ## 10. GPT analysis contract
 

@@ -1,0 +1,537 @@
+{
+  "schema_version": 1,
+  "result": "BASELINE_FAILURE",
+  "limit": 199,
+  "count": 88,
+  "files": [
+    {
+      "path": "examples/accessible-items-demo/index.html",
+      "lines": 371,
+      "sha256": "3219832bb1dd147e06a2fc08c705f2668ece1a17a2c374d173fc6a1ef9cf2864",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "examples/collection-reading-demo/list.html",
+      "lines": 221,
+      "sha256": "d340717ddcb60d2802a84faa308c919fccfebcf16ad71c997347f52531b56ae6",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "examples/collection-reading-demo/static-table.html",
+      "lines": 254,
+      "sha256": "774e05dc9b4b915833ad352e5d25e5e8fadd3f60e4931e30af000450f849139a",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "examples/page-api-discovery-demo/index.html",
+      "lines": 248,
+      "sha256": "a1c7c58fa7fd204cbafe92aee2253a90f44db59d6219ccf824c9356a404610d5",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/cdp/bounded-adapter.ts",
+      "lines": 453,
+      "sha256": "30b9aa86fd167eb83f8cb20df4f999451e3c0bbee74ee02367be6e375f938352",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/content/collection-discovery.ts",
+      "lines": 459,
+      "sha256": "5751d1e3ac8c6f2ff12b4345b518d26ec5830b090e0056189c4f4af3efb2fc90",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/content/collection-scroll-driver.ts",
+      "lines": 224,
+      "sha256": "923320334f10d62def9854174112dd20159dfd20d57fb2aa2c47b0f7abea3f9a",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/content/entry.ts",
+      "lines": 1801,
+      "sha256": "41e29da27c3b821812c465f1a33f4893e55552bc3eaea884b81fadbad9788156",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/contracts/chat-events.ts",
+      "lines": 311,
+      "sha256": "8c108e30f9730fdc774c6f23e274c9e0ca0a6cbb6ed20c18ceaf7fe4b1ea334d",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/contracts/semantic-snapshot.ts",
+      "lines": 260,
+      "sha256": "581346eb7c85fc18882f0e6a27477056db5c6ed02ae7c22d80c14d816687a18b",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/contracts/workflow.ts",
+      "lines": 225,
+      "sha256": "727c6785e5de9a1442299454b0625c08fa36904094d474c65652db0e42af52c5",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/act-entry-bridge.ts",
+      "lines": 221,
+      "sha256": "561a0013fddbdaf55ea4ef34f4f11011ecdd77792fcb4f1d3f98fefa35362d08",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/bootstrap-composer.ts",
+      "lines": 204,
+      "sha256": "810905280deb824c0baa68b77a26d98074b385ad5d8645f688fa00fab3e38a57",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/component-facade.ts",
+      "lines": 399,
+      "sha256": "c3115964bafce62a4029c892fb453de3254b5f27b468119bb596ed81b28d7f12",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/contracts.ts",
+      "lines": 500,
+      "sha256": "c2eb4d628d0461ed64109d0ec8179b933cfbac5b1042d1dbbf0e5d6ba2ea2d30",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/read-loop.ts",
+      "lines": 260,
+      "sha256": "36e59bd040597e430063bbbc0fa7bd8d9842192a6fc19b898ac530b95450c601",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/resource-reader.ts",
+      "lines": 320,
+      "sha256": "ccdf39a73094e4328f5c8a0acd7a477928e81fd352fbeffc96aff93c33de6c9f",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/value-binding.ts",
+      "lines": 299,
+      "sha256": "d25069b9abd0b8f97a4ea50d8037e5e0a64fbf97892939b5ea03480e414b4cec",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/page-act-harness/workflow-review.ts",
+      "lines": 258,
+      "sha256": "d35d41e0af27dc97fb8a0df5bb3b18e6f573c819e2758a6766173a8af99efaae",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/providers/decision-coordinator.ts",
+      "lines": 200,
+      "sha256": "188eb89c25ddaf7e219cd3b67ec625801b82902eac0c52ddcbb74f418a18f673",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/providers/transport.ts",
+      "lines": 242,
+      "sha256": "9ff960839d0c70e743523680be15a75cb1a81b08c00316728eb179f776a29879",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-chat-start.ts",
+      "lines": 388,
+      "sha256": "e1a9c30ca39a1027d2a35e68f25fe7db7e398371e10ae71a7cd8ae10b723e22f",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-execution-runtime.ts",
+      "lines": 426,
+      "sha256": "4b907de91549c9bfc815679314bfc30c2bb1d97a94eb88ab94796c7f3d5e785d",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-harness-turns.ts",
+      "lines": 1046,
+      "sha256": "02515a48401695600bb95b562845dd24f1e470b015aa61b128c322937be9585b",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-postcondition-verifier.ts",
+      "lines": 464,
+      "sha256": "d00d68baf521bc85d34b12e16dad8fbb58d8b1072120a2d5d6a4c3083ae5e9e7",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-proposal-executor.ts",
+      "lines": 367,
+      "sha256": "ef1a10ef4df6c010dcd5a15ce9b74676dc8fc5b514338cb324252061ee4287ab",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-proposal-followup.ts",
+      "lines": 227,
+      "sha256": "99c13f1a8d774eb6a9c820b4762b062183fa147e62f77f053f29db57c2bac318",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-proposal-parser.ts",
+      "lines": 531,
+      "sha256": "12563c1acb4751e9381cb88440d8f7ebd59f57d33e48b9acdb2af75a993aa1ef",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-proposal-readiness.ts",
+      "lines": 305,
+      "sha256": "d05db4dfc582ff9c3c2a52a946e48431ea104508991c626b90236269dd2dc2b2",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-step-runner.ts",
+      "lines": 1594,
+      "sha256": "6af1c682ef476a81076daca7e4839b5adde38ecbb5f23cd746f930181001c2ea",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/act-tools.ts",
+      "lines": 424,
+      "sha256": "d3a2729abb57b75a007e5c3a3b190e1707a04b981cfcda56fee68f2f65e1709e",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/analysis-data-acquisition.ts",
+      "lines": 402,
+      "sha256": "f66a8d7af7a287624338ff5b8cb91754646ca0a18688f214f75e97476e7c7a8a",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/ask-chat-runner.ts",
+      "lines": 559,
+      "sha256": "dd243dd6b885fb2e7af367c8522b3ad9918a9c4b348137f1803c6c8bb34bdcd7",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/chat-request-lifecycle.ts",
+      "lines": 306,
+      "sha256": "024688cb11d68f6fa213fd8396daaf5a564151755ea82abc69c478fbdee3dd51",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/chat-request-message-handler.ts",
+      "lines": 283,
+      "sha256": "e1aa9a63ee9b271dc574424634f0b4f0e3e612a3414c893298cd317b870da610",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/collection-read-orchestrator.ts",
+      "lines": 713,
+      "sha256": "c79e848847018b426072f636692af692155c9aa4dfc8b62888e302493dddfffb",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/diagnostics-message-handler.ts",
+      "lines": 510,
+      "sha256": "4522750a3690c433025597c82ac4cfe07cf10bfc16f5f19392b5ebe90ee0d047",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/execution-diagnostics.ts",
+      "lines": 320,
+      "sha256": "9eeb0a86759a818647997ca1fb8afc46f7b4f9f54b284446f9572700f63f56bb",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/page-api-read-runner.ts",
+      "lines": 201,
+      "sha256": "95a2dfd33bcb0b5ed8621dc1648c2e3220e2f7ae08a169f54265e71fbd140a9a",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/page-api-runner.ts",
+      "lines": 306,
+      "sha256": "5223c8e485ef76b962551f332bf3ed303ebf343333a4718f5854b95616221f89",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/page-context-runtime.ts",
+      "lines": 219,
+      "sha256": "8c93721d6484b4c96f511c4807ae7b8f67341558ad4a3dba1e1fdcaee9dceb90",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/readers/virtual-scroll-reader.ts",
+      "lines": 458,
+      "sha256": "22f45ccba5ba81e65a6e7045d7543439dec62291f3ca69d7b7b08e03e6266e75",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/runtime-chat.ts",
+      "lines": 500,
+      "sha256": "f6b40e6e1e283d1db3dbee6348e248b7b6abb373bf7743865f3e858375fa04c0",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/service-worker/workflow-session-actions.ts",
+      "lines": 245,
+      "sha256": "eb9d645c3843cbedff6c05c62dc65a0d7c4297507b772b8fb56b3f15d3c05bfa",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/sidepanel/diagnostics-view.ts",
+      "lines": 537,
+      "sha256": "1ad9714ba42dbb12b15a2038036323a464301e299d57685e3d25b7b6b9d10db6",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/sidepanel/entry.ts",
+      "lines": 1891,
+      "sha256": "3901ef8db1f4b0efd3347b412ef27ea8fa99d4d38ea1141ac9377ea06f3a34c4",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/sidepanel/index.html",
+      "lines": 947,
+      "sha256": "1da82aab5cd7af5c03827cde56c98db06f8a354fa6bc0c3111da356ceae66f04",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/state/mutation-coordinator.ts",
+      "lines": 204,
+      "sha256": "b3a4e04359bd28c779f44f8e86352b45d3aa7fac6c0ad3744781193d05d599c3",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/src/state/tab-chat-session-store.ts",
+      "lines": 388,
+      "sha256": "81cddbd72cbfdde612ba506639eecc341a18c9de5cc28310930855d9ccb414d1",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/cdp/bounded-adapter.test.ts",
+      "lines": 240,
+      "sha256": "83b39a29b07fca993a39192d81af401f87cd05cf5b452b8eb66167564de0c363",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-0-contracts.test.ts",
+      "lines": 284,
+      "sha256": "6e2e892b6fb0dc2a6453f0afc2cb84747d27d32dbeb3ba441b6557177bc17d0f",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-1-bootstrap.test.ts",
+      "lines": 203,
+      "sha256": "b839062c0522ff2498b933c853cb85bd5a5db1749b46f717e29da34c2abfbc81",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-2-resources.test.ts",
+      "lines": 459,
+      "sha256": "604814d1371ce1cdd50cbe863a4bc116b7a73e22b5c7da792a8942dbe2bc8e44",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-3-read-loop.test.ts",
+      "lines": 296,
+      "sha256": "e521b56ef483772201804ef48b84b3fbe1850030586ad7451c29ec896a2a4c1e",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-4-components.test.ts",
+      "lines": 341,
+      "sha256": "1efc35c4f78eab3abf0b2e38b338ab5f1187f8b943ead473a3c6b46ee10ad873",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-5-workflow-review.test.ts",
+      "lines": 229,
+      "sha256": "d3b42a89f74621aee274d7b5c0e72b1e15de56f472ec9135db823064ee332a83",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/page-act-harness/pah-6-approval-outcome.test.ts",
+      "lines": 303,
+      "sha256": "712d703035d47a77d770b4d50949c078657f90edf2cff4b1a13d9c2c709702e8",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/providers/runtime.test.ts",
+      "lines": 481,
+      "sha256": "9966e935551296933b39e8d4b028374ddbd9fbcff12d1f546635925c0fd36059",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-chat-start.test.ts",
+      "lines": 241,
+      "sha256": "56b5e47e15266a0768734fd154886f3bee2f19b756bfcfbf30eb8a5e9a2b209e",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-completion-recovery.test.ts",
+      "lines": 229,
+      "sha256": "c0785e4acc3b8f40b65308c3307ccb7b656652278f85c3333b1a14dcd41721c2",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-execution-runtime.test.ts",
+      "lines": 318,
+      "sha256": "ebd6257665c11df3b1466c0419651b723688cc2d52e1b924c4ef7e42e6831065",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-goal-reassessment.test.ts",
+      "lines": 220,
+      "sha256": "872becc262a7fa7d720b00feae19eb72358b03d879170d67beb87518cdc74633",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-harness-turns.test.ts",
+      "lines": 636,
+      "sha256": "02fdd50b810dcdd26f8b71ac3b047eb78f27017370e17d13af7073e89f660564",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-pah-9-value-binding.test.ts",
+      "lines": 617,
+      "sha256": "2465e0b049ac64f126bef3372beb43b0a2dfc1c392873a12150d398dcfd72a3a",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-postcondition-verifier.test.ts",
+      "lines": 283,
+      "sha256": "9ce5eac5f33e02a240adc943a4be89e2ae8ae08aeb339b385b288772e304a1eb",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-proposal-followup.test.ts",
+      "lines": 206,
+      "sha256": "6cf699ebaaae80a3dbd740bd045b1f8bea0c43470fed243f690649b956091010",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/act-step-runner.test.ts",
+      "lines": 1520,
+      "sha256": "e294eb3a6f95b7cdfabe170fb510114a01da83e7e1832d1295a757f23e569678",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/analysis-data-acquisition.test.ts",
+      "lines": 595,
+      "sha256": "77179647d1af254b38956e2a2aeb607d07d6e44658385189cd3f525f03e19d5e",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/chat-message-handler.test.ts",
+      "lines": 255,
+      "sha256": "ee6302411faa51f00251dc6298e42698b52cb1b27027e56ecc21837cd92f1cbf",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/collection-read-orchestrator.test.ts",
+      "lines": 262,
+      "sha256": "fe4f36930ff17ba9c1919a5ff4b4260703169d028a282e1ef23472e6dd94ffc0",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/page-api-read-runner.test.ts",
+      "lines": 216,
+      "sha256": "b52303b5d6e695a0d47b53d8e34ba62fa7d889c92c7983e98a4bb6d82e3abb5d",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/page-api-runner.test.ts",
+      "lines": 369,
+      "sha256": "107a8362b9aa82a89fcad562454dcfaaec88ac989043393b3c7b60927146aecc",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/page-derived-actions.test.ts",
+      "lines": 298,
+      "sha256": "2a07c9738f5c228831ed9363913b66902b0b630f6e5fc98c62dc4eb108c684f5",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/page-resource-tools.test.ts",
+      "lines": 307,
+      "sha256": "32fd932905c0f4f81b9f90b9cc39b25e2ca7a52c082cdc2a3e7486f8bdf11387",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/service-worker/workflow-resource-tools.test.ts",
+      "lines": 251,
+      "sha256": "c022bcf15606383945a1d8f7c7103d6d9652f651787f09dc06c71e83be838d47",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "extension/tests/unit/state/chat-event-store.test.ts",
+      "lines": 283,
+      "sha256": "253b82e98edb17aafecfa668e18010cd87f419eaa9dee89efda5e2d6baa87561",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-accessible-items-smoke.mjs",
+      "lines": 1571,
+      "sha256": "81d704391297e14e0e58f9d2083443e95f3dd4f3b6dc69362af14aa94dc99c26",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-analysis-data-smoke.mjs",
+      "lines": 342,
+      "sha256": "af3005ed187be08b4dce0f408b2f6edd34e0faeb0974f237baa49bf79579d8a4",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-diagnostics-zip-smoke.mjs",
+      "lines": 425,
+      "sha256": "e70e72eb21bfe82cd7c18ef08225f3f529a736e57b638223b059e6d5698a7913",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-page-api-discovery-smoke.mjs",
+      "lines": 200,
+      "sha256": "7526a87cae38a540e403db9561312468dacb1a46917a5b1ac8ed6b9e62bb296d",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-preview-e2e.mjs",
+      "lines": 500,
+      "sha256": "10fe61082769ebd7713be43f4e5b044c323600b8c0c2b47d2a97d5409316a8ec",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s1-check.mjs",
+      "lines": 202,
+      "sha256": "f54d1a33eeb8ec7c18167ec2802276c49e9d6e9f6a30426afc21b18cdd3ec212",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s1-fixture.mjs",
+      "lines": 200,
+      "sha256": "22b9ba68b2b51f20fc484a23317810a0e100cf38146305b806d23385b4eca19c",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s10-actions.mjs",
+      "lines": 386,
+      "sha256": "cc2ed597261e9e0466a191229ff32314311887564e6457fa93bc4702d819071d",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s11-mcp-smoke.mjs",
+      "lines": 210,
+      "sha256": "77572e49006e7931d25b733d98bb3b8b1c619b34b7265adddc7da429d4479cae",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s14-workflow-smoke.mjs",
+      "lines": 329,
+      "sha256": "adc8794b01dce539bc84ddb79db41139c7ff95d33d66ed837be5d69abda88ff9",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s16-script-tools-smoke.mjs",
+      "lines": 573,
+      "sha256": "b5bc7fa893a81d375ac0481cc5a1ada5e0fb496d7e9e0291b1baad0e22dd1c2c",
+      "unchanged_from_entry": true
+    },
+    {
+      "path": "scripts/chrome-s6-check.mjs",
+      "lines": 203,
+      "sha256": "5aab721bbbf7f51da77210d4c82f13ba64dd1c07b3aacc5c25a155dea87770f4",
+      "unchanged_from_entry": true
+    }
+  ],
+  "new_s26_violations": []
+}

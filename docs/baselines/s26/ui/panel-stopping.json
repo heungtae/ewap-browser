@@ -1,0 +1,1883 @@
+{
+  "viewport": [
+    390,
+    844,
+    1
+  ],
+  "font": "Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+  "focus": "",
+  "elements": [
+    {
+      "tag": "MAIN",
+      "id": "",
+      "role": null,
+      "class": "workspace",
+      "disabled": false,
+      "rect": [
+        0,
+        0,
+        390,
+        844
+      ]
+    },
+    {
+      "tag": "HEADER",
+      "id": "",
+      "role": null,
+      "class": "header",
+      "disabled": false,
+      "rect": [
+        0,
+        0,
+        390,
+        90
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "thread-scope",
+      "role": null,
+      "class": "badge",
+      "disabled": false,
+      "rect": [
+        14,
+        13,
+        362,
+        23
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "header-bottom",
+      "disabled": false,
+      "rect": [
+        14,
+        46,
+        362,
+        32
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "header-tools",
+      "disabled": false,
+      "rect": [
+        175.4,
+        46,
+        200.6,
+        32
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "permission-mode-badge",
+      "role": null,
+      "class": "badge",
+      "disabled": false,
+      "rect": [
+        175.4,
+        50.5,
+        85.6,
+        23
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "new-chat-open",
+      "role": null,
+      "class": "new-chat",
+      "disabled": false,
+      "rect": [
+        270,
+        48,
+        28,
+        28
+      ]
+    },
+    {
+      "tag": "svg",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        276,
+        54,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "path",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        284,
+        67.3,
+        6,
+        0
+      ]
+    },
+    {
+      "tag": "path",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        278.7,
+        55.9,
+        10.7,
+        10.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "workflow-record",
+      "role": null,
+      "class": "new-chat",
+      "disabled": false,
+      "rect": [
+        307,
+        48,
+        28,
+        28
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "settings-open",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        344,
+        46,
+        32,
+        32
+      ]
+    },
+    {
+      "tag": "svg",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        350,
+        52,
+        20,
+        20
+      ]
+    },
+    {
+      "tag": "path",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        357.1,
+        59.1,
+        5.8,
+        5.8
+      ]
+    },
+    {
+      "tag": "path",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        354.5,
+        55.9,
+        13,
+        13
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "chat-scroll",
+      "role": null,
+      "class": "transcript",
+      "disabled": false,
+      "rect": [
+        0,
+        90,
+        390,
+        556.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "chat-messages",
+      "role": null,
+      "class": "items",
+      "disabled": false,
+      "rect": [
+        18,
+        -1197,
+        339,
+        1832
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -1197,
+        339,
+        130.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -1186,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -1186,
+        47.3,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        345,
+        -1177,
+        0,
+        0
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -1161,
+        315,
+        39
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -1115,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": false,
+      "rect": [
+        30,
+        -1113,
+        100.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": false,
+      "rect": [
+        137.5,
+        -1113,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -1056.5,
+        339,
+        150
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -1045.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -1045.5,
+        47.3,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        301.7,
+        -1044.7,
+        43.3,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -1020.5,
+        315,
+        58.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -955,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        -953,
+        155.1,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        192.1,
+        -953,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -896.5,
+        339,
+        111
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -885.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -885.5,
+        47.3,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -884.7,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -860.5,
+        315,
+        19.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -834,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        -832,
+        85.2,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": true,
+      "rect": [
+        122.2,
+        -832,
+        73.2,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        202.4,
+        -832,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -775.5,
+        339,
+        109
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -764.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -764.5,
+        36.3,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -763.7,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -739.5,
+        315,
+        19.5
+      ]
+    },
+    {
+      "tag": "FORM",
+      "id": "",
+      "role": null,
+      "class": "value-form",
+      "disabled": false,
+      "rect": [
+        30,
+        -713,
+        315,
+        35.5
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": true,
+      "rect": [
+        30,
+        -713,
+        262.1,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        299.1,
+        -713,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -656.5,
+        339,
+        111
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -645.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -645.5,
+        72.5,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -644.7,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -620.5,
+        315,
+        19.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -594,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        -592,
+        97.1,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        134.1,
+        -592,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -535.5,
+        339,
+        109
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -524.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -524.5,
+        36.3,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -523.7,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -499.5,
+        315,
+        19.5
+      ]
+    },
+    {
+      "tag": "FORM",
+      "id": "",
+      "role": null,
+      "class": "value-form",
+      "disabled": false,
+      "rect": [
+        30,
+        -473,
+        315,
+        35.5
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": true,
+      "rect": [
+        30,
+        -473,
+        262.1,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        299.1,
+        -473,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -416.5,
+        339,
+        130.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -405.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -405.5,
+        108.7,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -404.7,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -380.5,
+        315,
+        39
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -334.5,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        -332.5,
+        112.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        149.5,
+        -332.5,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -276,
+        339,
+        150
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -265,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -265,
+        156.6,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -264.2,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -240,
+        315,
+        58.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -174.5,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        -172.5,
+        112.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        149.5,
+        -172.5,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        -116,
+        339,
+        150
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        -105,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        -105,
+        108.7,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        -104.2,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        -80,
+        315,
+        58.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        -14.5,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        -12.5,
+        112.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        149.5,
+        -12.5,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        44,
+        339,
+        150
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        55,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        55,
+        145,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        55.8,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        80,
+        315,
+        58.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        145.5,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        147.5,
+        112.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        149.5,
+        147.5,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        204,
+        339,
+        150
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        215,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        215,
+        129.5,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        314.6,
+        215.8,
+        30.4,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        240,
+        315,
+        58.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        305.5,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        307.5,
+        112.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        149.5,
+        307.5,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        364,
+        339,
+        130.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        375,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        375,
+        170.2,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        291.5,
+        375.8,
+        53.5,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        400,
+        315,
+        39
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        446,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        448,
+        112.5,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        149.5,
+        448,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "ARTICLE",
+      "id": "",
+      "role": null,
+      "class": "event-card",
+      "disabled": false,
+      "rect": [
+        18,
+        504.5,
+        339,
+        130.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-heading",
+      "disabled": false,
+      "rect": [
+        30,
+        515.5,
+        315,
+        18
+      ]
+    },
+    {
+      "tag": "B",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        30,
+        515.5,
+        47.3,
+        18
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "tool-state",
+      "disabled": false,
+      "rect": [
+        311.8,
+        516.3,
+        33.2,
+        16.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "event-detail",
+      "disabled": false,
+      "rect": [
+        30,
+        540.5,
+        315,
+        39
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "card-actions",
+      "disabled": false,
+      "rect": [
+        30,
+        586.5,
+        315,
+        37.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "primary",
+      "disabled": true,
+      "rect": [
+        30,
+        588.5,
+        73.2,
+        35.5
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "",
+      "role": null,
+      "class": "danger",
+      "disabled": true,
+      "rect": [
+        110.2,
+        588.5,
+        45.9,
+        35.5
+      ]
+    },
+    {
+      "tag": "FORM",
+      "id": "chat-form",
+      "role": null,
+      "class": "composer",
+      "disabled": false,
+      "rect": [
+        0,
+        646.7,
+        390,
+        197.3
+      ]
+    },
+    {
+      "tag": "OUTPUT",
+      "id": "activity-status",
+      "role": null,
+      "class": "activity-status",
+      "disabled": false,
+      "rect": [
+        18,
+        656.7,
+        354,
+        30.8
+      ]
+    },
+    {
+      "tag": "DETAILS",
+      "id": "execution-details",
+      "role": null,
+      "class": "execution-details",
+      "disabled": false,
+      "rect": [
+        18,
+        695.5,
+        354,
+        40.5
+      ]
+    },
+    {
+      "tag": "SUMMARY",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        28,
+        704.5,
+        334,
+        16.5
+      ]
+    },
+    {
+      "tag": "PRE",
+      "id": "execution-trace",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        28,
+        727,
+        334,
+        0
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "diagnostics-debug",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        28,
+        727,
+        82.5,
+        28
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "diagnostics-export",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        113.3,
+        727,
+        79.6,
+        28
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "mode-row",
+      "disabled": false,
+      "rect": [
+        18,
+        744,
+        354,
+        33
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": "group",
+      "class": "mode-group",
+      "disabled": false,
+      "rect": [
+        18,
+        744,
+        354,
+        33
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "mode-ask",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        21,
+        747,
+        173,
+        27
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "mode-act",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        196,
+        747,
+        173,
+        27
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "status",
+      "role": null,
+      "class": "status",
+      "disabled": false,
+      "rect": [
+        18,
+        777,
+        1,
+        17
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "input-dock",
+      "disabled": false,
+      "rect": [
+        18,
+        785,
+        354,
+        44
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "attachment-control",
+      "disabled": false,
+      "rect": [
+        25,
+        791.5,
+        31,
+        31
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "attachment-trigger",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        25,
+        791.5,
+        31,
+        31
+      ]
+    },
+    {
+      "tag": "svg",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        31.5,
+        798,
+        18,
+        18
+      ]
+    },
+    {
+      "tag": "path",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        33.8,
+        799.8,
+        14,
+        14.7
+      ]
+    },
+    {
+      "tag": "TEXTAREA",
+      "id": "chat-input",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        63,
+        790,
+        264,
+        34
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "chat-send",
+      "role": null,
+      "class": "send",
+      "disabled": true,
+      "rect": [
+        334,
+        791.5,
+        31,
+        31
+      ]
+    },
+    {
+      "tag": "svg",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        341.5,
+        799,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "rect",
+      "id": "",
+      "role": null,
+      "class": {},
+      "disabled": false,
+      "rect": [
+        346.2,
+        803.7,
+        6.7,
+        6.7
+      ]
+    },
+    {
+      "tag": "OUTPUT",
+      "id": "learned-profile-activity",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        0,
+        844,
+        390,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,401 @@
+{
+  "viewport": [
+    1100,
+    800,
+    1
+  ],
+  "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+  "focus": "",
+  "elements": [
+    {
+      "tag": "MAIN",
+      "id": "learned-profile-section",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        24,
+        0,
+        1037,
+        824.8
+      ]
+    },
+    {
+      "tag": "HEADER",
+      "id": "",
+      "role": null,
+      "class": "manager-header",
+      "disabled": false,
+      "rect": [
+        24,
+        26,
+        1037,
+        54.2
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "brand-heading",
+      "disabled": false,
+      "rect": [
+        24,
+        26,
+        235.3,
+        54.2
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "",
+      "role": null,
+      "class": "brand-mark",
+      "disabled": false,
+      "rect": [
+        24,
+        34.1,
+        38,
+        38
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        74,
+        26,
+        185.3,
+        54.2
+      ]
+    },
+    {
+      "tag": "H1",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        74,
+        26,
+        185.3,
+        35.6
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        74,
+        61.6,
+        185.3,
+        18.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "checkbox-row",
+      "disabled": false,
+      "rect": [
+        938.6,
+        43.8,
+        122.4,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "learned-profile-enabled",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        938.6,
+        45.1,
+        16,
+        16
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "manager-intro",
+      "disabled": false,
+      "rect": [
+        24,
+        98.2,
+        1037,
+        18.6
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "manager-layout",
+      "disabled": false,
+      "rect": [
+        24,
+        134.8,
+        1037,
+        630
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "role": null,
+      "class": "manager-card profile-list",
+      "disabled": false,
+      "rect": [
+        24,
+        134.8,
+        366.8,
+        630
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "list-heading",
+      "disabled": false,
+      "rect": [
+        45,
+        155.8,
+        324.8,
+        24.8
+      ]
+    },
+    {
+      "tag": "H2",
+      "id": "profile-list-title",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        45,
+        155.8,
+        107.5,
+        24.8
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "learned-profile-count",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        352.1,
+        158.9,
+        17.7,
+        18.6
+      ]
+    },
+    {
+      "tag": "LABEL",
+      "id": "",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        45,
+        194.6,
+        324.8,
+        18.6
+      ]
+    },
+    {
+      "tag": "INPUT",
+      "id": "learned-profile-filter",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        45,
+        227.2,
+        324.8,
+        43.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "learned-profiles",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        45,
+        284.9,
+        324.8,
+        332.5
+      ]
+    },
+    {
+      "tag": "P",
+      "id": "",
+      "role": null,
+      "class": "empty-state",
+      "disabled": false,
+      "rect": [
+        45,
+        284.9,
+        324.8,
+        332.5
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "list-footer",
+      "disabled": false,
+      "rect": [
+        45,
+        631.5,
+        324.8,
+        112.4
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row",
+      "disabled": false,
+      "rect": [
+        45,
+        646.5,
+        324.8,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "learned-profile-previous",
+      "role": null,
+      "class": "",
+      "disabled": true,
+      "rect": [
+        45,
+        646.5,
+        53.8,
+        41.7
+      ]
+    },
+    {
+      "tag": "SPAN",
+      "id": "learned-profile-page",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        195,
+        658,
+        24.8,
+        18.6
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "learned-profile-next",
+      "role": null,
+      "class": "",
+      "disabled": true,
+      "rect": [
+        316.1,
+        646.5,
+        53.8,
+        41.7
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "",
+      "role": null,
+      "class": "button-row",
+      "disabled": false,
+      "rect": [
+        45,
+        702.1,
+        324.8,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "learned-profile-refresh",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        45,
+        702.1,
+        83.5,
+        41.7
+      ]
+    },
+    {
+      "tag": "BUTTON",
+      "id": "learned-profile-clear",
+      "role": null,
+      "class": "danger",
+      "disabled": false,
+      "rect": [
+        286.4,
+        702.1,
+        83.5,
+        41.7
+      ]
+    },
+    {
+      "tag": "SECTION",
+      "id": "",
+      "role": null,
+      "class": "manager-card profile-editor",
+      "disabled": false,
+      "rect": [
+        408.8,
+        134.8,
+        652.2,
+        300
+      ]
+    },
+    {
+      "tag": "DIV",
+      "id": "learned-profile-detail",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        429.8,
+        155.8,
+        610.2,
+        21.7
+      ]
+    },
+    {
+      "tag": "OUTPUT",
+      "id": "learned-profile-status",
+      "role": null,
+      "class": "",
+      "disabled": false,
+      "rect": [
+        24,
+        778.8,
+        1037,
+        20
+      ]
+    }
+  ]
+}

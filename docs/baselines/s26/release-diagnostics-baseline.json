@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "mode": "release; diagnostics masked=true",
+  "result": "BASELINE_FAILURE",
+  "reason": "Legacy diagnostics ZIP checker detects fixture origin in execution-trace.json even after secret masking. No product change in S26.",
+  "owner": "RF27 S28/S31/S36",
+  "hashes": {
+    "dist-extension/method-trace-coverage.json": "58a6132b8bbed44859d02e21db04bbc6535e0eef908f9949cfd48ed5211aab46",
+    "dist-extension/build-info.json": "480b065496074904a25931776037e09b59dc3b2fe9e2b84a2a02f92db713356e",
+    "dist-extension/managed-storage-schema.json": "66c0246725c7e056540c97231ad7e7e9cb57f355dd33a0431d5c0a03a2d07bf9",
+    "dist-extension/manifest.json": "573a088f70aa9e9b693ad1f6a90284f55dec0825ebef59174bf77288e4c00ee2",
+    "dist-extension/js/panel.js": "8d31018962568dfe3ff5d0354116d2efdd122583032d1cfa6f7d726ea5f42724",
+    "dist-extension/js/service-worker.js": "1c438d2942b19c1f0e3f9cacceb5f8bc65a181621020bd82990afd5abc488bac",
+    "dist-extension/js/learned-profiles.js": "a91d5591e14141c433cdf3f5dda8ee98d1d4fd6b30f1d2c771472a5e7b9e9fbc",
+    "dist-extension/js/content.js": "1824c7c3ddb5b2df511b7cdb1e820fd6ea93175a081fbbfbea1cb122a0a561bd",
+    "dist-extension/js/settings.js": "8d1c389c7b350aa341a0fb1399e19b97b71a2dcc4db552631190719a901cb6e5",
+    "dist-extension/js/offscreen.js": "b8f81f11d8a3fb541c390df8f5164cd3fb53488d67111f641da6cc0eb3595127",
+    "dist-extension/sidepanel/index.html": "1da82aab5cd7af5c03827cde56c98db06f8a354fa6bc0c3111da356ceae66f04",
+    "dist-extension/offscreen/index.html": "28ee97c27210fb3f6edd9a40170d4953cd5301d5e97129b8f87e3139ad8cafbe",
+    "dist-extension/settings/settings-controls.css": "f3e30bd12a10ddd6fea447047f86e86c5cdc03ad547ce7ca19941919da2ae680",
+    "dist-extension/settings/learned-profiles.css": "cc66eef504c35493fca5e3496013ef9dae60bd968ffdb441ca43473f964b7f12",
+    "dist-extension/settings/learned-profile-layout.css": "92383c67517f4326d574e5d5375e968cd727c98d796d462dbf079a79cbec0bde",
+    "dist-extension/settings/settings-layout.css": "04df59416504cf17945af64eb3e891ad5eddb2e8ac724d118e49e0d8888ee908",
+    "dist-extension/settings/settings-base.css": "c6aa12db13034500d4d94c26738979b6acf15f645691ed616d02cab91021beb1",
+    "dist-extension/settings/learned-profiles.html": "d2b0cbf31832d1467faf61dacb6f0ec1942dabf7e496821ad6630043ce83dafb",
+    "dist-extension/settings/index.html": "09e5208e25c20f4083e35eadc3919644ba4d23a8916c9773fe8dc84d7517182a",
+    "dist-extension/assets/icons/contextpilot-16.png": "9d9c83d3617afd1f17ffb57608bded741a7e1b7d659b5954049d7168668148f6",
+    "dist-extension/assets/icons/contextpilot-48.png": "5e24cc6a179fb10b74ba828a8d03b108bab9f828950e987c0bb073d27207ff49",
+    "dist-extension/assets/icons/contextpilot-128.png": "29c63488cdf8fb495b7be901b149706a7d53997b7fc2f1d91d10fa99d7b4f0d1",
+    "dist-extension/assets/icons/contextpilot-32.png": "2b41e4d1b8a1415f434a1a023bb11e35b2595cdc7579de76901747d09d920315"
+  }
+}

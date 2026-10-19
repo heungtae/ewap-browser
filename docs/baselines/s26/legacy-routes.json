@@ -1,0 +1,883 @@
+{
+  "schema_version": 1,
+  "messages": [
+    {
+      "name": "ACT_APPROVE",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "ACT_CONFIRM",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "ACT_REJECT",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "ACT_VALUE_SUBMIT",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "AGENT_PREFERENCES_GET",
+      "sources": [
+        "extension/src/settings/agent-preferences-form.ts",
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "AGENT_PREFERENCES_SAVE",
+      "sources": [
+        "extension/src/settings/agent-preferences-form.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "ANSWER_ONLY",
+      "sources": [
+        "extension/src/service-worker/act-harness-turns.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CALL_PAGE_BUSINESS_TOOL",
+      "sources": [
+        "extension/src/profile/mcp.ts",
+        "extension/src/service-worker/ask-chat-runner.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CALL_PAGE_BUSINESS_TOOL_RESULT",
+      "sources": [
+        "extension/src/profile/business-mcp-client.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CANCEL",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CANCEL_REQUEST",
+      "sources": [
+        "extension/src/native/native-client.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_CLEAR",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_EVENT",
+      "sources": [
+        "extension/src/service-worker/chat-run-lifecycle.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_RECOVER",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_REQUEST_START",
+      "sources": [
+        "extension/src/service-worker/chat-request-message-handler.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_REQUEST_STATUS",
+      "sources": [
+        "extension/src/service-worker/chat-request-message-handler.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_RESYNC",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CHAT_THREAD_CHANGED",
+      "sources": [
+        "extension/src/service-worker/panel-port-lifecycle.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CLEAR_BOUNDED_CDP_TARGET",
+      "sources": [
+        "extension/src/service-worker/bounded-cdp-runtime.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COLLECTION_CONTEXT",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts",
+        "extension/src/service-worker/component-collection-read.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COLLECTION_DISCOVER",
+      "sources": [
+        "extension/src/service-worker/analysis-data-acquisition.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COLLECTION_READ_STATIC",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COLLECTION_READ_VIEWPORT",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COLLECTION_READ_WINDOW",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COLLECTION_RELEASE",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COMPONENT_COLLECTION",
+      "sources": [
+        "extension/src/service-worker/component-collection-read.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COMPONENT_DESCRIBE",
+      "sources": [
+        "extension/src/service-worker/component-tools.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_COMPONENT_VISION_CHECK",
+      "sources": [
+        "extension/src/service-worker/act-vision-read.ts",
+        "extension/src/service-worker/ask-vision-consent.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_DIAGNOSTICS_SUMMARY",
+      "sources": [
+        "extension/src/service-worker/diagnostics-message-handler.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_DOCUMENT_CONTEXT",
+      "sources": [
+        "extension/src/service-worker/runtime-core-handlers.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_EXECUTE_R1",
+      "sources": [
+        "extension/src/service-worker/act-execution-runtime.ts",
+        "extension/src/service-worker/fixture-execution.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_METHOD_TRACE",
+      "sources": [
+        "extension/src/service-worker/diagnostics-message-handler.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_METHOD_TRACE_SETTINGS",
+      "sources": [
+        "extension/src/service-worker/diagnostics-message-handler.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_PAGE_RESOURCES",
+      "sources": [
+        "extension/src/service-worker/page-resource-store.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_PAGE_RESOURCE_READ",
+      "sources": [
+        "extension/src/service-worker/page-resource-store.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_PREPARE_UI_COMPLETION",
+      "sources": [
+        "extension/src/service-worker/act-postcondition-verifier.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_RELEASE_UI_COMPLETION",
+      "sources": [
+        "extension/src/service-worker/act-postcondition-verifier.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_SCROLL_INIT",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_SCROLL_RESET",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_SCROLL_RESTORE",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_SCROLL_STEP",
+      "sources": [
+        "extension/src/service-worker/collection-read-orchestrator.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_SNAPSHOT_PART",
+      "sources": [
+        "extension/src/service-worker/page-snapshot-reader.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_VERIFY_BOUNDED_POSTCONDITION",
+      "sources": [
+        "extension/src/service-worker/act-postcondition-verifier.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_VERIFY_UI_COMPLETION",
+      "sources": [
+        "extension/src/service-worker/act-postcondition-verifier.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_WORKFLOW_RECORD_START",
+      "sources": [
+        "extension/src/service-worker/workflow-record-start-message-handler.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_WORKFLOW_RECORD_STOP",
+      "sources": [
+        "extension/src/service-worker/workflow-record-stop-message-handler.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "CONTENT_WORKFLOW_SCRIPTS",
+      "sources": [
+        "extension/src/service-worker/workflow-source-analysis.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "DIAGNOSTICS_BUNDLE_EXPORT",
+      "sources": [
+        "extension/src/contracts/diagnostic-types.ts",
+        "extension/src/sidepanel/diagnostics-view.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "DIAGNOSTICS_LIST",
+      "sources": [
+        "extension/src/service-worker/diagnostics-message-handler.ts",
+        "extension/src/sidepanel/diagnostics-client.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "DIAGNOSTICS_SETTINGS_SET",
+      "sources": [
+        "extension/src/sidepanel/diagnostics-view.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "DOCUMENT_NOT_REGISTERED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "DOCUMENT_REGISTER",
+      "sources": [
+        "extension/src/content/entry.ts",
+        "extension/src/contracts/runtime-message.ts",
+        "extension/src/contracts/runtime-types.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "GET_AUTHORITATIVE_FIELD",
+      "sources": [
+        "extension/src/profile/mcp.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "GOAL_INCOMPLETE",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "GOAL_VERIFIED",
+      "sources": [
+        "extension/src/service-worker/act-goal-finalizer.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "LEARNED_PROFILE_MANAGE",
+      "sources": [
+        "extension/src/settings/learned-profile-management.ts",
+        "extension/src/settings/learned-profile-options.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "NAVIGATION_UNVERIFIED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "OFFSCREEN_FETCH",
+      "sources": [
+        "extension/src/offscreen/entry.ts",
+        "extension/src/service-worker/offscreen-provider-bridge.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "OFFSCREEN_PROVIDER_READY",
+      "sources": [
+        "extension/src/offscreen/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "OFFSCREEN_PROVIDER_READY_CHECK",
+      "sources": [
+        "extension/src/offscreen/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PAGE_COLLECTION_PROGRESS",
+      "sources": [
+        "extension/src/service-worker/runtime-lifecycle.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PAGE_SCOPE_REGISTER",
+      "sources": [
+        "extension/src/content/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PANEL_BIND",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PANEL_REQUEST",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PERMISSION_DECISION",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PERMISSION_REQUIRED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PERMISSION_REVOKE_ALL",
+      "sources": [
+        "extension/src/settings/settings-permissions.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PLAN_APPROVE",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "POSTCONDITION_UNVERIFIED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PREPARE_BOUNDED_CDP_TARGET",
+      "sources": [
+        "extension/src/content/entry.ts",
+        "extension/src/service-worker/bounded-cdp-runtime.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_AUTH_FAILED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_MODELS",
+      "sources": [
+        "extension/src/settings/provider-model-controls.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_NOT_CONFIGURED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_PLUGIN_FAILED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_PLUGIN_INCOMPATIBLE",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_PLUGIN_NOT_FOUND",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_SAVE",
+      "sources": [
+        "extension/src/settings/provider-form-save.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_TEST",
+      "sources": [
+        "extension/src/settings/provider-test-controls.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "PROVIDER_UNAVAILABLE",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "presentation adapter",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "RESOLVE_PROFILE",
+      "sources": [
+        "extension/src/settings/resolver-form.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "SOURCE_CONSENT_DECISION",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "TARGET_STALE",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "TRANSPORT_FAILED",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "UNSUPPORTED_COMPLETION",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_ANALYSIS_PREVIEW",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_ANALYZE",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_CATALOG_LIST",
+      "sources": [
+        "extension/src/settings/workflow-settings.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_CATALOG_UPDATE",
+      "sources": [
+        "extension/src/settings/workflow-settings.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_DISMISS",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_RECORD_START",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_RECORD_STOP",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_SAVE",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_SELECT",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_START",
+      "sources": [
+        "extension/src/sidepanel/entry.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_STATE_MISMATCH",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    },
+    {
+      "name": "WORKFLOW_STEP_LIMIT",
+      "sources": [
+        "extension/src/sidepanel/panel.ts"
+      ],
+      "decision": "review and replace at owning RF Sprint",
+      "expiry": "S37",
+      "deletion_check": "Zero production callers, no remaining live writer/executor; fixtures/history/importers explicitly classified"
+    }
+  ],
+  "temporary_adapters": [],
+  "adapter_rule": "No adapter introduced by S26. Future adapters must name caller, version, owner and expiry; no second dispatcher."
+}

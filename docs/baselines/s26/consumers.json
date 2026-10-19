@@ -1,0 +1,776 @@
+{
+  "schema_version": 1,
+  "consumers": [
+    {
+      "name": "native",
+      "owner": "RF26",
+      "sprint": "S28/S37",
+      "decision": "replace",
+      "implementation": "extension/src/native",
+      "caller_scope": "native-host",
+      "retirement_or_regression": "scripts/install-native-host-dev.ps1",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [],
+      "zero_caller_rule": "No production importer found: retain until S37 verifies dynamic routes, release assets and downstream users",
+      "registration": "No nativeMessaging permission or connectNative/sendNativeMessage composition in current extension; dev install script is explicitly a placeholder. NativeClient has unit-test callers only. Real registration/OS consumers UNVERIFIED; S28 replaces bridge and S37 retires old host."
+    },
+    {
+      "name": "profile resolver",
+      "owner": "RF21",
+      "sprint": "S35",
+      "decision": "adapter",
+      "implementation": "extension/src/profile/resolver.ts",
+      "caller_scope": "extension/src/service-worker",
+      "retirement_or_regression": "docs/platform-alignment.md",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [
+        {
+          "caller": "extension/src/service-worker/ask-chat-dependencies.ts",
+          "line": 3,
+          "target": "extension/src/profile/resolver.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-chat-start.ts",
+          "line": 5,
+          "target": "extension/src/profile/resolver.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/page-context-runtime.ts",
+          "line": 11,
+          "target": "extension/src/profile/resolver.ts"
+        }
+      ],
+      "zero_caller_rule": "Delete only after these callers plus dynamic messages/storage routes are migrated"
+    },
+    {
+      "name": "Business MCP",
+      "owner": "RF21",
+      "sprint": "S35",
+      "decision": "adapter",
+      "implementation": "extension/src/profile/business-mcp-client.ts",
+      "caller_scope": "extension/src/service-worker",
+      "retirement_or_regression": "docs/platform-alignment.md",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [
+        {
+          "caller": "extension/src/service-worker/ask-chat-runner.ts",
+          "line": 11,
+          "target": "extension/src/profile/business-mcp-client.ts"
+        }
+      ],
+      "zero_caller_rule": "Delete only after these callers plus dynamic messages/storage routes are migrated"
+    },
+    {
+      "name": "PDP",
+      "owner": "RF19",
+      "sprint": "S35",
+      "decision": "adapter",
+      "implementation": "extension/src/policy",
+      "caller_scope": "extension/src/service-worker",
+      "retirement_or_regression": "docs/platform-alignment.md",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [
+        {
+          "caller": "extension/src/policy/enterprise-policy.ts",
+          "line": 3,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/policy/permission-mode.ts",
+          "line": 6,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/policy/permission-mode.ts",
+          "line": 13,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/policy/plan-scope.ts",
+          "line": 1,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/sidepanel/approval-mode-sync.ts",
+          "line": 4,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/sidepanel/entry.ts",
+          "line": 5,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/cdp/bounded-adapter.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/cdp/bounded-adapter.ts",
+          "line": 3,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/contracts/chat-event-types.ts",
+          "line": 1,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/contracts/page-api-types.ts",
+          "line": 1,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/contracts/chat-events.ts",
+          "line": 5,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/contracts/page-method-types.ts",
+          "line": 1,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-core-handlers.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/analysis-data-acquisition.ts",
+          "line": 14,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-readiness.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-step-dependencies.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-storage.ts",
+          "line": 4,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/source-consent.ts",
+          "line": 3,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/source-consent.ts",
+          "line": 4,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-followup.ts",
+          "line": 10,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-followup.ts",
+          "line": 14,
+          "target": "extension/src/policy/enterprise-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/plan-approval-authority.ts",
+          "line": 1,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/enterprise-policy-runtime.ts",
+          "line": 7,
+          "target": "extension/src/policy/enterprise-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/core-message-handlers.ts",
+          "line": 3,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/core-message-handlers.ts",
+          "line": 7,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/core-message-handlers.ts",
+          "line": 8,
+          "target": "extension/src/policy/plan-scope.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-policy-evidence.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-policy-evidence.ts",
+          "line": 6,
+          "target": "extension/src/policy/enterprise-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/preferences-message-handler.ts",
+          "line": 6,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/preferences-message-handler.ts",
+          "line": 8,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/ask-chat-dependencies.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/fixture-act-start-types.ts",
+          "line": 4,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/fixture-act-start-types.ts",
+          "line": 5,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/fixture-act-start.ts",
+          "line": 7,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/fixture-act-start.ts",
+          "line": 8,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/approval-runtime.ts",
+          "line": 6,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/approval-runtime.ts",
+          "line": 11,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/approval-runtime.ts",
+          "line": 15,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/run-control-message-handler.ts",
+          "line": 5,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-state.ts",
+          "line": 6,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-state.ts",
+          "line": 10,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-state.ts",
+          "line": 11,
+          "target": "extension/src/policy/plan-scope.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/ask-vision-consent.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/ask-vision-consent.ts",
+          "line": 3,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-execution-runtime.ts",
+          "line": 8,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-executor.ts",
+          "line": 10,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-executor.ts",
+          "line": 14,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-executor.ts",
+          "line": 15,
+          "target": "extension/src/policy/plan-scope.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-proposal-executor.ts",
+          "line": 33,
+          "target": "extension/src/policy/enterprise-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/ask-chat-runner.ts",
+          "line": 6,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/ask-chat-runner.ts",
+          "line": 27,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/model-decision.ts",
+          "line": 9,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-chat.ts",
+          "line": 4,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-domain-handlers.ts",
+          "line": 1,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/storage-bootstrap.ts",
+          "line": 1,
+          "target": "extension/src/policy/permission-manager.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/storage-bootstrap.ts",
+          "line": 2,
+          "target": "extension/src/policy/permission-mode.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-step-runner.ts",
+          "line": 9,
+          "target": "extension/src/policy/approval-policy.ts"
+        },
+        {
+          "caller": "extension/src/settings/approval-settings.ts",
+          "line": 8,
+          "target": "extension/src/policy/approval-policy.ts"
+        }
+      ],
+      "zero_caller_rule": "Delete only after these callers plus dynamic messages/storage routes are migrated"
+    },
+    {
+      "name": "audit",
+      "owner": "RF21",
+      "sprint": "S35",
+      "decision": "adapter",
+      "implementation": "extension/src/service-worker/runtime-evidence.ts",
+      "caller_scope": "extension/src/service-worker",
+      "retirement_or_regression": "docs/platform-alignment.md",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [
+        {
+          "caller": "extension/src/service-worker/runtime-platform.ts",
+          "line": 9,
+          "target": "extension/src/service-worker/runtime-evidence.ts"
+        }
+      ],
+      "zero_caller_rule": "Delete only after these callers plus dynamic messages/storage routes are migrated"
+    },
+    {
+      "name": "Studio",
+      "owner": "RF21",
+      "sprint": "S35",
+      "decision": "adapter",
+      "implementation": "extension/src/studio",
+      "caller_scope": "extension/src/service-worker",
+      "retirement_or_regression": "docs/platform-alignment.md",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [],
+      "zero_caller_rule": "No production importer found: retain until S37 verifies dynamic routes, release assets and downstream users"
+    },
+    {
+      "name": "workflow",
+      "owner": "RF22",
+      "sprint": "S29/S33/S35",
+      "decision": "convert",
+      "implementation": "extension/src/service-worker/workflow-catalog-runtime.ts",
+      "caller_scope": "extension/src/settings",
+      "retirement_or_regression": "scripts/chrome-s14-workflow-smoke.mjs",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [
+        {
+          "caller": "extension/src/service-worker/act-step-dependencies.ts",
+          "line": 18,
+          "target": "extension/src/service-worker/workflow-catalog-runtime.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/runtime-platform.ts",
+          "line": 6,
+          "target": "extension/src/service-worker/workflow-catalog-runtime.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/workflow-resource-tools.ts",
+          "line": 5,
+          "target": "extension/src/service-worker/workflow-catalog-runtime.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-session-types.ts",
+          "line": 53,
+          "target": "extension/src/service-worker/workflow-catalog-runtime.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/workflow-resource-store.ts",
+          "line": 1,
+          "target": "extension/src/service-worker/workflow-catalog-runtime.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/workflow-selection-codec.ts",
+          "line": 8,
+          "target": "extension/src/service-worker/workflow-catalog-runtime.ts"
+        }
+      ],
+      "zero_caller_rule": "Delete only after these callers plus dynamic messages/storage routes are migrated"
+    },
+    {
+      "name": "learned profile manager",
+      "owner": "RF20",
+      "sprint": "S29/S36",
+      "decision": "convert",
+      "implementation": "extension/src/learned-profile",
+      "caller_scope": "extension/src/settings",
+      "retirement_or_regression": "scripts/chrome-learned-profile-editor.mjs",
+      "compatibility": "UNVERIFIED outside controlled Browser fixtures",
+      "static_callers": [
+        {
+          "caller": "extension/src/learned-profile/failure-feedback.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/replace-recipe.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/command-definition.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/replace-recipe.ts",
+          "line": 7,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-definition.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-executor.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/command-definition.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-executor.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/command-parser.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-executor.ts",
+          "line": 4,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/catalog-codec.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/task-key.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/failure-feedback.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 4,
+          "target": "extension/src/learned-profile/management.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 5,
+          "target": "extension/src/learned-profile/replace-recipe.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 6,
+          "target": "extension/src/learned-profile/validation.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 14,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/store.ts",
+          "line": 15,
+          "target": "extension/src/learned-profile/identity.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-cost.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-cost.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/command-parser.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-binding.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/learning-feedback.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/learning-feedback.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/store.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/command-cost.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/command-binding.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/learning-feedback.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 4,
+          "target": "extension/src/learned-profile/binding.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 5,
+          "target": "extension/src/learned-profile/tool-executor.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 6,
+          "target": "extension/src/learned-profile/command-executor.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 9,
+          "target": "extension/src/learned-profile/session-tools.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 15,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session.ts",
+          "line": 16,
+          "target": "extension/src/learned-profile/store.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-parser.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/tool-schemas.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session-tools.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session-tools.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/tool-schemas.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/session-tools.ts",
+          "line": 4,
+          "target": "extension/src/learned-profile/command-definition.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/catalog-codec.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/validation.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/catalog-codec.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/management.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/tool-executor.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/task-key.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/tool-executor.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/validation.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/tool-executor.ts",
+          "line": 4,
+          "target": "extension/src/learned-profile/command-definition.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/tool-executor.ts",
+          "line": 5,
+          "target": "extension/src/learned-profile/command-parser.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/tool-executor.ts",
+          "line": 7,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/command-validation.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/identity.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/task-key.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/validation.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/command-validation.ts"
+        },
+        {
+          "caller": "extension/src/learned-profile/validation.ts",
+          "line": 10,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/learned-profile-runtime.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/identity.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/learned-profile-runtime.ts",
+          "line": 2,
+          "target": "extension/src/learned-profile/store.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/learned-profile-runtime.ts",
+          "line": 3,
+          "target": "extension/src/learned-profile/session.ts"
+        },
+        {
+          "caller": "extension/src/service-worker/act-session-types.ts",
+          "line": 30,
+          "target": "extension/src/learned-profile/session.ts"
+        },
+        {
+          "caller": "extension/src/settings/learned-profile-detail.ts",
+          "line": 5,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/settings/learned-profile-management.ts",
+          "line": 4,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/settings/learned-profile-history.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        },
+        {
+          "caller": "extension/src/settings/learned-profile-list.ts",
+          "line": 1,
+          "target": "extension/src/learned-profile/types.ts"
+        }
+      ],
+      "zero_caller_rule": "Delete only after these callers plus dynamic messages/storage routes are migrated"
+    }
+  ],
+  "platforms": [
+    {
+      "os": "Linux",
+      "decision": "preserve release qualification in S36",
+      "runtime": "UNVERIFIED"
+    },
+    {
+      "os": "Windows",
+      "decision": "preserve release qualification in S36",
+      "runtime": "UNVERIFIED"
+    },
+    {
+      "os": "macOS",
+      "decision": "preserve release qualification in S36",
+      "runtime": "UNVERIFIED"
+    }
+  ],
+  "artifacts": [
+    "dist-extension",
+    "dist",
+    "native-host",
+    "deployment/compatibility.example.json"
+  ],
+  "dependency_scan_rule": "Scan static imports, runtime message names, native framing/registration, manifest assets and storage readers/writers before deletion. Platform C01-C09 remains backlog.",
+  "native_protocol": {
+    "schema_version": 1,
+    "host": "native-host/Program.cs",
+    "client": "extension/src/native/native-client.ts",
+    "kinds": [
+      "ASK_INTERPRETATION",
+      "ACTION_PROPOSAL",
+      "BIND_SESSION",
+      "ISSUE_CONFIRMATION",
+      "VERIFY_CONFIRMATION",
+      "PROFILE_REPLAY_CAS",
+      "CANCEL_REQUEST"
+    ],
+    "decision": "replace in S28, retire in S37",
+    "registration": "UNVERIFIED; installer placeholder, no nativeMessaging manifest permission"
+  },
+  "release_sources": [
+    "scripts/build-extension.mjs",
+    "scripts/package-local.mjs",
+    "scripts/release-smoke.mjs",
+    "scripts/install-native-host-dev.ps1",
+    "deployment/compatibility.example.json",
+    "native-host/ContextPilot.Host.csproj"
+  ]
+}
