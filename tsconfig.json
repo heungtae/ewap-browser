@@ -1,5 +1,12 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": { "noEmit": true },
-  "include": ["extension/src/**/*.ts", "extension/tests/**/*.ts"]
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "extension/src/**/*.ts",
+    "extension/tests/**/*.ts",
+    "packages/**/*.ts",
+    "apps/**/*.ts"
+  ]
 }

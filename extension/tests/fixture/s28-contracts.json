@@ -1,0 +1,415 @@
+{
+  "helloSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "kind": { "type": "string", "const": "hello" },
+      "major": { "type": "number", "const": 1 },
+      "minor": { "type": "number", "const": 0 },
+      "installationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "profileId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "extensionId": { "type": "string", "pattern": "^[a-p]{32}$" },
+      "nonce": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "proof": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    },
+    "required": [
+      "kind",
+      "major",
+      "minor",
+      "installationId",
+      "profileId",
+      "extensionId",
+      "nonce",
+      "proof"
+    ],
+    "additionalProperties": false
+  },
+  "envelopeSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "major": { "type": "number", "const": 1 },
+      "minor": { "type": "number", "const": 0 },
+      "messageId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "connectionId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "connectionEpoch": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 9007199254740991
+      },
+      "installationId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "profileId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "sender": { "type": "string", "const": "extension" },
+      "sentAt": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "deadline": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "payloadDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "payload": {
+        "anyOf": [
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "transfer.open" },
+                  "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+                  "count": { "type": "integer", "minimum": 1, "maximum": 256 },
+                  "bytes": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8388608
+                  },
+                  "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                  "deadline": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "id",
+                  "count",
+                  "bytes",
+                  "digest",
+                  "deadline"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "transfer.chunk" },
+                  "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "base64": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 174764,
+                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                  }
+                },
+                "required": ["kind", "id", "index", "base64"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "transfer.ack" },
+                  "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+                  "index": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["kind", "id", "index"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "transfer.complete" },
+                  "id": { "type": "string", "minLength": 1, "maxLength": 128 }
+                },
+                "required": ["kind", "id"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "transfer.cancel" },
+                  "id": { "type": "string", "minLength": 1, "maxLength": 128 }
+                },
+                "required": ["kind", "id"],
+                "additionalProperties": false
+              }
+            ]
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "heartbeat" }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "capabilities" }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "resumeEvents" },
+                  "afterSequence": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["kind", "afterSequence"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "browser.connected" },
+                  "generation": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["kind", "generation"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "browser.disconnected" }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "required": [
+      "major",
+      "minor",
+      "messageId",
+      "connectionId",
+      "connectionEpoch",
+      "installationId",
+      "profileId",
+      "sender",
+      "sentAt",
+      "deadline",
+      "payloadDigest",
+      "payload"
+    ],
+    "additionalProperties": false
+  },
+  "challengeSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "kind": { "type": "string", "const": "challenge" },
+      "nonce": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "major": { "type": "number", "const": 1 },
+      "minor": { "type": "number", "const": 0 }
+    },
+    "required": ["kind", "nonce", "major", "minor"],
+    "additionalProperties": false
+  },
+  "readySchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "kind": { "type": "string", "const": "ready" },
+      "connectionId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "connectionEpoch": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 9007199254740991
+      },
+      "capabilities": {
+        "maxItems": 2,
+        "type": "array",
+        "items": { "type": "string", "enum": ["heartbeat", "resumeEvents"] }
+      },
+      "taskReady": { "type": "boolean", "const": false }
+    },
+    "required": [
+      "kind",
+      "connectionId",
+      "connectionEpoch",
+      "capabilities",
+      "taskReady"
+    ],
+    "additionalProperties": false
+  },
+  "responseSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "messageId": { "type": "string", "minLength": 1, "maxLength": 128 },
+      "result": {}
+    },
+    "required": ["messageId", "result"],
+    "additionalProperties": false
+  },
+  "transferCommandSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "transfer.open" },
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "count": { "type": "integer", "minimum": 1, "maximum": 256 },
+          "bytes": { "type": "integer", "minimum": 1, "maximum": 8388608 },
+          "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "deadline": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["kind", "id", "count", "bytes", "digest", "deadline"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "transfer.chunk" },
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "base64": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 174764,
+            "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+          }
+        },
+        "required": ["kind", "id", "index", "base64"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "transfer.ack" },
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["kind", "id", "index"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "transfer.complete" },
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 }
+        },
+        "required": ["kind", "id"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "transfer.cancel" },
+          "id": { "type": "string", "minLength": 1, "maxLength": 128 }
+        },
+        "required": ["kind", "id"],
+        "additionalProperties": false
+      }
+    ]
+  },
+  "replaySchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "events": {
+        "maxItems": 4096,
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "sequence": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "revision": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": { "type": "string", "maxLength": 128 },
+            "text": { "type": "string", "maxLength": 65536 }
+          },
+          "required": ["sequence", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "cursor": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "resync": { "type": "boolean" },
+      "snapshot": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "state": { "type": "string", "const": "waiting" }
+            },
+            "required": ["revision", "state"],
+            "additionalProperties": false
+          },
+          { "type": "null" }
+        ]
+      }
+    },
+    "required": ["events", "cursor", "resync"],
+    "additionalProperties": false
+  },
+  "bridgeEventSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "sequence": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 9007199254740991
+      },
+      "revision": {
+        "type": "integer",
+        "exclusiveMinimum": 0,
+        "maximum": 9007199254740991
+      },
+      "kind": { "type": "string", "maxLength": 128 },
+      "text": { "type": "string", "maxLength": 65536 }
+    },
+    "required": ["sequence", "revision", "kind"],
+    "additionalProperties": false
+  }
+}

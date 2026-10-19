@@ -1,0 +1,131 @@
+{
+  "schema": "s27-verification/v1",
+  "at": "2026-10-19",
+  "sprintStatus": "IN_PROGRESS",
+  "cards": {
+    "C1": "IMPLEMENTED",
+    "C2": "IMPLEMENTED",
+    "C3": "IMPLEMENTED",
+    "C4": "IMPLEMENTED",
+    "C5": "FEASIBILITY_FAILED"
+  },
+  "local": {
+    "unit": {
+      "passed": 1048,
+      "failed": 0
+    },
+    "s27": {
+      "passed": 55,
+      "files": 7
+    },
+    "fixture": {
+      "passed": 1
+    },
+    "e2e": {
+      "passed": 1
+    },
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "packageBoundaries": {
+      "result": "PASS",
+      "sourceModules": 20,
+      "exportsAndBundleGraph": true
+    },
+    "extensionBoundaries": {
+      "result": "PASS",
+      "sourceModules": 423
+    },
+    "inventory": {
+      "result": "PASS",
+      "files": 1201,
+      "owners": 30,
+      "preservedHashes": 495
+    },
+    "schemaGoldens": {
+      "result": "PASS",
+      "count": 5
+    },
+    "frozenInstall": "PASS",
+    "extensionBuild": "PASS_WITHOUT_VERSION_BUMP",
+    "packageValidation": "PASS",
+    "version": "0.1.117",
+    "sourceSize": {
+      "result": "BASELINE_FAILURE",
+      "existing": 88,
+      "newS27": 0
+    }
+  },
+  "live": {
+    "result": "FEASIBILITY_FAILED",
+    "tasks": 12,
+    "calls": 96,
+    "acceptedDecisions": 0,
+    "qualifiedTasks": 0,
+    "protocolSourceDigest": "f24d9d72ed0d4f00e22941aef448dcb620dae4403fa800f15c191454a13615ef",
+    "gateCommand": "pnpm check:s27:qualification",
+    "gateExit": 1,
+    "S33CompletionAllowed": false,
+    "GPTControllerCalls": 0,
+    "browserDispatches": 0,
+    "approvalFacts": 0
+  },
+  "newSourceHashes": {
+    "extension/tests/fixture/s27-binding-context.ts": "7ede429520e3a9862eb684bf7f7b1f0de3a5d70bbd7c6972c386d5b538d71849",
+    "extension/tests/fixture/s27-candidates.ts": "80b75a273de04e6fcdc03faa4e26f9066a4007dc1e4e9a35ced88db6fb080ed4",
+    "extension/tests/fixture/s27-scenarios.ts": "cf1bc8c18f99afae16928205f172d0f33cd0c9fad7ba42a7dc0881c26b4ac4ce",
+    "extension/tests/unit/migration/s27/bindings.test.ts": "acd84bccb06af8147209930c7fb47654ef2ef9abd48e09766318f3153192b3a8",
+    "extension/tests/unit/migration/s27/controller.test.ts": "4e5f7553fb25815ef45406344a3eee0c1cbfe12e07bff75d6966cb4ae8bc7028",
+    "extension/tests/unit/migration/s27/golden.test.ts": "0adaa07d60789cced90b08b0725c51e23f6803578aa08871e26e47907158be65",
+    "extension/tests/unit/migration/s27/integrity.test.ts": "0646d8db49b6b32d27a216f554ed2e2b08889777767db2d1f42cf9b14326280a",
+    "extension/tests/unit/migration/s27/native.test.ts": "072b5f771d8d3296de29c4dfc3eb9831e54f8c2748f0ce55e33bb06aa4d864ec",
+    "extension/tests/unit/migration/s27/negative-boundaries.test.ts": "e41fdd045dda5eaa7ec5e8dd08fce90bfa3f6a6af9a594380f8c5ad14995812c",
+    "extension/tests/unit/migration/s27/scenarios.test.ts": "83bafca7b65d3bfe28334263e64aad151d8682f87e9439399579759a4cfa36fb",
+    "extension/tests/unit/migration/s27/support.ts": "c231bf2738acb3c8ccebf7c4918382c6ab9e04b900b69eb3a1a1f0016795a08e",
+    "package.json": "a5dfe385f578afdd889e1ab11021ab3a9c7b71b366f3cc60c86c8db2c8045ba7",
+    "packages/provider-adapters/package.json": "eb0ef36c10a561a004090bf5a1d45bb7560c5e122a7f0938c03dda70a6fe8f5b",
+    "packages/provider-adapters/src/jev/client.ts": "7c01b88c74c935b3fa32bc723efdfbc06a094775e5be55e34276b9d66aaa37c7",
+    "packages/provider-adapters/src/jev/index.ts": "286c0917db7e56579de737cbb8319582c39d57d522218120a386f483c935740f",
+    "packages/provider-adapters/src/jev/native-response.ts": "65c1503bcf7c86ea74953f5cbfc8a8b872af3d80f01d9a8414e4d54bd18f6de3",
+    "packages/provider-adapters/src/jev/read-native-json.ts": "ba83b050f64953ed14006618fd93bbc29b351f1877b34f10e1f0804175cb5b1e",
+    "packages/task-engine/package.json": "037ef460af92769e13e4ec9b389ae8b64d0733645d31cbc7fe739879eb96c267",
+    "packages/task-engine/src/decisions/accept-result.ts": "a12697be8a0a55d8e916399d44a4c51775dfb5f290d0a3676a137be3f3b39697",
+    "packages/task-engine/src/decisions/bind-argument.ts": "f8a97df1de7c9e06066badf9c997694b4c6f86c2b00805adfc52df6d5d24e013",
+    "packages/task-engine/src/decisions/bind-fragment.ts": "a21c5c550e51c2cbe527407c08c736c1c6c836260f8e11207713e7d2e287af35",
+    "packages/task-engine/src/decisions/binding-schema.ts": "7fe67ce3f7478ee51bf3a02fa349802baffd7857b6e4aa2c9e6f0bc427030cad",
+    "packages/task-engine/src/decisions/budget.ts": "81b20ab7ef0870939e067a94f6bac47900386d48e1622ff3cc6fee13be722fbb",
+    "packages/task-engine/src/decisions/candidates.ts": "a1cbe67a225cd08ec548a3237fb6bc1368bfc737dcdf9bfc974a2a91824ce2f9",
+    "packages/task-engine/src/decisions/controller.ts": "5d3da4bd05c39eaf07042e224f74b394e3eeed6d84b393c530169b6c90bbad76",
+    "packages/task-engine/src/decisions/digest.ts": "af2c4af968137d63265350662ed8b9bdf614e108974029df882c391956f8ba12",
+    "packages/task-engine/src/decisions/frame.ts": "041ed61fa2d484d101c8831863cf56e8440ec21375a7e12965339930d5b945e6",
+    "packages/task-engine/src/decisions/index.ts": "c34f319dbb40bc19dfe87e384b54ad8754375098d6572b5fd29fdcf05a6ce9ff",
+    "packages/task-engine/src/decisions/mode-capabilities.ts": "7161cabe8d0e27c741c1e0b27d2be8d5b5a9e908698f8204b7220c3666b1823e",
+    "packages/task-engine/src/decisions/plan.ts": "47bf57bf8da4e41ebb575148ae3646764e1f5d94fa0fbf3afd7e5d0395813a4b",
+    "packages/task-engine/src/decisions/port.ts": "79f8ea95350396d4b32ca07d4cc971d2a559d04f6ff4847c787940ea5834ff90",
+    "packages/task-engine/src/decisions/questions.ts": "3aa70e8f10cca3b6409a7974e90003f5cdec79adf167a1cfa5453cccd5929a56",
+    "packages/task-engine/src/decisions/relative-day.ts": "c24a9b324e5887874d0c72d591f57125fa9dcccdf39de3c36dee0c241fdcab83",
+    "packages/task-engine/src/decisions/schema.ts": "d8f4dbaddd3f1e8552f596ee4ed0508d5c187170e8325c8881f48fb60d6c8361",
+    "pnpm-lock.yaml": "a9311406e01d4395c26255b593365a924423b10eaef78626627ba6215f9b1198",
+    "pnpm-workspace.yaml": "52af94146ffd0666e76e572178044ae26df28cefebd7930b83c2d58048f603fa",
+    "scripts/s27/bundle.mjs": "eb493877240d2bb0d0677baca5c73a9179434b5d1cd4094acfde620729037c73",
+    "scripts/s27/check-boundaries.mjs": "2b3cd461b4628d57f4fbf7de2eec474d59017ed0eeebfdfb49d6cae53b152014",
+    "scripts/s27/check-inventory.mjs": "36d9bd2c281f8d9afccf7b8d7d150242e8bf3c0fec29b198314851efafdd963d",
+    "scripts/s27/check-qualification.mjs": "b63d28380df2e9ef10ce8b9dd24fed84706b3c2130ffff30b9c8342f59cc0628",
+    "scripts/s27/export-contracts.mjs": "941e423dc611aa2060d29cc78a904fe1796933a79bddb41e917d3f2b9bdd24bb",
+    "scripts/s27/live-qualification.mjs": "b9deea0fcd6aa09a887239537624f555f8c1dbc6e5ac031f86a8db2248e96359",
+    "tsconfig.json": "3f8c83ae9d36bd688caa76dae96f5fce44e10c47bc7075c918506b4997822ab6",
+    "tsconfig.packages.json": "61c74a34c6e37569ee86d3e67e65296ccd0d276babbc9ef4a62c85d6c5cf1dd8"
+  },
+  "failedAttempts": {
+    "live": [
+      "docs/evidence/s27-live-first-attempt-2026-10-19.json",
+      "docs/evidence/s27-live-finite-answers-2026-10-19.json",
+      "docs/evidence/s27-live-provenance-2026-10-19.json",
+      "docs/evidence/s27-live-final-2026-10-19.json"
+    ],
+    "local": [
+      "Missing imports in new test were fixed",
+      "Generated schemas initially needed Prettier formatting; exporter now emits formatter-consistent goldens",
+      "Original 326-line scenario fixture split into three modules under 199 lines"
+    ]
+  }
+}

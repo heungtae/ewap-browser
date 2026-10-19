@@ -1,0 +1,11 @@
+{
+  "name": "@contextpilot/shared",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    "./bridge": "./src/bridge.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  }
+}

@@ -14,7 +14,7 @@
 
 ## Web Codebase Agent migration S26-S37
 
-**S26 baseline delivered 2026-10-19; S27–S37 Planned.** These 12 Sprints implement the full internal
+**S26 baseline delivered 2026-10-19; S27 In Progress (live gate failed); S28 In Progress; S29–S37 Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and
 72 verification scenarios define the original scope; completion and runtime evidence are recorded per Sprint.
 
@@ -28,8 +28,8 @@ baseline first; S27 qualifies the JEV controller before S33 can complete.
 | Sprint                                       | Migration slice | Scope                                                    | Status  | Cards / scenarios |
 | -------------------------------------------- | --------------- | -------------------------------------------------------- | ------- | ----------------- |
 | [S26](s26-migration-baseline.md)             | M00             | Migration baseline and preservation inventory            | Completed | 5 / 6             |
-| [S27](s27-jev-controller-contract.md)        | M01             | JEV controller protocol and feasibility                  | Planned | 5 / 6             |
-| [S28](s28-workspace-backend-bridge.md)       | M02             | Workspace, preserved UI seam and local backend bridge    | Planned | 5 / 6             |
+| [S27](s27-jev-controller-contract.md)        | M01             | JEV controller protocol and feasibility                  | In Progress | 5 / 6             |
+| [S28](s28-workspace-backend-bridge.md)       | M02             | Workspace, preserved UI seam and local backend bridge    | In Progress ([evidence](../evidence/s28-workspace-bridge-2026-10-19.md)) | 5 / 6             |
 | [S29](s29-semantic-codebase-construction.md) | M03             | Semantic Codebase construction and repository            | Planned | 7 / 6             |
 | [S30](s30-shared-tool-policy-runtime.md)     | M04             | Shared Tool Registry, policy and browser execution       | Planned | 5 / 6             |
 | [S31](s31-durable-task-recovery.md)          | M05             | Durable tasks, dispatch receipts and recovery            | Planned | 5 / 6             |

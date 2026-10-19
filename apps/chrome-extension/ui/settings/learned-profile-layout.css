@@ -1,0 +1,128 @@
+.manager-header,
+.brand-heading,
+.list-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.manager-header,
+.list-heading {
+  justify-content: space-between;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+}
+.manager-intro {
+  margin: 18px 0;
+}
+.manager-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.6fr);
+  gap: 18px;
+  align-items: start;
+}
+.manager-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--card);
+}
+.profile-list {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+  gap: 14px;
+  position: sticky;
+  top: 18px;
+  height: max(440px, calc(100vh - 170px));
+}
+#learned-profile-count,
+#learned-profile-page {
+  font-size: 12px;
+  color: var(--muted);
+}
+#learned-profiles {
+  display: grid;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+}
+.learned-profile-row {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  color: var(--text);
+}
+.learned-profile-row[aria-pressed="true"] {
+  border-color: var(--accent-2);
+  background: rgba(108, 99, 255, 0.14);
+}
+.profile-row-name,
+.profile-row-origin {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-row-origin,
+.profile-row-info,
+.profile-row-updated {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.profile-row-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.profile-row-state {
+  color: #a7f3d0;
+}
+.profile-row-state[data-enabled="false"] {
+  color: #fca5a5;
+}
+.profile-list .list-footer {
+  display: grid;
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.profile-list .list-footer .button-row {
+  justify-content: space-between;
+}
+.profile-editor {
+  min-height: 300px;
+}
+@media (max-width: 760px) {
+  main {
+    width: calc(100% - 24px);
+    padding-top: 18px;
+  }
+  .manager-header {
+    align-items: start;
+    flex-direction: column;
+  }
+  .manager-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .manager-card {
+    padding: 16px;
+  }
+  .profile-list {
+    position: static;
+    height: auto;
+    grid-template-rows: auto;
+  }
+  #learned-profiles {
+    max-height: 320px;
+  }
+}

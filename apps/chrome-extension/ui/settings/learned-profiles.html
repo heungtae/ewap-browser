@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ContextPilot 프로파일 관리</title>
+    <link rel="stylesheet" href="learned-profiles.css" />
+    <link rel="stylesheet" href="learned-profile-layout.css" />
+  </head>
+  <body>
+    <main id="learned-profile-section">
+      <header class="manager-header">
+        <div class="brand-heading">
+          <span class="brand-mark" aria-hidden="true">✦</span>
+          <div>
+            <h1>프로파일 관리</h1>
+            <p>ContextPilot · 학습된 페이지 프로필</p>
+          </div>
+        </div>
+        <label class="checkbox-row">
+          <input id="learned-profile-enabled" type="checkbox" disabled />
+          자동 저장 및 재사용
+        </label>
+      </header>
+      <p class="manager-intro">
+        페이지별 프로파일을 선택해 사용 설정, 작업 정보와 변경 이력을
+        관리하세요. 이 Chrome profile에 저장된 정보만 표시합니다.
+      </p>
+      <div class="manager-layout">
+        <section
+          class="manager-card profile-list"
+          aria-labelledby="profile-list-title"
+        >
+          <div class="list-heading">
+            <h2 id="profile-list-title">저장된 프로파일</h2>
+            <span id="learned-profile-count"></span>
+          </div>
+          <label for="learned-profile-filter">페이지 또는 표시 이름 검색</label>
+          <input
+            id="learned-profile-filter"
+            type="search"
+            maxlength="80"
+            placeholder="사이트 주소 또는 프로파일 이름"
+          />
+          <div id="learned-profiles" aria-label="프로파일 목록"></div>
+          <div class="list-footer">
+            <div class="button-row">
+              <button id="learned-profile-previous" type="button">이전</button>
+              <span id="learned-profile-page" aria-live="polite"></span>
+              <button id="learned-profile-next" type="button">다음</button>
+            </div>
+            <div class="button-row">
+              <button id="learned-profile-refresh" type="button">
+                새로 고침
+              </button>
+              <button id="learned-profile-clear" class="danger" type="button">
+                전체 삭제
+              </button>
+            </div>
+          </div>
+        </section>
+        <section class="manager-card profile-editor" aria-label="프로파일 상세">
+          <div id="learned-profile-detail">
+            <p class="empty-state">목록에서 프로파일을 선택하세요.</p>
+          </div>
+        </section>
+      </div>
+      <output id="learned-profile-status" aria-live="polite"></output>
+    </main>
+    <script type="module" src="../js/learned-profiles.js"></script>
+  </body>
+</html>

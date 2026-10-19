@@ -1,0 +1,2719 @@
+{
+  "schema": "s27-qualification/v1",
+  "at": "2026-10-19T01:55:48.821Z",
+  "model": "jev-1.13.0",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "protocol": "wca.task/v1",
+  "templateVersion": "controller-v1",
+  "corpusHash": "88b2a25e4a5fd5bac4cd2523cc09fd5e1cdb7c4ef37641b7e3d258b318742570",
+  "scope": "Live native JEV decisions over synthetic graphs; no Chrome dispatch, actual GPT analyst, MCP or OS qualification",
+  "result": "FEASIBILITY_FAILED",
+  "results": [
+    {
+      "id": "S27-H-aggregation-en-forward",
+      "language": "en",
+      "order": "forward",
+      "scenario": "aggregation",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "60c39a5c57ab8d09911ce8d42a89acf0a23d3d5e967523d9d0c44bfefd416564",
+          "candidateDigest": "3d6520aaed90a91ffb0e3d9dddc556737644ae530635ea80f9e2c043afcbd772",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "READ",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.35,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1708,
+            "outputTokens": 99,
+            "activeMs": 316,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 318
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "6bb4e96fa10552a71ff1fc2c6a05bb875b71601c4b024c796d89d44bef077be7",
+          "candidateDigest": "b52b95915867f6b19325f5182b92595c33677285de23e7bcfae77f8eedb3339f",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.52,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3269,
+            "outputTokens": 194,
+            "activeMs": 531,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 216
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "edf5774284e3685a817dafdbe27260d0963ca482a1332a0f3f096a8625ce232f",
+          "candidateDigest": "270c9799fb6c7c66ff8d0990bd749694d7ecc65564d699f8ff0aa88330509c2b",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4959,
+            "outputTokens": 294,
+            "activeMs": 715,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 184
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "9ff5cc708e690821eb3f14f7535f211d52b8bb12836c71582b23c1f65a77ecc3",
+          "candidateDigest": "270c9799fb6c7c66ff8d0990bd749694d7ecc65564d699f8ff0aa88330509c2b",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6646,
+            "outputTokens": 394,
+            "activeMs": 900,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 186
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "4298f798d84c85d3c6276bde80c41febb2166fd4eacef4cf31366a229e2a09d6",
+          "candidateDigest": "40b57853d1ad0007a00cc0b548adaea1d138d759aba8232e3a8455d436ba407e",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "aggregate",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.54,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8195,
+            "outputTokens": 476,
+            "activeMs": 1095,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 195
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "10699da812e7e608c9111705162f4133005ca95976261a95dbbaf9a4df5718b4",
+          "candidateDigest": "f0714d74d38117e4cf818815697ea6fd0ddeea751b77d297e4fc84ae74302d2c",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.27,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 9799,
+            "outputTokens": 573,
+            "activeMs": 1271,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 177
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "a2066cf086dc90b6946f8e77f411d4168e90e3f1bf9c29ccae6f85a26820bfb0",
+          "candidateDigest": "eb8b0c617a992076e43e4ddcf648742fe909926cf5ba57616b367d36c0d44fd1",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.27,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 11515,
+            "outputTokens": 673,
+            "activeMs": 1456,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 186
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "0a79f00009d54f4ecc383f3c3f19be826a81f820c0165d11c3d97cf92757380a",
+          "candidateDigest": "b52b95915867f6b19325f5182b92595c33677285de23e7bcfae77f8eedb3339f",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.53,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13086,
+            "outputTokens": 768,
+            "activeMs": 1633,
+            "overallDeadline": 1792375548822
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 178
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13086,
+        "outputTokens": 768,
+        "activeMs": 1633,
+        "overallDeadline": 1792375548822
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-aggregation-en-reversed",
+      "language": "en",
+      "order": "reversed",
+      "scenario": "aggregation",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "5eba524291e7fe4b50204b9b10632ffbeac702aa0497ae4d47b3f92268a3e0a7",
+          "candidateDigest": "3ce25c589c49218e9aa4c18c7a7a9d3f05a75a1f5dc58bf6f0fe4d4eb11de42a",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "READ",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.37,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1709,
+            "outputTokens": 99,
+            "activeMs": 183,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 183
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "7b541e3407859a1d6b263796df4246cd5ef519143f0c42742f3852ff393b609f",
+          "candidateDigest": "36ace30f453bfbfd38ce57c42ed81abd04d400795a130770bb514fea37650000",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.48,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3261,
+            "outputTokens": 194,
+            "activeMs": 374,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 191
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "926fee71d3c493bffe99f12ec920bab88a18176b5d4ec46ecd9cacc7c9cca1bc",
+          "candidateDigest": "7949d5b1b6a1a05e1f862af38606550b5409bfecd0284642db1d20179740a4de",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4943,
+            "outputTokens": 294,
+            "activeMs": 562,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 188
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "6b0c5e0d29dfe6ab12ffedcabb7e5443b5b21d989b3b489572edfaaed72cc4e6",
+          "candidateDigest": "7949d5b1b6a1a05e1f862af38606550b5409bfecd0284642db1d20179740a4de",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.28,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6625,
+            "outputTokens": 394,
+            "activeMs": 754,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 192
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "72f4dd78528dc4bd9e3c03ac451df6209aff5e11ac998c65c18e3b1a9465051e",
+          "candidateDigest": "84f3803ce8f3311775cd4eb46d529bf87b67ee1b620fe0bcffcded9a2f7c5af5",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "aggregate",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.56,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8165,
+            "outputTokens": 476,
+            "activeMs": 962,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 209
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "c76aa50cfdd43319529030ec3f1a0b9292dc773615df9f7e1e4612b527dbff84",
+          "candidateDigest": "f612144cb83bdda3ef33a2305f58203b4e165daf3ad7a40369d2859ac3dd1567",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.26,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 9761,
+            "outputTokens": 573,
+            "activeMs": 1141,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 180
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "93831ece801ef4435ed38a261e646105eedb95486d6c5b428ea9e05ae2f1cde4",
+          "candidateDigest": "f73c5735b2eba7d187e974659202548a366901fbb88aedbb98b674c509f01463",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.26,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 11473,
+            "outputTokens": 673,
+            "activeMs": 1323,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 182
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "4a994fb0d5b6cb95cd869fff31d78ff7cf6061c795f375b45d407f10862d4e86",
+          "candidateDigest": "36ace30f453bfbfd38ce57c42ed81abd04d400795a130770bb514fea37650000",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.5,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13028,
+            "outputTokens": 768,
+            "activeMs": 1528,
+            "overallDeadline": 1792375550483
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 205
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13028,
+        "outputTokens": 768,
+        "activeMs": 1528,
+        "overallDeadline": 1792375550483
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-aggregation-ko-forward",
+      "language": "ko",
+      "order": "forward",
+      "scenario": "aggregation",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "c2ef7b88f8ccd4e62a8038adc8b78379fed1ea07e51d2d37712b6f269d4568bd",
+          "candidateDigest": "8eba532dae53de2869a161c669395cf65d93a227b4b16e1cf7912a627a956fe7",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "READ",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.35,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1707,
+            "outputTokens": 102,
+            "activeMs": 181,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 181
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "9ffab4d9c224ec0a369c435c27499c561f21ff78749c1976d8c00ab3acd96a94",
+          "candidateDigest": "2ebf0533ad023094624ef28960eab3ea6a5f0ac1fc40b0a00bb1ebad20f8f635",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.53,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3260,
+            "outputTokens": 197,
+            "activeMs": 357,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 176
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "826edfb8eee6dca5fe4e9bff3cc45f854ad8e9ae8bacc0763ebafe77e73e6f12",
+          "candidateDigest": "8d00b54aaf595f20890ab6e4bbc9bc0652130e3397f70080fec61987f8454d8d",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4941,
+            "outputTokens": 297,
+            "activeMs": 529,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 172
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "6ddbb6ce3750f2bd7412b46f6a20130ae6b198c5a71c66d49a85cf034126c021",
+          "candidateDigest": "8d00b54aaf595f20890ab6e4bbc9bc0652130e3397f70080fec61987f8454d8d",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.29,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6627,
+            "outputTokens": 397,
+            "activeMs": 737,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 209
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "336f7412429c44f80ccc7d8aa78e45ed1bc65b09f28042a15ceee9901d2a4d7d",
+          "candidateDigest": "e9815d77a8f72853a769f0f8da33cc7315889ec20eae727e6069ab9d410a0e1c",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "aggregate",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.49,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8180,
+            "outputTokens": 479,
+            "activeMs": 935,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 198
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "89ae05fdd249bcf0ba94118c00dacc8ad974cd8c9449c2fb209ccfe93fd3bf03",
+          "candidateDigest": "ee50aa1753e06b702e41798e2a7d1df74b8ce0f47515769a1f60c81cf65b4f0c",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.23,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 9781,
+            "outputTokens": 576,
+            "activeMs": 1127,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 193
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "73b84c259992be2a0e494433dfdc348c8c6dffbb72af7e91cc5e7c83e6752a82",
+          "candidateDigest": "535d191feb4873c182f86af3b23de0781789e2687d7309328bf4526341fdd501",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.26,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 11497,
+            "outputTokens": 676,
+            "activeMs": 1315,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "74105f4cfb6ca8d9fe57c7bf0ca9a85852406b0205daf2edf6670e435ef1cd0d",
+          "candidateDigest": "2ebf0533ad023094624ef28960eab3ea6a5f0ac1fc40b0a00bb1ebad20f8f635",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.48,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13051,
+            "outputTokens": 771,
+            "activeMs": 1499,
+            "overallDeadline": 1792375552021
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 185
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13051,
+        "outputTokens": 771,
+        "activeMs": 1499,
+        "overallDeadline": 1792375552021
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-aggregation-ko-reversed",
+      "language": "ko",
+      "order": "reversed",
+      "scenario": "aggregation",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "1b2eb03570ce15f82505f6ff0d3ac2cd56ddfeeee059908587c742615c3b8511",
+          "candidateDigest": "1958405620667669a3e3f5bc41565bb42e29e5a54f36ee7ae94401317aa11ab7",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "READ",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.32,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1715,
+            "outputTokens": 102,
+            "activeMs": 192,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 193
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "00258430b8d19f9fac6914f81ee27a7eba56760571e3189d4136ddc1d7932c14",
+          "candidateDigest": "e51ab763eabecc05180c44ad5b56b50546813722a53d4f4599797879cc0a7c73",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.51,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3280,
+            "outputTokens": 197,
+            "activeMs": 372,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 180
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "0716916ce20ab2ad1a05b0a6d098b5939623873a2e5c60c392778827221fa789",
+          "candidateDigest": "50a964d1444ce14c52e5934aecbcf1f2abf73396f035a3f7188e6f1a00b2d9e2",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.3,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4980,
+            "outputTokens": 297,
+            "activeMs": 568,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 196
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "2d159448675254017a0f3301237370ec6e836686b580fceb7a9d724eb71095fb",
+          "candidateDigest": "50a964d1444ce14c52e5934aecbcf1f2abf73396f035a3f7188e6f1a00b2d9e2",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RESULT_COLLECTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.25,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6675,
+            "outputTokens": 397,
+            "activeMs": 743,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 175
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "b0c88acc28598239f2d3f2c9ceec3816c77f6598568df550f59e707bf3157e49",
+          "candidateDigest": "d9b95e25dc91172dd879655eb14ee773d2f677c3ff48ced3a79ecaf1230a15f9",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "aggregate",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.52,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8225,
+            "outputTokens": 479,
+            "activeMs": 935,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 192
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "816f7880f6061f8c06e5ce8191d99ae511eb945020f05da38492260d71a0779f",
+          "candidateDigest": "6cf937f3a5456c51ed494fb584572dd7a322df14e907db02ad584955d9be15e0",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.25,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 9833,
+            "outputTokens": 576,
+            "activeMs": 1110,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 176
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "2e531ac40697a22cafd209143b768c45a1478517b2a83e8c829ce984a052ac33",
+          "candidateDigest": "a44579d7e931627029bea950b29a1d57d12a37746cc7e49731181db775a0035b",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.25,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 11558,
+            "outputTokens": 676,
+            "activeMs": 1300,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 191
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "97cc8c32c7a27927a3006c09a9f8b3b3d73e0ec45c220ac527d31937d3fdec2b",
+          "candidateDigest": "e51ab763eabecc05180c44ad5b56b50546813722a53d4f4599797879cc0a7c73",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.49,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13129,
+            "outputTokens": 771,
+            "activeMs": 1476,
+            "overallDeadline": 1792375553530
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 177
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13129,
+        "outputTokens": 771,
+        "activeMs": 1476,
+        "overallDeadline": 1792375553530
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-search-en-forward",
+      "language": "en",
+      "order": "forward",
+      "scenario": "search",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "5375943277d56b91df4523c9ed99f73621403edb09ea9e80e5b7496a11d8aad5",
+          "candidateDigest": "2704cf522bf6f24b3aa799b453984aa28f5f42ee79ee98d7b20fb8bf522f26ba",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.58,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1702,
+            "outputTokens": 99,
+            "activeMs": 184,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 185
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "ecdddae416bddd85458d3acfa461f42c2af1f50e99a48fc48cdf3f0aa29b086f",
+          "candidateDigest": "69d9ff1384b6411887f676c742b0a0498a1505234e5bcde0498ef817db250fbe",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.63,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3247,
+            "outputTokens": 194,
+            "activeMs": 385,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 202
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "9289c20dfd9201a4c0a0c7fdad3eac72d6dad83174bc1e1a8ab2d727f9a56b88",
+          "candidateDigest": "391fad3d8bc12afe248a1ef65f505e43e2b7b12a87fee469e1d38eadc37f11af",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.47,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4924,
+            "outputTokens": 294,
+            "activeMs": 644,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 260
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "0fc81e011a45977e8f4aacefb1fa7a8fc2639dd7dcc39062e5cd334d4e527337",
+          "candidateDigest": "391fad3d8bc12afe248a1ef65f505e43e2b7b12a87fee469e1d38eadc37f11af",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.45,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6595,
+            "outputTokens": 394,
+            "activeMs": 825,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 181
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "85ffde24eb7ca02d229f1a527cc4d44007244bc434de3213a2e908a33966582a",
+          "candidateDigest": "86aa957bc0553d7772a0cb879d13164f84d2caebc6f8ec5bd74b9aad5b77144f",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "equipment_search",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.67,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8811,
+            "outputTokens": 495,
+            "activeMs": 1033,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 209
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "29fd753b3eb5d84ba425cda52f293ba04e30f890db3db6fbb4d9a527d9dfef52",
+          "candidateDigest": "c79fc1acf8316b4d1921e5ca925d8ef9cad62586352cb3f9aef277ad959327ae",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.41,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10396,
+            "outputTokens": 592,
+            "activeMs": 1242,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 210
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "cb9a6e11fc81209a8e9cc0aa979bca7ee7f1e15634c2151db67ea5fdd2d694cd",
+          "candidateDigest": "a5a856a2955dc88b013524854a5493088cd42a20237bea10c9a1d974633f1426",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12109,
+            "outputTokens": 692,
+            "activeMs": 1414,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 173
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "5be905672ad8a5516a683964c6e816370ecb758be97458f3657fad42556e3da5",
+          "candidateDigest": "69d9ff1384b6411887f676c742b0a0498a1505234e5bcde0498ef817db250fbe",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.69,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13666,
+            "outputTokens": 787,
+            "activeMs": 1601,
+            "overallDeadline": 1792375555016
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 187
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13666,
+        "outputTokens": 787,
+        "activeMs": 1601,
+        "overallDeadline": 1792375555016
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-search-en-reversed",
+      "language": "en",
+      "order": "reversed",
+      "scenario": "search",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "b2e72cbde705cd9ee14a0f9464d5653c2a473e6707d118deace331628a8dc9a3",
+          "candidateDigest": "eefd3dfc6f37a6ad6ff586048c2a13dae8368ecfb1f6f33acebaadf97da090f2",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.56,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1692,
+            "outputTokens": 99,
+            "activeMs": 173,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 173
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "e573ca36e9de2a8ee681ccf2dc751a9c57bd7f03556460f543843bf7ab4785b1",
+          "candidateDigest": "6eba0cd39383dbe8931e1e0895a80dc2e5bf9158e71924dcf32c6aa9a2dc05e3",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.62,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3239,
+            "outputTokens": 194,
+            "activeMs": 342,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 170
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "bf0e4a7b8e2fbf79d40ef8ce696ceb549de88d79b5cb29134798674ebc1a96d0",
+          "candidateDigest": "3262f6470faf4e566ce4980b765a20aa652cef0a2b061523d9c1905c6508c94b",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.51,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4928,
+            "outputTokens": 294,
+            "activeMs": 530,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "81e62f8d9fbc2383f41569d7e9f93bd495060113fb43b0098637ad4e5cefd8bc",
+          "candidateDigest": "3262f6470faf4e566ce4980b765a20aa652cef0a2b061523d9c1905c6508c94b",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.44,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6615,
+            "outputTokens": 394,
+            "activeMs": 698,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 167
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "d6c6ab18b6d3774f1001f18e4f2a683de032b4986ebb3586d0f9b3fbf4a3471a",
+          "candidateDigest": "d69951c32278c3b1399ff57fcdbb1c10e4be5aab1d54bc7fb9eff78dd85fda24",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "equipment_search",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.69,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8831,
+            "outputTokens": 495,
+            "activeMs": 864,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 167
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "14db45b0b562f10c0c5470cc8fdb1534c9866f9b0fe179a5679d96c115818bfa",
+          "candidateDigest": "92102e79caa7468fbb6113c9c1a180c30c1ff3a88a8409350595e7432bbe7e9d",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.41,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10436,
+            "outputTokens": 592,
+            "activeMs": 1057,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 194
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "f93bb65015a749c98b9b5ae32e25afefc4f3f9376041094761547f9e940ac4a7",
+          "candidateDigest": "a8d7b55f1c86d8a07222a82810cd147a74c1f9a527023601412f2e9143aee5c0",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.3,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12161,
+            "outputTokens": 691,
+            "activeMs": 1244,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 187
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "6bd666433f0df2f149c007bdb75adca79f0c03c6a1d2b93d2dc0cce8cd512c7a",
+          "candidateDigest": "6eba0cd39383dbe8931e1e0895a80dc2e5bf9158e71924dcf32c6aa9a2dc05e3",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.66,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13714,
+            "outputTokens": 786,
+            "activeMs": 1409,
+            "overallDeadline": 1792375556630
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 166
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13714,
+        "outputTokens": 786,
+        "activeMs": 1409,
+        "overallDeadline": 1792375556630
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-search-ko-forward",
+      "language": "ko",
+      "order": "forward",
+      "scenario": "search",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "6a640dae1892d896333ff0bb5253b85385cadfd41e472ece3b5a149bcce2b320",
+          "candidateDigest": "7be228ffc74d2ef713fef5040420c29b5680a8fb9c9c19932d52d9c619a942e4",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.62,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1711,
+            "outputTokens": 99,
+            "activeMs": 242,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 243
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "0a25f71298ac6090359330cea4f5daac459aa16c3e664ea464127b19e3c34ffd",
+          "candidateDigest": "6eb130d117677ac4b9ea0a3e2d3e69b164c29a0a23bd49ff9f9a7035a6062e2a",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.6,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3270,
+            "outputTokens": 194,
+            "activeMs": 429,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 187
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "4e7ae620ed47a678e0b3b7ca664fe6a4ee29623608d79d0250f064986889fbe3",
+          "candidateDigest": "9450976e061df92e1eeb4f13334dc94ea016e426ccee1d543887fd65d5e3c722",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.43,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4965,
+            "outputTokens": 294,
+            "activeMs": 594,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 166
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "5e00005a652e190e484800fd1b8248d365ff01aa04e134cf4473372777d2ae74",
+          "candidateDigest": "9450976e061df92e1eeb4f13334dc94ea016e426ccee1d543887fd65d5e3c722",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.42,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6657,
+            "outputTokens": 394,
+            "activeMs": 769,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 176
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "b2a4be752ab8b20e52d65146e257cebd63cc3fafdc568873f7388871d89acb42",
+          "candidateDigest": "edf09cb0ae6e8ddf22cbb4de1e04d4dabeff011785963ea6d10878af8d2e009d",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "equipment_search",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.61,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8873,
+            "outputTokens": 495,
+            "activeMs": 943,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 174
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "84ffc86d54467abba4862d991fb1464051f268f9d3a6bbc66e3e657348a8c09a",
+          "candidateDigest": "cd4395863548f280c3855b4ee61f5fe54b63bce41397c35e55ce0ffbbbaadc9b",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.43,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10470,
+            "outputTokens": 592,
+            "activeMs": 1147,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 205
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "812190dbedfb8f95cfa1d528bf2a11f32614e76ec620fea434944b7d71357749",
+          "candidateDigest": "c2c4831a2d87da1a131ecd384bcbe2ba49a3127826043b0c9f193c71d06310ed",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.33,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12187,
+            "outputTokens": 692,
+            "activeMs": 1375,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 228
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "640d61e6f9f5b682b1020f4a076e8e730746d7ae8ed545cebacf4fccfb18c966",
+          "candidateDigest": "6eb130d117677ac4b9ea0a3e2d3e69b164c29a0a23bd49ff9f9a7035a6062e2a",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.66,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13753,
+            "outputTokens": 787,
+            "activeMs": 1559,
+            "overallDeadline": 1792375558049
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 184
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13753,
+        "outputTokens": 787,
+        "activeMs": 1559,
+        "overallDeadline": 1792375558049
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-search-ko-reversed",
+      "language": "ko",
+      "order": "reversed",
+      "scenario": "search",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "a30ec73540a6d3d8eecdff077f2c43d7e32f116475ac89a4da2196d97bb1e2b7",
+          "candidateDigest": "93483df8b1cf39f618f0c253f8c9a34ca6380902004d7e789123b584b77513de",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACTION",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.57,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1713,
+            "outputTokens": 99,
+            "activeMs": 189,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "8116ac17bd5a006c79db80a3b99827b5531ed511562136cdbf040f668b697c6b",
+          "candidateDigest": "5ee14b5cfe8dd5f4537a9fc4a1eef2bd7e3cda44c54e95260d94f5d1702ffcbe",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.6,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3258,
+            "outputTokens": 194,
+            "activeMs": 369,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 181
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "46ad384039764c76e69aac83974c044526e07a96e5b04be18ff58fbba000e1a7",
+          "candidateDigest": "119d13a47cebd09a846f3b32aaadf97f20a9d5c369c3e665cfcc424b82a98bbc",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.48,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4944,
+            "outputTokens": 294,
+            "activeMs": 554,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 185
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "978ff89254f2ef8c2848aa78371b6b0b54cccab19890fbeb07b5b17785d29e2b",
+          "candidateDigest": "119d13a47cebd09a846f3b32aaadf97f20a9d5c369c3e665cfcc424b82a98bbc",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "SEARCH_FORM",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.43,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6625,
+            "outputTokens": 394,
+            "activeMs": 747,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 193
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "2afe16ab301316879891bdeb20cd25aa98b683202a350a47c0bbbf8102c2252b",
+          "candidateDigest": "97c9adc91c4fdd175204288dc23a50e7e12102f989737875dfd6eb3ebaa3e6ff",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "equipment_search",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.65,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8841,
+            "outputTokens": 495,
+            "activeMs": 917,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 172
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "60f5b673052fd027f5e8ab1eafc22328d5153769fecd42275b7b5f16de6525d5",
+          "candidateDigest": "b7c81992c20a61e9939730283b5c8457cbab2e10422332708b16cbdc3d758d46",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "RUNTIME",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.41,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10447,
+            "outputTokens": 592,
+            "activeMs": 1094,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 177
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "d7ba984ec6feb764c66850aea33ee26dd61ba843f181be5daff3db092098ce28",
+          "candidateDigest": "753d1a2fa83a3462df6a015cb5807d1b23121ccf9b1bbe9d44ed4dc00da804a0",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12149,
+            "outputTokens": 691,
+            "activeMs": 1311,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 217
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "f364946b7f2c28f302c4ccfc30f878ba8baf3366750ed8b25f944aee83c489d7",
+          "candidateDigest": "5ee14b5cfe8dd5f4537a9fc4a1eef2bd7e3cda44c54e95260d94f5d1702ffcbe",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.65,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13699,
+            "outputTokens": 786,
+            "activeMs": 1504,
+            "overallDeadline": 1792375559619
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 193
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13699,
+        "outputTokens": 786,
+        "activeMs": 1504,
+        "overallDeadline": 1792375559619
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-analysis-en-forward",
+      "language": "en",
+      "order": "forward",
+      "scenario": "analysis",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "b789eeac3113376fa42d1601cc52e847fca85cf3571b3aa4457a49bca7fdfb77",
+          "candidateDigest": "857ff24cca2a16a38f717c5facc1799844fe0d15f1921fa515e5e913c4e56dff",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.41,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1700,
+            "outputTokens": 102,
+            "activeMs": 173,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 172
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "965e64cfe84baffaf0642dcd656017c0e92e7a847d46d04737e0071cd429f600",
+          "candidateDigest": "38716d01a0e0bb01a622fad98192efbe2c566955e797ce28cf394933f270acef",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.56,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3253,
+            "outputTokens": 197,
+            "activeMs": 348,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 175
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "220ecde11bc621ce00083309b9446c57cd7c46305110798c5ce35cf54ded08b3",
+          "candidateDigest": "9b497e50e1dd2d6bedf5e75063f6b756569ef6c50291c3243fc325c1323eb696",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.31,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4941,
+            "outputTokens": 297,
+            "activeMs": 525,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 177
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "a91ce44a2bc5a6597938e7f850005fcf73feefeb23c89d65f642023ed68fec51",
+          "candidateDigest": "9b497e50e1dd2d6bedf5e75063f6b756569ef6c50291c3243fc325c1323eb696",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.29,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6625,
+            "outputTokens": 397,
+            "activeMs": 742,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 217
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "71c8411ae85188e0919d33982ff6f3a9291be50f3e54c97083361ba890e82875",
+          "candidateDigest": "41a5a7f391b306a6d31873156c3b7862e466963e920dde6b2ea136a48a0e2371",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "dated_alarms",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.44,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8854,
+            "outputTokens": 500,
+            "activeMs": 930,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "72cde58665d3101a209f680f847dac301916fc3964cfa89c9ee557a5e20b273b",
+          "candidateDigest": "c788b1b6d6595d9990efe0728c65ce780b71d9e1bf5831546e603db5129b3685",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "GPT_ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.29,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10453,
+            "outputTokens": 597,
+            "activeMs": 1102,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 173
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "7d82625cca67d642014fc7e8e3201c606b053e14d1a16fe7847e6933eb5c4f90",
+          "candidateDigest": "c2b4d5465d112ef895aa8c2724af37efcb35bb7cd989635f29e91e4c35df3537",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.28,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12160,
+            "outputTokens": 697,
+            "activeMs": 1281,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 180
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "0de1a31c5b775ea805e76e7a6229aa63f25b4d8f8753e3e0f4e21297d2a62b80",
+          "candidateDigest": "38716d01a0e0bb01a622fad98192efbe2c566955e797ce28cf394933f270acef",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.61,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13721,
+            "outputTokens": 792,
+            "activeMs": 1586,
+            "overallDeadline": 1792375561132
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 305
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13721,
+        "outputTokens": 792,
+        "activeMs": 1586,
+        "overallDeadline": 1792375561132
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-analysis-en-reversed",
+      "language": "en",
+      "order": "reversed",
+      "scenario": "analysis",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "0747bd4a3b5beebcf54196fc511c1473023385341f528b2af63e4806a6faaf14",
+          "candidateDigest": "2683f0c8c57847d196cc0baed847eff0412d322f425e5b1b2375fdf9895c5afd",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.38,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1704,
+            "outputTokens": 102,
+            "activeMs": 188,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "65a40ec0750d9c22c2616803b01c24c3aded85874b809ecfaec847bece19a261",
+          "candidateDigest": "90e9a90abef20b70f65493c7da182d31567ffe9912f1a13861be903f7a5f2869",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.48,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3263,
+            "outputTokens": 197,
+            "activeMs": 381,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 193
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "6960044c8d48b296bed0c89d3b1c8ae4e64200cd3059d17c38af5e0670b5f492",
+          "candidateDigest": "bc231448afd396ff465a90ca7e49108f2beeb000fdb82bb5df8641bec5b21572",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.3,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4946,
+            "outputTokens": 297,
+            "activeMs": 578,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 198
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "11be71ef97664324436660088d3af67b0fb47df1539cf582f92c6cae04a2a5f6",
+          "candidateDigest": "bc231448afd396ff465a90ca7e49108f2beeb000fdb82bb5df8641bec5b21572",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.26,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6623,
+            "outputTokens": 397,
+            "activeMs": 759,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 181
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "313dc4cb9975a1b3dcfddcf59608ec2d73f2fb7c33e8c1f14f2becca843701cd",
+          "candidateDigest": "b556db830c2bb9a4de506dabfca3b4554c85986094d438954e5412ee40018e08",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "dated_alarms",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.44,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8838,
+            "outputTokens": 500,
+            "activeMs": 929,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 171
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "1c1c101e6be8dd90a80a31d7d5d8f8729ab80aed6b580547af2637a26d8905a5",
+          "candidateDigest": "811c51fffa9aaaf8a5b576bee8c22ed078fb18f903ca69c9b75a83490ed0e116",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "GPT_ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.27,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10431,
+            "outputTokens": 597,
+            "activeMs": 1098,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 169
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "5cf226d56f0ee6001832c92d0fe422e5ea8620769bd7767c978fc35f9615d0d0",
+          "candidateDigest": "747d2baa6e262892959f4060c13644fff96a4340782a2f0b33ed11a0c01230ce",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.29,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12145,
+            "outputTokens": 696,
+            "activeMs": 1282,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 184
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "94c4922c994c897fed170aa5ae9d7e1ddb2ebf33958566dca5ac6e2b44dfeca7",
+          "candidateDigest": "90e9a90abef20b70f65493c7da182d31567ffe9912f1a13861be903f7a5f2869",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.62,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13706,
+            "outputTokens": 791,
+            "activeMs": 1449,
+            "overallDeadline": 1792375562742
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 167
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13706,
+        "outputTokens": 791,
+        "activeMs": 1449,
+        "overallDeadline": 1792375562742
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-analysis-ko-forward",
+      "language": "ko",
+      "order": "forward",
+      "scenario": "analysis",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "5a5b22781f92f74e66a87642c96d060c943563fd0f9335fb5570332458d52844",
+          "candidateDigest": "2ee94ce07dedd8085bd42085d434388f1fb54f5886fb8e66e67b8957378263aa",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.37,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1725,
+            "outputTokens": 102,
+            "activeMs": 188,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 188
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "addd61d29a84a2e6c5d55cc9f21ffeb7463c072fdeec118c6aef2e05fbdca9e6",
+          "candidateDigest": "3e6fc167afce1625f933156a45afee17daf6e1f836a613081df08f154c8e3252",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.54,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3293,
+            "outputTokens": 197,
+            "activeMs": 353,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 165
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "a8ea93d3d6cc85836e083645efd9e173e4b5b97be9620132283725a67b656b1c",
+          "candidateDigest": "271d6270c9aefa8698463df219d39251d05cc7d162d708cb548c9c22e1acefcf",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.28,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4999,
+            "outputTokens": 297,
+            "activeMs": 530,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 177
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "197e3e83a654cac30757bbfee6e33e3cb22e554351a2eed7904f484fe5e4e30f",
+          "candidateDigest": "271d6270c9aefa8698463df219d39251d05cc7d162d708cb548c9c22e1acefcf",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.26,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6697,
+            "outputTokens": 397,
+            "activeMs": 719,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "0a1ab119bbd2854e273bc63e00aca3ce8bea1811e7efc56a1f827d2ea2a9b0f9",
+          "candidateDigest": "f07a718d5205d7a2c5942e7d7a7d258e4cb3c0489b444fd5ecb7e695b3fabe6f",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "dated_alarms",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.39,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8933,
+            "outputTokens": 500,
+            "activeMs": 905,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 187
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "ef97b372a42d8541cd3b03c6390a30713c3c0a875dfa62e3d1e3ad7b2ccddaf6",
+          "candidateDigest": "2cd48049962a8a683d8582c79860b606c925d70788e05d69767ea3d06d5a81a1",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "GPT_ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.28,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10555,
+            "outputTokens": 599,
+            "activeMs": 1070,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 166
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "ad326ec8800b6ac6d527ede37d1d1febc26725b6d28e4a3819c4a30cff6f388c",
+          "candidateDigest": "76441ae36c9a672b36064d91f9eb67f926835f1f10d6cb08f4179028c005da9f",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.26,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12285,
+            "outputTokens": 699,
+            "activeMs": 1247,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 177
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "59860f364415dad41a175819e0ae80c3fdb2b213b01d50d0699cfdf8bed4c2ed",
+          "candidateDigest": "3e6fc167afce1625f933156a45afee17daf6e1f836a613081df08f154c8e3252",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.59,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13860,
+            "outputTokens": 794,
+            "activeMs": 1429,
+            "overallDeadline": 1792375564202
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 182
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13860,
+        "outputTokens": 794,
+        "activeMs": 1429,
+        "overallDeadline": 1792375564202
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    },
+    {
+      "id": "S27-H-analysis-ko-reversed",
+      "language": "ko",
+      "order": "reversed",
+      "scenario": "analysis",
+      "results": [
+        {
+          "phase": "intent",
+          "frameDigest": "84bce5f40e218adb499a9502881b1089a68aeac92217f596c49ed71a07a73c42",
+          "candidateDigest": "74f463f2a4e301920914b9fb2c3fbc0c8d741df1841c953f086238ceda8026ab",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.33,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 1,
+            "inputTokens": 1726,
+            "outputTokens": 102,
+            "activeMs": 193,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 193
+        },
+        {
+          "phase": "evidence_sufficiency",
+          "frameDigest": "189809ceed1e15291d88ad56fe81d00a4dc08fa601cd391ca9f0e475f3e18fa2",
+          "candidateDigest": "ea0b769c0042ec8b5d9b3520263ac5bea1de73ee9e0928609a2bf503c675d434",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.53,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 2,
+            "inputTokens": 3296,
+            "outputTokens": 197,
+            "activeMs": 374,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 182
+        },
+        {
+          "phase": "semantic_selection",
+          "frameDigest": "8a161ec79df4f923608655ebb448ac8233ca7770588d16e7fd972d968f7e30c6",
+          "candidateDigest": "0f80afb46eddd6f0e71492e783836ae3b9cd7bf6f716336241cc62e56e74e2cd",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.27,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 3,
+            "inputTokens": 4999,
+            "outputTokens": 297,
+            "activeMs": 552,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 178
+        },
+        {
+          "phase": "semantic_relation",
+          "frameDigest": "416af6a72c17ba511d64a553f508bc8465ea853c8e5cc9fc97ac981d98f02362",
+          "candidateDigest": "0f80afb46eddd6f0e71492e783836ae3b9cd7bf6f716336241cc62e56e74e2cd",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "FILTER_CONTROL",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.24,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 4,
+            "inputTokens": 6698,
+            "outputTokens": 397,
+            "activeMs": 740,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 189
+        },
+        {
+          "phase": "next_tool",
+          "frameDigest": "7da3a8408ad33c997d002facf141f31caaa2327c6a1982d9eb90354d7629eb62",
+          "candidateDigest": "18df2fd523e80179b81eb20ea12e8fea1005833b6b631eda4ee4358d409d0034",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "dated_alarms",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.45,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 5,
+            "inputTokens": 8930,
+            "outputTokens": 500,
+            "activeMs": 912,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 173
+        },
+        {
+          "phase": "processor",
+          "frameDigest": "f301ee8725a5f3086345daad9ffd929ae72b3a2c51fd10c3fa3a6b264daa40a1",
+          "candidateDigest": "b9caf55350e17025ebb580005645da129b63b3e87dbf1c2b0445cf706cefc8e3",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "GPT_ANALYSIS",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.25,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 6,
+            "inputTokens": 10536,
+            "outputTokens": 599,
+            "activeMs": 1087,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 175
+        },
+        {
+          "phase": "recovery",
+          "frameDigest": "421fd2e02af2e14eebe5efa107f9fc6a1b1766e030224267c863e955ad8016e6",
+          "candidateDigest": "ebdd7e7b709d080d24f738f7b6f189f23b362dd3df0757000999dc7c5df652bc",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "STOP",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.24,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 7,
+            "inputTokens": 12262,
+            "outputTokens": 698,
+            "activeMs": 1281,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 194
+        },
+        {
+          "phase": "result_acceptance",
+          "frameDigest": "375b77c7b5f0041fa2c4d68671b281e6ce1f4d5b65b23691d4e821808825b351",
+          "candidateDigest": "ea0b769c0042ec8b5d9b3520263ac5bea1de73ee9e0928609a2bf503c675d434",
+          "outcome": "UNKNOWN",
+          "selection": "UNKNOWN",
+          "expected": "ACCEPT",
+          "matched": false,
+          "boundArguments": [],
+          "evidenceSufficiency": 0.62,
+          "counters": {
+            "version": "task-budget-v1",
+            "calls": 8,
+            "inputTokens": 13845,
+            "outputTokens": 793,
+            "activeMs": 1492,
+            "overallDeadline": 1792375565642
+          },
+          "firstFailure": null,
+          "reason": null,
+          "latencyMs": 210
+        }
+      ],
+      "passed": false,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 8,
+        "inputTokens": 13845,
+        "outputTokens": 793,
+        "activeMs": 1492,
+        "overallDeadline": 1792375565642
+      },
+      "gptControllerCalls": 0,
+      "approvalFacts": 0,
+      "browserDispatches": 0
+    }
+  ],
+  "http": [
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    }
+  ],
+  "firstFailure": {
+    "caseId": "S27-H-aggregation-en-forward",
+    "phases": [
+      {
+        "phase": "intent",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "READ"
+      },
+      {
+        "phase": "evidence_sufficiency",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "ACCEPT"
+      },
+      {
+        "phase": "semantic_selection",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "RESULT_COLLECTION"
+      },
+      {
+        "phase": "semantic_relation",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "RESULT_COLLECTION"
+      },
+      {
+        "phase": "next_tool",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "aggregate"
+      },
+      {
+        "phase": "processor",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "RUNTIME"
+      },
+      {
+        "phase": "recovery",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "STOP"
+      },
+      {
+        "phase": "result_acceptance",
+        "outcome": "UNKNOWN",
+        "reason": null,
+        "selection": "UNKNOWN",
+        "expected": "ACCEPT"
+      }
+    ]
+  },
+  "gptControllerCalls": 0,
+  "approvalFacts": 0,
+  "browserDispatches": 0
+}

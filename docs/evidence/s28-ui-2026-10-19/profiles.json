@@ -1,0 +1,26 @@
+{
+  "ids": [
+    "learned-profile-section",
+    "learned-profile-enabled",
+    "profile-list-title",
+    "learned-profile-count",
+    "learned-profile-filter",
+    "learned-profiles",
+    "learned-profile-previous",
+    "learned-profile-page",
+    "learned-profile-next",
+    "learned-profile-refresh",
+    "learned-profile-clear",
+    "learned-profile-detail",
+    "learned-profile-status"
+  ],
+  "focus": [
+    "learned-profile-enabled",
+    "learned-profile-filter",
+    "learned-profile-previous",
+    "learned-profile-next",
+    "learned-profile-refresh",
+    "learned-profile-clear"
+  ],
+  "status": "Backend disconnected — waiting for reconnection"
+}

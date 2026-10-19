@@ -1,0 +1,32 @@
+{
+  "native": {
+    "restartReconnect": true,
+    "result": "PASS",
+    "registration": "isolated profile",
+    "nativeHandshake": true,
+    "taskReady": false
+  },
+  "result": "PASS",
+  "scope": "target missing-backend, preserved static IDs, settings hash/focus, fixture message; not full S26 interaction parity",
+  "browser": "Chrome/147.0.7727.15",
+  "records": [
+    {
+      "name": "panel",
+      "ids": 32,
+      "focusable": 11,
+      "status": "Backend disconnected — waiting for reconnection"
+    },
+    {
+      "name": "settings",
+      "ids": 73,
+      "focusable": 41,
+      "status": "Backend missing — install or repair the local host"
+    },
+    {
+      "name": "profiles",
+      "ids": 13,
+      "focusable": 6,
+      "status": "Backend disconnected — waiting for reconnection"
+    }
+  ]
+}

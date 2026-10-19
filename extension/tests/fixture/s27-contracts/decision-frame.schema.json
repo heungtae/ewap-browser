@@ -1,0 +1,441 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "protocol": { "type": "string", "const": "wca.task/v1" },
+    "templateVersion": { "type": "string", "const": "controller-v1" },
+    "model": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "modelRevision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "taskRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "planRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "graphRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "evidenceRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "capabilityRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cancellationGeneration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "mode": { "type": "string", "enum": ["ask", "act"] },
+        "scopeId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      },
+      "required": [
+        "taskId",
+        "taskRevision",
+        "planRevision",
+        "graphRevision",
+        "evidenceRevision",
+        "capabilityRevision",
+        "cancellationGeneration",
+        "mode",
+        "scopeId"
+      ],
+      "additionalProperties": false
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "intent",
+        "evidence_sufficiency",
+        "semantic_selection",
+        "semantic_relation",
+        "next_tool",
+        "processor",
+        "recovery",
+        "result_acceptance"
+      ]
+    },
+    "candidateSet": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        },
+        "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "sourceDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "contextDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "candidates": {
+          "maxItems": 28,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "semanticId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "source": { "type": "string", "enum": ["graph", "registered"] },
+              "scopeId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9_.:-]+$"
+              },
+              "modes": {
+                "minItems": 1,
+                "maxItems": 2,
+                "type": "array",
+                "items": { "type": "string", "enum": ["ask", "act"] }
+              },
+              "capabilityRefs": {
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                }
+              },
+              "evidenceRefs": {
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                }
+              },
+              "unresolvedInputs": {
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                }
+              },
+              "bindingDigests": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9_.:-]+$"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "steps": {
+                "maxItems": 64,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    "tool": {
+                      "type": "string",
+                      "enum": [
+                        "web.discover",
+                        "web.search_codebase",
+                        "web.inspect",
+                        "web.get_capabilities",
+                        "web.navigate",
+                        "web.switch_tab",
+                        "web.click",
+                        "web.fill",
+                        "web.select",
+                        "web.scroll",
+                        "web.wait_for",
+                        "web.extract",
+                        "web.query",
+                        "web.get_chart_data",
+                        "web.get_table_data",
+                        "web.get_observed_api",
+                        "analysis.run",
+                        "task.verify",
+                        "task.request_approval",
+                        "task.complete",
+                        "web.invoke_action"
+                      ]
+                    },
+                    "actionRef": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9_.:-]+$"
+                    },
+                    "dependencies": {
+                      "maxItems": 64,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9_.:-]+$"
+                      }
+                    },
+                    "parameters": {
+                      "maxItems": 16,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9_.:-]+$"
+                      }
+                    },
+                    "effect": {
+                      "type": "string",
+                      "enum": [
+                        "read",
+                        "navigation",
+                        "local-ui",
+                        "external",
+                        "unknown"
+                      ]
+                    },
+                    "goalPredicateRefs": {
+                      "maxItems": 16,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9_.:-]+$"
+                      }
+                    },
+                    "preconditionRefs": {
+                      "maxItems": 16,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9_.:-]+$"
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "tool",
+                    "dependencies",
+                    "parameters",
+                    "effect",
+                    "goalPredicateRefs",
+                    "preconditionRefs"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "meaning": {
+                "type": "string",
+                "enum": [
+                  "READ",
+                  "ACTION",
+                  "ANALYSIS",
+                  "RUNTIME",
+                  "GPT_ANALYSIS",
+                  "SEARCH_FORM",
+                  "FILTER_CONTROL",
+                  "RESULT_COLLECTION",
+                  "DETAIL_REGION",
+                  "UNRELATED",
+                  "ACCEPT",
+                  "REJECT",
+                  "INSPECT",
+                  "STOP",
+                  "REPLAN"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "semanticId",
+              "description",
+              "source",
+              "scopeId",
+              "modes",
+              "capabilityRefs",
+              "evidenceRefs",
+              "unresolvedInputs",
+              "bindingDigests",
+              "steps"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "totalEligible": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "omitted": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "sourceDigest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "offset": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "contextDigest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": ["sourceDigest", "offset", "contextDigest"],
+              "additionalProperties": false
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "digest",
+        "sourceDigest",
+        "contextDigest",
+        "candidates",
+        "totalEligible",
+        "omitted",
+        "cursor"
+      ],
+      "additionalProperties": false
+    },
+    "budgets": {
+      "type": "object",
+      "properties": {
+        "version": { "type": "string", "const": "task-budget-v1" },
+        "calls": { "type": "integer", "minimum": 0, "maximum": 24 },
+        "inputTokens": { "type": "integer", "minimum": 0, "maximum": 48000 },
+        "outputTokens": { "type": "integer", "minimum": 0, "maximum": 4000 },
+        "activeMs": { "type": "integer", "minimum": 0, "maximum": 180000 },
+        "overallDeadline": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "responseByteLimit": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "version",
+        "calls",
+        "inputTokens",
+        "outputTokens",
+        "activeMs",
+        "overallDeadline",
+        "responseByteLimit"
+      ],
+      "additionalProperties": false
+    },
+    "facts": {
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_.:-]+$"
+          },
+          "value": {
+            "anyOf": [
+              { "type": "string", "maxLength": 2048 },
+              { "type": "number" },
+              { "type": "boolean" },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": ["id", "value"],
+        "additionalProperties": false
+      }
+    },
+    "stateComplete": { "type": "boolean" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "required": [
+    "protocol",
+    "templateVersion",
+    "model",
+    "modelRevision",
+    "context",
+    "phase",
+    "candidateSet",
+    "budgets",
+    "facts",
+    "stateComplete",
+    "digest"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,82 @@
+<section
+  class="settings-card"
+  id="decision-editor"
+  aria-labelledby="decision-title"
+>
+  <h2 id="decision-title" tabindex="-1">JEV Controller</h2>
+  <p>
+    자율 작업의 제어를 맡는 필수 TypeSafe JEV 모델입니다. Controller가 꺼져
+    있거나 검증되지 않으면 새 에이전트 작업을 시작할 수 없습니다. 기존 기록과
+    설정은 유지됩니다.
+  </p>
+  <form id="decision-provider-form">
+    <label
+      >Provider 유형
+      <select disabled>
+        <option>TypeSafe Jev</option>
+      </select></label
+    >
+    <label
+      >Provider 이름 (ID)
+      <input
+        id="decision-provider-id"
+        required
+        value="jev"
+        pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,63}"
+    /></label>
+    <label
+      >API 주소 (Endpoint)
+      <input
+        id="decision-provider-url"
+        type="url"
+        required
+        value="https://api.typesafe.ai/v1"
+    /></label>
+    <label
+      >모델 이름
+      <input id="decision-provider-model" required value="jev-1.13.0"
+    /></label>
+    <label
+      >API key
+      <span class="secret-field">
+        <input id="decision-provider-key" type="password" autocomplete="off" />
+        <button
+          id="decision-provider-key-toggle"
+          type="button"
+          aria-controls="decision-provider-key"
+          aria-pressed="false"
+        >
+          표시
+        </button>
+      </span>
+      <span id="decision-provider-key-state">새 API key만 입력하세요.</span>
+    </label>
+    <label class="checkbox-row"
+      ><input id="decision-provider-enabled" type="checkbox" checked />Provider
+      사용</label
+    >
+    <p>
+      연결 테스트는 현재 입력한 설정을 먼저 저장합니다. 내보내기는 저장된 설정을
+      사용하며 API key는 제외합니다.
+    </p>
+    <div class="button-row">
+      <button type="submit">판단 Provider 저장</button>
+      <button id="decision-provider-test" type="button">연결 테스트</button>
+      <button
+        id="decision-provider-export"
+        type="button"
+        title="API key와 header 값은 제외됩니다."
+      >
+        Provider 내보내기
+      </button>
+      <button
+        id="decision-provider-remove-delete"
+        class="danger-button"
+        type="button"
+      >
+        Provider 삭제
+      </button>
+    </div>
+    <output id="decision-provider-status" aria-live="polite"></output>
+  </form>
+</section>

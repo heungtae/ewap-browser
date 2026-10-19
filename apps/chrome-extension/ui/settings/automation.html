@@ -1,0 +1,30 @@
+<section class="settings-card" id="learned-profile-section">
+  <h2>학습된 페이지 프로필</h2>
+  <p>
+    성공한 Ask/Act의 재사용 가능한 읽기·작업 정보를 이 Chrome 프로필에
+    저장합니다. 페이지 원문과 입력값은 저장하지 않으며, 실행 승인은 기존 설정을
+    따릅니다.
+  </p>
+  <div class="learned-profile-controls">
+    <label class="checkbox-row"
+      ><input id="learned-profile-enabled" type="checkbox" checked />자동 저장
+      및 재사용 (즉시 적용)</label
+    >
+    <div class="button-row">
+      <button id="learned-profile-open" type="button">프로필 관리</button>
+    </div>
+    <p id="learned-profile-summary"></p>
+    <output id="learned-profile-status" aria-live="polite"></output>
+  </div>
+</section>
+<section class="settings-card">
+  <h2>저장된 워크플로우</h2>
+  <p>
+    이 Chrome 프로필에서 기록하거나 저장한 작업 순서입니다. 입력값과 페이지
+    원문은 저장하지 않습니다.
+  </p>
+  <p>이름은 ‘이름 저장’으로 저장하고, 사용 여부는 즉시 적용됩니다.</p>
+  <button id="workflow-refresh" type="button">목록 새로고침</button>
+  <div id="workflow-records" aria-live="polite"></div>
+  <output id="workflow-records-status" aria-live="polite"></output>
+</section>

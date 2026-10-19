@@ -1,0 +1,250 @@
+{
+  "protocol": "wca.task/v1",
+  "corpusVersion": "s27-holdout-v1",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v1",
+  "frozenBeforeLive": true,
+  "scope": "Synthetic graph/controller decisions only; no browser execution or analyst findings",
+  "cases": [
+    {
+      "id": "S27-H-aggregation-en-forward",
+      "scenario": "aggregation",
+      "language": "en",
+      "request": "Which equipment has the most current alarms?",
+      "order": "forward",
+      "mode": "ask",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "READ",
+        "next_tool": "aggregate",
+        "processor": "RUNTIME",
+        "semantic_selection": "RESULT_COLLECTION",
+        "semantic_relation": "RESULT_COLLECTION",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-aggregation-en-reversed",
+      "scenario": "aggregation",
+      "language": "en",
+      "request": "Which equipment has the most current alarms?",
+      "order": "reversed",
+      "mode": "ask",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "READ",
+        "next_tool": "aggregate",
+        "processor": "RUNTIME",
+        "semantic_selection": "RESULT_COLLECTION",
+        "semantic_relation": "RESULT_COLLECTION",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-aggregation-ko-forward",
+      "scenario": "aggregation",
+      "language": "ko",
+      "request": "현재 알람이 가장 많은 설비는 무엇인가요?",
+      "order": "forward",
+      "mode": "ask",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "READ",
+        "next_tool": "aggregate",
+        "processor": "RUNTIME",
+        "semantic_selection": "RESULT_COLLECTION",
+        "semantic_relation": "RESULT_COLLECTION",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-aggregation-ko-reversed",
+      "scenario": "aggregation",
+      "language": "ko",
+      "request": "현재 알람이 가장 많은 설비는 무엇인가요?",
+      "order": "reversed",
+      "mode": "ask",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "READ",
+        "next_tool": "aggregate",
+        "processor": "RUNTIME",
+        "semantic_selection": "RESULT_COLLECTION",
+        "semantic_relation": "RESULT_COLLECTION",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-search-en-forward",
+      "scenario": "search",
+      "language": "en",
+      "request": "Search for EQP001.",
+      "order": "forward",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ACTION",
+        "next_tool": "equipment_search",
+        "processor": "RUNTIME",
+        "semantic_selection": "SEARCH_FORM",
+        "semantic_relation": "SEARCH_FORM",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-search-en-reversed",
+      "scenario": "search",
+      "language": "en",
+      "request": "Search for EQP001.",
+      "order": "reversed",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ACTION",
+        "next_tool": "equipment_search",
+        "processor": "RUNTIME",
+        "semantic_selection": "SEARCH_FORM",
+        "semantic_relation": "SEARCH_FORM",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-search-ko-forward",
+      "scenario": "search",
+      "language": "ko",
+      "request": "EQP001 설비를 검색해 주세요.",
+      "order": "forward",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ACTION",
+        "next_tool": "equipment_search",
+        "processor": "RUNTIME",
+        "semantic_selection": "SEARCH_FORM",
+        "semantic_relation": "SEARCH_FORM",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-search-ko-reversed",
+      "scenario": "search",
+      "language": "ko",
+      "request": "EQP001 설비를 검색해 주세요.",
+      "order": "reversed",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ACTION",
+        "next_tool": "equipment_search",
+        "processor": "RUNTIME",
+        "semantic_selection": "SEARCH_FORM",
+        "semantic_relation": "SEARCH_FORM",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-analysis-en-forward",
+      "scenario": "analysis",
+      "language": "en",
+      "request": "Analyze yesterday's alarms and explain supported patterns.",
+      "order": "forward",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ANALYSIS",
+        "next_tool": "dated_alarms",
+        "processor": "GPT_ANALYSIS",
+        "semantic_selection": "FILTER_CONTROL",
+        "semantic_relation": "FILTER_CONTROL",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-analysis-en-reversed",
+      "scenario": "analysis",
+      "language": "en",
+      "request": "Analyze yesterday's alarms and explain supported patterns.",
+      "order": "reversed",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ANALYSIS",
+        "next_tool": "dated_alarms",
+        "processor": "GPT_ANALYSIS",
+        "semantic_selection": "FILTER_CONTROL",
+        "semantic_relation": "FILTER_CONTROL",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-analysis-ko-forward",
+      "scenario": "analysis",
+      "language": "ko",
+      "request": "어제 알람을 분석하고 자료로 뒷받침되는 패턴을 설명해 주세요.",
+      "order": "forward",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ANALYSIS",
+        "next_tool": "dated_alarms",
+        "processor": "GPT_ANALYSIS",
+        "semantic_selection": "FILTER_CONTROL",
+        "semantic_relation": "FILTER_CONTROL",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    },
+    {
+      "id": "S27-H-analysis-ko-reversed",
+      "scenario": "analysis",
+      "language": "ko",
+      "request": "어제 알람을 분석하고 자료로 뒷받침되는 패턴을 설명해 주세요.",
+      "order": "reversed",
+      "mode": "act",
+      "admittedAt": "2026-10-19T03:00:00Z",
+      "timezone": "Asia/Seoul",
+      "expected": {
+        "intent": "ANALYSIS",
+        "next_tool": "dated_alarms",
+        "processor": "GPT_ANALYSIS",
+        "semantic_selection": "FILTER_CONTROL",
+        "semantic_relation": "FILTER_CONTROL",
+        "evidence_sufficiency": "ACCEPT",
+        "recovery": "STOP",
+        "result_acceptance": "ACCEPT"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@contextpilot/task-engine",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./decisions": "./src/decisions/index.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.7"
+  }
+}

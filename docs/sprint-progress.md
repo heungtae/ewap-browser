@@ -4,6 +4,29 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28 — 2026-10-19 workspace and bridge implementation
+
+**In Progress — target foundation implemented; full acceptance remains pending.**
+[Evidence and remaining checks](evidence/s28-workspace-bridge-2026-10-19.md)
+record isolated Vite/Node builds, preserved UI templates, injected clients,
+authenticated private Unix IPC, real native subprocess integration, bounded
+replay/transfers and session-only settings/install preparation. Existing production
+routing and original design documents remain unchanged. Full S26 UI interaction
+replay, Chrome native registration/pairing, connection-loss matrix and installer
+lifecycle qualification are still required. S27's failed live gate remains intact.
+
+## Browser Agent S27 — 2026-10-19 controller implementation
+
+**In Progress — C1–C4 implemented; C5/R06 live feasibility failed.**
+[Implementation and exact live reports](evidence/s27-controller-protocol-2026-10-19.md)
+record closed frame/candidate/argument contracts, native adapter validation,
+budgets, no-GPT control isolation and scenario tests. Final live inspection returned
+96 HTTP 200 responses and 71 expected proposed labels, but zero accepted decisions
+because the 0.9 gates failed. S27 is not complete; S33 completion and semantic
+activation remain blocked. Design documents, original Sprint acceptance and
+production extension sources were preserved. Runtime/index records carry current
+status without rewriting the original design.
+
 ## Browser Agent S26 — 2026-10-19 baseline implementation
 
 **Completed for characterization; known baseline failures retained.**

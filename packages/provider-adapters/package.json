@@ -1,0 +1,12 @@
+{
+  "name": "@contextpilot/provider-adapters",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./jev": "./src/jev/index.ts"
+  },
+  "dependencies": {
+    "@contextpilot/task-engine": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

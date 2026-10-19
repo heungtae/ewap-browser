@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ContextPilot 설정</title>
+    <link rel="stylesheet" href="settings-base.css" />
+    <link rel="stylesheet" href="settings-controls.css" />
+    <link rel="stylesheet" href="settings-layout.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#settings-content">설정 내용으로 이동</a>
+    <main>
+      <header class="settings-header">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <div>
+          <h1>ContextPilot 설정</h1>
+          <p class="settings-subtitle">
+            이 Chrome 프로필에서 사용할 모델과 작업 방식을 관리합니다.
+          </p>
+        </div>
+      </header>
+      <div class="settings-layout">
+        <nav class="settings-nav" aria-label="설정 메뉴">
+          <a href="#models" aria-current="page">LLM Provider</a>
+          <a href="#agent">작업과 권한</a>
+          <a href="#automation">프로필과 워크플로우</a>
+          <a href="#enterprise">업무 서버 연결</a>
+        </nav>
+        <div id="settings-content" tabindex="-1">
+          <div
+            data-settings-page="models"
+            id="models"
+            aria-label="LLM Provider 설정"
+          >
+            <!-- include: provider-management.html -->
+            <!-- include: provider-primary.html -->
+            <!-- include: provider-decision.html -->
+          </div>
+          <div
+            data-settings-page="agent"
+            id="agent"
+            aria-label="작업과 권한 설정"
+            hidden
+          >
+            <!-- include: agent.html -->
+          </div>
+          <div
+            data-settings-page="automation"
+            id="automation"
+            aria-label="프로필과 워크플로우 설정"
+            hidden
+          >
+            <!-- include: automation.html -->
+          </div>
+          <div
+            data-settings-page="enterprise"
+            id="enterprise"
+            aria-label="업무 서버 연결 설정"
+            hidden
+          >
+            <!-- include: resolver.html -->
+          </div>
+        </div>
+      </div>
+      <!-- include: model-dialog.html -->
+    </main>
+    <script type="module" src="../js/settings.js"></script>
+  </body>
+</html>

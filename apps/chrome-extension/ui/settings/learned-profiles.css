@@ -1,0 +1,152 @@
+:root {
+  color-scheme: dark;
+  --bg: #0b0e17;
+  --card: #111827;
+  --surface: #161d2e;
+  --border: rgba(255, 255, 255, 0.09);
+  --text: #e4e4ec;
+  --muted: #8b8fa4;
+  --accent: #6c63ff;
+  --accent-2: #a78bfa;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  font:
+    14px/1.55 -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Inter,
+    sans-serif;
+}
+main {
+  width: min(1440px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 26px 0;
+}
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+h1 {
+  font-size: 23px;
+  letter-spacing: -0.03em;
+}
+h2,
+h3 {
+  font-size: 16px;
+}
+h4 {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+p,
+label,
+summary {
+  color: var(--muted);
+  font-size: 12px;
+}
+label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+input,
+textarea {
+  width: 100%;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 11px;
+  background: rgba(11, 14, 23, 0.72);
+  font: inherit;
+}
+textarea {
+  resize: vertical;
+  min-height: 78px;
+}
+input:focus,
+textarea:focus,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+}
+button {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 13px;
+  color: var(--accent-2);
+  background: var(--surface);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  justify-self: start;
+}
+button:hover:not(:disabled) {
+  border-color: var(--accent-2);
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+button.danger {
+  color: #fca5a5;
+}
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent-2);
+}
+.button-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.learned-profile-controls,
+#learned-profile-detail {
+  display: grid;
+  gap: 14px;
+}
+pre {
+  max-height: 360px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  font-size: 12px;
+}
+summary {
+  cursor: pointer;
+}
+output {
+  display: block;
+  min-height: 20px;
+  margin-top: 14px;
+  color: #a7f3d0;
+  font-size: 12px;
+}
+.empty-state {
+  padding: 28px 12px;
+  text-align: center;
+}

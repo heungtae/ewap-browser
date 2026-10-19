@@ -1,0 +1,61 @@
+<section class="settings-card" id="provider-management">
+  <h2>LLM Provider 관리</h2>
+  <p>
+    연결 설정을 저장한 뒤 사용할 모델을 선택하고 적용하세요. 첫 기본 Provider는
+    저장 시 자동으로 선택됩니다. 기본·판단 Provider를 선택하면 아래 연결 설정에
+    표시되며, 실제 사용은 적용 버튼으로 변경합니다.
+  </p>
+  <div class="provider-management-controls">
+    <div class="provider-role-field">
+      <label for="provider-primary-select">GPT Analyst</label>
+      <div class="button-row provider-active-row">
+        <select id="provider-primary-select"></select>
+        <button id="provider-activate" type="button">기본 모델 적용</button>
+      </div>
+    </div>
+    <details class="advanced-settings">
+      <summary>JEV Controller (필수)</summary>
+      <div class="settings-fields">
+        <label
+          >판단 LLM Provider
+          <select id="provider-decision-select"></select
+        ></label>
+        <label class="checkbox-row"
+          ><input id="provider-jev-enabled" type="checkbox" />Jev 자동 판단
+          사용</label
+        >
+        <div class="provider-role-field">
+          <label for="provider-jev-failure">판단 모델 연결 실패 시</label>
+          <div class="button-row provider-active-row">
+            <select id="provider-jev-failure">
+              <option value="primary">이전 설정 — 작업 중단으로 이전됨</option>
+              <option value="stop">작업 중단</option>
+            </select>
+            <button id="provider-routing-apply" type="button">
+              판단 설정 적용
+            </button>
+          </div>
+        </div>
+        <p>
+          판단 모델 선택·자동 판단·실패 시 동작은 ‘판단 설정 적용’을 눌러 함께
+          저장합니다.
+        </p>
+      </div>
+    </details>
+    <output id="provider-routing-status" aria-live="polite"></output>
+    <hr />
+    <input
+      id="provider-public-file"
+      type="file"
+      accept="application/json,.json"
+      aria-label="LLM Provider 설정 JSON"
+      hidden
+    />
+    <div class="button-row">
+      <button id="provider-import" type="button">
+        LLM Provider 설정 가져오기
+      </button>
+    </div>
+    <output id="provider-management-status" aria-live="polite"></output>
+  </div>
+</section>

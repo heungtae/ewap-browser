@@ -5,6 +5,7 @@ export default tseslint.config(
   {
     ignores: [
       "dist/**",
+      "apps/**/.generated/**",
       "dist-extension/**",
       "node_modules/**",
       "native-host/**",

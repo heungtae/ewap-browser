@@ -1,5 +1,9 @@
 # 코드 탐색 안내
 
+S28 target paths: [browser presentation](../apps/chrome-extension/src/presentation), [bridge adapters](../apps/chrome-extension/src/bridge), [native backend](../apps/agent-server/src), [shared protocol](../packages/shared/src/bridge.ts), [isolated build](../scripts/s28/build.mjs). Normal production packaging retains the existing entrypoint; [acceptance gaps](evidence/s28-workspace-bridge-2026-10-19.md) remain.
+
+S27 target-only decision contracts live in [task-engine decisions](../packages/task-engine/src/decisions/index.ts), with the [native adapter](../packages/provider-adapters/src/jev/index.ts) and [checks](../extension/tests/unit/migration/s27). This path is not selected by production routing; [live feasibility failed](evidence/s27-controller-protocol-2026-10-19.md).
+
 ## S24 learned page profiles
 
 Runtime: [learned-profile](../extension/src/learned-profile), [Worker bootstrap](../extension/src/service-worker/learned-profile-runtime.ts), [trusted management messages](../extension/src/service-worker/learned-profile-message-handler.ts). UI: [Options launcher and feature setting](../extension/src/settings/learned-profile-options.ts), [separate management window](../extension/src/settings/learned-profiles.html), [list and selection controller](../extension/src/settings/learned-profile-management.ts), [detail and history](../extension/src/settings/learned-profile-detail.ts). Checks: [unit tests](../extension/tests/unit/learned-profile), [management window evidence](evidence/s24-profile-manager-2026-10-14.md), [learning delivery evidence](evidence/s24-learned-page-profiles-2026-10-13.md).

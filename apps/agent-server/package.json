@@ -1,0 +1,9 @@
+{
+  "name": "@contextpilot/agent-server",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@contextpilot/shared": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

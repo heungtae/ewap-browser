@@ -1,0 +1,947 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ContextPilot</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --canvas: #0a0f1d;
+        --surface: #121a2d;
+        --surface-raised: #19233a;
+        --border: #2a3651;
+        --text: #edf2ff;
+        --muted: #a6b1c8;
+        --accent: #8b7cff;
+        --accent-strong: #6f62e8;
+        --safe: #42d3a2;
+        --warning: #f6bd58;
+        --danger: #fa7d8d;
+        --radius: 14px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        min-width: 320px;
+        min-height: 100%;
+      }
+      body {
+        margin: 0;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 50% -15%, #26376b 0, transparent 36%),
+          var(--canvas);
+        font:
+          13px/1.5 Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+      }
+      button,
+      textarea,
+      input {
+        font: inherit;
+      }
+      button {
+        min-height: 34px;
+        padding: 7px 10px;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--surface-raised);
+        cursor: pointer;
+      }
+      button:hover:not(:disabled) {
+        border-color: #a99fff;
+        background: #253153;
+      }
+      button:focus-visible,
+      textarea:focus-visible,
+      input:focus-visible {
+        outline: 2px solid #b8b0ff;
+        outline-offset: 2px;
+      }
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .workspace {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        height: 100vh;
+        min-height: 460px;
+      }
+
+      .header {
+        grid-row: 1;
+      }
+
+      .transcript {
+        grid-row: 2;
+      }
+
+      .composer {
+        grid-row: 3;
+      }
+      .header {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+        padding: 13px 14px 11px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(10, 15, 29, 0.8);
+      }
+      .badge {
+        padding: 3px 7px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      #thread-scope {
+        display: block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .badge[data-mode="skip_all_permission_checks"] {
+        color: #ffd3d9;
+        border-color: #a85262;
+        background: #3d202c;
+      }
+      .transcript {
+        position: relative;
+        min-height: 0;
+        overflow: auto;
+        overflow-anchor: none;
+        padding: 14px;
+        scroll-behavior: auto;
+      }
+      .empty {
+        display: grid;
+        min-height: 180px;
+        place-items: center;
+        padding: 28px;
+        color: var(--muted);
+        text-align: center;
+      }
+      .empty strong {
+        display: block;
+        margin-bottom: 4px;
+        color: var(--text);
+      }
+      .items {
+        display: grid;
+        gap: 10px;
+      }
+      .message {
+        max-width: 94%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 13px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .message[data-role="user"] {
+        justify-self: end;
+        border-color: transparent;
+        border-bottom-right-radius: 4px;
+        background: linear-gradient(
+          135deg,
+          var(--accent-strong),
+          var(--accent)
+        );
+        color: white;
+      }
+      .message[data-role="assistant"] {
+        justify-self: start;
+        border-bottom-left-radius: 4px;
+        background: var(--surface);
+      }
+      .message[data-role="assistant"] h1,
+      .message[data-role="assistant"] h2,
+      .message[data-role="assistant"] h3,
+      .message[data-role="assistant"] p,
+      .message[data-role="assistant"] ul {
+        margin: 0;
+      }
+      .message[data-role="assistant"] h1,
+      .message[data-role="assistant"] h2,
+      .message[data-role="assistant"] h3 {
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .message[data-role="assistant"] p + p,
+      .message[data-role="assistant"] h1 + p,
+      .message[data-role="assistant"] h2 + p,
+      .message[data-role="assistant"] h3 + p,
+      .message[data-role="assistant"] p + ul,
+      .message[data-role="assistant"] ul + p {
+        margin-top: 9px;
+      }
+      .message[data-role="assistant"] ul {
+        padding-left: 18px;
+      }
+      .message[data-role="assistant"] li + li {
+        margin-top: 3px;
+      }
+      .event-card {
+        display: grid;
+        gap: 7px;
+        padding: 10px 11px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(18, 26, 45, 0.9);
+      }
+      .event-card[data-kind="error"],
+      .event-card[data-kind="confirmation"] {
+        border-color: #7d4b55;
+      }
+      .event-card[data-kind="permission"],
+      .event-card[data-kind="review"] {
+        border-color: #75633b;
+      }
+      .event-card[data-kind="review"][data-decision]
+        .card-actions
+        button:disabled {
+        cursor: not-allowed;
+      }
+      .event-heading {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .event-heading b {
+        color: var(--text);
+        font-size: 12px;
+      }
+      .failure-guidance {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.45;
+      }
+      .tool-state {
+        margin-left: auto;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .tool-state[data-outcome="VERIFIED"] {
+        color: var(--safe);
+      }
+      .tool-state[data-outcome="FAILED"],
+      .tool-state[data-outcome="UNKNOWN"] {
+        color: var(--danger);
+      }
+      .card-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        padding-top: 2px;
+      }
+      .workflow-divider {
+        width: 100%;
+        height: 0;
+        margin: 3px 0;
+        border: 0;
+        border-top: 1px solid var(--border);
+      }
+      .card-actions .primary {
+        color: #11152a;
+        border-color: transparent;
+        background: #b9b1ff;
+      }
+      .card-actions .danger {
+        color: #ffd4d9;
+        border-color: #804b59;
+        background: #38222a;
+      }
+      .card-actions .warning {
+        color: #fff2c9;
+        border-color: #786234;
+        background: #362e1e;
+      }
+      .value-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 7px;
+      }
+      .value-form input,
+      .composer textarea {
+        width: 100%;
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #0d1424;
+      }
+      .value-form input {
+        min-height: 34px;
+        padding: 7px 9px;
+      }
+      .composer {
+        display: grid;
+        gap: 9px;
+        padding: 10px 14px 14px;
+        border-top: 1px solid var(--border);
+        background: rgba(10, 15, 29, 0.93);
+      }
+      .activity-status {
+        overflow: hidden;
+        padding: 7px 9px;
+        border: 1px solid #725d2f;
+        border-radius: 8px;
+        color: #ffe0a2;
+        background: #2d281d;
+        font-size: 11px;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .execution-details {
+        display: grid;
+        gap: 6px;
+        padding: 8px 9px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        background: var(--surface);
+        font-size: 11px;
+      }
+      .execution-details summary {
+        color: var(--text);
+        cursor: pointer;
+      }
+      .execution-details pre {
+        max-height: 130px;
+        margin: 0;
+        overflow: auto;
+        color: var(--muted);
+        font:
+          10px/1.45 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+        white-space: pre-wrap;
+      }
+      .execution-details button {
+        justify-self: start;
+        min-height: 28px;
+        padding: 4px 7px;
+        font-size: 11px;
+      }
+      .mode-row,
+      .composer-actions {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .mode-row {
+        justify-content: space-between;
+        min-width: 0;
+      }
+      .mode-group {
+        display: flex;
+        gap: 4px;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+      }
+      .mode-group button {
+        min-height: 29px;
+        padding: 4px 8px;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .mode-group button[aria-pressed="true"] {
+        color: white;
+        background: var(--accent-strong);
+      }
+      .composer textarea {
+        min-height: 66px;
+        max-height: 180px;
+        padding: 9px 10px;
+        resize: vertical;
+      }
+      .composer-actions {
+        justify-content: space-between;
+      }
+      .attachment-control,
+      .send-controls {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-width: 0;
+      }
+      .attachment-control button {
+        min-height: 30px;
+        padding: 5px 8px;
+        color: var(--muted);
+        background: transparent;
+        font-size: 11px;
+      }
+      .attachment-name {
+        overflow: hidden;
+        max-width: 130px;
+        color: var(--muted);
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .composer-actions .send {
+        color: white;
+        border-color: transparent;
+        background: var(--accent-strong);
+      }
+      .composer-actions .stop {
+        color: #ffd4d9;
+        border-color: #804b59;
+        background: transparent;
+      }
+      .status {
+        min-height: 17px;
+        color: var(--muted);
+        font-size: 11px;
+      }
+      /* Compact workspace layout: toolbar, open transcript, and bottom dock. */
+      body {
+        background: #1b1b31;
+      }
+      .header {
+        display: grid;
+        grid-template-columns: none;
+        gap: 10px;
+        padding: 13px 14px 11px;
+        background: #182440;
+      }
+      .header-bottom,
+      .header-tools {
+        display: flex;
+        align-items: center;
+      }
+      .header-bottom {
+        justify-content: flex-end;
+      }
+      .header-tools {
+        gap: 9px;
+      }
+      .header-tools button {
+        display: grid;
+        width: 28px;
+        min-width: 28px;
+        height: 28px;
+        min-height: 28px;
+        padding: 0;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #d2d7ef;
+      }
+      .header-tools button:hover {
+        background: #26385e;
+        color: #f2f5ff;
+      }
+      #settings-open {
+        width: 32px;
+        min-width: 32px;
+        height: 32px;
+        min-height: 32px;
+      }
+      .header-tools .new-chat {
+        width: 28px;
+        min-width: 28px;
+        height: 28px;
+        min-height: 28px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #d2d7ef;
+      }
+      .header-tools .new-chat:hover {
+        background: #26385e;
+        color: #f2f5ff;
+      }
+      .header-tools .new-chat svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .header-tools button svg,
+      .attachment-control button svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #settings-open svg {
+        width: 20px;
+        height: 20px;
+      }
+      .attachment-control button svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.25;
+      }
+      .badge {
+        padding: 3px 7px;
+        border-color: #33466f;
+        background: #213152;
+        color: #dfe5fc;
+        font-size: 10px;
+      }
+      .transcript {
+        padding: 12px 18px;
+      }
+      .empty {
+        display: block;
+        min-height: 0;
+        padding: 0;
+        text-align: left;
+      }
+      .empty button {
+        min-height: 41px;
+        padding: 9px 14px;
+        border-color: #45398c;
+        border-radius: 13px;
+        background: #29244c;
+        color: #e4e2ff;
+        font-size: 12px;
+      }
+      .composer {
+        gap: 8px;
+        padding: 9px 18px 15px;
+        border-top-color: #30456f;
+        background: #182440;
+      }
+      .mode-row {
+        display: block;
+      }
+      .mode-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        width: 100%;
+        gap: 2px;
+        padding: 2px;
+        border-color: #33466f;
+        border-radius: 8px;
+        background: #202d4d;
+      }
+      .mode-group button {
+        min-height: 27px;
+        border-radius: 6px;
+        color: #aab4d3;
+      }
+      .mode-group button[aria-pressed="true"] {
+        background: #353a7d;
+        color: #e6e4ff;
+      }
+      .status {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .input-dock {
+        display: grid;
+        grid-template-columns: 31px minmax(0, 1fr) 31px;
+        align-items: center;
+        gap: 7px;
+        min-height: 44px;
+        padding: 4px 6px;
+        border: 1px solid #33466f;
+        border-radius: 9px;
+        background: #202d4d;
+      }
+      .composer textarea {
+        display: block;
+        grid-column: 2;
+        align-self: stretch;
+        min-height: 32px;
+        max-height: 96px;
+        min-width: 0;
+        width: 100%;
+        padding: 6px 2px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        resize: none;
+      }
+      .composer textarea:focus-visible {
+        outline: 0;
+      }
+      .composer textarea::placeholder {
+        color: #aeb9d8;
+        opacity: 1;
+      }
+      .attachment-control {
+        grid-column: 1;
+      }
+      .attachment-control button,
+      .input-dock .send {
+        grid-column: 3;
+        display: grid;
+        width: 31px;
+        min-width: 31px;
+        height: 31px;
+        min-height: 31px;
+        padding: 0;
+        place-items: center;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #aeb9d8;
+        font-size: 18px;
+      }
+      .input-dock .send {
+        background: #8173ff;
+        color: white;
+      }
+      .input-dock .send svg {
+        display: block;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+      }
+      .input-dock .send .stop-icon {
+        display: none;
+      }
+      .input-dock .send[data-state="stop"] .send-icon {
+        display: none;
+      }
+      .input-dock .send[data-state="stop"] .stop-icon {
+        display: block;
+      }
+      .attachment-name {
+        display: block;
+        max-width: 100%;
+        padding-left: 38px;
+        color: #aeb9d8;
+        overflow: hidden;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      dialog.new-chat-dialog {
+        width: min(340px, calc(100vw - 40px));
+        margin: auto;
+        padding: 0;
+        color: var(--text);
+        border: 1px solid #35486f;
+        border-radius: 14px;
+        background: #182440;
+        box-shadow: 0 24px 80px rgb(0 0 0 / 48%);
+      }
+      dialog.new-chat-dialog::backdrop {
+        background: rgb(4 8 18 / 68%);
+        backdrop-filter: blur(2px);
+      }
+      .new-chat-dialog form {
+        display: grid;
+        gap: 15px;
+        padding: 20px;
+      }
+      .new-chat-dialog h2,
+      .new-chat-dialog p {
+        margin: 0;
+      }
+      .new-chat-dialog h2 {
+        font-size: 15px;
+      }
+      .new-chat-dialog p {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .new-chat-dialog .dialog-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .new-chat-dialog .dialog-actions button {
+        min-height: 40px;
+      }
+      .new-chat-dialog .confirm-new-chat {
+        color: white;
+        border-color: transparent;
+        background: #d33d4b;
+      }
+      .new-chat-dialog .confirm-new-chat:hover:not(:disabled) {
+        background: #e34e5b;
+      }
+      dialog.diagnostics-dialog {
+        width: min(560px, calc(100vw - 32px));
+        max-height: min(72vh, 620px);
+        margin: auto;
+        padding: 16px;
+        color: var(--text);
+        border: 1px solid #35486f;
+        border-radius: 14px;
+        background: #182440;
+        box-shadow: 0 24px 80px rgb(0 0 0 / 48%);
+      }
+      dialog.diagnostics-dialog::backdrop {
+        background: rgb(4 8 18 / 68%);
+        backdrop-filter: blur(2px);
+      }
+      .diagnostics-dialog h2 {
+        margin: 0 0 10px;
+        font-size: 15px;
+      }
+      .diagnostics-dialog pre {
+        max-height: min(54vh, 450px);
+        margin: 0 0 12px;
+        padding: 10px;
+        overflow: auto;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: #0d1424;
+        font:
+          11px/1.45 ui-monospace,
+          SFMono-Regular,
+          Consolas,
+          monospace;
+        white-space: pre-wrap;
+      }
+      @media (max-width: 360px) {
+        .header {
+          padding-inline: 10px;
+        }
+        .transcript,
+        .composer {
+          padding-inline: 10px;
+        }
+        .message {
+          max-width: 97%;
+        }
+        .composer-actions {
+          flex-wrap: wrap;
+        }
+        .attachment-control {
+          order: 3;
+          flex-basis: 100%;
+        }
+        .input-dock .attachment-control {
+          order: initial;
+          grid-column: 1;
+          grid-row: 1;
+          flex-basis: auto;
+        }
+      }
+      @media (prefers-contrast: more) {
+        :root {
+          --border: #9eaed0;
+          --muted: #d1daf0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="workspace" aria-label="ContextPilot chat workspace">
+      <header class="header">
+        <div class="badge" id="thread-scope" aria-label="현재 탭 문맥">
+          이 탭의 문맥
+        </div>
+        <div class="header-bottom">
+          <div class="header-tools">
+            <span class="badge" id="permission-mode-badge" data-mode="standard"
+              >표준 권한</span
+            >
+            <button
+              class="new-chat"
+              id="new-chat-open"
+              type="button"
+              title="새 대화"
+              aria-label="새 대화"
+            >
+              <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4Z" />
+              </svg>
+            </button>
+            <button
+              class="new-chat"
+              id="workflow-record"
+              type="button"
+              title="워크플로우 기록 시작"
+              aria-label="워크플로우 기록 시작"
+            >
+              ◎
+            </button>
+            <button
+              id="settings-open"
+              type="button"
+              title="설정 열기"
+              aria-label="설정 열기"
+            >
+              <svg viewBox="0 0 24 24" stroke-width="2" aria-hidden="true">
+                <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
+                <path
+                  d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20.3h-3v-.08a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.56-1.03h-.08v-3h.08A1.7 1.7 0 0 0 7.02 9.94a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.12-2.12.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56v-.08h3v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.08v3h-.08A1.7 1.7 0 0 0 19.4 15Z"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+      <section
+        class="transcript"
+        id="chat-scroll"
+        aria-label="대화 내용"
+        tabindex="0"
+      >
+        <div class="empty" id="empty-state">
+          <button id="suggested-prompt" type="button">
+            이 페이지에서 무엇을 도와드릴까요?
+          </button>
+        </div>
+        <div
+          class="items"
+          id="chat-messages"
+          aria-live="off"
+          aria-relevant="additions text"
+        ></div>
+      </section>
+      <form class="composer" id="chat-form">
+        <output
+          class="activity-status"
+          id="activity-status"
+          aria-live="polite"
+          hidden
+        ></output>
+        <details class="execution-details" id="execution-details">
+          <summary>실행 상세</summary>
+          <pre id="execution-trace"></pre>
+          <button id="diagnostics-debug" type="button">개발 추적 켜기</button>
+          <button id="diagnostics-export" type="button">진단 다운로드</button>
+        </details>
+        <div class="mode-row">
+          <div class="mode-group" role="group" aria-label="작업 모드">
+            <button
+              data-mode="ask"
+              id="mode-ask"
+              type="button"
+              aria-pressed="true"
+            >
+              질문
+            </button>
+            <button
+              data-mode="act"
+              id="mode-act"
+              type="button"
+              aria-pressed="false"
+            >
+              실행
+            </button>
+          </div>
+          <span class="status" id="status" aria-live="polite">준비됨</span>
+        </div>
+        <label for="chat-input" hidden>메시지</label>
+        <div class="input-dock">
+          <div class="attachment-control">
+            <input
+              id="attachment-input"
+              type="file"
+              accept=".txt,.md,.csv,.json,text/plain,text/markdown,text/csv,application/json"
+              hidden
+            />
+            <button
+              id="attachment-trigger"
+              type="button"
+              title="텍스트 파일 첨부"
+              aria-label="텍스트 파일 첨부"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="m16 6-8.4 8.6a2 2 0 0 0 2.8 2.8l8.4-8.6a4 4 0 0 0-5.6-5.6l-8.4 8.6a6 6 0 0 0 8.5 8.5l8.4-8.6"
+                />
+              </svg>
+            </button>
+          </div>
+          <textarea
+            id="chat-input"
+            rows="1"
+            maxlength="8000"
+            placeholder="이 페이지에 대해 무엇이든 물어보세요..."
+          ></textarea>
+          <button
+            class="send"
+            id="chat-send"
+            type="submit"
+            data-state="send"
+            aria-label="보내기"
+            title="보내기"
+          >
+            <svg class="send-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M2.01 21 23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
+            <svg class="stop-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="7" y="7" width="10" height="10" rx="1.5" />
+            </svg>
+          </button>
+        </div>
+        <output class="attachment-name" id="attachment-name" hidden></output>
+      </form>
+      <dialog
+        class="new-chat-dialog"
+        id="new-chat-dialog"
+        aria-labelledby="new-chat-title"
+      >
+        <form method="dialog">
+          <div>
+            <h2 id="new-chat-title">새 대화를 시작할까요?</h2>
+            <p>현재 대화의 기록이 삭제됩니다.</p>
+          </div>
+          <div class="dialog-actions">
+            <button id="new-chat-cancel" type="button">취소</button>
+            <button
+              class="confirm-new-chat"
+              id="new-chat-confirm"
+              type="button"
+            >
+              새 대화
+            </button>
+          </div>
+        </form>
+      </dialog>
+      <dialog
+        class="diagnostics-dialog"
+        id="diagnostics-dialog"
+        aria-labelledby="diagnostics-dialog-title"
+      >
+        <h2 id="diagnostics-dialog-title">진단 기록</h2>
+        <pre id="diagnostics-dialog-trace"></pre>
+        <button id="diagnostics-dialog-close" type="button">닫기</button>
+      </dialog>
+      <output id="learned-profile-activity" aria-live="polite"></output>
+    </main>
+    <script type="module" src="../js/panel.js"></script>
+  </body>
+</html>
