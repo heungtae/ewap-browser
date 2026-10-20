@@ -1,0 +1,183 @@
+{
+  "date": "2026-10-19",
+  "baseRevision": "5ee4c7062",
+  "dirty": true,
+  "status": "IN_PROGRESS",
+  "prerequisite": "S28 incomplete; S29 cannot be marked complete",
+  "extensionVersion": "0.1.117",
+  "unit": {
+    "passed": 1101,
+    "total": 1101,
+    "files": 219,
+    "success": true
+  },
+  "s29Tests": 18,
+  "fixture": 1,
+  "e2e": 1,
+  "typecheck": "PASS",
+  "build": "PASS",
+  "legacyBuild": "PASS",
+  "moduleBoundaries": "PASS",
+  "chrome": {
+    "result": "PASS",
+    "first": {
+      "status": "partial",
+      "examined": 39,
+      "emitted": 7,
+      "omitted": 2,
+      "redactions": 2,
+      "total": 7,
+      "reasons": [
+        "SAMPLE_ONLY",
+        "DENIED_REGION"
+      ],
+      "startedAt": 1792395986938,
+      "endedAt": 1792395986941,
+      "deadline": 1792395996937
+    },
+    "revisitRevision": 2,
+    "deltaRevision": 3,
+    "large": {
+      "status": "partial",
+      "examined": 5000,
+      "emitted": 0,
+      "omitted": 1,
+      "redactions": 0,
+      "total": null,
+      "reasons": [
+        "NODE_LIMIT"
+      ],
+      "startedAt": 1792395987059,
+      "endedAt": 1792395987439,
+      "deadline": 1792395997059
+    },
+    "emitted": {
+      "status": "partial",
+      "examined": 1101,
+      "emitted": 583,
+      "omitted": 517,
+      "redactions": 0,
+      "total": 1100,
+      "reasons": [
+        "OUTPUT_LIMIT",
+        "BYTE_LIMIT"
+      ],
+      "startedAt": 1792395987442,
+      "endedAt": 1792395987629,
+      "deadline": 1792395997442
+    },
+    "generation": {
+      "components": {
+        "examined": 583,
+        "emitted": 128,
+        "omitted": 455,
+        "deadline": 1792395997442,
+        "status": "partial"
+      },
+      "actions": {
+        "examined": 583,
+        "emitted": 256,
+        "omitted": 327,
+        "deadline": 1792395997442,
+        "status": "partial"
+      },
+      "routes": {
+        "examined": 0,
+        "emitted": 0,
+        "omitted": 0,
+        "deadline": 1792395997442,
+        "status": "partial"
+      }
+    },
+    "components": 128,
+    "actions": 256,
+    "sample": {
+      "status": "partial",
+      "examined": 443,
+      "emitted": 1,
+      "omitted": 126,
+      "redactions": 0,
+      "total": 1,
+      "reasons": [
+        "CELL_TRUNCATED",
+        "SAMPLE_ONLY"
+      ],
+      "startedAt": 1792395987796,
+      "endedAt": 1792395987817,
+      "deadline": 1792395997796
+    },
+    "cancellation": true,
+    "injectedQuotaAbort": true,
+    "realConnectionCas": true,
+    "postRaceRevision": 4,
+    "openShadow": true,
+    "explicitFormOwner": true,
+    "caption": true,
+    "deniedFrame": true,
+    "unitDeadline": true,
+    "privacy": true,
+    "realIndexedDB": true,
+    "physicalStorage": {
+      "usage": 2349627,
+      "quota": 10739767867
+    }
+  },
+  "approvals": 0,
+  "dispatches": 0,
+  "modelCalls": 0,
+  "sourceHashes": {
+    "apps/chrome-extension/src/codebase/discover.ts": "c88dbca9b5413dff3581e3c5b0b700e0da85d562ecbea6533363757d50bf6635",
+    "apps/chrome-extension/src/codebase/dom-collector.ts": "14e2cc02fb976d89e785342bf35c86a7ed950c91f52490c1d3680e334049acb1",
+    "packages/codebase-builder/package.json": "d3240d5b948453427528294ece3b9cc0a7ae948bec3650345269d44a21f9af7a",
+    "packages/codebase-builder/src/actions.ts": "3db273aec3f180a2a2ceb52b546b17328387a835585388de1b1cf898d22c1512",
+    "packages/codebase-builder/src/build.ts": "a657170157919087bf549cc1ec6aed43227a7e7abbfe83dbd0afe22f1dfd90af",
+    "packages/codebase-builder/src/dirty-roots.ts": "f189549e75c9e317a5f079e4289e0264ae5dcff9a1a1afcfa3ff2f0c1b272e6b",
+    "packages/codebase-builder/src/entity-base.ts": "c384702211e136f51be8041555f7a0803abf3ada6f92571776f3506858bb1a00",
+    "packages/codebase-builder/src/finalize.ts": "f34d2050202c20dcd825209ebc176138ba851e25a8572ee0a2a3b6a48e616da1",
+    "packages/codebase-builder/src/identity.ts": "c9e049e4c7bfca550f6758c59e7e67c9d1e4857d3965116d55a91e0f51b728de",
+    "packages/codebase-builder/src/imports/learned-workflow.ts": "16b5a902f1721bc5d8112d61d76f21bd8238a54cc7c1c54768dec283322dc82d",
+    "packages/codebase-builder/src/index.ts": "9104ec749141381a237eead434cfa482e2ef0cf6ef27930a63d4c1e78b4700fe",
+    "packages/codebase-builder/src/singleton.ts": "8eae9378038214fcbdd7ea33ca3bc67b94767648db34963181c1deef9dda68c8",
+    "packages/codebase-repository/package.json": "e76c949009d2f63b2a6350bc534faf3c6f38d9bb7a9021936b1c6745ebe5ebf2",
+    "packages/codebase-repository/src/advisory.ts": "174470871720e817a3ea2039ef602066bc467ae2d097ffe3acbc56f5bc500baa",
+    "packages/codebase-repository/src/capacity.ts": "9cf844ae165d15ac487c9844a8186160401b4a6e1bacef0f3b8a1f373efe88b8",
+    "packages/codebase-repository/src/commit.ts": "2c527b6ca1c5d6590043e3378d71e35632f9d46b90542dc6f8028e5d4dfe4e52",
+    "packages/codebase-repository/src/database.ts": "14f0101e3f3139dd393c2d58e2caa10b5d617b52c0aaa1a19b0be0d33f185027",
+    "packages/codebase-repository/src/datasets.ts": "53e97e2ee14492c443e67ef54f798905872b8ba338dea215b6d17d5e2a45a657",
+    "packages/codebase-repository/src/index.ts": "628daa6a3410468f643f8a43d6638b2ced3a222680acd0adbc590cd9d003baa7",
+    "packages/codebase-repository/src/query.ts": "25d5de938aa725d46cf203741f768459d574283d3394539bcaffb7b626518cad",
+    "packages/codebase-repository/src/read-service.ts": "96fb407111735d70a9e9a5d605f03f94850d1153c979bc66e93d243ab8ed487c",
+    "packages/codebase-repository/src/records.ts": "56dd2a8f33cd47ed7314f4db9bdc45b6c33550e2979bcee5ff9d565ebabfc372",
+    "packages/codebase-repository/src/repository.ts": "e71a0ad3052cc4d819008fc0d4d06e47c1ebed6f0e646a639502726dea269269",
+    "packages/codebase-schema/package.json": "7963bddd768920c5843e428eb1ad1271fca2708d632bff5fcc71048fc3051e18",
+    "packages/codebase-schema/src/advisory.ts": "4ed981b614467986a640f2ff0c1f051892212d419c2c3e8b55fba925ae6df4e1",
+    "packages/codebase-schema/src/common.ts": "95029e49bcf7c5af2513f8d66df6d52ce3846b73a2d3232c3293e7abb8f9cf75",
+    "packages/codebase-schema/src/dataset.ts": "5ea125ed587edba0203d0cccbcd5ebcaa14fad7f3fe893f2802a9314b4bbbd3d",
+    "packages/codebase-schema/src/digest.ts": "1084c28573e0c8fa98c8d071d890e4dd8951d61342b7389794ddc6c8e4654f9f",
+    "packages/codebase-schema/src/graph.ts": "6ecb0572cdbed15387da7f3298247bc6c0bdd2db86263dd1ae9587800772dbf5",
+    "packages/codebase-schema/src/index.ts": "871146312f21b380c27d6d178c22de9428b88b58b88f56b8fa3173155a23717b",
+    "packages/codebase-schema/src/observation.ts": "85abb0d9fa91bc48366adaadc9310f8e60f7cbc02f818bd2b7291ec546f55751",
+    "packages/codebase-schema/src/validate.ts": "cc524d4d0f8065aadb5cbaa1aa33832f6b20f0a239d6066c504eaa686768ee35",
+    "packages/collector/package.json": "996e8d27bb4dfe9b2cfcf81d7a5223c9aa8ef484f34acc1f39f90b878ce792ae",
+    "packages/collector/src/dom/classify.ts": "7193335bf9fb9e287735015271c68834d2c6561b7ae875c597cf451244300db3",
+    "packages/collector/src/dom/collect.ts": "00051ba0fd73418b626947f6eb42b9c41b1a477f786d3e0b3d66cba2434bb774",
+    "packages/collector/src/dom/collections.ts": "fc85c08214bd480851fe363a86017e3197346866633fd1f42aedb233c17b41c7",
+    "packages/collector/src/dom/control-metadata.ts": "96fbc625e1d07c10826d1b02276a137558d97a9d99d7887a9a0379c0c24833ff",
+    "packages/collector/src/dom/dirty-observer.ts": "1de413c7d89fc90851523f9b45b7220cd8ccee26bbee986aac3bb6c73079b6e0",
+    "packages/collector/src/dom/normalise.ts": "ba437856429e3d26fa7ea6444c203dd61a13e762415ebaa6f925c191bc1478c7",
+    "packages/collector/src/dom/privacy.ts": "1e96f72e47b31f1731f645496c65eeb5ca65ce659322cb26f4a99ea9eeea3dd1",
+    "packages/collector/src/dom/relationships.ts": "db44b92159127f37fee1409cd3cb03fcbac1e5b7c7111742e50b1c49cb604053",
+    "packages/collector/src/dom/walk.ts": "36d23e97548be3a0ffafa0b0bbfb9f279dd66c50fcecda9f7ee0c55e33ecc0d9",
+    "packages/collector/src/index.ts": "53ccd688f86c88167663a6e5f9f173425346df7654c0ad8326a9c45e80199f5b",
+    "scripts/s29/build.mjs": "c7f53eabefd16e57250dfab9c83074cc82a21aa2a9a128657ad71e8ca8158372",
+    "scripts/s29/check.mjs": "00539db9cdb0c6bfc8664b1d4696e7526df9e4e3280babe5318021f9f4b5be65",
+    "scripts/s29/chrome.mjs": "d69aba9ae19c164fb0c6249804f0b7a4c093cb1c147d45e20c7e51c329cdf972",
+    "scripts/s29/export-goldens.mjs": "f28fc3d58c82fa43f1a06017b8441887fc646e76376ba23b363a0eeeb223a15b"
+  },
+  "lint": "PASS",
+  "s27Regressions": "PASS",
+  "s28Regressions": "PASS",
+  "s29BoundariesAndGoldens": "PASS",
+  "preservedSourceAndDesignHashes": "PASS",
+  "inventoryFiles": 1336
+}

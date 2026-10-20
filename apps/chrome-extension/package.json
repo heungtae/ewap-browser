@@ -4,6 +4,14 @@
   "version": "0.0.0",
   "dependencies": {
     "@contextpilot/shared": "workspace:*",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "@contextpilot/collector": "workspace:*",
+    "@contextpilot/codebase-builder": "workspace:*",
+    "@contextpilot/codebase-repository": "workspace:*",
+    "@contextpilot/codebase-schema": "workspace:*",
+    "@contextpilot/tool-registry": "workspace:*",
+    "@contextpilot/tool-runtime": "workspace:*",
+    "@contextpilot/policy-engine": "workspace:*",
+    "@contextpilot/browser-runtime": "workspace:*"
   }
 }

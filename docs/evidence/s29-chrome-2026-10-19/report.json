@@ -1,0 +1,104 @@
+{
+  "result": "PASS",
+  "first": {
+    "status": "partial",
+    "examined": 39,
+    "emitted": 7,
+    "omitted": 2,
+    "redactions": 2,
+    "total": 7,
+    "reasons": [
+      "SAMPLE_ONLY",
+      "DENIED_REGION"
+    ],
+    "startedAt": 1792395986938,
+    "endedAt": 1792395986941,
+    "deadline": 1792395996937
+  },
+  "revisitRevision": 2,
+  "deltaRevision": 3,
+  "large": {
+    "status": "partial",
+    "examined": 5000,
+    "emitted": 0,
+    "omitted": 1,
+    "redactions": 0,
+    "total": null,
+    "reasons": [
+      "NODE_LIMIT"
+    ],
+    "startedAt": 1792395987059,
+    "endedAt": 1792395987439,
+    "deadline": 1792395997059
+  },
+  "emitted": {
+    "status": "partial",
+    "examined": 1101,
+    "emitted": 583,
+    "omitted": 517,
+    "redactions": 0,
+    "total": 1100,
+    "reasons": [
+      "OUTPUT_LIMIT",
+      "BYTE_LIMIT"
+    ],
+    "startedAt": 1792395987442,
+    "endedAt": 1792395987629,
+    "deadline": 1792395997442
+  },
+  "generation": {
+    "components": {
+      "examined": 583,
+      "emitted": 128,
+      "omitted": 455,
+      "deadline": 1792395997442,
+      "status": "partial"
+    },
+    "actions": {
+      "examined": 583,
+      "emitted": 256,
+      "omitted": 327,
+      "deadline": 1792395997442,
+      "status": "partial"
+    },
+    "routes": {
+      "examined": 0,
+      "emitted": 0,
+      "omitted": 0,
+      "deadline": 1792395997442,
+      "status": "partial"
+    }
+  },
+  "components": 128,
+  "actions": 256,
+  "sample": {
+    "status": "partial",
+    "examined": 443,
+    "emitted": 1,
+    "omitted": 126,
+    "redactions": 0,
+    "total": 1,
+    "reasons": [
+      "CELL_TRUNCATED",
+      "SAMPLE_ONLY"
+    ],
+    "startedAt": 1792395987796,
+    "endedAt": 1792395987817,
+    "deadline": 1792395997796
+  },
+  "cancellation": true,
+  "injectedQuotaAbort": true,
+  "realConnectionCas": true,
+  "postRaceRevision": 4,
+  "openShadow": true,
+  "explicitFormOwner": true,
+  "caption": true,
+  "deniedFrame": true,
+  "unitDeadline": true,
+  "privacy": true,
+  "realIndexedDB": true,
+  "physicalStorage": {
+    "usage": 2349627,
+    "quota": 10739767867
+  }
+}

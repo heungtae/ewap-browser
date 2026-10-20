@@ -1,0 +1,13 @@
+{
+  "name": "@contextpilot/policy-engine",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "zod": "4.6.7",
+    "@contextpilot/codebase-schema": "workspace:*",
+    "@contextpilot/tool-registry": "workspace:*"
+  }
+}

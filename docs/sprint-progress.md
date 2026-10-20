@@ -4,6 +4,41 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S31 — 2026-10-20 durable tasks and recovery
+
+**In Progress — target SQLite/browser recovery implemented; prerequisite and product acceptance pending.**
+[Evidence and remaining checks](evidence/s31-durable-recovery-2026-10-20.md)
+record atomic admission/events, task/tab leases, epoch fencing, durable dispatch
+intents/receipts, offline Stop, persistent budgets and terminal cleanup, and
+idempotent history. SQLite checks passed 8/8; S27–S31 regression passed 132/132,
+with final S31 reducer/recovery checks 5/5; controlled Chrome passed 5 cases with
+2 DOM dispatches. S30 prerequisite gates and real bridge/MV3/CDP/prompt/UI recovery
+qualification remain. Production routing/version and original designs are preserved.
+
+## Browser Agent S30 — 2026-10-19 shared tool/policy/browser runtime
+
+**In Progress — target runtime implemented; prerequisite/product acceptance pending.**
+[Evidence and limits](evidence/s30-runtime-2026-10-19.md) record 21 tool schemas,
+fresh prepared bindings, trusted approval enforcement, atomic browser dispatch
+reservations, independent verification, native control/reviewed adapter ports and
+same-call card continuation. Controlled Chrome passed 19 cases: 3 explicit
+approvals/dispatches, 3 no-ops and 13 target rejections. Existing product routing,
+version and original designs remain unchanged. S28/S29 prerequisites, actual
+sender/backend/product UI integration and remaining S30 source-consent/adapter
+acceptance must close before completion; source disclosure remains unavailable.
+
+## Browser Agent S29 — 2026-10-19 Codebase construction implementation
+
+**In Progress — structural code/checks delivered; S28 prerequisite incomplete.**
+[Evidence and limits](evidence/s29-construction-2026-10-19.md) record closed
+observation/graph/dataset schemas, bounded DOM/open-shadow traversal, deterministic
+structure/identity, transactional IndexedDB, immutable datasets/query helpers and
+advisory workflow history. Controlled Chrome verified first visit/revisit/delta,
+real-connection CAS, injected quota rollback, privacy and resource caps. Original
+designs and existing production routing remain unchanged. No provider/MCP tools
+were advertised; JEV annotations remain disabled by S27's failed gate. S29 is not
+complete until its S28/runtime prerequisite and integration acceptance close.
+
 ## Browser Agent S28 — 2026-10-19 workspace and bridge implementation
 
 **In Progress — target foundation implemented; full acceptance remains pending.**

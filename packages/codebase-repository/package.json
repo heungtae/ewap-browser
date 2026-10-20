@@ -1,0 +1,11 @@
+{
+  "name": "@contextpilot/codebase-repository",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@contextpilot/codebase-schema": "workspace:*"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-19",
+  "scope": "Development failures, not acceptance passes",
+  "failures": [
+    {"check": "Chrome output cap", "error": "emitted limit", "cause": "Test expected 1000 final records while the 256-KiB cap had already truncated output", "recovery": "Require OUTPUT_LIMIT and BYTE_LIMIT plus bounded emitted counts; preserve both design caps"},
+    {"check": "Chrome shadow case", "error": "open shadow traversal", "cause": "Missing generator branch for an open shadow root", "recovery": "Implement bounded open-shadow traversal sharing the same node budget"},
+    {"check": "TypeScript test loader", "error": "TS1479 CommonJS import of fake-indexeddb ESM", "recovery": "Use dynamic import in async test setup"},
+    {"check": "Builder stage counters", "error": "Expected 8 arguments, but got 7", "recovery": "Pass the generation counters to the finalizer and rerun checks"},
+    {"check": "Lint", "error": "Empty catch blocks and unused imports", "recovery": "Remove unused imports and explicitly document already-settled transaction abort handling"}
+  ]
+}

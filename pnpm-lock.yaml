@@ -20,6 +20,9 @@ importers:
       eslint:
         specifier: 9.39.1
         version: 9.39.1
+      fake-indexeddb:
+        specifier: 6.2.4
+        version: 6.2.4
       prettier:
         specifier: 3.6.2
         version: 3.6.2
@@ -47,9 +50,84 @@ importers:
 
   apps/chrome-extension:
     dependencies:
+      '@contextpilot/browser-runtime':
+        specifier: workspace:*
+        version: link:../../packages/browser-runtime
+      '@contextpilot/codebase-builder':
+        specifier: workspace:*
+        version: link:../../packages/codebase-builder
+      '@contextpilot/codebase-repository':
+        specifier: workspace:*
+        version: link:../../packages/codebase-repository
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../../packages/codebase-schema
+      '@contextpilot/collector':
+        specifier: workspace:*
+        version: link:../../packages/collector
+      '@contextpilot/policy-engine':
+        specifier: workspace:*
+        version: link:../../packages/policy-engine
       '@contextpilot/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@contextpilot/tool-registry':
+        specifier: workspace:*
+        version: link:../../packages/tool-registry
+      '@contextpilot/tool-runtime':
+        specifier: workspace:*
+        version: link:../../packages/tool-runtime
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  packages/browser-runtime:
+    dependencies:
+      '@contextpilot/codebase-repository':
+        specifier: workspace:*
+        version: link:../codebase-repository
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+      '@contextpilot/tool-registry':
+        specifier: workspace:*
+        version: link:../tool-registry
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  packages/codebase-builder:
+    dependencies:
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+
+  packages/codebase-repository:
+    dependencies:
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+
+  packages/codebase-schema:
+    dependencies:
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  packages/collector:
+    dependencies:
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+
+  packages/policy-engine:
+    dependencies:
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+      '@contextpilot/tool-registry':
+        specifier: workspace:*
+        version: link:../tool-registry
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -71,6 +149,30 @@ importers:
 
   packages/task-engine:
     dependencies:
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  packages/tool-registry:
+    dependencies:
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
+  packages/tool-runtime:
+    dependencies:
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+      '@contextpilot/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
+      '@contextpilot/tool-registry':
+        specifier: workspace:*
+        version: link:../tool-registry
       zod:
         specifier: 4.6.7
         version: 4.6.7
@@ -851,6 +953,10 @@ packages:
   expect-type@1.4.0:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
+
+  fake-indexeddb@6.2.4:
+    resolution: {integrity: sha512-INKeIKEtSViN4yVtEWEUqbsqmaIy7Ls+MfU0yxQVXg67pOJ/sH1ZxcVrP8XrKULUFohcPD9gnmym+qBfEybACw==}
+    engines: {node: '>=18'}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -1952,6 +2058,8 @@ snapshots:
   esutils@2.0.3: {}
 
   expect-type@1.4.0: {}
+
+  fake-indexeddb@6.2.4: {}
 
   fast-deep-equal@3.1.3: {}
 

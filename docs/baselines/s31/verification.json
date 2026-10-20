@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "base_revision": "5ee4c7062860184b024524e2cdd80087718cbabc",
+  "dirty_tree": true,
+  "scope": "S31 target-only implementation; acceptance incomplete",
+  "checks": {
+    "sqlite": "8/8 PASS with Node 22.23.2",
+    "s27_s31_regression": "132/132 PASS before two additional reducer tests",
+    "final_s31": "5/5 PASS including two new reducer tests",
+    "chrome": "5/5 PASS; 2 DOM input dispatches; 0 provider calls",
+    "typecheck": "PASS; root/packages and separate server entrypoint",
+    "lint": "PASS",
+    "build": "isolated S31 bundles PASS",
+    "module_boundaries": "PASS; 423 legacy extension TypeScript files",
+    "s31_boundaries": "PASS; 14 target modules, 1416-file successor inventory, frozen production/design hashes",
+    "formatting": "PASS for changed target code/scripts",
+    "diff_check": "PASS"
+  },
+  "remaining": "S30 prerequisite; authenticated bridge, MV3 worker/backend lifecycle, CDP crash windows, pending prompts, product UI/reconnect, long-running expiry/retention",
+  "source_hashes": {
+    "apps/agent-server/src/tasks/database.ts": "d95fb203856e831776efcb2539835e7649f6ee339c8f8142572921d83f62842a",
+    "apps/agent-server/src/tasks/index.ts": "9b428f9110c14c73c1500e3fbc9a3a2627ad1cbaab1cb93d25eb64a9b8d0d5ff",
+    "apps/agent-server/src/tasks/intents.ts": "fd9a832cd290de152d71cf617a817b0762bc883ee2155eb7f6dd1565f9bfad1c",
+    "apps/agent-server/src/tasks/retention.ts": "f8128565e56281e505531dd4872b1bbecd8f309f355d46f7ff14cc9e9d87d6c6",
+    "apps/agent-server/src/tasks/store.ts": "ac238f2269553f4d8f27b355cf57e34b11a41127c1e86ce48346f95072b8b6e2",
+    "apps/chrome-extension/src/runtime/durable-dispatch.ts": "23c5fdd2d0441899401962437f0c15563f5637a31e1922758039227ed80c7d4e",
+    "extension/tests/fixture/s31/chrome-cases.ts": "e3389a8d4a1162b228b8d60d896ae8a8c00b199cfd46f84bd946af6e356312d8",
+    "extension/tests/unit/migration/s31/recovery.test.ts": "8b112aff408a84e41149d2a70d27b445d9fb53d048b16e86103e8bf83ed76587",
+    "extension/tests/unit/migration/s31/reducer.test.ts": "5001a3ad3b5cf4d67487122df7f3021e88a528bb0b2533c01f830b802648f564",
+    "packages/browser-runtime/src/index.ts": "e3bad6a53f713fafa8156af54ef7808ffc1beb05e3e14c0db2ff74a4f45ceaa4",
+    "packages/browser-runtime/src/revocation.ts": "e62af4456a8b854669aff03bbbf0d26ac0c7a8c49c57edb350966ee7e083afa4",
+    "packages/task-engine/src/durable/contracts.ts": "4eaff3a3fab1126ca546626b52e8f5f148daf5fbada89a25f65ae97aaed4a774",
+    "packages/task-engine/src/durable/index.ts": "3dca43317b51bc9e50e56f1c696460b0bb7e200966f17452ec8368b06d2fc5ed",
+    "packages/task-engine/src/durable/presentation.ts": "9e8982a041401e0d4fb30e4de63855f94536436f295279cc5d5732dc0228d01c",
+    "packages/task-engine/src/durable/reducer.ts": "3e781e2d259ce5c45f0b4215c56a6f10a321c99087a3e2d2a918d47c27dab7ff",
+    "scripts/s31/build.mjs": "7611dccf9090991f60456ad2d07131da3087f355d4fcadaaf17647411483b1a9",
+    "scripts/s31/check.mjs": "d53e03165d50424c914d95a48d74813a6bb3a635e009cec32dad070b2106f69e",
+    "scripts/s31/chrome.mjs": "4e32053b0963809ac3ad219d35d49815249c0f418b115e8ee55e532f928e2d48",
+    "scripts/s31/open-store.mjs": "e685ef04d56b35272df168089db890982ff137c07e00ab37aa9d50970170773b",
+    "scripts/s31/runtime-fixture.ts": "568d5d447541ae05b2226bb86d2bacaebc5e2fc9eeff7cfa2dc4e58dfe80979c",
+    "scripts/s31/sqlite.test.mjs": "e2868e575bf1034a42407066b1a66c2916c37be4f98dc6f274727aad855f1dbb"
+  }
+}

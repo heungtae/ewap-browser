@@ -1,5 +1,11 @@
 # 검증 증거 안내
 
+[S31 durable recovery](s31-durable-recovery-2026-10-20.md): SQLite admission/leases/intents, browser revocation, receipt synchronization, budgets/history and controlled Chrome; In Progress pending S30 and actual bridge/MV3/product recovery qualification.
+
+[S30 shared tool/policy/browser runtime](s30-runtime-2026-10-19.md): strict registry, fresh bindings, approvals, atomic dispatch reservations and controlled Chrome; In Progress pending prerequisite/product integration gates.
+
+[S29 Codebase construction](s29-construction-2026-10-19.md): bounded collection, deterministic graph/identity, atomic IndexedDB, query/advisory ports and controlled Chrome; In Progress pending S28/runtime gates.
+
 [S28 workspace and bridge](s28-workspace-bridge-2026-10-19.md): isolated apps, authenticated local IPC, bounded transfers and controlled target presentation; In Progress with full UI/registration/reconnect qualification pending.
 
 [S27 controller protocol](s27-controller-protocol-2026-10-19.md): contract/binder/native/budget implementation and frozen live attempts; live feasibility failed, S27 remains In Progress and S33 completion is blocked.

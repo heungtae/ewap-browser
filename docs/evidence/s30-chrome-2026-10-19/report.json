@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "outcomes": [
+    "fill-approved",
+    "fill-noop",
+    "select-approved",
+    "select-noop",
+    "checked-approved",
+    "checked-noop",
+    "reject-hidden",
+    "reject-disabled",
+    "reject-readonly",
+    "reject-aria-disabled",
+    "reject-fieldset",
+    "reject-occluded",
+    "reject-file",
+    "reject-range",
+    "reject-date",
+    "reject-number",
+    "reject-password",
+    "reject-multiple",
+    "reject-duplicate"
+  ],
+  "approvals": 3,
+  "dispatches": 3,
+  "noOps": 3,
+  "providerCalls": 0,
+  "goalVerified": false,
+  "scope": "Controlled DOM and card projection; fixture UI principal and intent port, not real extension sender/backend integration"
+}

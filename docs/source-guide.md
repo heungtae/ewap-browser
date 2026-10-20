@@ -1,5 +1,11 @@
 # 코드 탐색 안내
 
+S31: [SQLite task store and intent journal](../apps/agent-server/src/tasks/index.ts), [durable reducer/budget/history](../packages/task-engine/src/durable/index.ts), [browser revocation](../packages/browser-runtime/src/revocation.ts), [receipt synchronization](../apps/chrome-extension/src/runtime/durable-dispatch.ts), [explicit SQLite factory](../scripts/s31/open-store.mjs). [Evidence and remaining acceptance](evidence/s31-durable-recovery-2026-10-20.md); target-only, Node 22.13+ for SQLite, production routing remains unchanged.
+
+S30: [registry](../packages/tool-registry/src/index.ts), [runtime](../packages/tool-runtime/src/index.ts), [policy](../packages/policy-engine/src/index.ts), [browser adapters and dispatch journal](../packages/browser-runtime/src/index.ts), [target continuation](../apps/chrome-extension/src/runtime/continuation.ts). [Evidence and remaining acceptance](evidence/s30-runtime-2026-10-19.md); production routing remains unchanged.
+
+S29: [schemas](../packages/codebase-schema/src/index.ts), [collector](../packages/collector/src/index.ts), [builder](../packages/codebase-builder/src/index.ts), [repository/read/query ports](../packages/codebase-repository/src/index.ts), [discovery composition](../apps/chrome-extension/src/codebase/discover.ts). These target-only paths preserve the existing production entrypoint; [verification and limits](evidence/s29-construction-2026-10-19.md).
+
 S28 target paths: [browser presentation](../apps/chrome-extension/src/presentation), [bridge adapters](../apps/chrome-extension/src/bridge), [native backend](../apps/agent-server/src), [shared protocol](../packages/shared/src/bridge.ts), [isolated build](../scripts/s28/build.mjs). Normal production packaging retains the existing entrypoint; [acceptance gaps](evidence/s28-workspace-bridge-2026-10-19.md) remain.
 
 S27 target-only decision contracts live in [task-engine decisions](../packages/task-engine/src/decisions/index.ts), with the [native adapter](../packages/provider-adapters/src/jev/index.ts) and [checks](../extension/tests/unit/migration/s27). This path is not selected by production routing; [live feasibility failed](evidence/s27-controller-protocol-2026-10-19.md).

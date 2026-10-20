@@ -1,0 +1,2094 @@
+{
+  "web.discover": {
+    "wireName": "web__discover",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "scope": { "type": "string", "enum": ["visible_only", "all_dom"] }
+      },
+      "required": ["page", "scope"],
+      "additionalProperties": false
+    }
+  },
+  "web.search_codebase": {
+    "wireName": "web__search_codebase",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "name": { "type": "string", "maxLength": 200 },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 128 }
+      },
+      "required": ["page", "name", "limit"],
+      "additionalProperties": false
+    }
+  },
+  "web.inspect": {
+    "wireName": "web__inspect",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "inspection": {
+          "type": "string",
+          "enum": ["structure", "state", "schema", "source_slice"]
+        },
+        "fields": {
+          "maxItems": 50,
+          "type": "array",
+          "items": { "type": "string", "maxLength": 64 }
+        }
+      },
+      "required": ["target", "inspection", "fields"],
+      "additionalProperties": false
+    }
+  },
+  "web.get_capabilities": {
+    "wireName": "web__get_capabilities",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["target"],
+      "additionalProperties": false
+    }
+  },
+  "web.navigate": {
+    "wireName": "web__navigate",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "route": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["route"],
+      "additionalProperties": false
+    }
+  },
+  "web.switch_tab": {
+    "wireName": "web__switch_tab",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "tab": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["tab"],
+      "additionalProperties": false
+    }
+  },
+  "web.click": {
+    "wireName": "web__click",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "activation": { "type": "string", "const": "primary" },
+        "argument": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["action", "activation"],
+      "additionalProperties": false
+    }
+  },
+  "web.fill": {
+    "wireName": "web__fill",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "argument": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["action", "argument"],
+      "additionalProperties": false
+    }
+  },
+  "web.select": {
+    "wireName": "web__select",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "argument": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["action", "argument"],
+      "additionalProperties": false
+    }
+  },
+  "web.scroll": {
+    "wireName": "web__scroll",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "direction": { "type": "string", "enum": ["up", "down"] },
+        "extent": { "type": "integer", "minimum": 1, "maximum": 1000 }
+      },
+      "required": ["target", "direction", "extent"],
+      "additionalProperties": false
+    }
+  },
+  "web.wait_for": {
+    "wireName": "web__wait_for",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "predicate": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 10000 }
+      },
+      "required": ["predicate", "timeoutMs"],
+      "additionalProperties": false
+    }
+  },
+  "web.extract": {
+    "wireName": "web__extract",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "fields": {
+          "maxItems": 50,
+          "type": "array",
+          "items": { "type": "string", "maxLength": 200 }
+        },
+        "coverage": { "type": "string", "enum": ["viewport", "complete"] }
+      },
+      "required": ["target", "fields", "coverage"],
+      "additionalProperties": false
+    }
+  },
+  "web.query": {
+    "wireName": "web__query",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "dataset": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "query": {
+          "type": "object",
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": ["project", "count", "sum", "min", "max", "average"]
+            },
+            "fields": {
+              "maxItems": 50,
+              "type": "array",
+              "items": { "type": "string", "maxLength": 200 }
+            },
+            "filters": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": { "type": "string", "maxLength": 200 },
+                  "equals": {
+                    "anyOf": [
+                      { "type": "string", "maxLength": 4096 },
+                      { "type": "number" },
+                      { "type": "boolean" },
+                      { "type": "null" }
+                    ]
+                  }
+                },
+                "required": ["field", "equals"],
+                "additionalProperties": false
+              }
+            },
+            "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+          },
+          "required": ["op", "fields", "filters", "limit"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["dataset", "query"],
+      "additionalProperties": false
+    }
+  },
+  "web.get_chart_data": {
+    "wireName": "web__get_chart_data",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "channel": {
+          "type": "string",
+          "enum": ["accessible", "registered", "visual"]
+        }
+      },
+      "required": ["target", "channel"],
+      "additionalProperties": false
+    }
+  },
+  "web.get_table_data": {
+    "wireName": "web__get_table_data",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "coverage": { "type": "string", "enum": ["viewport", "complete"] },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            { "type": "null" }
+          ]
+        }
+      },
+      "required": ["target", "coverage", "cursor"],
+      "additionalProperties": false
+    }
+  },
+  "web.get_observed_api": {
+    "wireName": "web__get_observed_api",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "page": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "limit": { "type": "integer", "minimum": 1, "maximum": 100 }
+      },
+      "required": ["page", "limit"],
+      "additionalProperties": false
+    }
+  },
+  "analysis.run": {
+    "wireName": "analysis__run",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "datasets": {
+          "minItems": 1,
+          "maxItems": 16,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "partitionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "page",
+                  "entity",
+                  "action",
+                  "argument",
+                  "dataset",
+                  "predicate",
+                  "prepared",
+                  "tab",
+                  "route",
+                  "resource"
+                ]
+              }
+            },
+            "required": ["id", "partitionId", "revision", "kind"],
+            "additionalProperties": false
+          }
+        },
+        "objective": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      },
+      "required": ["datasets", "objective"],
+      "additionalProperties": false
+    }
+  },
+  "task.verify": {
+    "wireName": "task__verify",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "predicates": {
+          "minItems": 1,
+          "maxItems": 16,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "partitionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "page",
+                  "entity",
+                  "action",
+                  "argument",
+                  "dataset",
+                  "predicate",
+                  "prepared",
+                  "tab",
+                  "route",
+                  "resource"
+                ]
+              }
+            },
+            "required": ["id", "partitionId", "revision", "kind"],
+            "additionalProperties": false
+          }
+        },
+        "goalRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": ["predicates", "goalRevision"],
+      "additionalProperties": false
+    }
+  },
+  "task.request_approval": {
+    "wireName": "task__request_approval",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "prepared": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["prepared"],
+      "additionalProperties": false
+    }
+  },
+  "task.complete": {
+    "wireName": "task__complete",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "outcome": { "type": "string", "enum": ["verified", "unknown"] },
+        "evidence": {
+          "maxItems": 32,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "partitionId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "page",
+                  "entity",
+                  "action",
+                  "argument",
+                  "dataset",
+                  "predicate",
+                  "prepared",
+                  "tab",
+                  "route",
+                  "resource"
+                ]
+              }
+            },
+            "required": ["id", "partitionId", "revision", "kind"],
+            "additionalProperties": false
+          }
+        },
+        "goalRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": ["outcome", "evidence", "goalRevision"],
+      "additionalProperties": false
+    }
+  },
+  "web.invoke_action": {
+    "wireName": "web__invoke_action",
+    "inputSchema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "partitionId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-zA-Z0-9_.:-]+$"
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "page",
+                "entity",
+                "action",
+                "argument",
+                "dataset",
+                "predicate",
+                "prepared",
+                "tab",
+                "route",
+                "resource"
+              ]
+            }
+          },
+          "required": ["id", "partitionId", "revision", "kind"],
+          "additionalProperties": false
+        },
+        "arguments": {
+          "maxItems": 16,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "parameter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9_.:-]+$"
+              },
+              "source": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[a-zA-Z0-9_.:-]+$"
+                  },
+                  "partitionId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[a-zA-Z0-9_.:-]+$"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "page",
+                      "entity",
+                      "action",
+                      "argument",
+                      "dataset",
+                      "predicate",
+                      "prepared",
+                      "tab",
+                      "route",
+                      "resource"
+                    ]
+                  }
+                },
+                "required": ["id", "partitionId", "revision", "kind"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["parameter", "source"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["action", "arguments"],
+      "additionalProperties": false
+    }
+  },
+  "preparedSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "schema": { "type": "string", "const": "wca.tool/v1" },
+      "kind": { "type": "string", "const": "prepared" },
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "toolCallId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "tool": {
+        "type": "string",
+        "enum": [
+          "web.discover",
+          "web.search_codebase",
+          "web.inspect",
+          "web.get_capabilities",
+          "web.navigate",
+          "web.switch_tab",
+          "web.click",
+          "web.fill",
+          "web.select",
+          "web.scroll",
+          "web.wait_for",
+          "web.extract",
+          "web.query",
+          "web.get_chart_data",
+          "web.get_table_data",
+          "web.get_observed_api",
+          "analysis.run",
+          "task.verify",
+          "task.request_approval",
+          "task.complete",
+          "web.invoke_action"
+        ]
+      },
+      "toolVersion": { "type": "number", "const": 1 },
+      "context": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "stepId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "mode": { "type": "string", "enum": ["ask", "act"] },
+          "runtimeEpoch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "planRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "cancellationGeneration": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "profileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "partitionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "windowId": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "tabId": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "frameId": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "documentEpoch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "routeEpoch": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "graphRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "entityRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "capabilityRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "capabilityDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "policyRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "policyDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "leaseId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "leaseExpiresAt": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "deadline": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "taskId",
+          "stepId",
+          "mode",
+          "runtimeEpoch",
+          "planRevision",
+          "cancellationGeneration",
+          "profileId",
+          "partitionId",
+          "windowId",
+          "tabId",
+          "frameId",
+          "documentId",
+          "documentEpoch",
+          "routeEpoch",
+          "graphRevision",
+          "entityRevision",
+          "capabilityRevision",
+          "capabilityDigest",
+          "policyRevision",
+          "policyDigest",
+          "leaseId",
+          "leaseExpiresAt",
+          "deadline"
+        ],
+        "additionalProperties": false
+      },
+      "target": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "partitionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "page",
+              "entity",
+              "action",
+              "argument",
+              "dataset",
+              "predicate",
+              "prepared",
+              "tab",
+              "route",
+              "resource"
+            ]
+          }
+        },
+        "required": ["id", "partitionId", "revision", "kind"],
+        "additionalProperties": false
+      },
+      "bindingId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "observationDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "argumentDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "argumentSourceDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "intentDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "predicate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "partitionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "page",
+              "entity",
+              "action",
+              "argument",
+              "dataset",
+              "predicate",
+              "prepared",
+              "tab",
+              "route",
+              "resource"
+            ]
+          }
+        },
+        "required": ["id", "partitionId", "revision", "kind"],
+        "additionalProperties": false
+      },
+      "effect": {
+        "type": "object",
+        "properties": {
+          "mechanism": {
+            "type": "string",
+            "enum": ["read", "navigate", "edit_control", "invoke_registered"]
+          },
+          "business": {
+            "type": "string",
+            "enum": [
+              "read_only",
+              "unsubmitted",
+              "write",
+              "destructive",
+              "external_transfer",
+              "unknown"
+            ]
+          },
+          "bulk": { "type": "boolean" },
+          "sensitive": { "type": "boolean" },
+          "disclosure": { "type": "boolean" }
+        },
+        "required": [
+          "mechanism",
+          "business",
+          "bulk",
+          "sensitive",
+          "disclosure"
+        ],
+        "additionalProperties": false
+      },
+      "disclosureScope": {
+        "anyOf": [
+          { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          { "type": "null" }
+        ]
+      },
+      "expiresAt": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    },
+    "required": [
+      "schema",
+      "kind",
+      "id",
+      "toolCallId",
+      "tool",
+      "toolVersion",
+      "context",
+      "target",
+      "bindingId",
+      "observationDigest",
+      "argumentDigest",
+      "argumentSourceDigest",
+      "intentDigest",
+      "predicate",
+      "effect",
+      "disclosureScope",
+      "expiresAt",
+      "digest"
+    ],
+    "additionalProperties": false
+  },
+  "receiptSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "schema": { "type": "string", "const": "wca.tool/v1" },
+      "kind": { "type": "string", "const": "receipt" },
+      "toolCallId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "tool": {
+        "type": "string",
+        "enum": [
+          "web.discover",
+          "web.search_codebase",
+          "web.inspect",
+          "web.get_capabilities",
+          "web.navigate",
+          "web.switch_tab",
+          "web.click",
+          "web.fill",
+          "web.select",
+          "web.scroll",
+          "web.wait_for",
+          "web.extract",
+          "web.query",
+          "web.get_chart_data",
+          "web.get_table_data",
+          "web.get_observed_api",
+          "analysis.run",
+          "task.verify",
+          "task.request_approval",
+          "task.complete",
+          "web.invoke_action"
+        ]
+      },
+      "stepId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "preparedDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "dispatchId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "dispatch": {
+        "type": "string",
+        "enum": ["not_dispatched", "reserved", "dispatched", "unknown"]
+      },
+      "commands": { "type": "integer", "minimum": 0, "maximum": 64 },
+      "verification": {
+        "type": "string",
+        "enum": ["passed", "failed", "unknown", "not_run"]
+      },
+      "evidenceDigest": {
+        "anyOf": [
+          { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          { "type": "null" }
+        ]
+      },
+      "error": {
+        "anyOf": [{ "type": "string", "maxLength": 128 }, { "type": "null" }]
+      },
+      "noOp": { "type": "boolean" },
+      "goalVerified": { "type": "boolean", "const": false }
+    },
+    "required": [
+      "schema",
+      "kind",
+      "toolCallId",
+      "tool",
+      "stepId",
+      "preparedDigest",
+      "dispatchId",
+      "dispatch",
+      "commands",
+      "verification",
+      "evidenceDigest",
+      "error",
+      "noOp",
+      "goalVerified"
+    ],
+    "additionalProperties": false
+  },
+  "promptSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "schema": { "type": "string", "const": "wca.policy/v1" },
+      "kind": { "type": "string", "const": "approval_request" },
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "revision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "toolCallId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "preparedDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "contextDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "planRevision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "policyRevision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "windowId": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "tool": {
+        "type": "string",
+        "enum": [
+          "web.discover",
+          "web.search_codebase",
+          "web.inspect",
+          "web.get_capabilities",
+          "web.navigate",
+          "web.switch_tab",
+          "web.click",
+          "web.fill",
+          "web.select",
+          "web.scroll",
+          "web.wait_for",
+          "web.extract",
+          "web.query",
+          "web.get_chart_data",
+          "web.get_table_data",
+          "web.get_observed_api",
+          "analysis.run",
+          "task.verify",
+          "task.request_approval",
+          "task.complete",
+          "web.invoke_action"
+        ]
+      },
+      "effect": {
+        "type": "object",
+        "properties": {
+          "mechanism": {
+            "type": "string",
+            "enum": ["read", "navigate", "edit_control", "invoke_registered"]
+          },
+          "business": {
+            "type": "string",
+            "enum": [
+              "read_only",
+              "unsubmitted",
+              "write",
+              "destructive",
+              "external_transfer",
+              "unknown"
+            ]
+          },
+          "bulk": { "type": "boolean" },
+          "sensitive": { "type": "boolean" },
+          "disclosure": { "type": "boolean" }
+        },
+        "required": [
+          "mechanism",
+          "business",
+          "bulk",
+          "sensitive",
+          "disclosure"
+        ],
+        "additionalProperties": false
+      },
+      "target": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "partitionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "page",
+              "entity",
+              "action",
+              "argument",
+              "dataset",
+              "predicate",
+              "prepared",
+              "tab",
+              "route",
+              "resource"
+            ]
+          }
+        },
+        "required": ["id", "partitionId", "revision", "kind"],
+        "additionalProperties": false
+      },
+      "argumentPreview": { "type": "string", "maxLength": 20000 },
+      "disclosureScope": {
+        "anyOf": [
+          { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          { "type": "null" }
+        ]
+      },
+      "expiresAt": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    },
+    "required": [
+      "schema",
+      "kind",
+      "id",
+      "revision",
+      "toolCallId",
+      "taskId",
+      "preparedDigest",
+      "contextDigest",
+      "planRevision",
+      "policyRevision",
+      "windowId",
+      "tool",
+      "effect",
+      "target",
+      "argumentPreview",
+      "disclosureScope",
+      "expiresAt"
+    ],
+    "additionalProperties": false
+  },
+  "approvalSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "schema": { "type": "string", "const": "wca.policy/v1" },
+      "kind": { "type": "string", "const": "approval_receipt" },
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "promptId": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9_.:-]+$"
+          },
+          { "type": "null" }
+        ]
+      },
+      "source": { "type": "string", "enum": ["user", "policy"] },
+      "taskId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "stepId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "preparedDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "contextDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "policyRevision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "planRevision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "runtimeEpoch": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "cancellationGeneration": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "effect": {
+        "type": "object",
+        "properties": {
+          "mechanism": {
+            "type": "string",
+            "enum": ["read", "navigate", "edit_control", "invoke_registered"]
+          },
+          "business": {
+            "type": "string",
+            "enum": [
+              "read_only",
+              "unsubmitted",
+              "write",
+              "destructive",
+              "external_transfer",
+              "unknown"
+            ]
+          },
+          "bulk": { "type": "boolean" },
+          "sensitive": { "type": "boolean" },
+          "disclosure": { "type": "boolean" }
+        },
+        "required": [
+          "mechanism",
+          "business",
+          "bulk",
+          "sensitive",
+          "disclosure"
+        ],
+        "additionalProperties": false
+      },
+      "disclosureScope": {
+        "anyOf": [
+          { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          { "type": "null" }
+        ]
+      },
+      "expiresAt": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      }
+    },
+    "required": [
+      "schema",
+      "kind",
+      "id",
+      "promptId",
+      "source",
+      "taskId",
+      "stepId",
+      "preparedDigest",
+      "contextDigest",
+      "policyRevision",
+      "planRevision",
+      "runtimeEpoch",
+      "cancellationGeneration",
+      "effect",
+      "disclosureScope",
+      "expiresAt"
+    ],
+    "additionalProperties": false
+  },
+  "responseSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "promptId": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[a-zA-Z0-9_.:-]+$"
+      },
+      "promptRevision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "preparedDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "contextDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+      "planRevision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "choice": { "type": "string", "enum": ["approve", "deny"] },
+      "disclosureScope": {
+        "anyOf": [
+          { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          { "type": "null" }
+        ]
+      }
+    },
+    "required": [
+      "promptId",
+      "promptRevision",
+      "preparedDigest",
+      "contextDigest",
+      "planRevision",
+      "choice",
+      "disclosureScope"
+    ],
+    "additionalProperties": false
+  }
+}

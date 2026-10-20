@@ -1,0 +1,13 @@
+{
+  "result": "PASS",
+  "outcomes": [
+    "before_reservation",
+    "after_reservation",
+    "receipt_ack_lost",
+    "navigation",
+    "offline_stop"
+  ],
+  "dispatches": 2,
+  "providerCalls": 0,
+  "scope": "Real Chrome DOM/IndexedDB close-reopen; fixture UI principal and backend intent; not MV3 worker kill, actual backend pairing or installed product recovery"
+}

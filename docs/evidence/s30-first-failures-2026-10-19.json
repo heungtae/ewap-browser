@@ -1,0 +1,13 @@
+{
+  "baseRevision": "5ee4c7062",
+  "dirty": true,
+  "failures": [
+    { "check": "typecheck", "cause": "Approval validation edit referenced record outside consume scope", "recovery": "Removed the invalid reference; retained stored receipt check inside consume" },
+    { "check": "typecheck", "cause": "noUncheckedIndexedAccess rejected length-guarded adapter and option indexing", "recovery": "Applied assertions only after explicit unique/count guards" },
+    { "check": "typecheck", "cause": "ToolContext import missing after binding handler invocation context", "recovery": "Added the type import and reran typecheck" },
+    { "check": "target unit", "cause": "Stop test expected APPROVAL_UNAVAILABLE after strengthening terminal runtime cancellation", "recovery": "Updated the expected earlier RUNTIME_CANCELLED failure; dispatch remains zero" }
+  ],
+  "chromeFirstRun": "PASS",
+  "liveProvider": "NOT_RUN",
+  "productionIntegration": "UNVERIFIED"
+}
