@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S32: [advanced collector contracts and adapters](../packages/collector/src/advanced/index.ts), [bounded CDP broker](../packages/browser-runtime/src/cdp/broker.ts), [Chrome debugger transport](../packages/browser-runtime/src/cdp/chrome-transport.ts), [current disclosure consent](../packages/browser-runtime/src/collector-consent.ts), [advanced read-tool composition](../apps/chrome-extension/src/collectors/advanced-tools.ts). [Evidence and limits](evidence/s32-advanced-collectors-2026-10-20.md); target-only, with S13 regression failures and product/virtual-data acceptance still open.
+
 S31: [SQLite task store and intent journal](../apps/agent-server/src/tasks/index.ts), [durable reducer/budget/history](../packages/task-engine/src/durable/index.ts), [browser revocation](../packages/browser-runtime/src/revocation.ts), [receipt synchronization](../apps/chrome-extension/src/runtime/durable-dispatch.ts), [explicit SQLite factory](../scripts/s31/open-store.mjs). [Evidence and remaining acceptance](evidence/s31-durable-recovery-2026-10-20.md); target-only, Node 22.13+ for SQLite, production routing remains unchanged.
 
 S30: [registry](../packages/tool-registry/src/index.ts), [runtime](../packages/tool-runtime/src/index.ts), [policy](../packages/policy-engine/src/index.ts), [browser adapters and dispatch journal](../packages/browser-runtime/src/index.ts), [target continuation](../apps/chrome-extension/src/runtime/continuation.ts). [Evidence and remaining acceptance](evidence/s30-runtime-2026-10-19.md); production routing remains unchanged.

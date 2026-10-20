@@ -89,6 +89,9 @@ importers:
       '@contextpilot/codebase-schema':
         specifier: workspace:*
         version: link:../codebase-schema
+      '@contextpilot/policy-engine':
+        specifier: workspace:*
+        version: link:../policy-engine
       '@contextpilot/tool-registry':
         specifier: workspace:*
         version: link:../tool-registry
@@ -119,6 +122,12 @@ importers:
       '@contextpilot/codebase-schema':
         specifier: workspace:*
         version: link:../codebase-schema
+      '@contextpilot/tool-registry':
+        specifier: workspace:*
+        version: link:../tool-registry
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
 
   packages/policy-engine:
     dependencies:

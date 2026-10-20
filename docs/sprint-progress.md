@@ -4,6 +4,19 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S32 — 2026-10-20 advanced collectors
+
+**In Progress — bounded target collectors and read tools implemented; acceptance pending.**
+[Evidence and remaining checks](evidence/s32-advanced-collectors-2026-10-20.md)
+record owned CDP, frame/SPA gaps, inert registered JSON, sanitized observed network,
+identity/EOF-bounded tables, source-first charts and transient screenshot rejection.
+Full unit 1,157/1,157 and targeted S32 30/30 passed.
+Controlled Chrome passed nine outcomes with three read tools, six calls and zero
+business mutation dispatches. S19 release regression passed 21/21. S13 full smoke
+still fails at Act completion; its release submatrix reproduces the S26 diagnostics
+ZIP origin baseline failure. Prerequisites and real product/MV3/virtual-data/visual
+qualification remain; S33 is Planned. Production source/design/version are preserved.
+
 ## Browser Agent S31 — 2026-10-20 durable tasks and recovery
 
 **In Progress — target SQLite/browser recovery implemented; prerequisite and product acceptance pending.**

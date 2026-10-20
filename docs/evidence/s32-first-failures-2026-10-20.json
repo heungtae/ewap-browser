@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "sprint": "S32",
+  "date": "2026-10-20",
+  "failures": [
+    {
+      "id": "F01",
+      "scope": "target compilation",
+      "failure": "Missing linked workspace policy-engine and zod imports",
+      "recovery": "Declared dependencies and completed pnpm offline install; typecheck passed"
+    },
+    {
+      "id": "F02",
+      "scope": "target fixture",
+      "failure": "Promise rejection assertion on synchronous input denial; regex escaping lint and fixture string quoting errors",
+      "recovery": "Unified async input API and corrected fixtures/format; target checks passed"
+    },
+    {
+      "id": "F03",
+      "scope": "sandbox",
+      "failure": "Local HTTP listen EPERM",
+      "recovery": "Authorized actual Chrome rerun passed"
+    },
+    {
+      "id": "F04",
+      "scope": "S19 existing regression, development build",
+      "failure": "8 hidden-data ZIP assertions; 13 passed",
+      "recovery": "Rebuilt unchanged production source in release mode; 21/21 passed"
+    },
+    {
+      "id": "F05",
+      "scope": "S13 existing full smoke",
+      "failure": "Act did not complete through the controlled provider",
+      "recovery": "Independent metadata-only diagnostic rerun reproduced; one Ask analysis request, no Act analysis request",
+      "status": "UNRESOLVED",
+      "content_persisted": false
+    },
+    {
+      "id": "F06",
+      "scope": "S13 release check-only matrix",
+      "failure": "Fixture origin in diagnostics execution-trace.json",
+      "matches": "docs/baselines/s26/release-diagnostics-baseline.json",
+      "prior_checks": "API source selection, independent R0 permission, Ask reinjection passed",
+      "remaining_checks": "Lifecycle/coverage/restart not reached",
+      "status": "BASELINE_FAILURE_REPRODUCED"
+    }
+  ]
+}

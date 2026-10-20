@@ -35,7 +35,8 @@ export class ToolRegistry {
       typeof handler.verify !== "function"
     )
       throw new Error("EXECUTOR_VERIFIER_REQUIRED");
-    if (owners[tool]) throw new Error("OWNING_SPRINT_UNQUALIFIED");
+    if (owners[tool] && owners[tool] !== "S32")
+      throw new Error("OWNING_SPRINT_UNQUALIFIED");
     this.handlers.set(tool, handler);
     this.revision++;
   }

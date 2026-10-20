@@ -4,3 +4,8 @@ export * from "./dom-controls.js";
 export * from "./reviewed-adapter.js";
 export * from "./cdp-input.js";
 export * from "./revocation.js";
+export * from "./cdp/types.js";
+export * from "./cdp/broker.js";
+export * from "./cdp/ownership.js";
+export * from "./collector-consent.js";
+export * from "./cdp/chrome-transport.js";

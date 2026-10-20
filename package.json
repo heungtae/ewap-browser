@@ -80,7 +80,11 @@
     "test:s31": "vitest run extension/tests/unit/migration/s31",
     "test:s31:sqlite": "node scripts/s31/sqlite.test.mjs",
     "test:chrome-s31": "node --experimental-websocket scripts/s31/chrome.mjs",
-    "check:s31": "node scripts/s31/check.mjs"
+    "check:s31": "node scripts/s31/check.mjs",
+    "build:s32": "node scripts/s32/build.mjs",
+    "check:s32": "node scripts/s32/check.mjs",
+    "test:s32": "vitest run extension/tests/unit/migration/s32",
+    "test:chrome-s32": "node --experimental-websocket scripts/s32/chrome.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

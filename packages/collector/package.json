@@ -3,9 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./advanced": "./src/advanced/index.ts"
   },
   "dependencies": {
-    "@contextpilot/codebase-schema": "workspace:*"
+    "@contextpilot/codebase-schema": "workspace:*",
+    "zod": "4.6.7",
+    "@contextpilot/tool-registry": "workspace:*"
   }
 }

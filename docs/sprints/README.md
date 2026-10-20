@@ -14,7 +14,7 @@
 
 ## Web Codebase Agent migration S26-S37
 
-**S26 baseline delivered 2026-10-19; S27 In Progress (live gate failed); S28/S29/S30/S31 In Progress; S32–S37 Planned.** These 12 Sprints implement the full internal
+**S26 baseline delivered 2026-10-19; S27 In Progress (live gate failed); S28/S29/S30/S31/S32 In Progress; S33–S37 Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and
 72 verification scenarios define the original scope; completion and runtime evidence are recorded per Sprint.
 
@@ -33,7 +33,7 @@ baseline first; S27 qualifies the JEV controller before S33 can complete.
 | [S29](s29-semantic-codebase-construction.md) | M03             | Semantic Codebase construction and repository            | In Progress ([evidence](../evidence/s29-construction-2026-10-19.md)) | 7 / 6             |
 | [S30](s30-shared-tool-policy-runtime.md)     | M04             | Shared Tool Registry, policy and browser execution       | In Progress ([evidence](../evidence/s30-runtime-2026-10-19.md)) | 5 / 6             |
 | [S31](s31-durable-task-recovery.md)          | M05             | Durable tasks, dispatch receipts and recovery            | In Progress ([evidence](../evidence/s31-durable-recovery-2026-10-20.md)) | 5 / 6             |
-| [S32](s32-advanced-browser-collectors.md)    | M06             | Advanced collectors and data coverage                    | Planned | 5 / 6             |
+| [S32](s32-advanced-browser-collectors.md)    | M06             | Advanced collectors and data coverage                    | In Progress ([evidence](../evidence/s32-advanced-collectors-2026-10-20.md)) | 5 / 6             |
 | [S33](s33-jev-task-orchestration.md)         | M07             | JEV-owned Ask/Act and workflow orchestration             | Planned | 5 / 6             |
 | [S34](s34-gpt-evidence-analysis.md)          | M08             | GPT evidence analysis and provider-role migration        | Planned | 5 / 6             |
 | [S35](s35-mcp-external-adapters.md)          | M09             | MCP gateway and external integration adapters            | Planned | 5 / 6             |

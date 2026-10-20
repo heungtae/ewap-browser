@@ -1,0 +1,70 @@
+{
+  "result": "PASS",
+  "outcomes": [
+    "three_qualified_read_tools_in_ask",
+    "registry_static_table_repeated_text",
+    "viewport_not_complete",
+    "consented_inert_json_chart",
+    "source_first_visual_request",
+    "registry_real_network_metadata",
+    "private_descendant_denied",
+    "same_origin_frame_open_shadow_and_explicit_gaps",
+    "spa_invalidates_registry_binding"
+  ],
+  "toolInvocations": 6,
+  "completedReads": 5,
+  "deniedReads": 1,
+  "readTools": 3,
+  "domMutationDispatches": 0,
+  "providerCalls": 0,
+  "budget": {
+    "units": 6,
+    "active": 0,
+    "bytes": 3954,
+    "targets": 3,
+    "pages": 1
+  },
+  "scope": "Controlled DOM frames/JSON and shared registry with fixture UI principal. Network rows originate from real owned remote CDP connection; not production extension sender, Chrome debugger permission UI or live provider qualification.",
+  "cdp": {
+    "axRows": 7,
+    "visual": {
+      "captures": 1,
+      "disposed": 1,
+      "interpreted": 0,
+      "unmaskableRejected": true,
+      "pixelsPersisted": false
+    },
+    "ownedAttach": 3,
+    "ownedDetach": 3,
+    "commands": [
+      "Accessibility.getFullAXTree",
+      "Network.enable",
+      "Network.getResponseBody",
+      "Page.captureScreenshot"
+    ],
+    "network": {
+      "rows": [
+        [
+          "safe",
+          3
+        ]
+      ],
+      "metadata": {
+        "id": "api_aa2dd62df992383451b17c87f5c4ef20",
+        "endpoint": "observed_81ce9ab86d722f21bec14b093ff6ac32",
+        "method": "GET",
+        "status": 200,
+        "mime": "application/json",
+        "observed": true,
+        "executable": false
+      },
+      "coverage": {
+        "complete": false,
+        "reasons": [
+          "NETWORK_WINDOW"
+        ]
+      }
+    },
+    "scope": "Owned remote CDP socket, not installed Chrome debugger permission/ownership qualification"
+  }
+}

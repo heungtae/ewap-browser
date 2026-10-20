@@ -9,6 +9,7 @@
     "zod": "4.6.7",
     "@contextpilot/codebase-schema": "workspace:*",
     "@contextpilot/tool-registry": "workspace:*",
-    "@contextpilot/codebase-repository": "workspace:*"
+    "@contextpilot/codebase-repository": "workspace:*",
+    "@contextpilot/policy-engine": "workspace:*"
   }
 }
