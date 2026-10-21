@@ -1,0 +1,15 @@
+{
+  "schema": "s34-live/v1",
+  "at": "2026-10-21T06:42:54.580Z",
+  "provider": "openai",
+  "model": "gpt-6-luna",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "result": "UNVERIFIED",
+  "firstFailure": "ANALYSIS_CREDENTIAL_UNAVAILABLE",
+  "scope": "Live Responses transport and grounded synthetic aggregation only; no Chrome, JEV/controller, user UI/consent or release qualification",
+  "browserDispatches": 0,
+  "approvals": 0,
+  "browserSchemas": 0,
+  "results": [],
+  "http": []
+}

@@ -4,6 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S34 — 2026-10-21 evidence analysis foundation
+
+**In Progress — isolated analyst/settings/delegation foundation; product and live acceptance pending.**
+[Evidence and remaining checks](evidence/s34-evidence-analysis-2026-10-21.md)
+record source-bound dataset projections, deterministic support checks, bounded
+Responses JSON/SSE transport, task-scoped persistent budgets, disabled migration
+candidates, exact credential boundaries and S33 analysis delegation.
+Full unit 1,238/1,238, S34 60/60, fixture/E2E 2/2 and real SQLite checks passed.
+OpenRouter Responses returned HTTP 402; the OpenAI fallback had no credential.
+No live semantic success, product UI integration or prerequisite completion is
+claimed. Original designs, production routing and version remain unchanged.
+
 ## Browser Agent S33 — 2026-10-21 orchestration foundation
 
 **In Progress — isolated phase/plan/journal foundation; product and live acceptance pending.**

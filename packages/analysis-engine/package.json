@@ -1,0 +1,14 @@
+{
+  "name": "@contextpilot/analysis-engine",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./contracts": "./src/contracts.ts"
+  },
+  "dependencies": {
+    "@contextpilot/codebase-schema": "workspace:*",
+    "@contextpilot/codebase-repository": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

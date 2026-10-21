@@ -88,7 +88,12 @@
     "build:s33": "node scripts/s33/build.mjs",
     "test:s33": "vitest run extension/tests/unit/migration/s33",
     "test:s33:sqlite": "node --test scripts/s33/sqlite.test.mjs",
-    "check:s33": "node scripts/s33/check.mjs"
+    "check:s33": "node scripts/s33/check.mjs",
+    "build:s34": "node scripts/s34/build.mjs",
+    "test:s34": "vitest run extension/tests/unit/migration/s34",
+    "test:s34:sqlite": "node --test scripts/s34/sqlite.test.mjs",
+    "test:s34:live": "node scripts/s34/live.mjs",
+    "check:s34": "node scripts/s34/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

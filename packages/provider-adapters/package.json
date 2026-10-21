@@ -3,10 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./jev": "./src/jev/index.ts"
+    "./jev": "./src/jev/index.ts",
+    "./responses": "./src/responses/index.ts"
   },
   "dependencies": {
     "@contextpilot/task-engine": "workspace:*",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "@contextpilot/codebase-schema": "workspace:*",
+    "@contextpilot/analysis-engine": "workspace:*"
   }
 }

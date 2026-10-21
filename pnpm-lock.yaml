@@ -81,6 +81,18 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
 
+  packages/analysis-engine:
+    dependencies:
+      '@contextpilot/codebase-repository':
+        specifier: workspace:*
+        version: link:../codebase-repository
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
   packages/browser-runtime:
     dependencies:
       '@contextpilot/codebase-repository':
@@ -143,6 +155,12 @@ importers:
 
   packages/provider-adapters:
     dependencies:
+      '@contextpilot/analysis-engine':
+        specifier: workspace:*
+        version: link:../analysis-engine
+      '@contextpilot/codebase-schema':
+        specifier: workspace:*
+        version: link:../codebase-schema
       '@contextpilot/task-engine':
         specifier: workspace:*
         version: link:../task-engine

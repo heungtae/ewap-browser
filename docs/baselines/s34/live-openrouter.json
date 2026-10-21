@@ -1,0 +1,29 @@
+{
+  "schema": "s34-live/v1",
+  "at": "2026-10-21T06:42:45.664Z",
+  "provider": "openrouter",
+  "model": "openai/gpt-4.1-mini",
+  "endpoint": "https://openrouter.ai/api/v1/responses",
+  "result": "UNVERIFIED",
+  "firstFailure": "ANALYSIS_HTTP_402",
+  "scope": "Live Responses transport and grounded synthetic aggregation only; no Chrome, JEV/controller, user UI/consent or release qualification",
+  "browserDispatches": 0,
+  "approvals": 0,
+  "browserSchemas": 0,
+  "results": [
+    {
+      "id": "holdout_0",
+      "passed": false,
+      "status": "UNAVAILABLE",
+      "code": "ANALYSIS_HTTP_402",
+      "expected": 28,
+      "outputDigest": null,
+      "elapsedMs": 324
+    }
+  ],
+  "http": [
+    {
+      "status": 402
+    }
+  ]
+}
