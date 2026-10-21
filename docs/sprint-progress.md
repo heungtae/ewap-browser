@@ -4,6 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S33 — 2026-10-21 orchestration foundation
+
+**In Progress — isolated phase/plan/journal foundation; product and live acceptance pending.**
+[Evidence and remaining checks](evidence/s33-orchestration-2026-10-21.md)
+record reference phases, controller readiness admission, S27 selection and
+source-bound plan proposals, SQLite CAS/event atomicity, recovery restrictions,
+goal/analysis acceptance checks and reconnect-safe history projection.
+Production admission, complete plan execution, actual prompts and UI wiring,
+independent product goal observation and live JEV qualification remain pending.
+S27's failed semantic gate prevents autonomous activation and S33 completion.
+Original designs, production extension routing and version remain unchanged.
+
 ## Browser Agent S32 — 2026-10-20 advanced collectors
 
 **In Progress — bounded target collectors and read tools implemented; acceptance pending.**

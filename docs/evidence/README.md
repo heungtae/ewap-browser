@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S33 orchestration foundation](s33-orchestration-2026-10-21.md): isolated phase/plan reducer, SQLite event CAS, bounded recovery and history projection; In Progress with product/UI/live gates pending.
+
 [S32 advanced collectors](s32-advanced-collectors-2026-10-20.md): bounded CDP, frame/SPA scope, inert JSON/network privacy, table/chart coverage and qualified read-tool ports; controlled Chrome and S19 release pass, S13 failures retained, In Progress.
 
 [S31 durable recovery](s31-durable-recovery-2026-10-20.md): SQLite admission/leases/intents, browser revocation, receipt synchronization, budgets/history and controlled Chrome; In Progress pending S30 and actual bridge/MV3/product recovery qualification.
