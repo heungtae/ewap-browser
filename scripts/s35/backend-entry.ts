@@ -1,0 +1,12 @@
+export { TaskStore } from "../../apps/agent-server/src/tasks/store.js";
+export { McpTaskApi } from "../../apps/agent-server/src/mcp/task-api.js";
+export { McpStepStore } from "../../apps/agent-server/src/mcp/step-store.js";
+export { ExternalTools } from "../../apps/agent-server/src/mcp/external-tools.js";
+export { McpBackend } from "../../apps/agent-server/src/mcp/backend.js";
+export { listenMcp } from "../../apps/agent-server/src/mcp/listen.js";
+export { BackendConnection } from "../../apps/mcp-server/src/connection.js";
+export { runtimeFixture } from "../../extension/tests/fixture/s30/runtime-fixture.js";
+export { IDBFactory } from "fake-indexeddb";
+export { digest } from "../../packages/codebase-schema/src/digest.js";
+export { Client } from "@modelcontextprotocol/sdk/client/index.js";
+export { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";

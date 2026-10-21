@@ -93,7 +93,12 @@
     "test:s34": "vitest run extension/tests/unit/migration/s34",
     "test:s34:sqlite": "node --test scripts/s34/sqlite.test.mjs",
     "test:s34:live": "node scripts/s34/live.mjs",
-    "check:s34": "node scripts/s34/check.mjs"
+    "check:s34": "node scripts/s34/check.mjs",
+    "build:s35": "node scripts/s35/build.mjs",
+    "test:s35": "vitest run extension/tests/unit/migration/s35",
+    "test:s35:runtime": "node --test scripts/s35/*.test.mjs",
+    "test:s35:clients": "node scripts/s35/clients.mjs",
+    "check:s35": "node scripts/s35/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
@@ -105,6 +110,7 @@
     "typescript": "5.7.3",
     "typescript-eslint": "8.46.4",
     "vite": "6.4.1",
-    "vitest": "3.2.4"
+    "vitest": "3.2.4",
+    "@modelcontextprotocol/sdk": "1.32.1"
   }
 }

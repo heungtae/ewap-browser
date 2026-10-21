@@ -4,6 +4,19 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S35 — 2026-10-21 local MCP gateway foundation
+
+**In Progress — isolated authenticated gateway/adapters; product and real-client semantics pending.**
+[Evidence and remaining checks](evidence/s35-mcp-gateway-2026-10-21.md)
+record stdio SDK transport, paired private Unix IPC, per-client scopes, durable
+handles/outbox/status/cancel, canonical shared-runtime steps and original
+profile/workflow/Business MCP/PDP/audit/Studio adapters. Controlled SDK stdio
+verified reconnect, pending approval, one dispatch/receipt and truthful goal state.
+Full unit 1,253/1,253, S35 15/15 and native SQLite/IPC/SDK checks 10/10 passed.
+Both installed Codex/Claude clients discovered schemas but failed before semantic
+tool invocation; failures remain UNVERIFIED. S31/S33/S34 prerequisites and actual
+Chrome/product/Platform acceptance remain open. Production/design/version preserved.
+
 ## Browser Agent S34 — 2026-10-21 evidence analysis foundation
 
 **In Progress — isolated analyst/settings/delegation foundation; product and live acceptance pending.**

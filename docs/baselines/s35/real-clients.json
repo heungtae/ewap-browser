@@ -1,0 +1,35 @@
+{
+  "schema": "s35-real-clients/v1",
+  "at": "2026-10-21T07:36:55.623Z",
+  "result": "UNVERIFIED",
+  "results": [
+    {
+      "client": "codex",
+      "passed": false,
+      "exitCode": 0,
+      "timedOut": false,
+      "firstFailure": "CLIENT_AUTH_OR_PROVIDER_UNAVAILABLE",
+      "elapsedMs": 14056,
+      "catalogCalls": 1,
+      "calls": [],
+      "dispatches": 0,
+      "approvals": 0,
+      "outputDigest": "6730762735921e361c001de4110a3b3f551d4dd69bb355e5e5f899380fa76c31",
+      "scope": "Real CLI/model against controlled local backend; no actual JEV, Chrome or product UI qualification"
+    },
+    {
+      "client": "claude",
+      "passed": false,
+      "exitCode": 1,
+      "timedOut": false,
+      "firstFailure": "CLIENT_AUTH_OR_PROVIDER_UNAVAILABLE",
+      "elapsedMs": 1133,
+      "catalogCalls": 1,
+      "calls": [],
+      "dispatches": 0,
+      "approvals": 0,
+      "outputDigest": "2c026faa0b2d4bf7cafa29f5f62d2dfdf341c616abf6b115baeded21420bf24b",
+      "scope": "Real CLI/model against controlled local backend; no actual JEV, Chrome or product UI qualification"
+    }
+  ]
+}

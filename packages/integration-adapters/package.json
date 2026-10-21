@@ -1,0 +1,13 @@
+{
+  "name": "@contextpilot/integration-adapters",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./ipc": "./src/ipc.ts"
+  },
+  "dependencies": {
+    "@contextpilot/tool-registry": "workspace:*",
+    "zod": "4.6.7"
+  }
+}
