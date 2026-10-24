@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-24 MG06 diagnostics continuation
+
+**In Progress — metadata-only diagnostics and explicit digest compatibility.**
+[Evidence](evidence/s36-mg06-diagnostics-2026-10-24.md) records bounded status/
+correlation projection without raw message/trace copying, original retention
+expiry, non-revivable tombstones and source/epoch checks. A named adapter connects
+existing MG03–MG05 base64url hashes to S36 hex contracts without rewriting stored
+identities. S36 53/53, full unit 1,306/1,306 and six controlled Chrome checks passed.
+Original production/design/version remain unchanged. MG01/MG02, production
+retention/freeze/coordinator integration and release qualification remain open.
+
 ## Browser Agent S36 — 2026-10-24 MG05 execution continuation
 
 **In Progress — execution archive and bounded legacy lifecycle drain.**

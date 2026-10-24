@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 MG06 diagnostics](s36-mg06-diagnostics-2026-10-24.md): metadata-only diagnostic projection, original retention deadlines, lazy expiry/tombstones and strict safe-reader schema; explicit legacy/coordinator digest adapters and controlled Chrome checks, with production integration pending.
+
 [S36 MG05 execution](s36-mg05-execution-2026-10-24.md): execution/selection archives, bounded identity/epoch-aware drain via the original lifecycle, uncertainty preservation, independent live-inventory/selection/CDP gates and controlled Chrome persistence; production wiring remains pending.
 
 [S36 MG04 history](s36-mg04-history-2026-10-24.md): session/thread archive conversion, ownership/sequence checks, shared atomic IndexedDB staging and controlled Chrome MG04/MG03 regression; history never becomes a resumable task.

@@ -111,7 +111,9 @@
     "test:chrome-s36:mg04": "node --experimental-websocket scripts/s36/mg04-chrome.mjs",
     "check:s36:mg04": "node scripts/s36/mg04-check.mjs",
     "test:chrome-s36:mg05": "node --experimental-websocket scripts/s36/mg05-chrome.mjs",
-    "check:s36:mg05": "node scripts/s36/mg05-check.mjs"
+    "check:s36:mg05": "node scripts/s36/mg05-check.mjs",
+    "test:chrome-s36:mg06": "node --experimental-websocket scripts/s36/mg06-chrome.mjs",
+    "check:s36:mg06": "node scripts/s36/mg06-check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

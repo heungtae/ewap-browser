@@ -1,0 +1,15 @@
+{
+  "revision": "dd959249ff54a97896e83b81cbb4e1b128a7db03",
+  "worktreeDirty": true,
+  "browser": "Chrome/147.0.7727.15",
+  "result": "PASS",
+  "cases": 6,
+  "copied": 1,
+  "quarantined": 0,
+  "rawCopied": false,
+  "expiredMetadataRemoved": true,
+  "checkpointRevived": false,
+  "sourcePreserved": true,
+  "dispatches": 0,
+  "approvals": 0
+}
