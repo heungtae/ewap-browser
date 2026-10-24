@@ -105,7 +105,9 @@
     "check:s36": "node scripts/s36/check.mjs",
     "test:s37": "node --test scripts/s37/audit.test.mjs",
     "audit:s37": "node scripts/s37/run.mjs",
-    "check:s37": "node scripts/s37/check.mjs"
+    "check:s37": "node scripts/s37/check.mjs",
+    "test:chrome-s36:mg03": "node --experimental-websocket scripts/s36/mg03-chrome.mjs",
+    "check:s36:mg03": "node scripts/s36/mg03-check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

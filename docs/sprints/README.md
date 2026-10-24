@@ -37,7 +37,7 @@ baseline first; S27 qualifies the JEV controller before S33 can complete.
 | [S33](s33-jev-task-orchestration.md)         | M07             | JEV-owned Ask/Act and workflow orchestration             | In Progress ([evidence](../evidence/s33-orchestration-2026-10-21.md)) | 5 / 6             |
 | [S34](s34-gpt-evidence-analysis.md)          | M08             | GPT evidence analysis and provider-role migration        | In Progress ([evidence](../evidence/s34-evidence-analysis-2026-10-21.md)) | 5 / 6             |
 | [S35](s35-mcp-external-adapters.md)          | M09             | MCP gateway and external integration adapters            | In Progress ([evidence](../evidence/s35-mcp-gateway-2026-10-21.md)) | 5 / 6             |
-| [S36](s36-migration-qualification.md)        | M10             | Data conversion, UI continuity and release qualification | In Progress | 6 / 6             |
+| [S36](s36-migration-qualification.md)        | M10             | Data conversion, UI continuity and release qualification | In Progress ([MG03 evidence](../evidence/s36-mg03-conversion-2026-10-24.md)) | 6 / 6             |
 | [S37](s37-cutover-legacy-retirement.md)      | M11             | Production cutover and legacy runtime retirement         | Planned ([preflight](../evidence/s37-retirement-preflight-2026-10-24.md)) | 5 / 6             |
 
 Each Sprint defines source/target ownership, prerequisites, acceptance checks,

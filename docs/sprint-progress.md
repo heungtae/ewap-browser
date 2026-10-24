@@ -4,6 +4,16 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-24 MG03 conversion continuation
+
+**In Progress — saved Workflow and learned metadata conversion/persistence.**
+[Evidence](evidence/s36-mg03-conversion-2026-10-24.md) records actual legacy
+validators, advisory-only projections, immutable local snapshots, quarantine,
+count/digest reconciliation and atomic IndexedDB checkpoints. S36 16/16, full unit
+1,269/1,269 and six controlled Chrome IndexedDB checks passed, including reopen,
+retry and revoked epoch. Production freeze/source integration, other migration
+units and complete release qualification remain pending. S37 stays Planned.
+
 ## Browser Agent S37 — 2026-10-24 retirement preflight
 
 **Planned — S36 qualification pending; no production cutover.**

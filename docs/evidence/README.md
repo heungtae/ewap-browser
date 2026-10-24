@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 MG03 conversion](s36-mg03-conversion-2026-10-24.md): actual saved-workflow/learned-profile advisory conversion, local IndexedDB snapshot/checkpoint/quarantine, retry/corruption/quota checks and controlled Chrome persistence; production freeze and full release qualification remain pending.
+
 [S37 retirement preflight](s37-retirement-preflight-2026-10-24.md): static caller/Worker dependency audit and local artifact hashes; BLOCKED pending S36, with production cutover unstarted.
 
 [S36 migration coordination](s36-migration-qualification-2026-10-21.md): resumable per-store protocol, dual acknowledgment and epoch fencing, persistent SQLite journal and controlled rollback drill; actual converters, product integration and release qualification remain pending.
