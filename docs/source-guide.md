@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S37 preflight: [static retirement audit](../scripts/s37/audit.mjs), [Worker/artifact runner](../scripts/s37/run.mjs), [findings and limits](evidence/s37-retirement-preflight-2026-10-24.md). `pnpm audit:s37` writes an ignored local report and exits 2 for unresolved retirement/qualification gates; it never switches production.
+
 S36: [migration coordinator](../apps/agent-server/src/migration/coordinator.ts), [SQLite journal and fence](../apps/agent-server/src/migration/journal.ts), [controlled SQLite drill](../scripts/s36/sqlite.test.mjs). [Evidence and limits](evidence/s36-migration-qualification-2026-10-21.md); isolated foundation, no actual store conversion or product cutover.
 
 S35: [stdio MCP gateway](../apps/mcp-server/src/entry.ts), [paired private IPC](../apps/agent-server/src/mcp/listen.ts), [task and canonical-tool routing](../apps/agent-server/src/mcp/backend.ts), [durable task handles](../apps/agent-server/src/mcp/task-api.ts), [shared runtime adapter](../apps/agent-server/src/mcp/external-tools.ts), [named compatibility ports](../packages/integration-adapters/src/index.ts), [retained legacy verifiers](../apps/agent-server/src/integrations/imports.ts). [Evidence and limits](evidence/s35-mcp-gateway-2026-10-21.md); isolated composition, no product routing/OS installation or real-client semantic qualification.

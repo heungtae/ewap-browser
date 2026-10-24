@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S37 retirement preflight](s37-retirement-preflight-2026-10-24.md): static caller/Worker dependency audit and local artifact hashes; BLOCKED pending S36, with production cutover unstarted.
+
 [S36 migration coordination](s36-migration-qualification-2026-10-21.md): resumable per-store protocol, dual acknowledgment and epoch fencing, persistent SQLite journal and controlled rollback drill; actual converters, product integration and release qualification remain pending.
 
 [S35 MCP gateway](s35-mcp-gateway-2026-10-21.md): isolated stdio/private-IPC scopes, durable task API, shared-runtime approval/receipt continuation and original integration adapters; installed clients discovered tools but semantic calls remain unverified.

@@ -1,0 +1,73 @@
+{
+  "revision": "15b7f32a681d39bc847437525f0b779e57971db0",
+  "worktreeDirty": true,
+  "schema": "wca.retirement-audit/v1",
+  "result": "BLOCKED",
+  "blockers": [
+    "LEGACY_PRODUCTION_ENTRYPOINT",
+    "LEGACY_RETIREMENT_CANDIDATES_PRESENT",
+    "OFFSCREEN_PERMISSION_PRESENT",
+    "S36_RELEASE_QUALIFICATION_NOT_ESTABLISHED_BY_STATIC_AUDIT"
+  ],
+  "workerModules": 325,
+  "retained": [
+    {
+      "path": "extension/src/service-worker/runtime-chat.ts",
+      "consumers": [
+        "extension/src/service-worker/runtime-act-handlers.ts",
+        "extension/src/service-worker/runtime-core-handlers.ts",
+        "extension/src/service-worker/runtime-storage.ts",
+        "extension/src/service-worker/runtime-workflow-handlers.ts"
+      ],
+      "workerReachable": true
+    },
+    {
+      "path": "extension/src/service-worker/runtime-registration.ts",
+      "consumers": [
+        "extension/src/service-worker/bootstrap.ts"
+      ],
+      "workerReachable": true
+    },
+    {
+      "path": "extension/src/service-worker/act-chat-start.ts",
+      "consumers": [
+        "extension/src/service-worker/runtime-chat.ts"
+      ],
+      "workerReachable": true
+    },
+    {
+      "path": "extension/src/service-worker/act-harness-turns.ts",
+      "consumers": [
+        "extension/src/service-worker/act-step-dependencies.ts",
+        "extension/src/service-worker/act-step-runner.ts",
+        "extension/src/service-worker/workflow-model-decision.ts"
+      ],
+      "workerReachable": true
+    },
+    {
+      "path": "extension/src/offscreen/entry.ts",
+      "consumers": [],
+      "workerReachable": false
+    },
+    {
+      "path": "extension/src/native/native-client.ts",
+      "consumers": [],
+      "workerReachable": false
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist-extension/manifest.json",
+      "digest": "573a088f70aa9e9b693ad1f6a90284f55dec0825ebef59174bf77288e4c00ee2"
+    },
+    {
+      "path": "dist-extension/js/service-worker.js",
+      "digest": "50e3ecf8b994bb7b83a411e3890b495c7eedb4c788c97a4a24b69262eda39686"
+    }
+  ],
+  "limits": [
+    "static relative imports only",
+    "no installed runtime or delivery checks",
+    "no cutover authority"
+  ]
+}

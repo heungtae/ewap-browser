@@ -102,7 +102,10 @@
     "build:s36": "node scripts/s36/build.mjs",
     "test:s36": "vitest run extension/tests/unit/migration/s36",
     "test:s36:sqlite": "node --test scripts/s36/sqlite.test.mjs",
-    "check:s36": "node scripts/s36/check.mjs"
+    "check:s36": "node scripts/s36/check.mjs",
+    "test:s37": "node --test scripts/s37/audit.test.mjs",
+    "audit:s37": "node scripts/s37/run.mjs",
+    "check:s37": "node scripts/s37/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
