@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 MG05 execution](s36-mg05-execution-2026-10-24.md): execution/selection archives, bounded identity/epoch-aware drain via the original lifecycle, uncertainty preservation, independent live-inventory/selection/CDP gates and controlled Chrome persistence; production wiring remains pending.
+
 [S36 MG04 history](s36-mg04-history-2026-10-24.md): session/thread archive conversion, ownership/sequence checks, shared atomic IndexedDB staging and controlled Chrome MG04/MG03 regression; history never becomes a resumable task.
 
 [S36 MG03 conversion](s36-mg03-conversion-2026-10-24.md): actual saved-workflow/learned-profile advisory conversion, local IndexedDB snapshot/checkpoint/quarantine, retry/corruption/quota checks and controlled Chrome persistence; production freeze and full release qualification remain pending.

@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-24 MG05 execution continuation
+
+**In Progress — execution archive and bounded legacy lifecycle drain.**
+[Evidence](evidence/s36-mg05-execution-2026-10-24.md) records non-resumable
+request archives, pending-selection discard markers, source-bound cancellation
+observations, independent remaining-work checks and selection/CDP gates. A real
+legacy lifecycle dispatch marker remains UNKNOWN after cancellation and blocks
+readiness. S36 38/38, full unit 1,291/1,291 and six controlled Chrome checks passed.
+No actual browser effect or production cutover occurred. Production fencing,
+complete inventory/CDP integration and release qualification remain open.
+
 ## Browser Agent S36 — 2026-10-24 MG04 history continuation
 
 **In Progress — session chat archive conversion and shared local staging.**

@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 MG05: [request decoder](../apps/chrome-extension/src/migration/mg05-request.ts), [archive converter](../apps/chrome-extension/src/migration/mg05-convert.ts), [drain reconciliation](../apps/chrome-extension/src/migration/mg05-drain.ts), [legacy lifecycle adapter](../apps/chrome-extension/src/migration/mg05-lifecycle.ts), [local staging](../apps/chrome-extension/src/migration/mg05-staging.ts). [Evidence and limits](evidence/s36-mg05-execution-2026-10-24.md); no source summary becomes a target task or migration authority.
+
 S36 MG04: [history converter](../apps/chrome-extension/src/migration/mg04-convert.ts), [archive event projection](../apps/chrome-extension/src/migration/mg04-events.ts), [session-source staging](../apps/chrome-extension/src/migration/mg04-staging.ts), [shared local staging](../apps/chrome-extension/src/migration/local-staging.ts). [Evidence and limits](evidence/s36-mg04-history-2026-10-24.md); no live event replay or current tab/window binding.
 
 S36 MG03: [converter](../apps/chrome-extension/src/migration/mg03-convert.ts), [local snapshot/staging](../apps/chrome-extension/src/migration/mg03-staging.ts), [learned metadata projection](../apps/chrome-extension/src/migration/mg03-learned.ts). [Evidence and scope](evidence/s36-mg03-conversion-2026-10-24.md); no production storage writer or admission switch.
