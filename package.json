@@ -98,7 +98,11 @@
     "test:s35": "vitest run extension/tests/unit/migration/s35",
     "test:s35:runtime": "node --test scripts/s35/*.test.mjs",
     "test:s35:clients": "node scripts/s35/clients.mjs",
-    "check:s35": "node scripts/s35/check.mjs"
+    "check:s35": "node scripts/s35/check.mjs",
+    "build:s36": "node scripts/s36/build.mjs",
+    "test:s36": "vitest run extension/tests/unit/migration/s36",
+    "test:s36:sqlite": "node --test scripts/s36/sqlite.test.mjs",
+    "check:s36": "node scripts/s36/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

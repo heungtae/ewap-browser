@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-21 migration coordination foundation
+
+**In Progress — isolated protocol and SQLite durability; actual converters and release gates pending.**
+[Evidence and remaining checks](evidence/s36-migration-qualification-2026-10-21.md)
+record source/schema/release binding, MG01–MG06 checkpoints, count/quarantine
+reconciliation, dual acknowledgment, epoch/revision fencing and rollback.
+Full unit 1,259/1,259, S36 6/6 and a real SQLite restart/concurrency drill passed.
+The qualification pointer never opens admission; actual extension/backend store
+conversion, product/UI integration, live holdouts and supported-OS installers
+remain unverified. Prior Sprint prerequisites remain open; S37 is Planned.
+
 ## Browser Agent S35 — 2026-10-21 local MCP gateway foundation
 
 **In Progress — isolated authenticated gateway/adapters; product and real-client semantics pending.**
