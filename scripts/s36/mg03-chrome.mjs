@@ -67,7 +67,7 @@ try {
   const browser = await fetch(`http://127.0.0.1:${port}/json/version`).then(
     (r) => r.json(),
   );
-  const output = "docs/evidence/s36-mg03-chrome-2026-10-24";
+  const output = process.env.S36_MG03_EVIDENCE_DIR ?? "dist/s36/mg03-chrome";
   await mkdir(output, { recursive: true });
   await writeFile(
     `${output}/report.json`,

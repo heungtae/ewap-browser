@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 MG04: [history converter](../apps/chrome-extension/src/migration/mg04-convert.ts), [archive event projection](../apps/chrome-extension/src/migration/mg04-events.ts), [session-source staging](../apps/chrome-extension/src/migration/mg04-staging.ts), [shared local staging](../apps/chrome-extension/src/migration/local-staging.ts). [Evidence and limits](evidence/s36-mg04-history-2026-10-24.md); no live event replay or current tab/window binding.
+
 S36 MG03: [converter](../apps/chrome-extension/src/migration/mg03-convert.ts), [local snapshot/staging](../apps/chrome-extension/src/migration/mg03-staging.ts), [learned metadata projection](../apps/chrome-extension/src/migration/mg03-learned.ts). [Evidence and scope](evidence/s36-mg03-conversion-2026-10-24.md); no production storage writer or admission switch.
 
 S37 preflight: [static retirement audit](../scripts/s37/audit.mjs), [Worker/artifact runner](../scripts/s37/run.mjs), [findings and limits](evidence/s37-retirement-preflight-2026-10-24.md). `pnpm audit:s37` writes an ignored local report and exits 2 for unresolved retirement/qualification gates; it never switches production.

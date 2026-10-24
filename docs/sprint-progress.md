@@ -4,6 +4,16 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-24 MG04 history continuation
+
+**In Progress — session chat archive conversion and shared local staging.**
+[Evidence](evidence/s36-mg04-history-2026-10-24.md) records preserved transcript,
+historical session/thread/tab context, ownership/sequence validation and explicit
+non-replayable presentation records. Pending authority becomes marker-only history;
+verified action and uncertain goal remain distinct. S36 24/24, full unit 1,277/1,277,
+MG04 Chrome 6/6 and MG03 Chrome regression 6/6 passed. Production storage/freeze,
+window/UI integration and other migration/release gates remain open. S37 is Planned.
+
 ## Browser Agent S36 — 2026-10-24 MG03 conversion continuation
 
 **In Progress — saved Workflow and learned metadata conversion/persistence.**
