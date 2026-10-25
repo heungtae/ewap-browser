@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 Linux native-host lifecycle](s36-linux-install-2026-10-25.md): pinned-release installation, ownership/private-file recovery and unregister, with real isolated Chrome authentication/restart; upgrade, OS-store and full-system qualification pending.
+
 [S36 release integrity](s36-release-integrity-2026-10-25.md): actual isolated artifact/dependency hashes, independently pinned manifest, bounded filesystem verification and six-unit rollback integrity guard; no install or full release qualification.
 
 [S36 six-unit integration](s36-integration-2026-10-25.md): actual MG01–MG06 coordinator composition, durable profile-bound owner acknowledgment, readback/restart/fault/rollback checks; controlled qualification only, production integration pending.

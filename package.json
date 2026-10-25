@@ -128,7 +128,11 @@
     "build:s36:release": "node scripts/s36/release/build.mjs",
     "capture:s36:release": "node scripts/s36/release/capture.mjs",
     "test:s36:release": "node --test scripts/s36/release/*.test.mjs",
-    "check:s36:release": "node scripts/s36/release/check.mjs"
+    "check:s36:release": "node scripts/s36/release/check.mjs",
+    "build:s36:install": "node scripts/s36/install/build.mjs",
+    "test:s36:install": "node --test scripts/s36/install/*.test.mjs",
+    "test:chrome-s36:install": "node scripts/s36/install/chrome.mjs",
+    "check:s36:install": "node scripts/s36/install/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

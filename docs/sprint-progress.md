@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 controlled Linux installation continuation
+
+**In Progress — partial Linux install/repair/unregister lifecycle.**
+[Evidence](evidence/s36-linux-install-2026-10-25.md) records release-ID and ownership
+checks, private files, retained pairing, interrupted phases and blocking of active
+backend/competing installer/foreign files. Actual isolated Chrome authentication,
+backend restart/reconnect, repair and unregister passed. Native 24/24 plus original
+installer 1/1 and unit 1,348/1,348 passed. Cross-version upgrade, other OS/store,
+full runtime/transport/freeze/UI/live/holdout/release gates remain open. Production,
+original design and version are preserved; S37 remains Planned.
+
 ## Browser Agent S36 — 2026-10-25 release integrity continuation
 
 **In Progress — partial release artifact traceability and rollback integrity.**

@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 Linux install: [installation service](../apps/agent-server/src/migration/installation.ts), [receipt/pairing plan](../apps/agent-server/src/migration/install-plan.ts), [private filesystem operations](../apps/agent-server/src/migration/install-files.ts). [Operations](migration-linux-install.md), [controlled evidence](evidence/s36-linux-install-2026-10-25.md); S28 bridge only.
+
 S36 release integrity: [strict contract](../packages/shared/src/release-set.ts), [verifier and rollback predicate](../apps/agent-server/src/migration/release-set.ts), [file inventory](../apps/agent-server/src/migration/release-files.ts). [Usage](migration-release-integrity.md), [dated evidence](evidence/s36-release-integrity-2026-10-25.md); isolated artifacts only.
 
 S36 integration: [backend session](../apps/agent-server/src/migration/session.ts), [composed port](../apps/agent-server/src/migration/session-port.ts), [browser owner](../apps/chrome-extension/src/migration/owner.ts), [shared contracts](../packages/shared/src/migration.ts). [Controlled evidence and remaining gates](evidence/s36-integration-2026-10-25.md); admission remains closed and production integration is pending.
