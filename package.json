@@ -120,7 +120,11 @@
     "build:s36:mg02": "node scripts/s36/mg02-build.mjs",
     "test:s36:mg02:sqlite": "node --test scripts/s36/mg02-sqlite.test.mjs",
     "test:chrome-s36:mg02": "node --experimental-websocket scripts/s36/mg02-chrome.mjs",
-    "check:s36:mg02": "node scripts/s36/mg02-check.mjs"
+    "check:s36:mg02": "node scripts/s36/mg02-check.mjs",
+    "build:s36:integration": "node scripts/s36/integration/build.mjs",
+    "test:s36:integration": "node --test scripts/s36/integration/*.test.mjs",
+    "check:s36:integration": "node scripts/s36/integration/check.mjs",
+    "test:chrome-s36:integration": "node --experimental-websocket scripts/s36/integration/chrome.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

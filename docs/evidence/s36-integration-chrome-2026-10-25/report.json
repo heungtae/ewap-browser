@@ -1,0 +1,17 @@
+{
+  "revision": "1fdb918a9a1eb5c154ec0cb85121221f6c094670",
+  "worktreeDirty": true,
+  "browser": "Chrome/147.0.7727.15",
+  "result": "PASS",
+  "checks": [
+    "five-real-IDB-targets",
+    "profile-bound-durable-ack",
+    "reopen-and-idempotency",
+    "cross-profile-rejected",
+    "missing-checkpoint-rejected",
+    "expiry-invalidates-ack"
+  ],
+  "providerCalls": 0,
+  "dispatches": 0,
+  "scope": "controlled browser owner; MG01 target and backend simulated here, native suite covers real backend"
+}

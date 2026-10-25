@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 six-unit integration continuation
+
+**In Progress — actual MG01–MG06 coordinator composition, controlled owners.**
+[Evidence](evidence/s36-integration-2026-10-25.md) records durable browser/backend
+acknowledgments, all-six source/target readback, restart, uncertainty blocking,
+post-ack expiry/drift, lost responses and interrupted commit recovery. Native
+integration 8/8, original SQLite 1/1, Chrome six checks, S36 91/91 and full unit
+1,344/1,344 passed. Admission remains closed. Installed transport, real writer
+freeze, OS/UI/live/holdout/release gates remain open. Production/design/version
+are unchanged and S37 remains Planned.
+
 ## Browser Agent S36 — 2026-10-25 MG02 permissions continuation
 
 **In Progress — permission/preference conversion and two-store policy mirror.**

@@ -1,5 +1,8 @@
 # 코드 탐색 안내
 
+S36 integration: [backend session](../apps/agent-server/src/migration/session.ts), [composed port](../apps/agent-server/src/migration/session-port.ts), [browser owner](../apps/chrome-extension/src/migration/owner.ts), [shared contracts](../packages/shared/src/migration.ts). [Controlled evidence and remaining gates](evidence/s36-integration-2026-10-25.md); admission remains closed and production integration is pending.
+
+
 S36 MG02: [permission converter](../apps/chrome-extension/src/migration/mg02-convert.ts), [preference narrowing](../apps/chrome-extension/src/migration/mg02-preferences.ts), [shared migration contract](../packages/policy-engine/src/migration-contract.ts), [policy gate](../packages/policy-engine/src/migration-evaluate.ts), [extension staging/ACK](../apps/chrome-extension/src/migration/mg02-staging.ts), [SQLite mirror](../apps/agent-server/src/migration/mg02-mirror.ts). [Evidence and limits](evidence/s36-mg02-permissions-2026-10-25.md); no imported grant or active-policy switch.
 
 S36 MG01: [settings migration service](../apps/agent-server/src/migration/mg01-settings.ts), [public converter](../apps/agent-server/src/migration/mg01-convert.ts), [credential identity/transfer](../apps/agent-server/src/migration/mg01-credentials.ts), [SQLite journal](../apps/agent-server/src/migration/mg01-journal.ts). [Evidence and limits](evidence/s36-mg01-settings-2026-10-24.md); no raw-source backup or automatic role activation.

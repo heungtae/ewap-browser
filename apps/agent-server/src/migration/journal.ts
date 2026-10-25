@@ -1,3 +1,4 @@
+import { migrationJournalSchema } from "../../../../packages/shared/src/migration.js";
 import { createHash } from "node:crypto";
 import { transaction, type Sqlite } from "../tasks/database.js";
 import type { Journal, Manifest } from "./coordinator.js";
@@ -27,7 +28,14 @@ export class MigrationJournal {
     const row = this.db
       .prepare("SELECT body FROM migration_journal WHERE id=1")
       .get();
-    return row ? (JSON.parse(String(row.body)) as Journal) : undefined;
+    if (!row) return undefined;
+    try {
+      return migrationJournalSchema.parse(
+        JSON.parse(String(row.body)),
+      ) as Journal;
+    } catch {
+      throw new Error("MIGRATION_JOURNAL_INVALID");
+    }
   }
   fence(): number {
     return transaction(this.db, () => {
@@ -45,6 +53,8 @@ export class MigrationJournal {
     return row;
   }
   write(expected: number | undefined, next: Journal) {
+    if (!migrationJournalSchema.safeParse(next).success)
+      throw new Error("MIGRATION_JOURNAL_INVALID");
     transaction(this.db, () => {
       const current = this.read();
       if (

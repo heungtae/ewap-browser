@@ -12,7 +12,7 @@ export class Mg01SettingsMigration {
   constructor(
     private readonly journal: Mg01Persistence,
     private readonly source: Mg01Source,
-    private readonly profileGuard: string,
+    readonly profileGuard: string,
     private readonly secrets: SecretStore = new SessionSecrets(),
   ) {
     if (

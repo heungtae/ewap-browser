@@ -1,28 +1,15 @@
-export const units = ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"] as const;
-export type Unit = (typeof units)[number];
-export interface Manifest {
-  migrationId: string;
-  sourceSchemas: string;
-  targetSchemas: string;
-  sourceDigests: Record<Unit, string>;
-  legacyRelease: string;
-  targetRelease: string;
-}
-export interface Checkpoint {
-  sourceDigest: string;
-  targetDigest: string;
-  copied: number;
-  quarantined: number;
-  sourceCount: number;
-}
-export interface Journal {
-  manifest: Manifest;
-  revision: number;
-  epoch: number;
-  phase: "prepared" | "copying" | "validated" | "committed" | "rolled_back";
-  stores: Partial<Record<Unit, Checkpoint>>;
-  acknowledgments: Partial<Record<"extension" | "backend", string>>;
-}
+import {
+  migrationUnits as units,
+  migrationManifestSchema,
+} from "../../../../packages/shared/src/migration.js";
+export { units };
+import type {
+  Unit,
+  Manifest,
+  Checkpoint,
+  Journal,
+} from "../../../../packages/shared/src/migration-types.js";
+export type { Unit, Manifest, Checkpoint, Journal };
 // Implementations must persist journal and admission fence atomically in their own store.
 // The active pointer CAS must check the same revision and both acknowledgments.
 export interface MigrationPort {
@@ -49,6 +36,8 @@ export class MigrationCoordinator {
     return next;
   }
   async prepare(manifest: Manifest): Promise<Journal> {
+    if (!migrationManifestSchema.safeParse(manifest).success)
+      throw new Error("INVALID_MANIFEST");
     if (
       !manifest.migrationId ||
       !manifest.sourceSchemas ||
