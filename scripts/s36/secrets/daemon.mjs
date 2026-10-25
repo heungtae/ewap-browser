@@ -18,8 +18,9 @@ import { verifyReleaseSet } from "../../../apps/agent-server/src/migration/relea
 import { SessionSecrets } from "../../../apps/agent-server/src/settings/service.ts";
 import { LinuxSecretServiceStore } from "../../../apps/agent-server/src/settings/linux-secret-store.ts";
 import { migrationProfileGuard } from "../../../packages/shared/src/migration-rpc.ts";
+import { acquireInstallLock } from "../../../apps/agent-server/src/migration/install-files.ts";
 // Explicit qualification entrypoint. No test helpers, remote prepare/commit or default activation.
-let db, server, lock, lockPath;
+let db, server, lock, lockPath, releaseInstallation;
 const releaseLock = () => {
   if (lock === undefined) return;
   closeSync(lock);
@@ -47,6 +48,7 @@ try {
     parent.mode & 0o077
   )
     throw new Error("MIGRATION_DIRECTORY");
+  releaseInstallation = acquireInstallLock(directory);
   const config = await readConfig(configPath);
   if (config.socketPath !== `${directory}/agent.sock`)
     throw new Error("MIGRATION_SOCKET");
@@ -92,6 +94,7 @@ try {
       .finally(() => {
         db.close();
         releaseLock();
+        releaseInstallation();
       });
   };
   process.on("SIGTERM", stop);
@@ -99,5 +102,6 @@ try {
 } catch {
   db?.close();
   releaseLock();
+  releaseInstallation?.();
   process.exitCode = 1;
 }

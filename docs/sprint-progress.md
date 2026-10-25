@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 install/daemon coordination
+
+**In Progress.** [Evidence](evidence/s36-install-coordination-2026-10-25.md) and
+[ISS-20261025-001](issues/records/2026-10-25-install-daemon-coordination.md) record
+a reproduced pre-socket installation race and shared lifecycle exclusion.
+Install/repair/unregister/transition block during packaged daemon preparation and
+runtime; graceful shutdown permits repair/unregister. Native 39/39 and private OS
+7/7 passed. Managed startup, crash recovery and full writer freeze remain pending.
+
 ## Browser Agent S36 — 2026-10-25 explicit packaged daemon
 
 **In Progress.** [Evidence](evidence/s36-packaged-daemon-2026-10-25.md) records

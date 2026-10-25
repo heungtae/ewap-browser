@@ -7,7 +7,9 @@ import {
   digest,
   validateInventory,
 } from "../../s26-inventory.mjs";
-const manifest = read("docs/baselines/s36-packaged-daemon/disposition.json");
+const manifest = read(
+  "docs/baselines/s36-install-coordination/disposition.json",
+);
 for (const entry of read(
   "docs/baselines/s36-settings-transfer/disposition.json",
 ).files)

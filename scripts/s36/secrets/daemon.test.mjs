@@ -24,6 +24,7 @@ test("packaged daemon rejects invalid pin, mode, permissions and concurrent owne
     "tamper",
     "permissions",
     "lock",
+    "install-lock",
     "socket",
     "unavailable-os",
   ]) {
@@ -50,6 +51,8 @@ test("packaged daemon rejects invalid pin, mode, permissions and concurrent owne
       if (fault === "permissions") chmodSync(config, 0o644);
       if (fault === "lock")
         writeFileSync(`${directory}/migration-daemon.lock`, "existing-owner");
+      if (fault === "install-lock")
+        writeFileSync(`${directory}/install.lock`, "existing-installer");
       if (fault === "socket")
         writeFileSync(`${directory}/agent.sock`, "existing-owner");
       const result = spawnSync(
@@ -78,6 +81,11 @@ test("packaged daemon rejects invalid pin, mode, permissions and concurrent owne
       assert.equal(
         existsSync(`${directory}/migration-daemon.lock`),
         fault === "lock",
+        fault,
+      );
+      assert.equal(
+        existsSync(`${directory}/install.lock`),
+        fault === "install-lock",
         fault,
       );
       assert.equal(

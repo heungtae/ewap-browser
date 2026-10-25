@@ -1,0 +1,27 @@
+TAP version 13
+# Subtest: daemon blocks install/uninstall/transition throughout a paused pre-socket OS probe
+not ok 1 - daemon blocks install/uninstall/transition throughout a paused pre-socket OS probe
+  ---
+  duration_ms: 250.195358
+  type: 'test'
+  location: '/home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/secrets/coordination.test.mjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/secrets/coordination.test.mjs:63:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 363.259251

@@ -70,7 +70,7 @@ export function atomicPrivate(path: string, content: string, mode = 0o600) {
     if (existsSync(temporary)) unlinkSync(temporary);
   }
 }
-export function withInstallLock<T>(directory: string, action: () => T): T {
+export function acquireInstallLock(directory: string): () => void {
   const path = `${directory}/install.lock`;
   let fd;
   try {
@@ -78,21 +78,32 @@ export function withInstallLock<T>(directory: string, action: () => T): T {
   } catch {
     throw new Error("INSTALL_LOCKED");
   }
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    closeSync(fd);
+    unlinkSync(path);
+  };
+}
+export function withInstallLock<T>(directory: string, action: () => T): T {
+  const release = acquireInstallLock(directory);
   try {
     return action();
   } finally {
-    closeSync(fd);
-    unlinkSync(path);
+    release();
   }
 }
 export function assertStopped(directory: string) {
-  try {
-    lstatSync(`${directory}/agent.sock`);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
-    throw error;
+  for (const name of ["agent.sock", "migration-daemon.lock"]) {
+    try {
+      lstatSync(`${directory}/${name}`);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+      throw error;
+    }
+    throw new Error("INSTALL_BACKEND_ACTIVE");
   }
-  throw new Error("INSTALL_BACKEND_ACTIVE");
 }
 
 export function durableRemove(path: string) {

@@ -62,10 +62,12 @@ the socket. It loads only its packaged helper for OS mode, probes the OS store a
 fails without falling back. Pairing must be private and its socket must be exactly
 `agent.sock` in the same canonical private directory. Unknown modes/extra arguments
 are rejected. The database is `migration.sqlite` in that directory. A private
-exclusive `migration-daemon.lock` prevents concurrent instances; an existing socket
+exclusive `migration-daemon.lock` prevents concurrent instances; the daemon also
+holds the shared `install.lock` before reading pairing or probing the OS store and
+through server/database shutdown, excluding install/repair/unregister/transitions; an existing socket
 also blocks startup and is never removed as a startup recovery action. Graceful
-SIGTERM/SIGINT closes clients/database and releases the owned lock. A crash can
-leave a lock/socket; investigate ownership and stop all old writers before manual
+SIGTERM/SIGINT closes clients/database and releases the owned locks. A crash or forced termination during initialization can
+leave locks/socket; investigate ownership and stop all old writers before manual
 recovery. The daemon never guesses that a lock is stale or takes over an endpoint.
 
 This is opt-in qualification composition, not a managed desktop service or product

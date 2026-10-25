@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Install/daemon exclusion: [shared lock](../apps/agent-server/src/migration/install-files.ts), [regression](../scripts/s36/secrets/coordination.test.mjs), [issue](issues/records/2026-10-25-install-daemon-coordination.md), [evidence](evidence/s36-install-coordination-2026-10-25.md).
+
 Explicit migration runtime: [daemon source](../scripts/s36/secrets/daemon.mjs), [package build](../scripts/s36/secrets/build.mjs), [operations](migration-os-secrets.md#explicit-packaged-migration-daemon), [evidence](evidence/s36-packaged-daemon-2026-10-25.md).
 
 Optional Linux secret packaging: [capture](../scripts/s36/release/capture.mjs), [release validation](../apps/agent-server/src/migration/release-set.ts), [operations](migration-os-secrets.md), [evidence](evidence/s36-secret-package-2026-10-25.md).
