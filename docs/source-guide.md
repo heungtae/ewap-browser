@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 presentation: [read-only connection loop](../apps/chrome-extension/src/presentation/connection-loop.ts), [controller](../apps/chrome-extension/src/presentation/controller.ts), [page lifecycle](../apps/chrome-extension/src/presentation/entry.ts), [visible status](../apps/chrome-extension/src/presentation/view.ts). [Recovery/parity evidence](evidence/s36-presentation-2026-10-25.md), [remaining acceptance](s36-remaining.md).
+
 S36 Linux transitions: [switch/recovery service](../apps/agent-server/src/migration/install-transition.ts), [journal contract](../apps/agent-server/src/migration/install-transition-plan.ts), [installation owner state](../apps/agent-server/src/migration/install-state.ts). [Operations](migration-linux-upgrade.md), [bounded evidence](evidence/s36-linux-upgrade-2026-10-25.md); no production cutover.
 
 S36 Linux install: [installation service](../apps/agent-server/src/migration/installation.ts), [receipt/pairing plan](../apps/agent-server/src/migration/install-plan.ts), [private filesystem operations](../apps/agent-server/src/migration/install-files.ts). [Operations](migration-linux-install.md), [controlled evidence](evidence/s36-linux-install-2026-10-25.md); S28 bridge only.

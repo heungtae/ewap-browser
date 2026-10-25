@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 presentation recovery](s36-presentation-2026-10-25.md): visible automatic backend recovery, cursor/disposal checks and actual Chrome; M00 parity BLOCKED and current JEV preflight UNVERIFIED. [Remaining acceptance](../s36-remaining.md).
+
 [S36 Linux release transitions](s36-linux-upgrade-2026-10-25.md): explicit two-pin forward/reverse installation selection, durable interrupted-state recovery, ordinary-operation blocking and real same-protocol Chrome continuity; cross-version product qualification pending.
 
 [S36 Linux native-host lifecycle](s36-linux-install-2026-10-25.md): pinned-release installation, ownership/private-file recovery and unregister, with real isolated Chrome authentication/restart; upgrade, OS-store and full-system qualification pending.

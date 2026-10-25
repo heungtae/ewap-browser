@@ -1,0 +1,97 @@
+{
+  "presentation": {
+    "result": "PARTIAL",
+    "cases": [
+      {
+        "name": "panel-idle",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [
+          "activity-status"
+        ],
+        "changed": [
+          "chat-scroll",
+          "chat-form",
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "result": "DIFFERENT",
+        "scope": "visible ID/geometry/role/state comparison only; no automatic acceptance"
+      },
+      {
+        "name": "options-agent",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [
+          "approval-constraints",
+          "agent-preferences-status",
+          "screenshot-permission-status",
+          "content-recovery-status"
+        ],
+        "extra": [],
+        "changed": [
+          "settings-content",
+          "agent",
+          "agent-preferences-form",
+          "approval-categories",
+          "screenshot-permission-request",
+          "content-recovery-enable",
+          "permission-revoke-all"
+        ],
+        "result": "DIFFERENT",
+        "scope": "visible ID/geometry/role/state comparison only; no automatic acceptance"
+      },
+      {
+        "name": "profile-manager",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "learned-profile-enabled",
+          "learned-profile-count",
+          "learned-profile-previous",
+          "learned-profile-page",
+          "learned-profile-next",
+          "learned-profile-detail"
+        ],
+        "result": "DIFFERENT",
+        "scope": "visible ID/geometry/role/state comparison only; no automatic acceptance"
+      }
+    ],
+    "acceptance": "S36-C3 remains incomplete",
+    "unverified": [
+      "workflow/approval/consent/dialog interactions",
+      "manager operations",
+      "full keyboard/window recovery",
+      "installed target runtime history/settings continuity"
+    ]
+  },
+  "revision": "4a08f3f3e4b568bca923069405edc10302562427",
+  "worktreeDirty": true,
+  "browser": "Chrome/147.0.7727.15",
+  "platform": "linux",
+  "node": "22.23.2",
+  "releaseId": "8b05cafccddbfc2785da992f86493eb67389a9b381ad76893a95f3048e89ae7a",
+  "result": "PASS",
+  "statuses": {
+    "connected": "Backend connected — controller setup required",
+    "disconnected": "Backend disconnected — waiting for reconnection",
+    "recovered": "Backend connected — controller setup required"
+  },
+  "automaticRecovery": true,
+  "visibleStatus": true,
+  "explicitCapabilitiesQueries": 0,
+  "focusPreserved": true,
+  "duplicateMessages": 0,
+  "pageLifecycleAndReload": true,
+  "pairingPreserved": true,
+  "taskReady": false,
+  "registration": "isolated profile",
+  "scope": "isolated Linux S28 presentation recovery; no task admission",
+  "businessDispatches": 0,
+  "providerCalls": 0,
+  "approvals": 0
+}

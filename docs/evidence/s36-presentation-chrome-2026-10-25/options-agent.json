@@ -1,0 +1,725 @@
+{
+  "comparison": {
+    "name": "options-agent",
+    "viewportMatch": true,
+    "fontMatch": true,
+    "missing": [
+      "approval-constraints",
+      "agent-preferences-status",
+      "screenshot-permission-status",
+      "content-recovery-status"
+    ],
+    "extra": [],
+    "changed": [
+      "settings-content",
+      "agent",
+      "agent-preferences-form",
+      "approval-categories",
+      "screenshot-permission-request",
+      "content-recovery-enable",
+      "permission-revoke-all"
+    ],
+    "result": "DIFFERENT",
+    "scope": "visible ID/geometry/role/state comparison only; no automatic acceptance"
+  },
+  "observed": {
+    "viewport": [
+      1440,
+      1100,
+      1
+    ],
+    "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+    "focus": "",
+    "elements": [
+      {
+        "tag": "A",
+        "id": "",
+        "role": null,
+        "class": "skip-link",
+        "disabled": false,
+        "rect": [
+          16,
+          -100,
+          134.9,
+          45.7
+        ]
+      },
+      {
+        "tag": "MAIN",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          152.5,
+          -108,
+          1120,
+          1207.7
+        ]
+      },
+      {
+        "tag": "HEADER",
+        "id": "",
+        "role": null,
+        "class": "settings-header",
+        "disabled": false,
+        "rect": [
+          152.5,
+          -72,
+          1120,
+          57.2
+        ]
+      },
+      {
+        "tag": "SPAN",
+        "id": "",
+        "role": null,
+        "class": "brand-mark",
+        "disabled": false,
+        "rect": [
+          152.5,
+          -60.4,
+          34,
+          34
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          197.5,
+          -72,
+          314.3,
+          57.2
+        ]
+      },
+      {
+        "tag": "H1",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          197.5,
+          -72,
+          314.3,
+          35.6
+        ]
+      },
+      {
+        "tag": "P",
+        "id": "",
+        "role": null,
+        "class": "settings-subtitle",
+        "disabled": false,
+        "rect": [
+          197.5,
+          -33.4,
+          314.3,
+          18.6
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "role": null,
+        "class": "settings-layout",
+        "disabled": false,
+        "rect": [
+          152.5,
+          10.2,
+          1120,
+          1033.4
+        ]
+      },
+      {
+        "tag": "NAV",
+        "id": "",
+        "role": null,
+        "class": "settings-nav",
+        "disabled": false,
+        "rect": [
+          152.5,
+          24,
+          200,
+          200.8
+        ]
+      },
+      {
+        "tag": "A",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          152.5,
+          24,
+          200,
+          45.7
+        ]
+      },
+      {
+        "tag": "A",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          152.5,
+          75.7,
+          200,
+          45.7
+        ]
+      },
+      {
+        "tag": "A",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          152.5,
+          127.4,
+          200,
+          45.7
+        ]
+      },
+      {
+        "tag": "A",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          152.5,
+          179.1,
+          200,
+          45.7
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "settings-content",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          380.5,
+          10.2,
+          892,
+          1033.4
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "agent",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          380.5,
+          10.2,
+          892,
+          1033.4
+        ]
+      },
+      {
+        "tag": "SECTION",
+        "id": "",
+        "role": null,
+        "class": "settings-card",
+        "disabled": false,
+        "rect": [
+          380.5,
+          10.2,
+          892,
+          781.1
+        ]
+      },
+      {
+        "tag": "H2",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          31.2,
+          850,
+          24.8
+        ]
+      },
+      {
+        "tag": "P",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          61,
+          850,
+          18.6
+        ]
+      },
+      {
+        "tag": "FORM",
+        "id": "agent-preferences-form",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          97.6,
+          850,
+          672.7
+        ]
+      },
+      {
+        "tag": "FIELDSET",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          97.6,
+          850,
+          218.1
+        ]
+      },
+      {
+        "tag": "LEGEND",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          97.6,
+          67.5,
+          21.7
+        ]
+      },
+      {
+        "tag": "P",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          135.3,
+          816,
+          18.6
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          167.9,
+          816,
+          65.6
+        ]
+      },
+      {
+        "tag": "SELECT",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          192.5,
+          816,
+          41
+        ]
+      },
+      {
+        "tag": "P",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          247.5,
+          816,
+          37.2
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "approval-categories",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          298.7,
+          816,
+          0
+        ]
+      },
+      {
+        "tag": "FIELDSET",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          329.7,
+          850,
+          199.9
+        ]
+      },
+      {
+        "tag": "LEGEND",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          329.7,
+          152.6,
+          21.7
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          367.4,
+          816,
+          65.6
+        ]
+      },
+      {
+        "tag": "SELECT",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          392,
+          816,
+          41
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          447,
+          816,
+          65.6
+        ]
+      },
+      {
+        "tag": "SELECT",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          471.6,
+          816,
+          41
+        ]
+      },
+      {
+        "tag": "FIELDSET",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          543.6,
+          850,
+          171.1
+        ]
+      },
+      {
+        "tag": "LEGEND",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          543.6,
+          110,
+          21.7
+        ]
+      },
+      {
+        "tag": "P",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          581.3,
+          816,
+          18.6
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "checkbox-row",
+        "disabled": false,
+        "rect": [
+          418.5,
+          613.8,
+          816,
+          18.6
+        ]
+      },
+      {
+        "tag": "INPUT",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          615.1,
+          16,
+          16
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "checkbox-row",
+        "disabled": false,
+        "rect": [
+          418.5,
+          646.4,
+          816,
+          18.6
+        ]
+      },
+      {
+        "tag": "INPUT",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          647.7,
+          16,
+          16
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "checkbox-row",
+        "disabled": false,
+        "rect": [
+          418.5,
+          679,
+          816,
+          18.6
+        ]
+      },
+      {
+        "tag": "INPUT",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          418.5,
+          680.3,
+          16,
+          16
+        ]
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          728.6,
+          117.1,
+          41.7
+        ]
+      },
+      {
+        "tag": "SECTION",
+        "id": "",
+        "role": null,
+        "class": "settings-card",
+        "disabled": false,
+        "rect": [
+          380.5,
+          809.3,
+          892,
+          234.4
+        ]
+      },
+      {
+        "tag": "H2",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          830.3,
+          850,
+          24.8
+        ]
+      },
+      {
+        "tag": "P",
+        "id": "",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          860.1,
+          850,
+          18.6
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "role": null,
+        "class": "settings-fields",
+        "disabled": false,
+        "rect": [
+          401.5,
+          892.7,
+          850,
+          130
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "role": null,
+        "class": "content-recovery-control",
+        "disabled": false,
+        "rect": [
+          401.5,
+          892.7,
+          850,
+          41.7
+        ]
+      },
+      {
+        "tag": "BUTTON",
+        "id": "screenshot-permission-request",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          892.7,
+          261.6,
+          41.7
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "role": null,
+        "class": "content-recovery-control",
+        "disabled": false,
+        "rect": [
+          401.5,
+          948.4,
+          850,
+          18.6
+        ]
+      },
+      {
+        "tag": "LABEL",
+        "id": "",
+        "role": null,
+        "class": "checkbox-row",
+        "disabled": false,
+        "rect": [
+          401.5,
+          948.4,
+          850,
+          18.6
+        ]
+      },
+      {
+        "tag": "INPUT",
+        "id": "content-recovery-enable",
+        "role": null,
+        "class": "",
+        "disabled": false,
+        "rect": [
+          401.5,
+          949.7,
+          16,
+          16
+        ]
+      },
+      {
+        "tag": "DIV",
+        "id": "",
+        "role": null,
+        "class": "button-row",
+        "disabled": false,
+        "rect": [
+          401.5,
+          981,
+          850,
+          41.7
+        ]
+      },
+      {
+        "tag": "BUTTON",
+        "id": "permission-revoke-all",
+        "role": null,
+        "class": "danger-button",
+        "disabled": false,
+        "rect": [
+          401.5,
+          981,
+          206.6,
+          41.7
+        ]
+      }
+    ]
+  }
+}

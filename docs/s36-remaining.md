@@ -1,0 +1,18 @@
+# S36 remaining acceptance — 2026-10-25
+
+Current checkpoint: parent `4a08f3f3e4b568bca923069405edc10302562427` plus the uncommitted presentation recovery slice. S36 remains In Progress; S37 remains Planned. This is a dated acceptance backlog, not an alternate behavior specification. Follow [source navigation](source-guide.md) and [current evidence](evidence/s36-presentation-2026-10-25.md).
+
+| Gate | Verified progress | Remaining prerequisite / acceptance |
+| --- | --- | --- |
+| S27 native JEV | Original failure preserved; current preflight records zero calls and `CONTROLLER_CREDENTIAL_UNAVAILABLE` | Configure `JEV_API_KEY` or `TYPESAFE_API_KEY` in the test process using supported local credential handling, then pass the frozen native JEV gate. Do not send keys in chat or substitute GPT routing. |
+| Installed migration | Six actual converters, SQLite/IndexedDB acknowledgments and controlled recovery pass | Register authenticated MG transport and actual source/target writer freeze/restart ownership. Current native launcher composes the S28 bridge; its closed command schema is not a migration/task endpoint. |
+| S36-R03 presentation | Automatic visible connection recovery, safe cursor handling and page lifecycle pass | M00 has 26 captured states; three are compared now and have differences. Settings visible-state defaults and manager controls differ. Workflow/consent/dialog/management behavior and full installed history/settings continuity remain unqualified. |
+| S36-R04 holdouts | Frozen corpus contains 100 Ask + 100 Action cases | Complete target runtime and prerequisite gates before end-to-end execution. No such holdout case ran in this slice; synthetic readback/unit counts are not denominators for this gate. |
+| S36-R05 install | Isolated Linux bridge install/repair/remove and same-protocol set switching pass | Real released-version/extension/schema compatibility, complete target packaging, normal-user service/deployment, OS credential persistence, Windows/macOS if claimed supported. Current secrets remain session-only. |
+| S36-R06 handoff | Per-file inventory, artifact hashes and bounded operational evidence exist | Final qualified runtime artifacts, compatible rollback set and full acceptance evidence. No production cutover/retirement before all entry gates pass. |
+
+The S28–S35 incomplete product/runtime gates still apply. The original external Platform backlog dated 2026-09-06 remains unresolved and external to this repository. Product entrypoints, original architecture/individual Sprint designs, UI templates and version 0.1.117 remain preserved.
+
+Presentation checks use pnpm 9.15.4, Node 22.23.2 for the controlled native-host runner and an actual Chrome-for-Testing binary. Build `pnpm build:s28`, `pnpm build:s36:release` and `pnpm build:s36:install`, capture a fresh independently pinned artifact set, then set `CHROME_FOR_TESTING_BIN`, `S36_INSTALL_RELEASE_DIR`, `S36_INSTALL_RELEASE_ID` and a new `S36_INSTALL_EVIDENCE_DIR` before `pnpm test:chrome-s36:presentation`. The runner registers only inside a temporary profile. It records recovery PASS separately from incomplete M00 parity.
+
+`pnpm qualify:s36:presentation REPORT` checks a saved report against all frozen M00 state IDs; the default report is the dated one below the evidence index. Current result is BLOCKED (exit 2). Missing states, any unresolved structural differences or unverified interactions cannot be promoted by changing a top-level PASS label. `pnpm check:s36:presentation` checks code/inventory/preservation only and does not qualify presentation or release.

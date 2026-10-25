@@ -135,7 +135,10 @@
     "check:s36:install": "node scripts/s36/install/check.mjs",
     "test:s36:upgrade": "node --test scripts/s36/install/transition.test.mjs",
     "test:chrome-s36:upgrade": "node scripts/s36/install/upgrade-chrome.mjs",
-    "check:s36:upgrade": "node scripts/s36/install/upgrade-check.mjs"
+    "check:s36:upgrade": "node scripts/s36/install/upgrade-check.mjs",
+    "test:chrome-s36:presentation": "node scripts/s36/presentation/chrome.mjs",
+    "check:s36:presentation": "node scripts/s36/presentation/check.mjs",
+    "qualify:s36:presentation": "node scripts/s36/presentation/qualify.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

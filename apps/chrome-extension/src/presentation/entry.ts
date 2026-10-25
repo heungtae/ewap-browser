@@ -14,4 +14,20 @@ if (failure) {
   );
   if (legacy) legacy.disabled = true;
 }
-mountPresentation(document, createView(document), tasks, settings);
+const state = { cursor: 0, snapshotRequired: false };
+let dispose: (() => void) | undefined;
+const mount = () => {
+  dispose ??= mountPresentation(
+    document,
+    createView(document),
+    tasks,
+    settings,
+    state,
+  );
+};
+window.addEventListener("pagehide", () => {
+  dispose?.();
+  dispose = undefined;
+});
+window.addEventListener("pageshow", mount);
+mount();

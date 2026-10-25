@@ -8,7 +8,15 @@ export function createView(document: Document): PresentationView {
       const output = document.querySelector(
         "#status, #settings-status, #learned-profile-status",
       );
-      if (output) output.textContent = text;
+      if (output && output.textContent !== text) output.textContent = text;
+      const activity = document.getElementById("activity-status");
+      if (activity) {
+        if (activity.textContent !== text) activity.textContent = text;
+        activity.hidden = false;
+        // The existing #status live region announces changes once.
+        if (activity.getAttribute("aria-live") !== "off")
+          activity.setAttribute("aria-live", "off");
+      }
     },
     message(text) {
       const container = document.getElementById("chat-messages");

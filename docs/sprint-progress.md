@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 presentation recovery and acceptance audit
+
+**In Progress — visible transport recovery implemented; release gates open.**
+[Evidence](evidence/s36-presentation-2026-10-25.md) records automatic backend
+reconnection, safe event cursor/disposal and page lifecycle recovery in real Chrome.
+Unit 1,355/1,355 and native/gate 31/31 passed. M00 samples remain DIFFERENT;
+full presentation gate is BLOCKED (3/26 states). Fresh JEV preflight is UNVERIFIED
+(no credential, zero calls), preserving prior live failures. [Remaining gates](s36-remaining.md)
+include installed MG transport/freeze, full runtime/UI/OS/live/holdout/release scope.
+Production, original design and version 0.1.117 remain preserved; S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-25 controlled release-transition continuation
 
 **In Progress — explicit forward/reverse artifact-set selection and recovery.**

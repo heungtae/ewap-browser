@@ -1,0 +1,19 @@
+{
+  "schema": "s27-qualification/v1",
+  "protocolSourceDigest": "f24d9d72ed0d4f00e22941aef448dcb620dae4403fa800f15c191454a13615ef",
+  "attemptPurpose": "Current source verification; frozen expectations and 0.9 gates unchanged. Earlier failed attempts retained separately.",
+  "at": "2026-10-25T03:44:46.012Z",
+  "model": "jev-1.13.0",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "protocol": "wca.task/v1",
+  "templateVersion": "controller-v1",
+  "corpusHash": "88b2a25e4a5fd5bac4cd2523cc09fd5e1cdb7c4ef37641b7e3d258b318742570",
+  "scope": "Live native JEV decisions over synthetic graphs; no Chrome dispatch, actual GPT analyst, MCP or OS qualification",
+  "result": "UNVERIFIED",
+  "results": [],
+  "http": [],
+  "firstFailure": "CONTROLLER_CREDENTIAL_UNAVAILABLE",
+  "gptControllerCalls": 0,
+  "approvalFacts": 0,
+  "browserDispatches": 0
+}
