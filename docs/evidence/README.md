@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 Linux release transitions](s36-linux-upgrade-2026-10-25.md): explicit two-pin forward/reverse installation selection, durable interrupted-state recovery, ordinary-operation blocking and real same-protocol Chrome continuity; cross-version product qualification pending.
+
 [S36 Linux native-host lifecycle](s36-linux-install-2026-10-25.md): pinned-release installation, ownership/private-file recovery and unregister, with real isolated Chrome authentication/restart; upgrade, OS-store and full-system qualification pending.
 
 [S36 release integrity](s36-release-integrity-2026-10-25.md): actual isolated artifact/dependency hashes, independently pinned manifest, bounded filesystem verification and six-unit rollback integrity guard; no install or full release qualification.

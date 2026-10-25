@@ -1,6 +1,6 @@
 import { build } from "esbuild";
 await build({
-  entryPoints: ["apps/agent-server/src/migration/installation.ts"],
+  entryPoints: ["scripts/s36/install/entry.ts"],
   outfile: "dist/s36/installation.mjs",
   platform: "node",
   format: "esm",

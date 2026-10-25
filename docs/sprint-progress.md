@@ -4,6 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 controlled release-transition continuation
+
+**In Progress — explicit forward/reverse artifact-set selection and recovery.**
+[Evidence](evidence/s36-linux-upgrade-2026-10-25.md) records exact source/target pins,
+durable interrupted-state recovery, retained pairing and blocking of ordinary
+install/remove during a switch. Native 28/28 plus original installer 1/1, unit
+1,348/1,348 and real isolated Chrome forward/reverse handshake passed. Chrome uses
+the same S28 implementation/protocol with a fixture-only byte difference; actual
+product-version/schema compatibility is not established. Full runtime/transport/
+freeze/UI/live/OS/holdout/release gates remain open. Production/design/version are
+preserved; S37 remains Planned.
+
 ## Browser Agent S36 — 2026-10-25 controlled Linux installation continuation
 
 **In Progress — partial Linux install/repair/unregister lifecycle.**

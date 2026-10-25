@@ -1,0 +1,17 @@
+{
+  "result": "PASS",
+  "revision": "6919fbc871036fc78c4c38475fe6116304244dad",
+  "worktreeDirty": true,
+  "sourceDirectory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/linux-install-release-2026-10-25",
+  "sourceId": "f912dc842af06c6e94feec8cd6a4060af5b6fdc3daaa06374d5bddf8e9d9a87a",
+  "targetDirectory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/linux-upgrade-target-2026-10-25",
+  "targetId": "9fbb42d77c86893d6e2dcad5a32c2ba108727b98e829b5b8684cb0d7fa9f3d58",
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "variant": "appended fixture-only backend comment; same S28 executable implementation and protocol",
+  "scope": "controlled artifact-set transition, not cross-version product qualification",
+  "delivered": false
+}

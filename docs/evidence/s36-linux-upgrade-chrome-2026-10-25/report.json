@@ -1,0 +1,23 @@
+{
+  "revision": "6919fbc871036fc78c4c38475fe6116304244dad",
+  "worktreeDirty": true,
+  "browser": "Chrome/147.0.7727.15",
+  "platform": "linux",
+  "node": "22.23.2",
+  "releaseId": "f912dc842af06c6e94feec8cd6a4060af5b6fdc3daaa06374d5bddf8e9d9a87a",
+  "forwardReverseTransition": true,
+  "activeTransitionBlocked": true,
+  "targetReleaseId": "9fbb42d77c86893d6e2dcad5a32c2ba108727b98e829b5b8684cb0d7fa9f3d58",
+  "installRepairRemove": true,
+  "pairingPreserved": true,
+  "activeRemovalBlocked": true,
+  "restartReconnect": true,
+  "result": "PASS",
+  "registration": "isolated profile",
+  "nativeHandshake": true,
+  "taskReady": false,
+  "businessDispatches": 0,
+  "providerCalls": 0,
+  "approvals": 0,
+  "scope": "isolated Linux Chrome native-host lifecycle; S28 bridge only"
+}

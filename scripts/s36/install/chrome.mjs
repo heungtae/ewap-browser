@@ -13,6 +13,11 @@ const releaseId = process.env.S36_INSTALL_RELEASE_ID;
 if (!executable || !directory || !releaseId)
   throw new Error("CHROME_AND_PINNED_RELEASE_REQUIRED");
 verifyReleaseSet(directory, releaseId);
+if (process.env.S36_UPGRADE_RELEASE_DIR && process.env.S36_UPGRADE_RELEASE_ID)
+  verifyReleaseSet(
+    process.env.S36_UPGRADE_RELEASE_DIR,
+    process.env.S36_UPGRADE_RELEASE_ID,
+  );
 const profile = await mkdtemp(`${tmpdir()}/s36-host-`);
 const extension = resolve(directory, "chrome-extension");
 const port = await reservePort();

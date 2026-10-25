@@ -36,7 +36,7 @@ The owner-only `installation.json` receipt binds the release ID/directory, regis
 
 An `installing` receipt lets retry recreate missing owned files. A `removing` receipt requires removal to finish before another install. File replacement uses temporary private files, fsync and rename; removal fsyncs the affected directories. No transaction spans the two directories. Interrupted power loss and every possible write failure have not been exhaustively qualified. Temporary files or stale locks can require explicit diagnosis.
 
-Removal checks ownership even when release artifacts are damaged or gone. It deletes only the owned registration and host wrapper. Pairing, the receipt, user data, directories and release artifacts remain. Removal is idempotent; reinstalling the same identity preserves pairing. This is unregistering the host, not purging data or secrets. Different release IDs/paths are rejected: live upgrade and rollback installation are pending separate qualification.
+Removal checks ownership even when release artifacts are damaged or gone. It deletes only the owned registration and host wrapper. Pairing, the receipt, user data, directories and release artifacts remain. Removal is idempotent; reinstalling the same identity preserves pairing. This is unregistering the host, not purging data or secrets. `installRelease` rejects different release IDs/paths. Use the explicit [two-set transition API](migration-linux-upgrade.md) for controlled forward/reverse selection; live cross-version compatibility remains unqualified.
 
 Controlled checks:
 
