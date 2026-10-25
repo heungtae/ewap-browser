@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 MG01: [settings migration service](../apps/agent-server/src/migration/mg01-settings.ts), [public converter](../apps/agent-server/src/migration/mg01-convert.ts), [credential identity/transfer](../apps/agent-server/src/migration/mg01-credentials.ts), [SQLite journal](../apps/agent-server/src/migration/mg01-journal.ts). [Evidence and limits](evidence/s36-mg01-settings-2026-10-24.md); no raw-source backup or automatic role activation.
+
 S36 MG06: [safe diagnostic converter](../apps/chrome-extension/src/migration/mg06-convert.ts), [metadata staging/expiry](../apps/chrome-extension/src/migration/mg06-staging.ts), [persisted metadata schema](../apps/chrome-extension/src/migration/mg06-persisted.ts), [legacy staging encoding adapter](../apps/chrome-extension/src/migration/coordinator-staging.ts). [Evidence and limits](evidence/s36-mg06-diagnostics-2026-10-24.md); raw diagnostics stay with the original retention owner.
 
 S36 MG05: [request decoder](../apps/chrome-extension/src/migration/mg05-request.ts), [archive converter](../apps/chrome-extension/src/migration/mg05-convert.ts), [drain reconciliation](../apps/chrome-extension/src/migration/mg05-drain.ts), [legacy lifecycle adapter](../apps/chrome-extension/src/migration/mg05-lifecycle.ts), [local staging](../apps/chrome-extension/src/migration/mg05-staging.ts). [Evidence and limits](evidence/s36-mg05-execution-2026-10-24.md); no source summary becomes a target task or migration authority.

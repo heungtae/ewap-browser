@@ -4,6 +4,16 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-24 MG01 settings continuation
+
+**In Progress — provider settings and identity-bound credential transfer.**
+[Evidence](evidence/s36-mg01-settings-2026-10-24.md) records v1/v2 public records,
+repair dispositions, API/header secret readback and session-only status without
+SQL plaintext/source archives. Roles stay disabled/unready and controller failure
+stays stop. S36 68/68, full unit 1,321/1,321 and two real SQLite restart/epoch
+checks passed. Original source, production/design and version remain unchanged.
+MG02 and production transport/freeze/OS/setup/cleanup/release gates remain open.
+
 ## Browser Agent S36 — 2026-10-24 MG06 diagnostics continuation
 
 **In Progress — metadata-only diagnostics and explicit digest compatibility.**
