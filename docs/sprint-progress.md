@@ -4,6 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 authenticated MG02 transport continuation
+
+**In Progress — real native IPC/SQLite mirror, controlled preparation/freeze.**
+[Evidence](evidence/s36-transport-2026-10-25.md) records actual Chrome MG02 staging,
+Worker/native authentication, immutable SQLite write/ACK, backend restart and IDB
+reopen. Wrong profile/HMAC/epoch/source and remote prepare/commit are rejected;
+admission remains closed. First MV3 validation failed on CSP code generation;
+explicit jitless configuration passes with zero CSP violations. Unit 1,359/1,359,
+affected S28 35/35 and native/gate 38/38 passed. Full installed coordination,
+credential flow, writer freeze, UI/OS/live/holdout/release gates remain open.
+Production/design/version 0.1.117 are preserved; S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-25 presentation recovery and acceptance audit
 
 **In Progress — visible transport recovery implemented; release gates open.**

@@ -1,11 +1,11 @@
 # S36 remaining acceptance — 2026-10-25
 
-Current checkpoint: parent `4a08f3f3e4b568bca923069405edc10302562427` plus the uncommitted presentation recovery slice. S36 remains In Progress; S37 remains Planned. This is a dated acceptance backlog, not an alternate behavior specification. Follow [source navigation](source-guide.md) and [current evidence](evidence/s36-presentation-2026-10-25.md).
+Current checkpoint: parent `43c8845939965dc174062c5eef3777dc0a11bc39` plus the uncommitted authenticated MG02 transport slice. S36 remains In Progress; S37 remains Planned. This is a dated acceptance backlog, not an alternate behavior specification. Follow [source navigation](source-guide.md) and [current evidence](evidence/s36-transport-2026-10-25.md).
 
 | Gate | Verified progress | Remaining prerequisite / acceptance |
 | --- | --- | --- |
 | S27 native JEV | Original failure preserved; current preflight records zero calls and `CONTROLLER_CREDENTIAL_UNAVAILABLE` | Configure `JEV_API_KEY` or `TYPESAFE_API_KEY` in the test process using supported local credential handling, then pass the frozen native JEV gate. Do not send keys in chat or substitute GPT routing. |
-| Installed migration | Six actual converters, SQLite/IndexedDB acknowledgments and controlled recovery pass | Register authenticated MG transport and actual source/target writer freeze/restart ownership. Current native launcher composes the S28 bridge; its closed command schema is not a migration/task endpoint. |
+| Installed migration | Six controlled converters and actual authenticated Chrome MG02 mirror/status/readback pass | Compose all-six installed owner coordination, MG01 credential flow and actual source/target writer freeze/restart ownership. The optional qualification daemon exposes only MG02/status; the normal launcher stays bridge-only. |
 | S36-R03 presentation | Automatic visible connection recovery, safe cursor handling and page lifecycle pass | M00 has 26 captured states; three are compared now and have differences. Settings visible-state defaults and manager controls differ. Workflow/consent/dialog/management behavior and full installed history/settings continuity remain unqualified. |
 | S36-R04 holdouts | Frozen corpus contains 100 Ask + 100 Action cases | Complete target runtime and prerequisite gates before end-to-end execution. No such holdout case ran in this slice; synthetic readback/unit counts are not denominators for this gate. |
 | S36-R05 install | Isolated Linux bridge install/repair/remove and same-protocol set switching pass | Real released-version/extension/schema compatibility, complete target packaging, normal-user service/deployment, OS credential persistence, Windows/macOS if claimed supported. Current secrets remain session-only. |

@@ -1,0 +1,23 @@
+{
+  "revision": "43c8845939965dc174062c5eef3777dc0a11bc39",
+  "worktreeDirty": true,
+  "browser": "Chrome/147.0.7727.15",
+  "platform": "linux",
+  "node": "22.23.2",
+  "releaseId": "6486df3d0cafd74781076a188d42d8a460aea3994b1d77d2ebfb40c43cff6da6",
+  "result": "PASS",
+  "actualIndexedDbToSqlite": true,
+  "cspViolations": 0,
+  "authenticatedNativeMessaging": true,
+  "restartReadback": true,
+  "indexedDbReopen": true,
+  "wrongProfileAndRawSourceRejected": true,
+  "admission": false,
+  "taskReady": false,
+  "seedAndFreeze": "controlled fixture; no installed source-writer freeze",
+  "registration": "isolated profile",
+  "businessDispatches": 0,
+  "providerCalls": 0,
+  "approvals": 0,
+  "scope": "actual MG02 authenticated transport; controlled migration seed/freeze"
+}

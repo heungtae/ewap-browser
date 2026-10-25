@@ -138,7 +138,11 @@
     "check:s36:upgrade": "node scripts/s36/install/upgrade-check.mjs",
     "test:chrome-s36:presentation": "node scripts/s36/presentation/chrome.mjs",
     "check:s36:presentation": "node scripts/s36/presentation/check.mjs",
-    "qualify:s36:presentation": "node scripts/s36/presentation/qualify.mjs"
+    "qualify:s36:presentation": "node scripts/s36/presentation/qualify.mjs",
+    "build:s36:transport": "node scripts/s36/transport/build.mjs",
+    "test:s36:transport": "node --test scripts/s36/transport/*.test.mjs",
+    "test:chrome-s36:transport": "node scripts/s36/transport/chrome.mjs",
+    "check:s36:transport": "node scripts/s36/transport/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

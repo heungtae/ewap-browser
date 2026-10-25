@@ -170,6 +170,9 @@ importers:
       '@contextpilot/codebase-schema':
         specifier: workspace:*
         version: link:../codebase-schema
+      '@contextpilot/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@contextpilot/tool-registry':
         specifier: workspace:*
         version: link:../tool-registry

@@ -23,6 +23,7 @@ export async function stopLocal(server: Server): Promise<void> {
 export async function listenLocal(
   path: string,
   pairing: Pairing,
+  migration?: (command: unknown) => Promise<unknown>,
 ): Promise<Server> {
   if (process.platform === "win32") throw new Error("WINDOWS_ACL_UNQUALIFIED");
   const directory = dirname(path);
@@ -54,49 +55,72 @@ export async function listenLocal(
       socket.write(encodeFrame(value));
     };
     send({ kind: "challenge", nonce: handshake.nonce, major: 1, minor: 0 });
+    let queued = 0;
+    let serial = Promise.resolve();
+    const processFrame = async (input: unknown) => {
+      if (socket.destroyed) return;
+      if (!session) {
+        handshake.accept(input, Date.now());
+        session = new Session(pairing, ++epoch);
+        socket.setTimeout(30_000);
+        send({
+          kind: "ready",
+          connectionId: session.connectionId,
+          connectionEpoch: session.connectionEpoch,
+          capabilities: migration
+            ? [
+                "heartbeat",
+                "resumeEvents",
+                "migration.status",
+                "migration.policy",
+              ]
+            : ["heartbeat", "resumeEvents"],
+          taskReady: false,
+        });
+      } else {
+        const command = session.accept(input, Date.now());
+        let result: unknown;
+        if (command.kind.startsWith("migration.")) {
+          if (!migration) throw new Error("MIGRATION_UNAVAILABLE");
+          result = await migration(command);
+        } else if (command.kind.startsWith("transfer."))
+          result = transfers.handle(command, Date.now());
+        else if (command.kind === "resumeEvents")
+          result = replay.resume(command.afterSequence);
+        else if (command.kind === "capabilities")
+          result = {
+            taskReady: false,
+            browserReady: session.browserAvailable(),
+            health: capabilityHealth({
+              hostInstalled: true,
+              executableValid: true,
+              protocolMajor: 1,
+              paired: true,
+              durableSecrets: false,
+            }),
+          };
+        else if (command.kind === "heartbeat") result = { kind: "heartbeat" };
+        else
+          result = replay.append(
+            session.browserAvailable()
+              ? "browser.connected"
+              : "browser.waiting",
+          );
+        send({ messageId: session.messageId, result });
+      }
+    };
     socket.on("data", (bytes) => {
       try {
         for (const input of decoder.push(bytes)) {
-          if (!session) {
-            handshake.accept(input, Date.now());
-            session = new Session(pairing, ++epoch);
-            socket.setTimeout(30_000);
-            send({
-              kind: "ready",
-              connectionId: session.connectionId,
-              connectionEpoch: session.connectionEpoch,
-              capabilities: ["heartbeat", "resumeEvents"],
-              taskReady: false,
+          if (++queued > 16) throw new Error("IPC_QUEUE_LIMIT");
+          serial = serial
+            .then(() => processFrame(input))
+            .catch(() => {
+              socket.destroy();
+            })
+            .finally(() => {
+              queued--;
             });
-          } else {
-            const command = session.accept(input, Date.now());
-            let result: unknown;
-            if (command.kind.startsWith("transfer."))
-              result = transfers.handle(command, Date.now());
-            else if (command.kind === "resumeEvents")
-              result = replay.resume(command.afterSequence);
-            else if (command.kind === "capabilities")
-              result = {
-                taskReady: false,
-                browserReady: session.browserAvailable(),
-                health: capabilityHealth({
-                  hostInstalled: true,
-                  executableValid: true,
-                  protocolMajor: 1,
-                  paired: true,
-                  durableSecrets: false,
-                }),
-              };
-            else if (command.kind === "heartbeat")
-              result = { kind: "heartbeat" };
-            else
-              result = replay.append(
-                session.browserAvailable()
-                  ? "browser.connected"
-                  : "browser.waiting",
-              );
-            send({ messageId: session.messageId, result });
-          }
         }
       } catch {
         socket.destroy();

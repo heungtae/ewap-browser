@@ -36,6 +36,7 @@ export class NativeBridge {
   private ready: Promise<void>;
   private timer: ReturnType<typeof setTimeout>;
   private closed = false;
+  private capabilities = new Set<string>();
   constructor(
     private port: NativePort,
     private pairing: Pairing,
@@ -100,7 +101,7 @@ export class NativeBridge {
         !Number.isSafeInteger(v.connectionEpoch)
       )
         throw new Error("SESSION");
-      readySchema.parse(value);
+      this.capabilities = new Set(readySchema.parse(value).capabilities);
       this.identity = {
         connectionId: v.connectionId,
         connectionEpoch: v.connectionEpoch as number,
@@ -123,14 +124,25 @@ export class NativeBridge {
     await this.ready;
     if (this.closed || !this.identity || this.pending.size >= 4)
       throw new Error("BACKEND_UNAVAILABLE");
+    if (
+      payload.kind.startsWith("migration.") &&
+      !this.capabilities.has(
+        payload.kind === "migration.status"
+          ? "migration.status"
+          : "migration.policy",
+      )
+    )
+      throw new Error("MIGRATION_UNAVAILABLE");
     const messageId = crypto.randomUUID();
-    const now = Date.now();
     const payloadDigest = hex(
       await crypto.subtle.digest(
         "SHA-256",
         new TextEncoder().encode(JSON.stringify(payload)),
       ),
     );
+    if (this.closed || !this.identity || this.pending.size >= 4)
+      throw new Error("BACKEND_UNAVAILABLE");
+    const now = Date.now();
     const result = new Promise<unknown>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(messageId);
@@ -138,19 +150,26 @@ export class NativeBridge {
       }, 5000);
       this.pending.set(messageId, { resolve, reject, timer });
     });
-    this.port.postMessage({
-      major: 1,
-      minor: 0,
-      messageId,
-      ...this.identity,
-      installationId: this.pairing.installationId,
-      profileId: this.pairing.profileId,
-      sender: "extension",
-      sentAt: now,
-      deadline: now + 5000,
-      payloadDigest,
-      payload,
-    });
+    try {
+      this.port.postMessage({
+        major: 1,
+        minor: 0,
+        messageId,
+        ...this.identity,
+        installationId: this.pairing.installationId,
+        profileId: this.pairing.profileId,
+        sender: "extension",
+        sentAt: now,
+        deadline: now + 5000,
+        payloadDigest,
+        payload,
+      });
+    } catch {
+      const waiting = this.pending.get(messageId)!;
+      clearTimeout(waiting.timer);
+      this.pending.delete(messageId);
+      waiting.reject(new Error("BACKEND_DISCONNECTED"));
+    }
     return result;
   }
   close(): void {

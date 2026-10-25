@@ -1,3 +1,6 @@
+import "./schema-config.js";
+import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
+import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
 import { api } from "./api.js";
 import { NativeBridge } from "./native.js";
 let connection: Promise<NativeBridge> | undefined;
@@ -31,11 +34,28 @@ function connect(): Promise<NativeBridge> {
 async function request(value: unknown): Promise<unknown> {
   if (!value || typeof value !== "object") throw new Error("INVALID_REQUEST");
   const command = value as Record<string, unknown>;
-  if (command.kind !== "capabilities" && command.kind !== "resumeEvents")
+  const isMigration =
+    typeof command.kind === "string" && command.kind.startsWith("migration.");
+  if (
+    !isMigration &&
+    command.kind !== "capabilities" &&
+    command.kind !== "resumeEvents"
+  )
     throw new Error("UNSUPPORTED_COMMAND");
   let bridge: NativeBridge | undefined;
   try {
     bridge = await connect();
+    if (isMigration) {
+      const parsed = parseMigrationCommand(command);
+      const stored = (await api!.storage.session.get("s28Pairing"))
+        .s28Pairing as Record<string, string>;
+      if (
+        parsed.profileGuard !==
+        (await migrationProfileGuard(stored.installationId!, stored.profileId!))
+      )
+        throw new Error("MIGRATION_PROFILE");
+      return await bridge.request(parsed);
+    }
     return await bridge.request(
       command.kind === "capabilities"
         ? { kind: "capabilities" }

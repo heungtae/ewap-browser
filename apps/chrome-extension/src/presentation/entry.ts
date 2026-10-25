@@ -1,3 +1,4 @@
+import "../bridge/schema-config.js";
 import { mountPresentation } from "./controller.js";
 import { createView } from "./view.js";
 import { settings, tasks } from "../bridge/presentation-client.js";

@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "scope": "qualification-only",
+  "releaseId": "6486df3d0cafd74781076a188d42d8a460aea3994b1d77d2ebfb40c43cff6da6",
+  "source": {
+    "revision": "43c8845939965dc174062c5eef3777dc0a11bc39",
+    "dirty": true
+  },
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "credentials": "session-only",
+  "files": 34,
+  "bytes": 1978058,
+  "registered": false,
+  "installed": false,
+  "delivered": false,
+  "productionAdmission": "unchanged",
+  "directory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/transport-csp-release-2026-10-25"
+}
