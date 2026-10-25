@@ -98,7 +98,7 @@ export async function fixture(dispatch = false) {
       lifecycle.drain = drain(epoch);
     },
   };
-  function wire(browserOverride, releaseCheck) {
+  function wire(browserOverride, releaseCheck, secretOverride = credentials) {
     const settings = new Mg01SettingsMigration(
       new SqliteMg01Journal(db),
       {
@@ -108,7 +108,7 @@ export async function fixture(dispatch = false) {
         },
       },
       profile,
-      credentials,
+      secretOverride,
     );
     const browser = new BrowserMigrationOwner(
       idb,

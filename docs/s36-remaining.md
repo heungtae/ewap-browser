@@ -1,6 +1,6 @@
 # S36 remaining acceptance — 2026-10-25
 
-Current checkpoint: parent `43c8845939965dc174062c5eef3777dc0a11bc39` plus the uncommitted authenticated MG02 transport slice. S36 remains In Progress; S37 remains Planned. This is a dated acceptance backlog, not an alternate behavior specification. Follow [source navigation](source-guide.md) and [current evidence](evidence/s36-transport-2026-10-25.md).
+Current checkpoint: parent `1191f6cec8bc9504a0d35278018d16069a84e0e2` plus the uncommitted explicit OS-secret-store slice. S36 remains In Progress; S37 remains Planned. This is a dated acceptance backlog, not an alternate behavior specification. Follow [source navigation](source-guide.md) and [current evidence](evidence/s36-os-secrets-2026-10-25.md).
 
 | Gate | Verified progress | Remaining prerequisite / acceptance |
 | --- | --- | --- |
@@ -8,7 +8,7 @@ Current checkpoint: parent `43c8845939965dc174062c5eef3777dc0a11bc39` plus the u
 | Installed migration | Six controlled converters and actual authenticated Chrome MG02 mirror/status/readback pass | Compose all-six installed owner coordination, MG01 credential flow and actual source/target writer freeze/restart ownership. The optional qualification daemon exposes only MG02/status; the normal launcher stays bridge-only. |
 | S36-R03 presentation | Automatic visible connection recovery, safe cursor handling and page lifecycle pass | M00 has 26 captured states; three are compared now and have differences. Settings visible-state defaults and manager controls differ. Workflow/consent/dialog/management behavior and full installed history/settings continuity remain unqualified. |
 | S36-R04 holdouts | Frozen corpus contains 100 Ask + 100 Action cases | Complete target runtime and prerequisite gates before end-to-end execution. No such holdout case ran in this slice; synthetic readback/unit counts are not denominators for this gate. |
-| S36-R05 install | Isolated Linux bridge install/repair/remove and same-protocol set switching pass | Real released-version/extension/schema compatibility, complete target packaging, normal-user service/deployment, OS credential persistence, Windows/macOS if claimed supported. Current secrets remain session-only. |
+| S36-R05 install | Isolated Linux bridge lifecycle/set switching and real GNOME persistence/lock/MG01 readback pass | Real released-version/extension/schema compatibility, complete target packaging, normal-user service/deployment, explicit OS-store packaging/selection/retention and Windows/macOS if claimed supported. Current product default remains session-only; opt-in Linux OS-store is qualified only in the isolated fixture. |
 | S36-R06 handoff | Per-file inventory, artifact hashes and bounded operational evidence exist | Final qualified runtime artifacts, compatible rollback set and full acceptance evidence. No production cutover/retirement before all entry gates pass. |
 
 The S28–S35 incomplete product/runtime gates still apply. The original external Platform backlog dated 2026-09-06 remains unresolved and external to this repository. Product entrypoints, original architecture/individual Sprint designs, UI templates and version 0.1.117 remain preserved.

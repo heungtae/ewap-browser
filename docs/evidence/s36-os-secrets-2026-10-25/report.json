@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "privateDbus": true,
+  "node": "22.23.2",
+  "platform": "linux",
+  "revision": "1191f6cec8bc9504a0d35278018d16069a84e0e2",
+  "worktreeDirty": true,
+  "keyring": "gnome-keyring-daemon: 50.0\ntesting: enabled",
+  "tests": 4,
+  "passed": 4,
+  "scope": "isolated GNOME Secret Service persistence/lock and controlled MG01 readback; no user keyring or default-store migration"
+}

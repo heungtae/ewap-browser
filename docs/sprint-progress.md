@@ -4,6 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 explicit Linux OS-secret-store continuation
+
+**In Progress — isolated GNOME persistence and MG01 readback.**
+[Evidence](evidence/s36-os-secrets-2026-10-25.md) records a non-interactive libsecret
+adapter, actual keyring restart/readback, profile/identity isolation and locked-store
+failure without fallback. Four real OS tests, 38 migration/transport regressions
+and unit 1,359/1,359 passed. Initial helper-permission/unlock/cleanup fixture failures
+and corrections are retained. Product default remains session-only; installed
+credential flow/freeze, desktop helper deployment/retention, other OS, full UI/live/
+holdout/release gates remain open. Production/design/version are preserved; S37
+stays Planned.
+
 ## Browser Agent S36 — 2026-10-25 authenticated MG02 transport continuation
 
 **In Progress — real native IPC/SQLite mirror, controlled preparation/freeze.**

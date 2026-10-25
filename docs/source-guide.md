@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 OS secrets: [explicit Linux store](../apps/agent-server/src/settings/linux-secret-store.ts), [non-interactive libsecret helper](../native-host/secret-service.py). [Operations](migration-os-secrets.md), [isolated OS evidence](evidence/s36-os-secrets-2026-10-25.md); no default-store or remote secret-transfer change.
+
 S36 transport: [command/status contracts](../packages/shared/src/migration-rpc.ts), [domain parser](../packages/policy-engine/src/migration-rpc.ts), [backend endpoint](../apps/agent-server/src/migration/rpc.ts), [browser port](../apps/chrome-extension/src/migration/rpc.ts), [MV3 validator configuration](../apps/chrome-extension/src/bridge/schema-config.ts). [Operations](migration-transport.md), [evidence](evidence/s36-transport-2026-10-25.md).
 
 S36 presentation: [read-only connection loop](../apps/chrome-extension/src/presentation/connection-loop.ts), [controller](../apps/chrome-extension/src/presentation/controller.ts), [page lifecycle](../apps/chrome-extension/src/presentation/entry.ts), [visible status](../apps/chrome-extension/src/presentation/view.ts). [Recovery/parity evidence](evidence/s36-presentation-2026-10-25.md), [remaining acceptance](s36-remaining.md).
