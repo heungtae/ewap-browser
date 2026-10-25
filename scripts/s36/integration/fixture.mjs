@@ -98,7 +98,7 @@ export async function fixture(dispatch = false) {
       lifecycle.drain = drain(epoch);
     },
   };
-  function wire(browserOverride) {
+  function wire(browserOverride, releaseCheck) {
     const settings = new Mg01SettingsMigration(
       new SqliteMg01Journal(db),
       {
@@ -122,7 +122,8 @@ export async function fixture(dispatch = false) {
       journal,
       browserOverride?.(browser) ?? browser,
       settings,
-      async (release) => compatible && release === "legacy-0.1.117",
+      releaseCheck ??
+        (async (release) => compatible && release === "legacy-0.1.117"),
     );
     return { settings, browser, port, run: new MigrationSession(port) };
   }

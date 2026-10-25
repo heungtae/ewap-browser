@@ -124,7 +124,11 @@
     "build:s36:integration": "node scripts/s36/integration/build.mjs",
     "test:s36:integration": "node --test scripts/s36/integration/*.test.mjs",
     "check:s36:integration": "node scripts/s36/integration/check.mjs",
-    "test:chrome-s36:integration": "node --experimental-websocket scripts/s36/integration/chrome.mjs"
+    "test:chrome-s36:integration": "node --experimental-websocket scripts/s36/integration/chrome.mjs",
+    "build:s36:release": "node scripts/s36/release/build.mjs",
+    "capture:s36:release": "node scripts/s36/release/capture.mjs",
+    "test:s36:release": "node --test scripts/s36/release/*.test.mjs",
+    "check:s36:release": "node scripts/s36/release/check.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

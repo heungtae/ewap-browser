@@ -1,0 +1,194 @@
+{
+  "schema": "wca.release-set/v1",
+  "scope": "qualification-only",
+  "source": {
+    "revision": "54a6c2fd0454d630c32f2a2372cf543cb0144a16",
+    "dirty": true
+  },
+  "platform": "linux",
+  "architecture": "x64",
+  "nodeVersion": "22.23.2",
+  "nodeMajor": 22,
+  "credentials": "session-only",
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "files": [
+    {
+      "path": "agent-server/launcher.cjs",
+      "bytes": 778530,
+      "sha256": "63ac3a8d9c4dbc657903f1f9852da91c60e343b5c756f81639a34a5ce6596763"
+    },
+    {
+      "path": "chrome-extension/assets/icons/contextpilot-128.png",
+      "bytes": 20468,
+      "sha256": "29c63488cdf8fb495b7be901b149706a7d53997b7fc2f1d91d10fa99d7b4f0d1"
+    },
+    {
+      "path": "chrome-extension/assets/icons/contextpilot-16.png",
+      "bytes": 908,
+      "sha256": "9d9c83d3617afd1f17ffb57608bded741a7e1b7d659b5954049d7168668148f6"
+    },
+    {
+      "path": "chrome-extension/assets/icons/contextpilot-32.png",
+      "bytes": 2396,
+      "sha256": "2b41e4d1b8a1415f434a1a023bb11e35b2595cdc7579de76901747d09d920315"
+    },
+    {
+      "path": "chrome-extension/assets/icons/contextpilot-48.png",
+      "bytes": 4259,
+      "sha256": "5e24cc6a179fb10b74ba828a8d03b108bab9f828950e987c0bb073d27207ff49"
+    },
+    {
+      "path": "chrome-extension/assets/index-fHgUUjXL.css",
+      "bytes": 6911,
+      "sha256": "acbfd6d8dd2b7dc0d43eef2feeb2997e3fd04066ca8229b56cc7de4e1ef9e7c2"
+    },
+    {
+      "path": "chrome-extension/assets/learned-profiles-BtAsLz9x.css",
+      "bytes": 3833,
+      "sha256": "668ecc788987eba53688bc1727b6996d184a8a7d1b0fb3c08ef98ea15e45cc8f"
+    },
+    {
+      "path": "chrome-extension/assets/presentation-BUCXUO4m.js",
+      "bytes": 93952,
+      "sha256": "1200cd8e0d86e60dbbb838d16fba65ff54a7452d831a9a3e08a7209a639d2d74"
+    },
+    {
+      "path": "chrome-extension/js/content.js",
+      "bytes": 120885,
+      "sha256": "be6263aa841a745414876cf4bedce6d88551174ce60fe5cb90e1f12d1ede478b"
+    },
+    {
+      "path": "chrome-extension/js/service-worker.js",
+      "bytes": 768223,
+      "sha256": "9380247b843fd9e218f120248e1a86a8002b0ff834c2f738f7314bb0ddb211a7"
+    },
+    {
+      "path": "chrome-extension/managed-storage-schema.json",
+      "bytes": 1167,
+      "sha256": "66c0246725c7e056540c97231ad7e7e9cb57f355dd33a0431d5c0a03a2d07bf9"
+    },
+    {
+      "path": "chrome-extension/manifest.json",
+      "bytes": 1196,
+      "sha256": "e035959e6c0d71d7accedddee19dc3b42c7bdaca79ccf135cff62de8324693e5"
+    },
+    {
+      "path": "chrome-extension/settings/index.html",
+      "bytes": 19288,
+      "sha256": "332612e1864bf5663d0584e9f794518e44530ef7e6928315d081f48aabf4e97e"
+    },
+    {
+      "path": "chrome-extension/settings/learned-profiles.html",
+      "bytes": 2857,
+      "sha256": "3aeb90986591300b5476d18810db0ccec68d40daf890e69ac75ad7e5b9007940"
+    },
+    {
+      "path": "chrome-extension/sidepanel/index.html",
+      "bytes": 25436,
+      "sha256": "75cb373be6a6c1a43bf5a2dfb988d45b69a37b3789074bcc08d4b9780dee5ef0"
+    },
+    {
+      "path": "dependencies/apps/agent-server/package.json",
+      "bytes": 171,
+      "sha256": "2d6d3f742156d5eeb33e9e66ee18931047f46e583427ca3b94a4f1350fd52872"
+    },
+    {
+      "path": "dependencies/apps/chrome-extension/package.json",
+      "bytes": 583,
+      "sha256": "ad04094df3457cd6e4ad336a3dc3dfafd13ac0916338aa3194b04d6b4ecf3d98"
+    },
+    {
+      "path": "dependencies/apps/mcp-server/package.json",
+      "bytes": 226,
+      "sha256": "14f50c508b0fc4c609695858c284a7b7c98d7de7f5c38bf7695b8959cddaa85f"
+    },
+    {
+      "path": "dependencies/package.json",
+      "bytes": 10401,
+      "sha256": "0bc22fecaedbb3e6b18935be39fb434707e5c2721bbda9df1d4f1a9a736cff3d"
+    },
+    {
+      "path": "dependencies/packages/analysis-engine/package.json",
+      "bytes": 326,
+      "sha256": "ddc1a312e1d8d9630b6a54a3a443b099a4c4c6f829d2a2cc49502896fefed69b"
+    },
+    {
+      "path": "dependencies/packages/browser-runtime/package.json",
+      "bytes": 385,
+      "sha256": "0ddee59b35d7c2a4f9469df6b675bc79ad0fa2bef2762b0d362ad83070c2fffb"
+    },
+    {
+      "path": "dependencies/packages/codebase-builder/package.json",
+      "bytes": 210,
+      "sha256": "d3240d5b948453427528294ece3b9cc0a7ae948bec3650345269d44a21f9af7a"
+    },
+    {
+      "path": "dependencies/packages/codebase-repository/package.json",
+      "bytes": 213,
+      "sha256": "e76c949009d2f63b2a6350bc534faf3c6f38d9bb7a9021936b1c6745ebe5ebf2"
+    },
+    {
+      "path": "dependencies/packages/codebase-schema/package.json",
+      "bytes": 177,
+      "sha256": "7963bddd768920c5843e428eb1ad1271fca2708d632bff5fcc71048fc3051e18"
+    },
+    {
+      "path": "dependencies/packages/collector/package.json",
+      "bytes": 318,
+      "sha256": "bfec17fa1c0cf22272c565410d08cbbfcd3b97562ef3c8d63ab63a7d475e0ad2"
+    },
+    {
+      "path": "dependencies/packages/integration-adapters/package.json",
+      "bytes": 261,
+      "sha256": "eae1a53fe112ce8af4de107684ef573dcd718465cd7d9a1fd25688accf45f9d2"
+    },
+    {
+      "path": "dependencies/packages/policy-engine/package.json",
+      "bytes": 277,
+      "sha256": "9d57c2bb5af6b02ed40a4a3e51182cbf3bf3fa4c2997a7c2e488afe64bc960a4"
+    },
+    {
+      "path": "dependencies/packages/provider-adapters/package.json",
+      "bytes": 386,
+      "sha256": "5e514557972cbe3b3eb0e6bd06cfa457e68b059dfebce3589dde1527f15dc41f"
+    },
+    {
+      "path": "dependencies/packages/shared/package.json",
+      "bytes": 176,
+      "sha256": "4f8480537052d10b0fbb7426491dac996212a05b2c72c2f55d0b1bc2bccc36f6"
+    },
+    {
+      "path": "dependencies/packages/task-engine/package.json",
+      "bytes": 193,
+      "sha256": "037ef460af92769e13e4ec9b389ae8b64d0733645d31cbc7fe739879eb96c267"
+    },
+    {
+      "path": "dependencies/packages/tool-registry/package.json",
+      "bytes": 227,
+      "sha256": "fcb6a1805e06ae7ef7176094336dc565dada8d6c981299701a0b60d5bfde1de2"
+    },
+    {
+      "path": "dependencies/packages/tool-runtime/package.json",
+      "bytes": 326,
+      "sha256": "1b5ea5df70aa14e9fb65c5bd6aca50106689f05c4d7572b2cb302b3d8a0c06c3"
+    },
+    {
+      "path": "dependencies/pnpm-lock.yaml",
+      "bytes": 100289,
+      "sha256": "3968090245a79945dcf341966b593695879de4739c585db9027705716df42e17"
+    },
+    {
+      "path": "dependencies/pnpm-workspace.yaml",
+      "bytes": 50,
+      "sha256": "06c67f3d84546652d4af93e9e62ee26f847d23e38f93d8b399f2ea0ae0dccb33"
+    }
+  ]
+}

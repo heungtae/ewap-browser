@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 release integrity continuation
+
+**In Progress — partial release artifact traceability and rollback integrity.**
+[Evidence](evidence/s36-release-integrity-2026-10-25.md) pins 34 actual isolated
+S28 artifact/dependency files, source/version/protocol metadata and an independent
+release ID. Missing/changed/extra files, symlinks and version skew fail closed.
+Six new release/rollback checks and eight integration regressions passed; full unit
+1,348/1,348 passed. Actual installation, full target packaging, runtime compatibility,
+UI/live/holdout/OS/release gates remain open. Production/design/version are preserved;
+S37 remains Planned.
+
 ## Browser Agent S36 — 2026-10-25 six-unit integration continuation
 
 **In Progress — actual MG01–MG06 coordinator composition, controlled owners.**
