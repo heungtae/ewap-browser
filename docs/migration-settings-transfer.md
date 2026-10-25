@@ -85,3 +85,22 @@ profile and controlled diagnostic expiry failures. Backend remains prepared/lega
 with admission closed; no global consensus/commit or actual writer freeze is
 qualified. [Six-unit evidence](evidence/s36-installed-owner-chrome-2026-10-25.md)
 records the exact scope and remaining installed orchestration gates.
+
+## Actual browser-process restart
+
+`pnpm test:chrome-s36:browser-restart` and
+`pnpm test:chrome-s36:browser-restart:os` use the same pinned artifact/environment
+and fresh evidence directory. They stage a six-unit candidate, close Chrome fully
+and reopen the same profile while retaining the daemon. They require that session
+sources/pairing are lost, persisted local sources/IndexedDB ACK remain observable,
+and the old candidate fails source validation after explicit trusted fixture
+pairing. MG01/MG02 still read back. They never reseed lost history or infer authority
+from saved ACKs. [Evidence](evidence/s36-browser-restart-chrome-2026-10-25.md) records
+that successful full migration recovery remains unqualified.
+
+The backend composed `MigrationSession.prepare` also rechecks all six source digests,
+the current fence and journal revision before returning an existing nonterminal
+migration. Source loss/drift fails without erasing checkpoints or silently copying
+new source data. This session is not yet composed by the installed RPC daemon;
+[preflight evidence](evidence/s36-resume-preflight-2026-10-25.md) keeps its local
+integration scope separate from installed global recovery.

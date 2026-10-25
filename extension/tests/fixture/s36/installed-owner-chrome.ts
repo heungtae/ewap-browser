@@ -1,6 +1,9 @@
 import { BrowserMigrationOwner } from "../../../../apps/chrome-extension/src/migration/owner.js";
 import { openDatabase } from "../../../../packages/codebase-repository/src/database.js";
 import { migrationTransport } from "../../../../apps/chrome-extension/src/migration/rpc.js";
+import { migrationDigest } from "../../../../apps/chrome-extension/src/migration/migration-digest.js";
+import { MigrationOwnerAcks } from "../../../../apps/chrome-extension/src/migration/owner-ack.js";
+import { migrationJournalSchema } from "../../../../packages/shared/src/migration.js";
 import { migrationUnits } from "../../../../packages/shared/src/migration.js";
 import type {
   Journal,
@@ -61,6 +64,38 @@ export function ownerFixture(
       () => now,
     );
   return {
+    candidate: () => structuredClone(view),
+    async restoreLostSources(profileGuard: string, raw: Journal) {
+      profile = profileGuard;
+      view = migrationJournalSchema.parse(raw) as Journal;
+      check(view.manifest.profileGuard === profile, "RESTORE_PROFILE");
+      manifest = view.manifest;
+      db = await openDatabase(indexedDB, profile);
+      const ack = await new MigrationOwnerAcks(db).read("wire");
+      check(
+        ack?.manifestDigest ===
+          migrationDigest({ manifest, stores: view.stores }),
+        "PERSISTED_ACK_MISMATCH",
+      );
+      for (const unit of migrationUnits) {
+        const same =
+          (await browser().sourceDigest(unit, 1)) ===
+          manifest.sourceDigests[unit];
+        check(
+          same === ["MG01", "MG02", "MG03"].includes(unit),
+          "RESTART_SOURCE_STATE",
+        );
+      }
+      let rejected = false;
+      try {
+        rejected = !(await browser().verifyAcknowledgment(view));
+      } catch (error) {
+        rejected =
+          error instanceof Error && error.message === "MIGRATION_ACK_STAGING";
+      }
+      check(rejected, "LOST_SOURCE_ACK_ACCEPTED");
+      return true;
+    },
     async prepare(profileGuard: string) {
       profile = profileGuard;
       await writeLocal(savedSource());

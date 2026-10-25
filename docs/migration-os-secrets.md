@@ -106,3 +106,9 @@ pairing configuration without requiring installation. The flag is a local startu
 choice, not a remote grant or defense against a malicious OS user. No service unit
 is installed/started automatically. [Dated native/OS evidence](evidence/s36-installed-start-2026-10-25.md)
 records same-version forward/reverse selection and private-keyring locked startup.
+
+For a generated foreground command pinned to an active installation and explicit
+mode, use the optional [companion launcher](migration-daemon-launcher.md). It does
+not install a service, unlock storage, migrate existing checkpoint modes or purge
+OS items on removal. [Native/OS evidence](evidence/s36-daemon-launcher-2026-10-25.md)
+keeps temporary qualification separate from normal-user deployment.

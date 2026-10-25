@@ -5,6 +5,7 @@ import { settingsTransport } from "../../../../apps/chrome-extension/src/migrati
 import { migrationTransport } from "../../../../apps/chrome-extension/src/migration/rpc.js";
 import { migrationDigest } from "../../../../apps/chrome-extension/src/migration/migration-digest.js";
 import type { MigrationCommand } from "../../../../packages/shared/src/migration-rpc.js";
+import type { Journal } from "../../../../packages/shared/src/migration-types.js";
 import type { Checkpoint } from "../../../../packages/shared/src/migration-types.js";
 const chrome = (
   globalThis as unknown as {
@@ -29,6 +30,7 @@ let profile: string,
   frozen = true,
   digest: string,
   checkpoint: Checkpoint;
+let resumedCandidate: Journal;
 let secretRequests = 0;
 let policyRequests = 0;
 let storeMode: "session-only" | "os-store" = "session-only";
@@ -158,3 +160,23 @@ export async function rejectPolicyDriftAndEpoch() {
 export const stageOwner = () => owner.copy(checkpoint);
 export const reopenOwner = () => owner.reopen();
 export const ownerNegatives = () => owner.negatives();
+
+export const ownerCandidate = () => owner.candidate();
+export async function restoreAfterBrowserRestart(
+  profileGuard: string,
+  mode: "session-only" | "os-store",
+  candidate: Journal,
+) {
+  profile = profileGuard;
+  storeMode = mode;
+  digest = candidate.manifest.sourceDigests.MG01;
+  const saved = candidate.stores.MG01;
+  if (!saved) throw new Error("MG01_CHECKPOINT_MISSING");
+  checkpoint = saved;
+  await policy.restore(profile);
+  resumedCandidate = candidate;
+  return true;
+}
+
+export const rejectLostSources = () =>
+  owner.restoreLostSources(profile, resumedCandidate);

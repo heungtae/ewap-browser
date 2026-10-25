@@ -4,6 +4,35 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 explicit foreground daemon launcher
+
+**In Progress.** [Evidence](evidence/s36-daemon-launcher-2026-10-25.md) records
+additive companion configuration with explicit mode/pinned release, no auto-start,
+shared lifecycle exclusion, owned repair/update/removal and actual generated-script
+native connection. Expanded native 66/66 and private OS 9/9 passed. Normal native
+receipt/default behavior is unchanged; managed service/deployment and global
+migration remain pending. Earlier uncommitted browser restart/resume work retained.
+
+## Browser Agent S36 — 2026-10-25 source-bound session resume
+
+**In Progress.** [Evidence](evidence/s36-resume-preflight-2026-10-25.md) and
+[ISS-20261025-003](issues/records/2026-10-25-migration-resume-source.md) retain the
+pre-fix source-loss resume failure. Composed backend prepare now checks all-six
+source digests and the fence/journal revision before returning nonterminal state,
+without replacing checkpoints/ACKs. Native integration 19/19 passed. This class is
+not yet composed into the installed RPC daemon; full installed recovery/global
+consensus remains pending. Earlier uncommitted browser-restart work is preserved.
+
+## Browser Agent S36 — 2026-10-25 actual browser-process restart
+
+**In Progress.** [Evidence](evidence/s36-browser-restart-chrome-2026-10-25.md)
+records Chrome exit/new PID/same-profile restart in Session-only and private OS
+modes while retaining the daemon. Local sources and actual IndexedDB ACK persist;
+session sources/pairing disappear. After explicit fresh pairing, the saved candidate
+fails specifically at source staging. MG01/MG02 readback still passes. Three Chrome
+scenarios and S36 unit 110/110 pass. Successful full recovery, actual writer freeze
+and backend/global consensus/commit remain open. No product or version change.
+
 ## Browser Agent S36 — 2026-10-25 installed six-unit browser-owner readback
 
 **In Progress.** [Evidence](evidence/s36-installed-owner-chrome-2026-10-25.md)

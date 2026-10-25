@@ -15,21 +15,7 @@ export async function prepareTransfer(input, panel, mode) {
     config.installationId,
     config.profileId,
   );
-  const fixture = await build({
-    entryPoints: [
-      "extension/tests/fixture/s36/settings-transfer-chrome-cases.ts",
-    ],
-    bundle: true,
-    write: false,
-    platform: "browser",
-    format: "iife",
-    globalName: "S36Settings",
-  });
-  await evaluate(
-    panel,
-    "globalThis.s36CspViolations=0; addEventListener('securitypolicyviolation',()=>globalThis.s36CspViolations++); true",
-  );
-  await evaluate(panel, fixture.outputFiles[0].text);
+  await injectSettings(panel);
   const preparation = await evaluate(
     panel,
     `S36Settings.prepare(${JSON.stringify(profileGuard)},${JSON.stringify(mode)},${process.env.S36_INSTALLED_JOINT === "1"},${process.env.S36_INSTALLED_ALL === "1"}).then(value=>({ok:true,...value})).catch(error=>({ok:false,error:error.message}))`,
@@ -68,4 +54,22 @@ export async function prepareTransfer(input, panel, mode) {
   db.close();
   await chmod(dbPath, 0o600);
   return { prepared, config, dbPath };
+}
+
+export async function injectSettings(panel) {
+  const fixture = await build({
+    entryPoints: [
+      "extension/tests/fixture/s36/settings-transfer-chrome-cases.ts",
+    ],
+    bundle: true,
+    write: false,
+    platform: "browser",
+    format: "iife",
+    globalName: "S36Settings",
+  });
+  await evaluate(
+    panel,
+    "globalThis.s36CspViolations=0; addEventListener('securitypolicyviolation',()=>globalThis.s36CspViolations++); true",
+  );
+  await evaluate(panel, fixture.outputFiles[0].text);
 }

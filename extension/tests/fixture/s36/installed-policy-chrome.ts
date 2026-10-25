@@ -12,6 +12,10 @@ export function policyFixture(
   let stage: Mg02Staging, profile: string, digest: string;
   const backend = () => migrationTransport(profile, request).port;
   return {
+    async restore(profileGuard: string) {
+      profile = profileGuard;
+      stage = new Mg02Staging(await openDatabase(indexedDB, profile), source);
+    },
     async prepare(profileGuard: string) {
       profile = profileGuard;
       await write(policySource());

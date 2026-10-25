@@ -1,5 +1,11 @@
 # 코드 탐색 안내
 
+Opt-in foreground launcher: [installation](../apps/agent-server/src/migration/daemon-installation.ts), [plan](../apps/agent-server/src/migration/daemon-launcher-plan.ts), [operations](migration-daemon-launcher.md), [evidence](evidence/s36-daemon-launcher-2026-10-25.md).
+
+Session resume checks: [implementation](../apps/agent-server/src/migration/session.ts), [native regression](../scripts/s36/integration/resume.test.mjs), [issue](issues/records/2026-10-25-migration-resume-source.md), [evidence](evidence/s36-resume-preflight-2026-10-25.md).
+
+Browser restart qualification: [runner](../scripts/s36/settings-transfer/browser-restart.mjs), [real process lifecycle](../scripts/s36/settings-transfer/chrome-process.mjs), [candidate/source checks](../extension/tests/fixture/s36/installed-owner-chrome.ts), [evidence](evidence/s36-browser-restart-chrome-2026-10-25.md).
+
 Installed browser-owner checks: [fixture](../extension/tests/fixture/s36/installed-owner-chrome.ts), [runner](../scripts/s36/settings-transfer/owner-chrome.mjs), [SQL boundaries](../scripts/s36/settings-transfer/chrome-readback.mjs), [evidence](evidence/s36-installed-owner-chrome-2026-10-25.md).
 
 Joint installed MG01/MG02 checks: [runner](../scripts/s36/settings-transfer/joint-chrome.mjs), [policy fixture](../extension/tests/fixture/s36/installed-policy-chrome.ts), [evidence](evidence/s36-installed-joint-chrome-2026-10-25.md).

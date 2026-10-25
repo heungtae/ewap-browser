@@ -13,7 +13,11 @@ try {
     process.env.NO_AT_BRIDGE = "1";
     process.env.GTK_USE_PORTAL = "0";
   }
-  await import("./chrome.mjs");
+  await import(
+    process.env.S36_BROWSER_RESTART === "1"
+      ? "./browser-restart.mjs"
+      : "./chrome.mjs"
+  );
 } finally {
   await keyring?.close();
 }

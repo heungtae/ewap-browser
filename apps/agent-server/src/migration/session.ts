@@ -21,6 +21,22 @@ export class MigrationSession {
       )
         throw new Error("MIGRATION_CONFLICT");
       await this.port.guard(old.epoch);
+      if (["prepared", "copying", "validated"].includes(old.phase)) {
+        for (const unit of units)
+          if (
+            (await this.port.snapshotDigest(unit)) !==
+            old.manifest.sourceDigests[unit]
+          )
+            throw new Error("SOURCE_CHANGED");
+        await this.port.guard(old.epoch);
+        const current = this.port.journal.read();
+        if (
+          !current ||
+          current.revision !== old.revision ||
+          current.epoch !== old.epoch
+        )
+          throw new Error("MIGRATION_CAS");
+      }
       return this.coordinator.prepare(old.manifest);
     }
     await this.port.begin();

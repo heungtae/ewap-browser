@@ -1,0 +1,130 @@
+TAP version 13
+# (node:966536) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: expiry or source drift after both acknowledgments blocks commit
+ok 1 - expiry or source drift after both acknowledgments blocks commit
+  ---
+  duration_ms: 238.862541
+  type: 'test'
+  ...
+# Subtest: lost extension acknowledgment response is safely retried from durable browser state
+ok 2 - lost extension acknowledgment response is safely retried from durable browser state
+  ---
+  duration_ms: 134.961801
+  type: 'test'
+  ...
+# Subtest: final journal failure after qualification pointer selection resumes without replay
+ok 3 - final journal failure after qualification pointer selection resumes without replay
+  ---
+  duration_ms: 161.761137
+  type: 'test'
+  ...
+# Subtest: missing policy mirror after acknowledgment blocks activation
+ok 4 - missing policy mirror after acknowledgment blocks activation
+  ---
+  duration_ms: 58.364993
+  type: 'test'
+  ...
+# (node:966537) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: six real units validate and agree before qualification pointer commit; admission remains closed
+ok 5 - six real units validate and agree before qualification pointer commit; admission remains closed
+  ---
+  duration_ms: 238.483309
+  type: 'test'
+  ...
+# Subtest: restart resumes actual IDB/SQLite checkpoints, while lost session credentials fail readback
+ok 6 - restart resumes actual IDB/SQLite checkpoints, while lost session credentials fail readback
+  ---
+  duration_ms: 128.800628
+  type: 'test'
+  ...
+# Subtest: unknown dispatch and unresolved owned CDP block prepare before any settings checkpoint
+ok 7 - unknown dispatch and unresolved owned CDP block prepare before any settings checkpoint
+  ---
+  duration_ms: 8.30129
+  type: 'test'
+  ...
+# Subtest: rollback advances epoch and selects only the preserved legacy namespace without replay
+ok 8 - rollback advances epoch and selects only the preserved legacy namespace without replay
+  ---
+  duration_ms: 115.378996
+  type: 'test'
+  ...
+# (node:966538) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: resume prepare rejects lost session sources without returning a historical validated result
+ok 9 - resume prepare rejects lost session sources without returning a historical validated result
+  ---
+  duration_ms: 115.023858
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG01 source without rewriting prior checkpoints
+ok 10 - resume prepare checks MG01 source without rewriting prior checkpoints
+  ---
+  duration_ms: 43.215302
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG02 source without rewriting prior checkpoints
+ok 11 - resume prepare checks MG02 source without rewriting prior checkpoints
+  ---
+  duration_ms: 36.51978
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG03 source without rewriting prior checkpoints
+ok 12 - resume prepare checks MG03 source without rewriting prior checkpoints
+  ---
+  duration_ms: 32.976921
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG05 source without rewriting prior checkpoints
+ok 13 - resume prepare checks MG05 source without rewriting prior checkpoints
+  ---
+  duration_ms: 35.062702
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG06 source without rewriting prior checkpoints
+ok 14 - resume prepare checks MG06 source without rewriting prior checkpoints
+  ---
+  duration_ms: 31.589404
+  type: 'test'
+  ...
+# Subtest: prepared restart rejects drift without advancing migration
+ok 15 - prepared restart rejects drift without advancing migration
+  ---
+  duration_ms: 6.579097
+  type: 'test'
+  ...
+# Subtest: copying restart rejects drift without advancing migration
+ok 16 - copying restart rejects drift without advancing migration
+  ---
+  duration_ms: 7.543243
+  type: 'test'
+  ...
+# Subtest: resume prepare detects fence change during final source observation
+ok 17 - resume prepare detects fence change during final source observation
+  ---
+  duration_ms: 35.251551
+  type: 'test'
+  ...
+# Subtest: resume prepare detects revision change during final source observation
+ok 18 - resume prepare detects revision change during final source observation
+  ---
+  duration_ms: 32.521213
+  type: 'test'
+  ...
+# Subtest: terminal journal observation does not recopy or reinterpret post-completion source edits
+ok 19 - terminal journal observation does not recopy or reinterpret post-completion source edits
+  ---
+  duration_ms: 116.647785
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 706.434658

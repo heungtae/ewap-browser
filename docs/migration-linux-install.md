@@ -55,3 +55,9 @@ receipt with final `--installed`; see [commands and checks](migration-os-secrets
 Missing/changed owned files and pending/uninstalled states block startup rather
 than triggering repair. This remains opt-in qualification composition, not a
 normal-user service or full installed migration orchestration.
+
+An optional [foreground migration launcher](migration-daemon-launcher.md) can be
+configured separately after native installation. It pins a caller-selected store
+mode and release without automatic start or a native receipt/schema change. Its
+separate ownership lifecycle requires explicit update after release switching and
+explicit removal; ordinary install/unregister never silently selects a mode.

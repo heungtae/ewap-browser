@@ -187,3 +187,8 @@ test("installed OS-mode daemon authenticates via registered host and refuses a l
   const { installedOs } = await import("./installed-os.mjs");
   await installedOs();
 });
+
+test("generated OS-mode foreground launcher fails locked startup and removal retains credentials", async () => {
+  const { launcherOs } = await import("./launcher-os.mjs");
+  await launcherOs();
+});

@@ -1,0 +1,66 @@
+TAP version 13
+# (node:969034) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+ok 1 - real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+  ---
+  duration_ms: 1300.933779
+  type: 'test'
+  ...
+# Subtest: locked or unavailable OS store fails closed without session/plaintext fallback
+ok 2 - locked or unavailable OS store fails closed without session/plaintext fallback
+  ---
+  duration_ms: 965.092171
+  type: 'test'
+  ...
+# Subtest: MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+ok 3 - MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+  ---
+  duration_ms: 2952.39118
+  type: 'test'
+  ...
+# Subtest: input/helper boundaries reject unsafe configuration and oversized or NUL values
+ok 4 - input/helper boundaries reject unsafe configuration and oversized or NUL values
+  ---
+  duration_ms: 180.459816
+  type: 'test'
+  ...
+# Subtest: authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+ok 5 - authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+  ---
+  duration_ms: 2075.440487
+  type: 'test'
+  ...
+# Subtest: pinned packaged daemon selects OS store and preserves authenticated restart readback
+ok 6 - pinned packaged daemon selects OS store and preserves authenticated restart readback
+  ---
+  duration_ms: 2036.340199
+  type: 'test'
+  ...
+# Subtest: installed pinned Linux secret package reads OS values and uninstall retains them
+ok 7 - installed pinned Linux secret package reads OS values and uninstall retains them
+  ---
+  duration_ms: 598.889056
+  type: 'test'
+  ...
+# Subtest: installed OS-mode daemon authenticates via registered host and refuses a locked store
+ok 8 - installed OS-mode daemon authenticates via registered host and refuses a locked store
+  ---
+  duration_ms: 1191.929607
+  type: 'test'
+  ...
+# Subtest: generated OS-mode foreground launcher fails locked startup and removal retains credentials
+ok 9 - generated OS-mode foreground launcher fails locked startup and removal retains credentials
+  ---
+  duration_ms: 1482.418748
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12976.057038

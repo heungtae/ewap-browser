@@ -1,0 +1,422 @@
+TAP version 13
+# Subtest: private install, repair, interrupted preparation and uninstall preserve pairing and unrelated data
+ok 1 - private install, repair, interrupted preparation and uninstall preserve pairing and unrelated data
+  ---
+  duration_ms: 45.611591
+  type: 'test'
+  ...
+# Subtest: invalid release and identity changes fail before replacing an owned installation
+ok 2 - invalid release and identity changes fail before replacing an owned installation
+  ---
+  duration_ms: 11.910585
+  type: 'test'
+  ...
+# Subtest: foreign files, altered pairing and unsafe permissions are preserved and rejected
+ok 3 - foreign files, altered pairing and unsafe permissions are preserved and rejected
+  ---
+  duration_ms: 45.178931
+  type: 'test'
+  ...
+# Subtest: active socket or competing lock prevents install and removal
+ok 4 - active socket or competing lock prevents install and removal
+  ---
+  duration_ms: 16.736209
+  type: 'test'
+  ...
+# Subtest: unowned registration is not adopted even when the pairing directory is empty
+ok 5 - unowned registration is not adopted even when the pairing directory is empty
+  ---
+  duration_ms: 5.431629
+  type: 'test'
+  ...
+# Subtest: removal remains possible after the entire artifact directory disappears
+ok 6 - removal remains possible after the entire artifact directory disappears
+  ---
+  duration_ms: 8.959339
+  type: 'test'
+  ...
+# Subtest: interrupted removal resumes and cannot be mistaken for installation repair
+ok 7 - interrupted removal resumes and cannot be mistaken for installation repair
+  ---
+  duration_ms: 37.183808
+  type: 'test'
+  ...
+# Subtest: a different valid release requires a separate upgrade operation and cannot replace current files
+ok 8 - a different valid release requires a separate upgrade operation and cannot replace current files
+  ---
+  duration_ms: 12.876269
+  type: 'test'
+  ...
+# Subtest: malformed existing pairing errors never expose its raw content
+ok 9 - malformed existing pairing errors never expose its raw content
+  ---
+  duration_ms: 7.745373
+  type: 'test'
+  ...
+# Subtest: installation and registry roots cannot overlap the immutable artifact tree
+ok 10 - installation and registry roots cannot overlap the immutable artifact tree
+  ---
+  duration_ms: 4.592846
+  type: 'test'
+  ...
+# Subtest: explicit forward and reverse transition preserve pairing and registry ownership
+ok 11 - explicit forward and reverse transition preserve pairing and registry ownership
+  ---
+  duration_ms: 41.275549
+  type: 'test'
+  ...
+# Subtest: each controlled interruption resumes the exact externally pinned transition
+ok 12 - each controlled interruption resumes the exact externally pinned transition
+  ---
+  duration_ms: 89.382189
+  type: 'test'
+  ...
+# Subtest: active backend, invalid target, foreign files and changed pairing block transition
+ok 13 - active backend, invalid target, foreign files and changed pairing block transition
+  ---
+  duration_ms: 67.402012
+  type: 'test'
+  ...
+# Subtest: pending journal tampering cannot select another release or overwrite foreign state
+ok 14 - pending journal tampering cannot select another release or overwrite foreign state
+  ---
+  duration_ms: 33.297888
+  type: 'test'
+  ...
+# (node:970153) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: expiry or source drift after both acknowledgments blocks commit
+ok 15 - expiry or source drift after both acknowledgments blocks commit
+  ---
+  duration_ms: 450.447877
+  type: 'test'
+  ...
+# Subtest: lost extension acknowledgment response is safely retried from durable browser state
+ok 16 - lost extension acknowledgment response is safely retried from durable browser state
+  ---
+  duration_ms: 238.42067
+  type: 'test'
+  ...
+# Subtest: final journal failure after qualification pointer selection resumes without replay
+ok 17 - final journal failure after qualification pointer selection resumes without replay
+  ---
+  duration_ms: 231.337455
+  type: 'test'
+  ...
+# Subtest: missing policy mirror after acknowledgment blocks activation
+ok 18 - missing policy mirror after acknowledgment blocks activation
+  ---
+  duration_ms: 80.618963
+  type: 'test'
+  ...
+# (node:970154) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: six real units validate and agree before qualification pointer commit; admission remains closed
+ok 19 - six real units validate and agree before qualification pointer commit; admission remains closed
+  ---
+  duration_ms: 479.514063
+  type: 'test'
+  ...
+# Subtest: restart resumes actual IDB/SQLite checkpoints, while lost session credentials fail readback
+ok 20 - restart resumes actual IDB/SQLite checkpoints, while lost session credentials fail readback
+  ---
+  duration_ms: 241.222598
+  type: 'test'
+  ...
+# Subtest: unknown dispatch and unresolved owned CDP block prepare before any settings checkpoint
+ok 21 - unknown dispatch and unresolved owned CDP block prepare before any settings checkpoint
+  ---
+  duration_ms: 12.739032
+  type: 'test'
+  ...
+# Subtest: rollback advances epoch and selects only the preserved legacy namespace without replay
+ok 22 - rollback advances epoch and selects only the preserved legacy namespace without replay
+  ---
+  duration_ms: 171.255626
+  type: 'test'
+  ...
+# (node:970165) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: resume prepare rejects lost session sources without returning a historical validated result
+ok 23 - resume prepare rejects lost session sources without returning a historical validated result
+  ---
+  duration_ms: 255.844947
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG01 source without rewriting prior checkpoints
+ok 24 - resume prepare checks MG01 source without rewriting prior checkpoints
+  ---
+  duration_ms: 82.055021
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG02 source without rewriting prior checkpoints
+ok 25 - resume prepare checks MG02 source without rewriting prior checkpoints
+  ---
+  duration_ms: 48.408142
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG03 source without rewriting prior checkpoints
+ok 26 - resume prepare checks MG03 source without rewriting prior checkpoints
+  ---
+  duration_ms: 51.797287
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG05 source without rewriting prior checkpoints
+ok 27 - resume prepare checks MG05 source without rewriting prior checkpoints
+  ---
+  duration_ms: 66.027343
+  type: 'test'
+  ...
+# Subtest: resume prepare checks MG06 source without rewriting prior checkpoints
+ok 28 - resume prepare checks MG06 source without rewriting prior checkpoints
+  ---
+  duration_ms: 52.683493
+  type: 'test'
+  ...
+# Subtest: prepared restart rejects drift without advancing migration
+ok 29 - prepared restart rejects drift without advancing migration
+  ---
+  duration_ms: 11.372464
+  type: 'test'
+  ...
+# Subtest: copying restart rejects drift without advancing migration
+ok 30 - copying restart rejects drift without advancing migration
+  ---
+  duration_ms: 12.577421
+  type: 'test'
+  ...
+# Subtest: resume prepare detects fence change during final source observation
+ok 31 - resume prepare detects fence change during final source observation
+  ---
+  duration_ms: 61.708412
+  type: 'test'
+  ...
+# Subtest: resume prepare detects revision change during final source observation
+ok 32 - resume prepare detects revision change during final source observation
+  ---
+  duration_ms: 50.515995
+  type: 'test'
+  ...
+# Subtest: terminal journal observation does not recopy or reinterpret post-completion source edits
+ok 33 - terminal journal observation does not recopy or reinterpret post-completion source edits
+  ---
+  duration_ms: 157.835231
+  type: 'test'
+  ...
+# Subtest: complete pinned tree verifies and only accepts the independently pinned release ID
+ok 34 - complete pinned tree verifies and only accepts the independently pinned release ID
+  ---
+  duration_ms: 24.981709
+  type: 'test'
+  ...
+# Subtest: optional Linux secret package requires both pinned artifacts and safe modes
+ok 35 - optional Linux secret package requires both pinned artifacts and safe modes
+  ---
+  duration_ms: 28.055736
+  type: 'test'
+  ...
+# Subtest: missing, changed and additional artifacts invalidate a previously accepted predicate
+ok 36 - missing, changed and additional artifacts invalidate a previously accepted predicate
+  ---
+  duration_ms: 29.89617
+  type: 'test'
+  ...
+# Subtest: symlinked files and components are rejected rather than hashed through external paths
+ok 37 - symlinked files and components are rejected rather than hashed through external paths
+  ---
+  duration_ms: 12.461557
+  type: 'test'
+  ...
+# Subtest: rewritten manifest and version/protocol/runtime skew fail closed
+ok 38 - rewritten manifest and version/protocol/runtime skew fail closed
+  ---
+  duration_ms: 22.427645
+  type: 'test'
+  ...
+# Subtest: oversized sparse artifacts are rejected before reading their contents
+ok 39 - oversized sparse artifacts are rejected before reading their contents
+  ---
+  duration_ms: 7.928634
+  type: 'test'
+  ...
+# (node:970177) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual six-unit coordinator checks the prior artifact set immediately before rollback
+ok 40 - actual six-unit coordinator checks the prior artifact set immediately before rollback
+  ---
+  duration_ms: 626.624109
+  type: 'test'
+  ...
+# Subtest: daemon blocks install/uninstall/transition throughout a paused pre-socket OS probe
+ok 41 - daemon blocks install/uninstall/transition throughout a paused pre-socket OS probe
+  ---
+  duration_ms: 4237.107584
+  type: 'test'
+  ...
+# Subtest: live daemon holds the installation lock and graceful stop permits repair/unregister
+ok 42 - live daemon holds the installation lock and graceful stop permits repair/unregister
+  ---
+  duration_ms: 128.262982
+  type: 'test'
+  ...
+# Subtest: installer respects a historical migration lock even without a socket
+ok 43 - installer respects a historical migration lock even without a socket
+  ---
+  duration_ms: 12.329209
+  type: 'test'
+  ...
+# Subtest: opt-in foreground launcher pins mode/release and explicitly updates after native release selection
+ok 44 - opt-in foreground launcher pins mode/release and explicitly updates after native release selection
+  ---
+  duration_ms: 1003.172162
+  type: 'test'
+  ...
+# Subtest: foreign files and interrupted companion states fail closed and retain ownership evidence
+ok 45 - foreign files and interrupted companion states fail closed and retain ownership evidence
+  ---
+  duration_ms: 143.65581
+  type: 'test'
+  ...
+# Subtest: unsupported package configures no launcher and mode changes require explicit removal
+ok 46 - unsupported package configures no launcher and mode changes require explicit removal
+  ---
+  duration_ms: 35.775058
+  type: 'test'
+  ...
+# (node:970196) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: packaged daemon rejects invalid pin, mode, permissions and concurrent ownership before database creation
+ok 47 - packaged daemon rejects invalid pin, mode, permissions and concurrent ownership before database creation
+  ---
+  duration_ms: 1208.264844
+  type: 'test'
+  ...
+# Subtest: packaged Session-only daemon transfers credentials without adding activation authority
+ok 48 - packaged Session-only daemon transfers credentials without adding activation authority
+  ---
+  duration_ms: 556.503351
+  type: 'test'
+  ...
+# Subtest: installed startup binds actual registered native transport across forward/reverse release switches
+ok 49 - installed startup binds actual registered native transport across forward/reverse release switches
+  ---
+  duration_ms: 1147.360085
+  type: 'test'
+  ...
+# Subtest: installed startup rejects incomplete, stale or altered installation before database/socket creation
+ok 50 - installed startup rejects incomplete, stale or altered installation before database/socket creation
+  ---
+  duration_ms: 1454.617154
+  type: 'test'
+  ...
+# Subtest: SIGTERM during successful OS probe retains ownership until completion and suppresses startup
+ok 51 - SIGTERM during successful OS probe retains ownership until completion and suppresses startup
+  ---
+  duration_ms: 492.370078
+  type: 'test'
+  ...
+# Subtest: SIGINT during successful OS probe retains ownership until completion and suppresses startup
+ok 52 - SIGINT during successful OS probe retains ownership until completion and suppresses startup
+  ---
+  duration_ms: 356.515444
+  type: 'test'
+  ...
+# Subtest: SIGTERM during failing OS probe retains ownership until completion and suppresses startup
+ok 53 - SIGTERM during failing OS probe retains ownership until completion and suppresses startup
+  ---
+  duration_ms: 351.660907
+  type: 'test'
+  ...
+# (node:970226) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: disconnect during secret read prevents subsequent writes and final checkpoint publication
+ok 54 - disconnect during secret read prevents subsequent writes and final checkpoint publication
+  ---
+  duration_ms: 456.476711
+  type: 'test'
+  ...
+# Subtest: valid v1 provider settings use the same authenticated conversion/readback path
+ok 55 - valid v1 provider settings use the same authenticated conversion/readback path
+  ---
+  duration_ms: 387.789286
+  type: 'test'
+  ...
+# (node:970229) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual MG01 credential transfer stages metadata only; session restart requires an explicit fresh copy
+ok 56 - actual MG01 credential transfer stages metadata only; session restart requires an explicit fresh copy
+  ---
+  duration_ms: 969.138086
+  type: 'test'
+  ...
+# Subtest: settings mode is explicit and cannot silently downgrade OS-store requests
+ok 57 - settings mode is explicit and cannot silently downgrade OS-store requests
+  ---
+  duration_ms: 271.406301
+  type: 'test'
+  ...
+# Subtest: no settings capability exists without explicit backend composition
+ok 58 - no settings capability exists without explicit backend composition
+  ---
+  duration_ms: 183.487198
+  type: 'test'
+  ...
+# Subtest: wrong snapshot, stale epoch and an unprepared backend never authorize credential copy
+ok 59 - wrong snapshot, stale epoch and an unprepared backend never authorize credential copy
+  ---
+  duration_ms: 448.248534
+  type: 'test'
+  ...
+# (node:970293) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual native subprocess and authenticated daemon mirror real MG02 staging, then persist across restart
+ok 60 - actual native subprocess and authenticated daemon mirror real MG02 staging, then persist across restart
+  ---
+  duration_ms: 674.320159
+  type: 'test'
+  ...
+# Subtest: unauthenticated and wrong-profile calls cannot mutate SQLite
+ok 61 - unauthenticated and wrong-profile calls cannot mutate SQLite
+  ---
+  duration_ms: 331.89516
+  type: 'test'
+  ...
+# Subtest: remote mirroring cannot create a fence or prepare a migration
+ok 62 - remote mirroring cannot create a fence or prepare a migration
+  ---
+  duration_ms: 196.753037
+  type: 'test'
+  ...
+# Subtest: stale epoch and unknown migration IDs close the request without publishing agreement
+ok 63 - stale epoch and unknown migration IDs close the request without publishing agreement
+  ---
+  duration_ms: 321.890171
+  type: 'test'
+  ...
+# Subtest: a persisted DB owner cannot be rebound to another paired profile
+ok 64 - a persisted DB owner cannot be rebound to another paired profile
+  ---
+  duration_ms: 181.322704
+  type: 'test'
+  ...
+# Subtest: an ordinary bridge does not advertise or accept migration RPC
+ok 65 - an ordinary bridge does not advertise or accept migration RPC
+  ---
+  duration_ms: 288.448971
+  type: 'test'
+  ...
+# Subtest: committed target keeps ACK readback available while rejecting further puts
+ok 66 - committed target keeps ACK readback available while rejecting further puts
+  ---
+  duration_ms: 209.755578
+  type: 'test'
+  ...
+1..66
+# tests 66
+# suites 0
+# pass 66
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4610.931161

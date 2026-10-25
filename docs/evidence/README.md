@@ -1,5 +1,11 @@
 # 검증 증거 안내
 
+[S36 explicit foreground daemon launcher](s36-daemon-launcher-2026-10-25.md): separate opt-in mode/release-pinned script, shared exclusion, owned repair/update/removal and actual private OS retention; managed normal-user service remains pending.
+
+[S36 source-bound session resume](s36-resume-preflight-2026-10-25.md): all-six source/fence/revision preflight, preserved checkpoints/ACKs and terminal history; installed global session composition remains pending.
+
+[S36 actual browser-process restart](s36-browser-restart-chrome-2026-10-25.md): persisted local sources/ACK remain, session sources/pairing are lost and the old candidate is rejected after fresh pairing; full recovery/global commit remain pending.
+
 [S36 installed six-unit browser-owner readback](s36-installed-owner-chrome-2026-10-25.md): actual Chrome/IndexedDB staging, native MG01/MG02 and browser ACK candidate reopen/negative checks; backend remains prepared, global consensus/commit and writer freeze pending.
 
 [S36 installed MG01/MG02 joint readback](s36-installed-joint-chrome-2026-10-25.md): same installed daemon/profile/ID/epoch, real Chrome storage/IndexedDB/SQLite and OS restart checks; MG03–MG06/global coordination remain pending.
