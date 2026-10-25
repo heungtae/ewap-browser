@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 MG02 permissions](s36-mg02-permissions-2026-10-25.md): conservative permission/preference conversion, shared policy hard floors, revision/profile/epoch-bound IndexedDB–SQLite acknowledgments and recovery checks; production policy/transport activation pending.
+
 [S36 MG01 settings](s36-mg01-settings-2026-10-24.md): v1/v2 public conversion, identity-bound API/header secret readback, explicit session-only mode and SQLite epoch/restart checks; roles remain disabled and production/OS integration unverified.
 
 [S36 MG06 diagnostics](s36-mg06-diagnostics-2026-10-24.md): metadata-only diagnostic projection, original retention deadlines, lazy expiry/tombstones and strict safe-reader schema; explicit legacy/coordinator digest adapters and controlled Chrome checks, with production integration pending.

@@ -13,7 +13,7 @@ export interface LocalConversion {
   sourceCount: number;
 }
 export interface StagingConfig<S, C> {
-  unit: "MG03" | "MG04" | "MG05";
+  unit: "MG02" | "MG03" | "MG04" | "MG05";
   schema: string;
   sourceKeys: readonly string[];
   convert(snapshot: S): C;

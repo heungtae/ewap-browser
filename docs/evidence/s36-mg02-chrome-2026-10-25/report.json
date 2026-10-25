@@ -1,0 +1,15 @@
+{
+  "revision": "9407c9658df46a562455583bcba8895db1e25270",
+  "worktreeDirty": true,
+  "browser": "Chrome/147.0.7727.15",
+  "result": "PASS",
+  "cases": 6,
+  "copied": 3,
+  "quarantined": 0,
+  "mirrored": true,
+  "storedAllowDecision": "explicit",
+  "storedDenyDecision": "deny",
+  "sourcePreserved": true,
+  "dispatches": 0,
+  "approvals": 0
+}

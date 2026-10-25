@@ -14,7 +14,7 @@
 
 ## Web Codebase Agent migration S26-S37
 
-**S26 baseline delivered 2026-10-19; S27 In Progress (live gate failed); S28/S29/S30/S31/S32 In Progress; S33–S37 Planned.** These 12 Sprints implement the full internal
+**S26 completed its recorded baseline; S27–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and
 72 verification scenarios define the original scope; completion and runtime evidence are recorded per Sprint.
 
@@ -37,7 +37,7 @@ baseline first; S27 qualifies the JEV controller before S33 can complete.
 | [S33](s33-jev-task-orchestration.md)         | M07             | JEV-owned Ask/Act and workflow orchestration             | In Progress ([evidence](../evidence/s33-orchestration-2026-10-21.md)) | 5 / 6             |
 | [S34](s34-gpt-evidence-analysis.md)          | M08             | GPT evidence analysis and provider-role migration        | In Progress ([evidence](../evidence/s34-evidence-analysis-2026-10-21.md)) | 5 / 6             |
 | [S35](s35-mcp-external-adapters.md)          | M09             | MCP gateway and external integration adapters            | In Progress ([evidence](../evidence/s35-mcp-gateway-2026-10-21.md)) | 5 / 6             |
-| [S36](s36-migration-qualification.md)        | M10             | Data conversion, UI continuity and release qualification | In Progress ([MG01 evidence](../evidence/s36-mg01-settings-2026-10-24.md)) | 6 / 6             |
+| [S36](s36-migration-qualification.md)        | M10             | Data conversion, UI continuity and release qualification | In Progress ([MG02 evidence](../evidence/s36-mg02-permissions-2026-10-25.md)) | 6 / 6             |
 | [S37](s37-cutover-legacy-retirement.md)      | M11             | Production cutover and legacy runtime retirement         | Planned ([preflight](../evidence/s37-retirement-preflight-2026-10-24.md)) | 5 / 6             |
 
 Each Sprint defines source/target ownership, prerequisites, acceptance checks,

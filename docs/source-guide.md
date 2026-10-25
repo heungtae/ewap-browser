@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S36 MG02: [permission converter](../apps/chrome-extension/src/migration/mg02-convert.ts), [preference narrowing](../apps/chrome-extension/src/migration/mg02-preferences.ts), [shared migration contract](../packages/policy-engine/src/migration-contract.ts), [policy gate](../packages/policy-engine/src/migration-evaluate.ts), [extension staging/ACK](../apps/chrome-extension/src/migration/mg02-staging.ts), [SQLite mirror](../apps/agent-server/src/migration/mg02-mirror.ts). [Evidence and limits](evidence/s36-mg02-permissions-2026-10-25.md); no imported grant or active-policy switch.
+
 S36 MG01: [settings migration service](../apps/agent-server/src/migration/mg01-settings.ts), [public converter](../apps/agent-server/src/migration/mg01-convert.ts), [credential identity/transfer](../apps/agent-server/src/migration/mg01-credentials.ts), [SQLite journal](../apps/agent-server/src/migration/mg01-journal.ts). [Evidence and limits](evidence/s36-mg01-settings-2026-10-24.md); no raw-source backup or automatic role activation.
 
 S36 MG06: [safe diagnostic converter](../apps/chrome-extension/src/migration/mg06-convert.ts), [metadata staging/expiry](../apps/chrome-extension/src/migration/mg06-staging.ts), [persisted metadata schema](../apps/chrome-extension/src/migration/mg06-persisted.ts), [legacy staging encoding adapter](../apps/chrome-extension/src/migration/coordinator-staging.ts). [Evidence and limits](evidence/s36-mg06-diagnostics-2026-10-24.md); raw diagnostics stay with the original retention owner.

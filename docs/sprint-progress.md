@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 MG02 permissions continuation
+
+**In Progress — permission/preference conversion and two-store policy mirror.**
+[Evidence](evidence/s36-mg02-permissions-2026-10-25.md) records preserved denies,
+non-reusable allows, Full/auto narrowing, shared risk floors and profile/epoch/
+revision/digest acknowledgments with lost-response/quota recovery. S36 87/87,
+full unit 1,340/1,340, two real SQLite checks and six controlled Chrome checks passed.
+MG01–MG06 now have scoped implementation paths; actual transport/freeze/policy/UI
+integration and full release qualification remain open. Production/design/version
+are unchanged and S37 remains Planned.
+
 ## Browser Agent S36 — 2026-10-24 MG01 settings continuation
 
 **In Progress — provider settings and identity-bound credential transfer.**

@@ -13,7 +13,7 @@ const encode = (
   sourceDigest: convert(checkpoint.sourceDigest),
   targetDigest: convert(checkpoint.targetDigest),
 });
-// Explicit adapter for existing MG03/MG04/MG05 Browser-base64url/v1 staging.
+// Explicit adapter for MG02/MG03/MG04/MG05 Browser-base64url/v1 staging.
 // MG06 already returns coordinator-hex/v1 and must not be wrapped here.
 // This adapts integrity metadata only; it cannot open admission or grant authority.
 export function legacyStagingForCoordinator(legacy: Staging): Staging {
