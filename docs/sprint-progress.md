@@ -4,6 +4,26 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 installed six-unit browser-owner readback
+
+**In Progress.** [Evidence](evidence/s36-installed-owner-chrome-2026-10-25.md)
+records actual Chrome local/session source and IndexedDB MG03–MG06 staging alongside
+native MG01/MG02. The real MG01 checkpoint feeds browser ACK candidate validation,
+connection reopen and missing-unit/profile/controlled-expiry negatives. Four Chrome
+scenarios and S36 unit 110/110 pass. Backend stays prepared/legacy, global consensus
+and commit are unperformed, and actual writer freeze/drain remains unqualified.
+Prior uncommitted joint qualification work is retained. No production change.
+
+## Browser Agent S36 — 2026-10-25 installed MG01/MG02 joint qualification
+
+**In Progress.** [Evidence](evidence/s36-installed-joint-chrome-2026-10-25.md)
+records actual Chrome settings and policy staging/mirroring in one installed
+profile/ID/epoch. Session-only explicit reimport and OS persistence both preserve
+policy readback after restart. Wrong policy epoch/source drift are rejected before
+forwarding. Chrome joint Session/OS plus MG01-only regression pass; affected unit
+23/23 pass. MG03–MG06/global installed coordination and actual writer freeze remain
+open; no product/admission/cutover change or version increment.
+
 ## Browser Agent S36 — 2026-10-25 installed Chrome MG01 qualification
 
 **In Progress.** [Evidence](evidence/s36-installed-settings-chrome-2026-10-25.md)

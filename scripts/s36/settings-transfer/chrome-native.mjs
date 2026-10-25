@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { DatabaseSync } from "node:sqlite";
 import { spawn } from "node:child_process";
 import { access } from "node:fs/promises";
 import { resolve } from "node:path";
 import { uninstallRelease } from "../../../dist/s36/installation.mjs";
 import { evaluate, waitFor } from "../../chrome-cdp-utils.mjs";
+import { verifyReadback } from "./chrome-readback.mjs";
 import { prepareTransfer } from "./chrome-setup.mjs";
 export async function qualifyNative({ profile, extensionId, worker, panel }) {
   const input = {
@@ -14,6 +14,8 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     releaseDirectory: process.env.S36_INSTALL_RELEASE_DIR,
     releaseId: process.env.S36_INSTALL_RELEASE_ID,
   };
+  const all = process.env.S36_INSTALLED_ALL === "1";
+  const joint = process.env.S36_INSTALLED_JOINT === "1";
   const mode = process.env.S36_SETTINGS_MODE ?? "session-only";
   if (!["session-only", "os-store"].includes(mode))
     throw new Error("SETTINGS_MODE");
@@ -76,7 +78,16 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     const first = await evaluate(panel, "S36Settings.stage()");
     assert.equal(first.copied, 1);
     assert.equal(first.quarantined, 0);
+    if (joint) {
+      assert.equal(await evaluate(panel, "S36Settings.stagePolicy()"), true);
+      assert.equal(
+        await evaluate(panel, "S36Settings.rejectPolicyDriftAndEpoch()"),
+        true,
+      );
+    }
 
+    if (all)
+      assert.equal(await evaluate(panel, "S36Settings.stageOwner()"), true);
     daemon.child.kill("SIGTERM");
     await daemon.closed;
     daemon = launch();
@@ -111,26 +122,17 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       );
       assert.equal((await evaluate(panel, "S36Settings.stage()")).copied, 1);
     }
+    if (joint)
+      assert.equal(await evaluate(panel, "S36Settings.validatePolicy()"), true);
+    if (all) {
+      assert.equal(await evaluate(panel, "S36Settings.reopenOwner()"), true);
+      assert.equal(await evaluate(panel, "S36Settings.ownerNegatives()"), true);
+    }
     assert.equal(await evaluate(panel, "S36Settings.revoked()"), true);
     assert.equal(await evaluate(panel, "globalThis.s36CspViolations"), 0);
     daemon.child.kill("SIGTERM");
     await daemon.closed;
-    const stored = new DatabaseSync(dbPath);
-    assert.equal(
-      stored.prepare("SELECT COUNT(*) AS n FROM mg01_settings_stage").get().n,
-      1,
-    );
-    assert.equal(
-      stored.prepare("SELECT admission FROM migration_fence").get().admission,
-      0,
-    );
-    assert.doesNotMatch(
-      JSON.stringify(
-        stored.prepare("SELECT body FROM mg01_settings_stage").all(),
-      ),
-      /PRIVATE_API_CANARY|PRIVATE_HEADER_CANARY/,
-    );
-    stored.close();
+    verifyReadback(dbPath, joint);
     uninstallRelease(input);
     return {
       result: "PASS",
@@ -138,6 +140,13 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       cspViolations: 0,
       authenticatedNativeMessaging: true,
       credentialMode: mode,
+      sixUnitBrowserReadbackVerified: all,
+      browserOwnerAckReopenVerified: all,
+      missingUnitProfileAndExpiryRejected: all,
+      globalCommit: false,
+      backendPhase: "prepared",
+      jointPolicyRestartVerified: joint,
+      policySourceDriftAndEpochRejected: joint,
       installedStartVerified: installed,
       sessionLossRejected: mode === "session-only",
       explicitReimportVerified: mode === "session-only",

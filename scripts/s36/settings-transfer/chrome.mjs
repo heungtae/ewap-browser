@@ -103,8 +103,11 @@ try {
     businessDispatches: 0,
     providerCalls: 0,
     approvals: 0,
-    scope:
-      "actual MG01 authenticated settings transfer; controlled migration seed/freeze",
+    scope: result.sixUnitBrowserReadbackVerified
+      ? "installed six-unit browser readback; controlled freeze/drain/candidate ACK, no global commit"
+      : result.jointPolicyRestartVerified
+        ? "installed MG01/MG02 joint authenticated readback; controlled migration seed/freeze"
+        : "actual MG01 authenticated settings transfer; controlled migration seed/freeze",
   };
   const output =
     process.env.S36_INSTALL_EVIDENCE_DIR ?? "dist/s36/settings-transfer-chrome";

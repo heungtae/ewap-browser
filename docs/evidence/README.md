@@ -1,5 +1,9 @@
 # 검증 증거 안내
 
+[S36 installed six-unit browser-owner readback](s36-installed-owner-chrome-2026-10-25.md): actual Chrome/IndexedDB staging, native MG01/MG02 and browser ACK candidate reopen/negative checks; backend remains prepared, global consensus/commit and writer freeze pending.
+
+[S36 installed MG01/MG02 joint readback](s36-installed-joint-chrome-2026-10-25.md): same installed daemon/profile/ID/epoch, real Chrome storage/IndexedDB/SQLite and OS restart checks; MG03–MG06/global coordination remain pending.
+
 [S36 installed Chrome MG01](s36-installed-settings-chrome-2026-10-25.md): actual Chrome/installed-daemon Session-only loss/reimport and private OS persistence across restart; source freeze/preparation remain controlled.
 
 [S36 installed-start binding](s36-installed-start-2026-10-25.md): optional installed receipt/plan/wrapper/pairing gate, actual registered native forward/reverse continuity and private OS-mode locked startup; full installed ownership remains pending.

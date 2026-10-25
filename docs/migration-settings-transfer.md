@@ -65,3 +65,23 @@ as the existing Secret Service fixture and never selects the desktop keyring.
 The ordinary `test:chrome-s36:settings-transfer` command retains its original
 controlled-daemon path. [Evidence](evidence/s36-installed-settings-chrome-2026-10-25.md)
 distinguishes these scopes; source freeze/preparation remain controlled assertions.
+
+For joint MG01/MG02 installed qualification, use
+`pnpm test:chrome-s36:installed-joint` or
+`pnpm test:chrome-s36:installed-joint:os` with the same pinned artifact/environment
+and a fresh evidence directory. These additionally stage/mirror policy under the
+same prepared profile/ID/epoch, reject source drift/wrong epoch before forwarding,
+and validate both units after daemon restart. They do not prepare/commit a global
+migration or qualify MG03–MG06 installed ownership. See [joint evidence](evidence/s36-installed-joint-chrome-2026-10-25.md).
+
+To add MG03–MG06 and browser-owner ACK/reopen checks, run
+`pnpm test:chrome-s36:installed-owner` or
+`pnpm test:chrome-s36:installed-owner:os` with the same independently pinned
+package/environment and a fresh evidence directory. These seed synthetic saved
+workflow/history/terminal request/diagnostic data in actual Chrome stores and stage
+all browser units in real IndexedDB, using the actual native MG01 checkpoint and
+MG02 mirror. A browser ACK candidate is reopened and checked against missing unit,
+profile and controlled diagnostic expiry failures. Backend remains prepared/legacy
+with admission closed; no global consensus/commit or actual writer freeze is
+qualified. [Six-unit evidence](evidence/s36-installed-owner-chrome-2026-10-25.md)
+records the exact scope and remaining installed orchestration gates.

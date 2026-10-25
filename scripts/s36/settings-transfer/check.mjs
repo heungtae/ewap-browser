@@ -8,10 +8,11 @@ import {
   validateInventory,
 } from "../../s26-inventory.mjs";
 const manifest = read(
-  "docs/baselines/s36-installed-settings-chrome/disposition.json",
+  "docs/baselines/s36-installed-owner-chrome/disposition.json",
 );
-for (const entry of read("docs/baselines/s36-installed-start/disposition.json")
-  .files)
+for (const entry of read(
+  "docs/baselines/s36-installed-joint-chrome/disposition.json",
+).files)
   assert.deepEqual(
     manifest.files.find((item) => item.path === entry.path),
     entry,

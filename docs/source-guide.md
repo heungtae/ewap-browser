@@ -1,5 +1,9 @@
 # 코드 탐색 안내
 
+Installed browser-owner checks: [fixture](../extension/tests/fixture/s36/installed-owner-chrome.ts), [runner](../scripts/s36/settings-transfer/owner-chrome.mjs), [SQL boundaries](../scripts/s36/settings-transfer/chrome-readback.mjs), [evidence](evidence/s36-installed-owner-chrome-2026-10-25.md).
+
+Joint installed MG01/MG02 checks: [runner](../scripts/s36/settings-transfer/joint-chrome.mjs), [policy fixture](../extension/tests/fixture/s36/installed-policy-chrome.ts), [evidence](evidence/s36-installed-joint-chrome-2026-10-25.md).
+
 Installed Chrome MG01 checks: [runner](../scripts/s36/settings-transfer/installed-chrome.mjs), [shared setup](../scripts/s36/settings-transfer/chrome-setup.mjs), [operations](migration-settings-transfer.md#installed-chrome-qualification), [evidence](evidence/s36-installed-settings-chrome-2026-10-25.md).
 
 Installed startup: [binding checks](../apps/agent-server/src/migration/installed-start.ts), [native regression](../scripts/s36/secrets/installed-start.test.mjs), [operations](migration-os-secrets.md#binding-explicit-startup-to-an-installation), [evidence](evidence/s36-installed-start-2026-10-25.md).

@@ -1,3 +1,5 @@
+import { ownerFixture } from "./installed-owner-chrome.js";
+import { policyFixture } from "./installed-policy-chrome.js";
 import "../../../../apps/chrome-extension/src/bridge/schema-config.js";
 import { settingsTransport } from "../../../../apps/chrome-extension/src/migration/settings-rpc.js";
 import { migrationTransport } from "../../../../apps/chrome-extension/src/migration/rpc.js";
@@ -11,6 +13,10 @@ const chrome = (
         sendMessage(value: unknown): Promise<{ ok: boolean; result: unknown }>;
       };
       storage: {
+        session: {
+          get(keys: string[]): Promise<Record<string, unknown>>;
+          set(value: Record<string, unknown>): Promise<void>;
+        };
         local: {
           get(keys: string[]): Promise<Record<string, unknown>>;
           set(value: Record<string, unknown>): Promise<void>;
@@ -24,6 +30,7 @@ let profile: string,
   digest: string,
   checkpoint: Checkpoint;
 let secretRequests = 0;
+let policyRequests = 0;
 let storeMode: "session-only" | "os-store" = "session-only";
 const source = {
   async get(keys: string[]) {
@@ -35,18 +42,34 @@ const source = {
 };
 async function request(command: MigrationCommand) {
   if (command.kind.startsWith("migration.settings.")) secretRequests++;
+  if (command.kind.startsWith("migration.policy.")) policyRequests++;
   const result = await chrome.runtime.sendMessage(command);
   if (!result.ok) throw new Error("RPC_UNAVAILABLE");
   if (/PRIVATE_API_CANARY|PRIVATE_HEADER_CANARY/.test(JSON.stringify(result)))
     throw new Error("SECRET_RESPONSE");
   return result.result;
 }
+const policy = policyFixture(source, request, (value) =>
+  chrome.storage.local.set(value),
+);
+const owner = ownerFixture(
+  source,
+  {
+    assertFrozen: source.assertFrozen,
+    get: (keys) => chrome.storage.session.get(keys),
+  },
+  (value) => chrome.storage.local.set(value),
+  (value) => chrome.storage.session.set(value),
+  request,
+);
 function client() {
   return settingsTransport(profile, source, request);
 }
 export async function prepare(
   profileGuard: string,
   mode: "session-only" | "os-store" = "session-only",
+  joint = false,
+  allUnits = false,
 ) {
   storeMode = mode;
   profile = profileGuard;
@@ -79,7 +102,12 @@ export async function prepare(
     },
   });
   digest = migrationDigest(await source.get(["provider_settings"]));
-  return { digest };
+  const policyDigest = joint ? await policy.prepare(profile) : undefined;
+  return {
+    digest,
+    policyDigest,
+    sourceDigests: allUnits ? await owner.prepare(profile) : undefined,
+  };
 }
 export async function ready() {
   return migrationTransport(profile, request).status();
@@ -116,3 +144,17 @@ export async function validatePersisted() {
   await client().validate("wire", 1, checkpoint, storeMode);
   return true;
 }
+
+export const stagePolicy = () => policy.copy();
+export const validatePolicy = () => policy.validate();
+export async function rejectPolicyDriftAndEpoch() {
+  const count = policyRequests;
+  await policy.wrongEpoch();
+  await policy.drift();
+  if (count !== policyRequests) throw new Error("STALE_POLICY_FORWARDED");
+  return policy.validate();
+}
+
+export const stageOwner = () => owner.copy(checkpoint);
+export const reopenOwner = () => owner.reopen();
+export const ownerNegatives = () => owner.negatives();

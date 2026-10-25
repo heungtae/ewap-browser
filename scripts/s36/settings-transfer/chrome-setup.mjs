@@ -32,10 +32,11 @@ export async function prepareTransfer(input, panel, mode) {
   await evaluate(panel, fixture.outputFiles[0].text);
   const preparation = await evaluate(
     panel,
-    `S36Settings.prepare(${JSON.stringify(profileGuard)},${JSON.stringify(mode)}).then(value=>({ok:true,...value})).catch(error=>({ok:false,error:error.message}))`,
+    `S36Settings.prepare(${JSON.stringify(profileGuard)},${JSON.stringify(mode)},${process.env.S36_INSTALLED_JOINT === "1"},${process.env.S36_INSTALLED_ALL === "1"}).then(value=>({ok:true,...value})).catch(error=>({ok:false,error:error.message}))`,
   );
   assert.equal(preparation?.ok, true, preparation?.error);
-  const { digest } = preparation;
+  const { digest, policyDigest } = preparation;
+  if (policyDigest !== undefined) assert.match(policyDigest, /^[a-f0-9]{64}$/);
   assert.match(digest, /^[a-f0-9]{64}$/);
   assert.match(profileGuard, /^[a-f0-9]{64}$/);
   const dbPath = `${input.directory}/migration.sqlite`;
@@ -53,7 +54,8 @@ export async function prepareTransfer(input, panel, mode) {
       sourceDigests: Object.fromEntries(
         ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"].map((unit) => [
           unit,
-          digest,
+          preparation.sourceDigests?.[unit] ??
+            (unit === "MG02" && policyDigest ? policyDigest : digest),
         ]),
       ),
     },
