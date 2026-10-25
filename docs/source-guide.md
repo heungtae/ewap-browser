@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Optional Linux secret packaging: [capture](../scripts/s36/release/capture.mjs), [release validation](../apps/agent-server/src/migration/release-set.ts), [operations](migration-os-secrets.md), [evidence](evidence/s36-secret-package-2026-10-25.md).
+
 S36 MG01 transfer: [shared source schema](../packages/shared/src/migration-settings.ts), [backend scope/secret readback](../apps/agent-server/src/migration/settings-rpc.ts), [frozen-source client](../apps/chrome-extension/src/migration/settings-rpc.ts). [Operations](migration-settings-transfer.md), [native/Chrome/OS evidence](evidence/s36-settings-transfer-2026-10-25.md); explicit qualification only.
 
 S36 OS secrets: [explicit Linux store](../apps/agent-server/src/settings/linux-secret-store.ts), [non-interactive libsecret helper](../native-host/secret-service.py). [Operations](migration-os-secrets.md), [isolated OS evidence](evidence/s36-os-secrets-2026-10-25.md); no default-store or remote secret-transfer change.

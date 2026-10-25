@@ -1,6 +1,23 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readdir, readFile } from "node:fs/promises";
+import {
+  readdir,
+  readFile,
+  copyFile,
+  chmod,
+  writeFile,
+} from "node:fs/promises";
+import { pathToFileURL } from "node:url";
+import {
+  captureReleaseSet,
+  releaseSetId,
+  verifyReleaseSet,
+} from "../../../dist/s36/release-set.mjs";
+import {
+  installRelease,
+  uninstallRelease,
+} from "../../../dist/s36/installation.mjs";
+import { installationFixture } from "../install/support.mjs";
 import { LinuxSecretServiceStore } from "../../../dist/s36/linux-secret-store.mjs";
 import { fixture, validated } from "../integration/fixture.mjs";
 import { isolatedKeyring } from "./fixture.mjs";
@@ -114,4 +131,48 @@ test("authenticated MG01 RPC reuses persisted OS credentials after daemon restar
     "../settings-transfer/os-case.mjs"
   );
   await qualifyOsTransfer();
+});
+
+test("installed pinned Linux secret package reads OS values and uninstall retains them", async () => {
+  const k = await isolatedKeyring(),
+    f = installationFixture();
+  try {
+    const directory = `${f.release.root}/agent-server`;
+    for (const name of ["linux-secret-store.mjs", "secret-service.py"]) {
+      await copyFile(`dist/s36/${name}`, `${directory}/${name}`);
+      await chmod(`${directory}/${name}`, 0o600);
+    }
+    const manifest = captureReleaseSet(
+      f.release.root,
+      f.release.manifest.source,
+    );
+    await writeFile(
+      `${f.release.root}/release-set.json`,
+      JSON.stringify(manifest),
+    );
+    f.input.releaseId = releaseSetId(manifest);
+    verifyReleaseSet(f.release.root, f.input.releaseId);
+    installRelease(f.input);
+    const { LinuxSecretServiceStore: PackagedStore } = await import(
+      pathToFileURL(`${directory}/linux-secret-store.mjs`).href
+    );
+    const store = await PackagedStore.connect(
+      `${directory}/secret-service.py`,
+      "d".repeat(64),
+    );
+    await store.write("packaged-identity", "PRIVATE-PACKAGE-CANARY");
+    assert.equal(
+      await store.read("packaged-identity"),
+      "PRIVATE-PACKAGE-CANARY",
+    );
+    uninstallRelease(f.input);
+    assert.equal(
+      await store.read("packaged-identity"),
+      "PRIVATE-PACKAGE-CANARY",
+    );
+    assert.equal(manifest.credentials, "session-only");
+  } finally {
+    f.close();
+    await k.close();
+  }
 });

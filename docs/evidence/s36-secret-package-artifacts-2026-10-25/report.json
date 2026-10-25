@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "scope": "qualification-only",
+  "releaseId": "c8647c8e7b14e65d93105e86f8f093f53a5cb5b917e638d996e4153fc4649a22",
+  "source": {
+    "revision": "4ad10416336c45aa3c65a01dbd887afa00f78fba",
+    "dirty": true
+  },
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "credentials": "session-only",
+  "linuxSecretsPackaged": true,
+  "files": 36,
+  "bytes": 2759021,
+  "registered": false,
+  "installed": false,
+  "delivered": false,
+  "productionAdmission": "unchanged",
+  "directory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/linux-secret-package-2026-10-25"
+}

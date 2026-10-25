@@ -49,6 +49,20 @@ export function captureReleaseSet(
   )
     throw new Error("RELEASE_EXTRA_ROOT");
   const files = releaseFiles(directory);
+  const secretFiles = [
+    "agent-server/linux-secret-store.mjs",
+    "agent-server/secret-service.py",
+  ];
+  const present = secretFiles.filter((path) =>
+    files.some((file) => file.path === path),
+  );
+  if (present.length > 0 && present.length !== secretFiles.length)
+    throw new Error("RELEASE_SECRET_PACKAGE");
+  for (const path of present) {
+    const info = lstatSync(resolve(directory, path));
+    if (info.mode & 0o022 || ![0, process.getuid?.()].includes(info.uid))
+      throw new Error("RELEASE_SECRET_PERMISSIONS");
+  }
   for (const required of [
     "agent-server/launcher.cjs",
     "dependencies/pnpm-lock.yaml",

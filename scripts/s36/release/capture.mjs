@@ -1,5 +1,6 @@
 import {
   cpSync,
+  chmodSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -13,6 +14,9 @@ import {
 } from "../../../dist/s36/release-set.mjs";
 import { files, git } from "../../s26-inventory.mjs";
 const output = resolve(process.argv[2] ?? "dist/s36/release-candidate");
+const linuxSecrets = process.argv[3] === "--linux-secrets";
+if ((process.argv.length > 4 && !linuxSecrets) || process.argv.length > 5)
+  throw new Error("USAGE: capture.mjs [directory] [--linux-secrets]");
 if (existsSync(output))
   throw new Error("OUTPUT_EXISTS: choose a fresh destination");
 for (const path of [
@@ -20,11 +24,20 @@ for (const path of [
   "dist/s28/agent-server/launcher.cjs",
 ])
   if (!existsSync(path)) throw new Error(`BUILD_S28_FIRST: ${path}`);
+if (linuxSecrets)
+  for (const file of ["linux-secret-store.mjs", "secret-service.py"])
+    if (!existsSync(`dist/s36/${file}`))
+      throw new Error(`BUILD_S36_SECRETS_FIRST: ${file}`);
 mkdirSync(output, { recursive: true });
 cpSync("dist/s28/chrome-extension", `${output}/chrome-extension`, {
   recursive: true,
 });
 cpSync("dist/s28/agent-server", `${output}/agent-server`, { recursive: true });
+if (linuxSecrets)
+  for (const file of ["linux-secret-store.mjs", "secret-service.py"]) {
+    cpSync(`dist/s36/${file}`, `${output}/agent-server/${file}`);
+    chmodSync(`${output}/agent-server/${file}`, 0o600);
+  }
 const manifests = files().filter((path) =>
   /^(apps|packages)\/[^/]+\/package\.json$/.test(path),
 );
@@ -57,6 +70,7 @@ const report = {
   versions: manifest.versions,
   protocol: manifest.protocol,
   credentials: manifest.credentials,
+  linuxSecretsPackaged: linuxSecrets,
   files: manifest.files.length,
   bytes: manifest.files.reduce((sum, file) => sum + file.bytes, 0),
   registered: false,

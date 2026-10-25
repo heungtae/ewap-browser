@@ -14,6 +14,16 @@ const store = await LinuxSecretServiceStore.connect(
 
 Build with `pnpm build:s36:secrets`. The tested host has `/usr/bin/python3`, PyGObject, libsecret's Secret-1 typelib, an already-running GNOME Secret Service and an unlocked persistent default collection. Install a trusted copy of [secret-service.py](../native-host/secret-service.py) at the helper path with permissions excluding group/world writes, e.g. an owner-private installation directory and 0600 script file. Python interprets the file directly; an executable bit is unnecessary. Source checkouts with group-writable files must not bypass the check. Treat the helper and installation directory as trusted executable code; this is not protection against a malicious same-user filesystem writer.
 
+For an explicit qualification package, build `pnpm build:s28`, `pnpm build:s36:release` and `pnpm build:s36:secrets`, then run:
+
+```sh
+node scripts/s36/release/capture.mjs /absolute/fresh/release-directory --linux-secrets
+```
+
+This copies the built adapter and helper into `agent-server/linux-secret-store.mjs` and `agent-server/secret-service.py` with mode 0600. Both files are included in the externally pinned release-set hash. Partial packages, modified content and group/world-writable helper/adapter files fail release verification. Rebuild before capturing to avoid packaging stale outputs. Without the flag the ordinary bridge package stays unchanged. The release manifest's `credentials: session-only` still describes the default; packaging this optional capability does not select or start it.
+
+The isolated installer registers a launcher referencing the verified release directory; it does not copy the tree or start a settings daemon. A trusted composition can import the packaged adapter and explicitly pass that package's absolute helper path. Python, PyGObject/libsecret and the running unlocked Secret Service remain external host prerequisites; they are not bundled or installed automatically. The [package evidence](evidence/s36-secret-package-2026-10-25.md) covers temporary registration and real private-keyring read/write through packaged files. Normal-user deployment and automatic selection remain unqualified.
+
 The factory probes before returning an `os-store` instance. Each read/write repeats service/collection checks in a fresh helper process. Missing service, missing/locked default collection, unavailable session-alias comparison, session-only collection, locked/duplicate matching items, helper failure and timeout fail closed. The helper never unlocks/creates a collection and overrides synchronous libsecret prompting to refuse UI prompts. The user/OS must unlock the persistent collection outside this adapter. Actual qualification covers GNOME Keyring 50.0 only; other Secret Service providers, Windows and macOS are unverified.
 
 Requests/secret responses use private process pipes, never command-line arguments. The Node adapter invokes a fixed `/usr/bin/python3 -I` and forwards only required D-Bus/XDG/locale environment values, excluding unrelated provider-key environment variables. Identity attributes contain a SHA-256 identity digest plus explicit profile namespace and constant application/schema identifiers. Raw provider identity, endpoint, API key and headers are absent from labels/attributes. Profiles and identities are namespaces, not an ACL against other processes of the same OS user. Secret Service and the OS session must be trusted.
@@ -27,6 +37,8 @@ Run the isolated verification under Node 22.23.2:
 ```sh
 pnpm build:s36:secrets
 pnpm build:s36:integration
+pnpm build:s36:release
+pnpm build:s36:install
 node scripts/s36/secrets/run.mjs
 pnpm check:s36:secrets
 ```

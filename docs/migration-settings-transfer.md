@@ -36,6 +36,8 @@ pnpm build:s36:transport
 pnpm test:s36:settings-transfer
 pnpm build:s36:secrets
 pnpm build:s36:integration
+pnpm build:s36:release
+pnpm build:s36:install
 node scripts/s36/secrets/run.mjs
 pnpm check:s36:settings-transfer
 ```

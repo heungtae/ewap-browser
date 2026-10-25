@@ -1,11 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { rmSync, symlinkSync, truncateSync } from "node:fs";
+import { chmodSync, rmSync, symlinkSync, truncateSync } from "node:fs";
 import { join } from "node:path";
 import {
   verifyReleaseSet,
   releaseIntegrityPredicate,
   releaseSetId,
+  captureReleaseSet,
 } from "../../../dist/s36/release-set.mjs";
 import { releaseFixture } from "./support.mjs";
 test("complete pinned tree verifies and only accepts the independently pinned release ID", async () => {
@@ -16,6 +17,35 @@ test("complete pinned tree verifies and only accepts the independently pinned re
     assert.equal(await compatible(f.id), true);
     assert.equal(await compatible("other"), false);
     assert.throws(() => verifyReleaseSet(f.root, "0".repeat(64)), /RELEASE_ID/);
+  } finally {
+    f.close();
+  }
+});
+test("optional Linux secret package requires both pinned artifacts and safe modes", () => {
+  const f = releaseFixture();
+  try {
+    f.write("agent-server/secret-service.py", "# synthetic helper\n");
+    assert.throws(
+      () => captureReleaseSet(f.root, f.manifest.source),
+      /RELEASE_SECRET_PACKAGE/,
+    );
+    f.write("agent-server/linux-secret-store.mjs", "// synthetic adapter\n");
+    for (const name of ["secret-service.py", "linux-secret-store.mjs"])
+      chmodSync(join(f.root, "agent-server", name), 0o600);
+    const manifest = captureReleaseSet(f.root, f.manifest.source);
+    f.write("release-set.json", manifest);
+    const id = releaseSetId(manifest);
+    assert.equal(verifyReleaseSet(f.root, id).credentials, "session-only");
+    chmodSync(join(f.root, "agent-server/secret-service.py"), 0o620);
+    assert.throws(
+      () => verifyReleaseSet(f.root, id),
+      /RELEASE_SECRET_PERMISSIONS/,
+    );
+    chmodSync(join(f.root, "agent-server/secret-service.py"), 0o600);
+    f.write("agent-server/secret-service.py", "# modified helper\n");
+    assert.throws(() => verifyReleaseSet(f.root, id), /RELEASE_CHANGED/);
+    rmSync(join(f.root, "agent-server/linux-secret-store.mjs"));
+    assert.throws(() => verifyReleaseSet(f.root, id), /RELEASE_SECRET_PACKAGE/);
   } finally {
     f.close();
   }

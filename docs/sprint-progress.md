@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 optional Linux secret package
+
+**In Progress.** [Evidence](evidence/s36-secret-package-2026-10-25.md) records
+explicit helper/adapter packaging, pinned integrity and permission checks, temporary
+native-host registration and actual private-keyring read/write plus retention after
+unregister. Release/install checks 21/21 and OS checks 6/6 passed. Normal startup
+remains Session-only; writer freeze, installed global coordination and normal-user
+OS selection/deployment remain pending. No production cutover or version change.
+
 ## Browser Agent S36 — 2026-10-25 authenticated MG01 settings-transfer continuation
 
 **In Progress — bounded native credential copy/readback, controlled source guard.**
