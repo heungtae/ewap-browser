@@ -4,6 +4,16 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 installed Chrome MG01 qualification
+
+**In Progress.** [Evidence](evidence/s36-installed-settings-chrome-2026-10-25.md)
+records real Chrome → Worker → registered native host → packaged installed daemon
+MG01 stage/readback. Session-only restart loss/explicit reimport and private GNOME
+OS restart readback without restaging passed, with CSP violations 0 and source
+unchanged. Original controlled-daemon Chrome regression also passed; affected
+settings unit checks 4/4. Source freeze/preparation remain controlled; full installed
+ownership, UI continuity, live gates and normal-user deployment remain open.
+
 ## Browser Agent S36 — 2026-10-25 installed-start binding
 
 **In Progress.** [Evidence](evidence/s36-installed-start-2026-10-25.md) records

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, execFileSync } from "node:child_process";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
@@ -93,6 +93,13 @@ try {
     node: process.versions.node,
     releaseId,
     ...result,
+    privateDbus: process.env.S36_PRIVATE_SECRET_BUS === "1",
+    keyring:
+      result.credentialMode === "os-store"
+        ? execFileSync("/usr/bin/gnome-keyring-daemon", ["--version"], {
+            encoding: "utf8",
+          }).trim()
+        : null,
     businessDispatches: 0,
     providerCalls: 0,
     approvals: 0,

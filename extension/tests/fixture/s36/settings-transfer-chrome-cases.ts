@@ -24,6 +24,7 @@ let profile: string,
   digest: string,
   checkpoint: Checkpoint;
 let secretRequests = 0;
+let storeMode: "session-only" | "os-store" = "session-only";
 const source = {
   async get(keys: string[]) {
     return chrome.storage.local.get(keys);
@@ -43,7 +44,11 @@ async function request(command: MigrationCommand) {
 function client() {
   return settingsTransport(profile, source, request);
 }
-export async function prepare(profileGuard: string) {
+export async function prepare(
+  profileGuard: string,
+  mode: "session-only" | "os-store" = "session-only",
+) {
+  storeMode = mode;
   profile = profileGuard;
   await chrome.storage.local.set({
     provider_settings: {
@@ -80,16 +85,16 @@ export async function ready() {
   return migrationTransport(profile, request).status();
 }
 export async function stage() {
-  const value = await client().stage("wire", 1, digest, "session-only");
+  const value = await client().stage("wire", 1, digest, storeMode);
   if (checkpoint && migrationDigest(value) !== migrationDigest(checkpoint))
     throw new Error("CHECKPOINT_CHANGED");
   checkpoint = value;
-  await client().validate("wire", 1, checkpoint, "session-only");
+  await client().validate("wire", 1, checkpoint, storeMode);
   return { copied: value.copied, quarantined: value.quarantined };
 }
 export async function expectLostSession() {
   try {
-    await client().validate("wire", 1, checkpoint, "session-only");
+    await client().validate("wire", 1, checkpoint, storeMode);
   } catch {
     return true;
   }
@@ -99,10 +104,15 @@ export async function revoked() {
   frozen = false;
   const count = secretRequests;
   try {
-    await client().stage("wire", 1, digest, "session-only");
+    await client().stage("wire", 1, digest, storeMode);
   } catch {
     if (secretRequests !== count) throw new Error("UNFROZEN_TRANSFER");
     return migrationDigest(await source.get(["provider_settings"])) === digest;
   }
   throw new Error("UNFROZEN_TRANSFER");
+}
+
+export async function validatePersisted() {
+  await client().validate("wire", 1, checkpoint, storeMode);
+  return true;
 }

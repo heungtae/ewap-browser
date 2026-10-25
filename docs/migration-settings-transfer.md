@@ -45,3 +45,23 @@ pnpm check:s36:settings-transfer
 ```
 
 The Chrome runner uses the existing `CHROME_FOR_TESTING_BIN`, `S36_INSTALL_RELEASE_DIR`, independently pinned `S36_INSTALL_RELEASE_ID` and a fresh `S36_INSTALL_EVIDENCE_DIR`. `pnpm test:chrome-s36:settings-transfer` creates a temporary profile, seeds synthetic provider values, prepares a controlled journal, opts its private daemon into Session-only mode and checks actual transfer/restart/source revocation. No real provider account or desktop keyring is touched. [Dated evidence](evidence/s36-settings-transfer-2026-10-25.md) separates this from the private OS-backed native RPC run and the still-open full migration/release gates.
+
+## Installed Chrome qualification
+
+With a verified package containing the explicit daemon and Node 22.23.2 selected,
+set the existing Chrome/release/pinned-ID/evidence environment variables above:
+
+```sh
+pnpm test:chrome-s36:installed-settings
+pnpm test:chrome-s36:installed-settings:os
+```
+
+Choose a fresh evidence directory for each run. Both commands install only in a
+temporary Chrome profile and launch the packaged daemon with `--installed`. The
+first proves explicit Session-only loss/reimport across daemon restart. The second
+creates its own D-Bus session/private GNOME keyring and verifies OS credential
+readback after restart without another stage. It requires the same OS host tools
+as the existing Secret Service fixture and never selects the desktop keyring.
+The ordinary `test:chrome-s36:settings-transfer` command retains its original
+controlled-daemon path. [Evidence](evidence/s36-installed-settings-chrome-2026-10-25.md)
+distinguishes these scopes; source freeze/preparation remain controlled assertions.

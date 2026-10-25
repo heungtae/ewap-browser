@@ -1,18 +1,11 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { spawn } from "node:child_process";
-import { access, chmod, readFile } from "node:fs/promises";
+import { access } from "node:fs/promises";
 import { resolve } from "node:path";
-import { build } from "esbuild";
-import {
-  installRelease,
-  uninstallRelease,
-} from "../../../dist/s36/installation.mjs";
-import {
-  migrationProfileGuard,
-  MigrationJournal,
-} from "../../../dist/s36/transport.mjs";
+import { uninstallRelease } from "../../../dist/s36/installation.mjs";
 import { evaluate, waitFor } from "../../chrome-cdp-utils.mjs";
+import { prepareTransfer } from "./chrome-setup.mjs";
 export async function qualifyNative({ profile, extensionId, worker, panel }) {
   const input = {
     directory: `${profile}/agent`,
@@ -21,70 +14,36 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     releaseDirectory: process.env.S36_INSTALL_RELEASE_DIR,
     releaseId: process.env.S36_INSTALL_RELEASE_ID,
   };
-  const prepared = installRelease(input),
-    config = JSON.parse(await readFile(prepared.configPath, "utf8"));
-  const profileGuard = await migrationProfileGuard(
-    config.installationId,
-    config.profileId,
-  );
-  const fixture = await build({
-    entryPoints: [
-      "extension/tests/fixture/s36/settings-transfer-chrome-cases.ts",
-    ],
-    bundle: true,
-    write: false,
-    platform: "browser",
-    format: "iife",
-    globalName: "S36Settings",
-  });
-  await evaluate(
+  const mode = process.env.S36_SETTINGS_MODE ?? "session-only";
+  if (!["session-only", "os-store"].includes(mode))
+    throw new Error("SETTINGS_MODE");
+  const installed = process.env.S36_INSTALLED_MG01 === "1";
+  if (mode === "os-store" && !installed)
+    throw new Error("OS_REQUIRES_PACKAGED_MODE");
+  const { prepared, config, dbPath } = await prepareTransfer(
+    input,
     panel,
-    "globalThis.s36CspViolations=0; addEventListener('securitypolicyviolation',()=>globalThis.s36CspViolations++); true",
+    mode,
   );
-  await evaluate(panel, fixture.outputFiles[0].text);
-  const preparation = await evaluate(
-    panel,
-    `S36Settings.prepare(${JSON.stringify(profileGuard)}).then(value=>({ok:true,...value})).catch(error=>({ok:false,error:error.message}))`,
-  );
-  assert.equal(preparation?.ok, true, preparation?.error);
-  const { digest } = preparation;
-  assert.match(digest, /^[a-f0-9]{64}$/);
-  assert.match(profileGuard, /^[a-f0-9]{64}$/);
-  const dbPath = `${input.directory}/migration.sqlite`;
-  const db = new DatabaseSync(dbPath),
-    journal = new MigrationJournal(db);
-  const epoch = journal.fence();
-  journal.write(undefined, {
-    manifest: {
-      migrationId: "wire",
-      profileGuard,
-      sourceSchemas: "controlled-source",
-      targetSchemas: "controlled-target",
-      legacyRelease: "legacy",
-      targetRelease: "target",
-      sourceDigests: Object.fromEntries(
-        ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"].map((unit) => [
-          unit,
-          digest,
-        ]),
-      ),
-    },
-    revision: 0,
-    epoch,
-    phase: "prepared",
-    stores: {},
-    acknowledgments: {},
-  });
-  db.close();
-  await chmod(dbPath, 0o600);
   const launch = () => {
     const child = spawn(
       process.execPath,
-      [
-        resolve("scripts/s36/transport/daemon.mjs"),
-        prepared.configPath,
-        "--settings-session-only",
-      ],
+      installed
+        ? [
+            resolve(
+              input.releaseDirectory,
+              "agent-server/migration-daemon.mjs",
+            ),
+            input.releaseId,
+            prepared.configPath,
+            `--settings-${mode}`,
+            "--installed",
+          ]
+        : [
+            resolve("scripts/s36/transport/daemon.mjs"),
+            prepared.configPath,
+            "--settings-session-only",
+          ],
       { stdio: "ignore" },
     );
     return { child, closed: new Promise((r) => child.once("close", r)) };
@@ -140,11 +99,18 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       7000,
       "MG01_RESTART_READY",
     );
-    assert.equal(
-      await evaluate(panel, "S36Settings.expectLostSession()"),
-      true,
-    );
-    assert.equal((await evaluate(panel, "S36Settings.stage()")).copied, 1);
+    if (mode === "os-store") {
+      assert.equal(
+        await evaluate(panel, "S36Settings.validatePersisted()"),
+        true,
+      );
+    } else {
+      assert.equal(
+        await evaluate(panel, "S36Settings.expectLostSession()"),
+        true,
+      );
+      assert.equal((await evaluate(panel, "S36Settings.stage()")).copied, 1);
+    }
     assert.equal(await evaluate(panel, "S36Settings.revoked()"), true);
     assert.equal(await evaluate(panel, "globalThis.s36CspViolations"), 0);
     daemon.child.kill("SIGTERM");
@@ -171,8 +137,11 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       actualChromeSettingsToSqlite: true,
       cspViolations: 0,
       authenticatedNativeMessaging: true,
-      sessionLossRejected: true,
-      explicitReimportVerified: true,
+      credentialMode: mode,
+      installedStartVerified: installed,
+      sessionLossRejected: mode === "session-only",
+      explicitReimportVerified: mode === "session-only",
+      osRestartReadbackVerified: mode === "os-store",
       sourceUnchanged: true,
       revokedSourceBlocked: true,
       admission: false,

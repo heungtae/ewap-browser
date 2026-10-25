@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 installed Chrome MG01](s36-installed-settings-chrome-2026-10-25.md): actual Chrome/installed-daemon Session-only loss/reimport and private OS persistence across restart; source freeze/preparation remain controlled.
+
 [S36 installed-start binding](s36-installed-start-2026-10-25.md): optional installed receipt/plan/wrapper/pairing gate, actual registered native forward/reverse continuity and private OS-mode locked startup; full installed ownership remains pending.
 
 [S36 startup cancellation](s36-startup-stop-2026-10-25.md): early SIGTERM/SIGINT observation, bounded probe settlement, retained exclusion and owned-lock cleanup; crash recovery remains pending.
