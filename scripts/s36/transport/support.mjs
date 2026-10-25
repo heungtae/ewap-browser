@@ -24,6 +24,7 @@ export async function fixture(
   settingsSource,
   enableSettings = true,
   settingsArguments = ["--settings-session-only"],
+  daemonCommand = [resolve("scripts/s36/transport/daemon.mjs")],
 ) {
   const directory = await mkdtemp(`${tmpdir()}/s36-rpc-`),
     configPath = `${directory}/pairing.json`;
@@ -98,7 +99,7 @@ export async function fixture(
       legacy
         ? [resolve("dist/s28/agent-server/launcher.cjs"), "daemon", configPath]
         : [
-            resolve("scripts/s36/transport/daemon.mjs"),
+            ...daemonCommand,
             configPath,
             ...(settingsSource !== undefined && enableSettings
               ? settingsArguments

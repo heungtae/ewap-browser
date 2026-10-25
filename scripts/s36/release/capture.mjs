@@ -25,7 +25,11 @@ for (const path of [
 ])
   if (!existsSync(path)) throw new Error(`BUILD_S28_FIRST: ${path}`);
 if (linuxSecrets)
-  for (const file of ["linux-secret-store.mjs", "secret-service.py"])
+  for (const file of [
+    "linux-secret-store.mjs",
+    "secret-service.py",
+    "migration-daemon.mjs",
+  ])
     if (!existsSync(`dist/s36/${file}`))
       throw new Error(`BUILD_S36_SECRETS_FIRST: ${file}`);
 mkdirSync(output, { recursive: true });
@@ -34,7 +38,11 @@ cpSync("dist/s28/chrome-extension", `${output}/chrome-extension`, {
 });
 cpSync("dist/s28/agent-server", `${output}/agent-server`, { recursive: true });
 if (linuxSecrets)
-  for (const file of ["linux-secret-store.mjs", "secret-service.py"]) {
+  for (const file of [
+    "linux-secret-store.mjs",
+    "secret-service.py",
+    "migration-daemon.mjs",
+  ]) {
     cpSync(`dist/s36/${file}`, `${output}/agent-server/${file}`);
     chmodSync(`${output}/agent-server/${file}`, 0o600);
   }

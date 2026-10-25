@@ -7,6 +7,8 @@ node scripts/s36/transport/daemon.mjs /absolute/private/pairing.json --settings-
 node scripts/s36/transport/daemon.mjs /absolute/private/pairing.json --settings-os-store /absolute/trusted/secret-service.py
 ```
 
+New optional release packages also provide a [pinned explicit daemon](migration-os-secrets.md#explicit-packaged-migration-daemon) with no fixture dependency. The commands above remain controlled test runners.
+
 The first mode deliberately stores credentials only in that daemon's memory. The second uses the explicit [Linux OS adapter](migration-os-secrets.md); unavailable/locked OS setup fails startup rather than downgrading. Do not run both daemon owners on one socket. Build the transport bundle first. These are qualification processes, not normal product startup or a complete release package.
 
 The caller uses `settingsTransport(profileGuard, frozenSource, request)` from the extension. `frozenSource` is a trusted composition port with `assertFrozen(epoch)` and a reader limited to `provider_settings`; a JSON claim/provider instruction is not writer-ownership proof. Actual source-writer freeze and all-six installed ownership remain unimplemented. The controlled tests provide that port explicitly and do not qualify production migration.

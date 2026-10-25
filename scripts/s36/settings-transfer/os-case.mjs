@@ -6,14 +6,19 @@ import {
 } from "../../../dist/s36/transport.mjs";
 import { fixture } from "../transport/support.mjs";
 import { isolatedKeyring } from "../secrets/fixture.mjs";
-export async function qualifyOsTransfer() {
+import { secretPackage } from "../secrets/package-fixture.mjs";
+export async function qualifyOsTransfer(packaged = false) {
   const keyring = await isolatedKeyring();
   let f;
+  const pkg = packaged ? secretPackage() : undefined;
   try {
-    f = await fixture(true, providerSettings(), true, [
-      "--settings-os-store",
-      keyring.helper,
-    ]);
+    f = await fixture(
+      true,
+      providerSettings(),
+      true,
+      pkg ? ["--settings-os-store"] : ["--settings-os-store", keyring.helper],
+      pkg ? [pkg.daemon, pkg.id] : undefined,
+    );
     const digest = migrationDigest({
       provider_settings: f.data.provider_settings,
     });
@@ -43,5 +48,6 @@ export async function qualifyOsTransfer() {
   } finally {
     await f?.close();
     await keyring.close();
+    pkg?.close();
   }
 }

@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 explicit packaged daemon
+
+**In Progress.** [Evidence](evidence/s36-packaged-daemon-2026-10-25.md) records
+fixture-free optional daemon packaging, externally pinned integrity, explicit
+Session-only/OS-store selection and exclusive process ownership. Native checks
+36/36 and private OS checks 7/7 passed, including authenticated transfer/readback
+after packaged-daemon restart. This is not normal-user service deployment or
+actual source-writer freeze/global installed ownership. S37 remains Planned.
+
 ## Browser Agent S36 — 2026-10-25 optional Linux secret package
 
 **In Progress.** [Evidence](evidence/s36-secret-package-2026-10-25.md) records

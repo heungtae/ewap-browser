@@ -56,7 +56,12 @@ export function captureReleaseSet(
   const present = secretFiles.filter((path) =>
     files.some((file) => file.path === path),
   );
-  if (present.length > 0 && present.length !== secretFiles.length)
+  if (files.some((file) => file.path === "agent-server/migration-daemon.mjs"))
+    present.push("agent-server/migration-daemon.mjs");
+  if (
+    present.length > 0 &&
+    !secretFiles.every((path) => present.includes(path))
+  )
     throw new Error("RELEASE_SECRET_PACKAGE");
   for (const path of present) {
     const info = lstatSync(resolve(directory, path));

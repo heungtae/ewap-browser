@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 explicit packaged daemon](s36-packaged-daemon-2026-10-25.md): fixture-free opt-in runtime, pinned release verification, exclusive ownership and OS-mode native restart/readback; managed service and real writer freeze remain pending.
+
 [S36 optional Linux secret package](s36-secret-package-2026-10-25.md): pinned adapter/helper, partial-package and unsafe-permission rejection, temporary registration and private OS read/write/retention; default remains session-only.
 
 [S36 authenticated MG01 settings transfer](s36-settings-transfer-2026-10-25.md): explicit store/mode and source-bound native copy/readback, deadline/disconnect guards, actual Chrome and private OS persistence; real writer freeze/global coordination still pending.

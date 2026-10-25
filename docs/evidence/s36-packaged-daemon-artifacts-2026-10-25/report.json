@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "scope": "qualification-only",
+  "releaseId": "39f4d8e1da85e80b6224e0f200c7f1d8a4b2702e40f5896a946b6a931125d1fb",
+  "source": {
+    "revision": "8c538fb1417cd585321cadb85e1f8a7688d95990",
+    "dirty": true
+  },
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "credentials": "session-only",
+  "linuxSecretsPackaged": true,
+  "files": 37,
+  "bytes": 3599945,
+  "registered": false,
+  "installed": false,
+  "delivered": false,
+  "productionAdmission": "unchanged",
+  "directory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/packaged-daemon-2026-10-25"
+}

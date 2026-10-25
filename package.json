@@ -144,6 +144,7 @@
     "test:chrome-s36:transport": "node scripts/s36/transport/chrome.mjs",
     "check:s36:transport": "node scripts/s36/transport/check.mjs",
     "build:s36:secrets": "node scripts/s36/secrets/build.mjs",
+    "test:s36:daemon": "node --test scripts/s36/secrets/daemon.test.mjs",
     "test:s36:secrets": "node scripts/s36/secrets/run.mjs",
     "check:s36:secrets": "node scripts/s36/secrets/check.mjs",
     "test:s36:settings-transfer": "node --test scripts/s36/settings-transfer/*.test.mjs",

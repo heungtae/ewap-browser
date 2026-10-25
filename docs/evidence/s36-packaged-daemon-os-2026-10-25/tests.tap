@@ -1,0 +1,54 @@
+TAP version 13
+# (node:933713) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+ok 1 - real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+  ---
+  duration_ms: 1181.974073
+  type: 'test'
+  ...
+# Subtest: locked or unavailable OS store fails closed without session/plaintext fallback
+ok 2 - locked or unavailable OS store fails closed without session/plaintext fallback
+  ---
+  duration_ms: 878.200226
+  type: 'test'
+  ...
+# Subtest: MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+ok 3 - MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+  ---
+  duration_ms: 2687.600374
+  type: 'test'
+  ...
+# Subtest: input/helper boundaries reject unsafe configuration and oversized or NUL values
+ok 4 - input/helper boundaries reject unsafe configuration and oversized or NUL values
+  ---
+  duration_ms: 160.71258
+  type: 'test'
+  ...
+# Subtest: authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+ok 5 - authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+  ---
+  duration_ms: 1948.527698
+  type: 'test'
+  ...
+# Subtest: pinned packaged daemon selects OS store and preserves authenticated restart readback
+ok 6 - pinned packaged daemon selects OS store and preserves authenticated restart readback
+  ---
+  duration_ms: 1898.11349
+  type: 'test'
+  ...
+# Subtest: installed pinned Linux secret package reads OS values and uninstall retains them
+ok 7 - installed pinned Linux secret package reads OS values and uninstall retains them
+  ---
+  duration_ms: 551.097359
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9490.69559

@@ -132,6 +132,12 @@ test("authenticated MG01 RPC reuses persisted OS credentials after daemon restar
   );
   await qualifyOsTransfer();
 });
+test("pinned packaged daemon selects OS store and preserves authenticated restart readback", async () => {
+  const { qualifyOsTransfer } = await import(
+    "../settings-transfer/os-case.mjs"
+  );
+  await qualifyOsTransfer(true);
+});
 
 test("installed pinned Linux secret package reads OS values and uninstall retains them", async () => {
   const k = await isolatedKeyring(),

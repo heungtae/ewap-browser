@@ -20,9 +20,9 @@ For an explicit qualification package, build `pnpm build:s28`, `pnpm build:s36:r
 node scripts/s36/release/capture.mjs /absolute/fresh/release-directory --linux-secrets
 ```
 
-This copies the built adapter and helper into `agent-server/linux-secret-store.mjs` and `agent-server/secret-service.py` with mode 0600. Both files are included in the externally pinned release-set hash. Partial packages, modified content and group/world-writable helper/adapter files fail release verification. Rebuild before capturing to avoid packaging stale outputs. Without the flag the ordinary bridge package stays unchanged. The release manifest's `credentials: session-only` still describes the default; packaging this optional capability does not select or start it.
+This copies the built adapter, helper and explicit daemon into `agent-server/linux-secret-store.mjs`, `agent-server/secret-service.py` and `agent-server/migration-daemon.mjs` with mode 0600. All three files are included in the externally pinned release-set hash. Historical adapter/helper-only packages remain valid but do not provide the new daemon. Partial packages, modified content and group/world-writable helper/adapter files fail release verification. Rebuild before capturing to avoid packaging stale outputs. Without the flag the ordinary bridge package stays unchanged. The release manifest's `credentials: session-only` still describes the default; packaging this optional capability does not select or start it.
 
-The isolated installer registers a launcher referencing the verified release directory; it does not copy the tree or start a settings daemon. A trusted composition can import the packaged adapter and explicitly pass that package's absolute helper path. Python, PyGObject/libsecret and the running unlocked Secret Service remain external host prerequisites; they are not bundled or installed automatically. The [package evidence](evidence/s36-secret-package-2026-10-25.md) covers temporary registration and real private-keyring read/write through packaged files. Normal-user deployment and automatic selection remain unqualified.
+The isolated installer registers a launcher referencing the verified release directory; it does not copy the tree or start a settings daemon. A trusted composition can import the packaged adapter and explicitly pass that package's absolute helper path. New packages also provide the explicit daemon described below. Python, PyGObject/libsecret and the running unlocked Secret Service remain external host prerequisites; they are not bundled or installed automatically. The [package evidence](evidence/s36-secret-package-2026-10-25.md) covers temporary registration and real private-keyring read/write through packaged files. Normal-user deployment and automatic selection remain unqualified.
 
 The factory probes before returning an `os-store` instance. Each read/write repeats service/collection checks in a fresh helper process. Missing service, missing/locked default collection, unavailable session-alias comparison, session-only collection, locked/duplicate matching items, helper failure and timeout fail closed. The helper never unlocks/creates a collection and overrides synchronous libsecret prompting to refuse UI prompts. The user/OS must unlock the persistent collection outside this adapter. Actual qualification covers GNOME Keyring 50.0 only; other Secret Service providers, Windows and macOS are unverified.
 
@@ -44,3 +44,34 @@ pnpm check:s36:secrets
 ```
 
 The runner creates its own D-Bus session and temporary XDG data/runtime/control directories. It refuses a preexisting Secret Service owner on that test bus, copies the helper privately, uses a generated fixture password through stdin, and starts/stops its own foreground GNOME daemon. Test unlock is an explicit private-daemon restart with that fixture password, not an adapter feature. The user's D-Bus/keyring/home environment is not repurposed. Failed test-process groups have a bounded cleanup deadline. Use `S36_SECRET_EVIDENCE_DIR` to retain TAP and a version/revision-scoped report. See [dated evidence](evidence/s36-os-secrets-2026-10-25.md).
+
+## Explicit packaged migration daemon
+
+Use Node 22.23.2 or the pinned compatible runtime from the release evidence. Keep
+the expected release ID in trusted operator configuration outside the artifact
+directory. With a prepared owner-private pairing directory:
+
+```sh
+node /absolute/release/agent-server/migration-daemon.mjs EXPECTED_RELEASE_ID /absolute/private/pairing.json --settings-os-store
+# Alternatively, explicitly choose volatile credentials:
+node /absolute/release/agent-server/migration-daemon.mjs EXPECTED_RELEASE_ID /absolute/private/pairing.json --settings-session-only
+```
+
+The daemon verifies its containing release before opening credentials, SQLite or
+the socket. It loads only its packaged helper for OS mode, probes the OS store and
+fails without falling back. Pairing must be private and its socket must be exactly
+`agent.sock` in the same canonical private directory. Unknown modes/extra arguments
+are rejected. The database is `migration.sqlite` in that directory. A private
+exclusive `migration-daemon.lock` prevents concurrent instances; an existing socket
+also blocks startup and is never removed as a startup recovery action. Graceful
+SIGTERM/SIGINT closes clients/database and releases the owned lock. A crash can
+leave a lock/socket; investigate ownership and stop all old writers before manual
+recovery. The daemon never guesses that a lock is stale or takes over an endpoint.
+
+This is opt-in qualification composition, not a managed desktop service or product
+startup change. It exposes the existing authenticated status/MG01/MG02 commands;
+it cannot prepare/fence/commit/activate migration remotely. Actual source-owner
+freeze and prepared journal creation still require trusted local orchestration.
+The packaged bundle excludes test fixture imports. [Evidence](evidence/s36-packaged-daemon-2026-10-25.md)
+separates native OS restart qualification from full installed orchestration.
+Run `pnpm test:s36:daemon` under Node 22 after the release/secrets/transport builds.

@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Explicit migration runtime: [daemon source](../scripts/s36/secrets/daemon.mjs), [package build](../scripts/s36/secrets/build.mjs), [operations](migration-os-secrets.md#explicit-packaged-migration-daemon), [evidence](evidence/s36-packaged-daemon-2026-10-25.md).
+
 Optional Linux secret packaging: [capture](../scripts/s36/release/capture.mjs), [release validation](../apps/agent-server/src/migration/release-set.ts), [operations](migration-os-secrets.md), [evidence](evidence/s36-secret-package-2026-10-25.md).
 
 S36 MG01 transfer: [shared source schema](../packages/shared/src/migration-settings.ts), [backend scope/secret readback](../apps/agent-server/src/migration/settings-rpc.ts), [frozen-source client](../apps/chrome-extension/src/migration/settings-rpc.ts). [Operations](migration-settings-transfer.md), [native/Chrome/OS evidence](evidence/s36-settings-transfer-2026-10-25.md); explicit qualification only.
