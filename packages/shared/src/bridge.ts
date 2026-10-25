@@ -127,9 +127,10 @@ export const readySchema = z.strictObject({
         "resumeEvents",
         "migration.status",
         "migration.policy",
+        "migration.settings",
       ]),
     )
-    .max(4),
+    .max(5),
   taskReady: z.literal(false),
 });
 export const responseSchema = z.strictObject({

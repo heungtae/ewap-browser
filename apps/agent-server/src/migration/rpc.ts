@@ -1,7 +1,10 @@
+import { settingsRequest } from "./settings-rpc.js";
+import type { SecretStore } from "../settings/service.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import {
   migrationProfileGuard,
   migrationStatusSchema,
+  type MigrationRequestContext,
 } from "../../../../packages/shared/src/migration-rpc.js";
 import type { Sqlite } from "../tasks/database.js";
 import type { Pairing } from "../ipc/auth.js";
@@ -11,6 +14,7 @@ import { SqlitePolicyMirror } from "./mg02-mirror.js";
 export async function migrationEndpoint(
   db: Sqlite,
   pairing: Pick<Pairing, "installationId" | "profileId">,
+  settings?: SecretStore,
 ) {
   const profileGuard = await migrationProfileGuard(
     pairing.installationId,
@@ -33,7 +37,7 @@ export async function migrationEndpoint(
       db.prepare("INSERT INTO migration_owner VALUES (1,?)").run(profileGuard);
   });
   const mirror = new SqlitePolicyMirror(db, profileGuard);
-  return async (raw: unknown) => {
+  const handle = async (raw: unknown, context?: MigrationRequestContext) => {
     const command = parseMigrationCommand(raw);
     if (command.profileGuard !== profileGuard)
       throw new Error("MIGRATION_PROFILE");
@@ -50,6 +54,7 @@ export async function migrationEndpoint(
         profileGuard,
         epoch: state.epoch,
         admission: false,
+        settingsMode: settings?.mode ?? null,
         namespace: state.namespace,
         migration: view
           ? {
@@ -60,6 +65,13 @@ export async function migrationEndpoint(
             }
           : null,
       });
+    if (
+      command.kind === "migration.settings.stage" ||
+      command.kind === "migration.settings.validate"
+    ) {
+      if (!settings) throw new Error("MIGRATION_SETTINGS_UNAVAILABLE");
+      return settingsRequest(db, profileGuard, settings, command, context);
+    }
     const epoch =
       command.kind === "migration.policy.put"
         ? command.value.epoch
@@ -91,4 +103,5 @@ export async function migrationEndpoint(
     }
     return (await mirror.read(profileGuard, id, epoch)) ?? null;
   };
+  return Object.assign(handle, settings ? { settingsMode: settings.mode } : {});
 }

@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 authenticated MG01 settings transfer](s36-settings-transfer-2026-10-25.md): explicit store/mode and source-bound native copy/readback, deadline/disconnect guards, actual Chrome and private OS persistence; real writer freeze/global coordination still pending.
+
 [S36 Linux OS secrets](s36-os-secrets-2026-10-25.md): opt-in Secret Service adapter, actual isolated keyring persistence/restart/lock and MG01 SQLite readback; normal product remains session-only and desktop deployment unqualified.
 
 [S36 authenticated MG02 transport](s36-transport-2026-10-25.md): real Chrome/native IPC/SQLite mirroring and restart readback, profile/epoch/domain gates and CSP-safe validation; full installed coordination/freeze still pending.

@@ -1,0 +1,42 @@
+TAP version 13
+# (node:910643) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+ok 1 - real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+  ---
+  duration_ms: 2925.964878
+  type: 'test'
+  ...
+# Subtest: locked or unavailable OS store fails closed without session/plaintext fallback
+ok 2 - locked or unavailable OS store fails closed without session/plaintext fallback
+  ---
+  duration_ms: 2236.73542
+  type: 'test'
+  ...
+# Subtest: MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+ok 3 - MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+  ---
+  duration_ms: 3542.316122
+  type: 'test'
+  ...
+# Subtest: input/helper boundaries reject unsafe configuration and oversized or NUL values
+ok 4 - input/helper boundaries reject unsafe configuration and oversized or NUL values
+  ---
+  duration_ms: 159.987706
+  type: 'test'
+  ...
+# Subtest: authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+ok 5 - authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+  ---
+  duration_ms: 1942.487733
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11045.10055

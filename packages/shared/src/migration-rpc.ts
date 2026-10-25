@@ -1,8 +1,35 @@
 import { z } from "zod";
+import { migrationCheckpointSchema } from "./migration.js";
 const profileGuard = z.string().regex(/^[a-f0-9]{64}$/);
 const migrationId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
 const epoch = z.number().int().positive().safe();
+const settingsScope = {
+  profileGuard,
+  migrationId,
+  epoch,
+  sourceDigest: profileGuard,
+  secretMode: z.enum(["session-only", "os-store"]),
+  source: z.unknown().optional(),
+};
+export const migrationSettingsAckSchema = z.strictObject({
+  schema: z.literal("wca.mg01-ack/v1"),
+  profileGuard,
+  migrationId,
+  epoch,
+  secretMode: settingsScope.secretMode,
+  checkpoint: migrationCheckpointSchema,
+  verified: z.literal(true),
+});
 export const migrationCommandSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("migration.settings.stage"),
+    ...settingsScope,
+  }),
+  z.strictObject({
+    kind: z.literal("migration.settings.validate"),
+    ...settingsScope,
+    checkpoint: migrationCheckpointSchema,
+  }),
   z.strictObject({ kind: z.literal("migration.status"), profileGuard }),
   z.strictObject({
     kind: z.literal("migration.policy.put"),
@@ -22,6 +49,7 @@ export const migrationStatusSchema = z.strictObject({
   profileGuard,
   epoch: z.number().int().nonnegative().safe(),
   admission: z.literal(false),
+  settingsMode: z.enum(["session-only", "os-store"]).nullable().optional(),
   namespace: z.enum(["legacy", "target"]),
   migration: z
     .strictObject({
@@ -53,4 +81,9 @@ export async function migrationProfileGuard(
   return [...new Uint8Array(digest)]
     .map((value) => value.toString(16).padStart(2, "0"))
     .join("");
+}
+
+export interface MigrationRequestContext {
+  readonly deadline: number;
+  readonly signal: AbortSignal;
 }

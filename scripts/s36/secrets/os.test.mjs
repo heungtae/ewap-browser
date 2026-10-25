@@ -108,3 +108,10 @@ test("input/helper boundaries reject unsafe configuration and oversized or NUL v
     await k.close();
   }
 });
+
+test("authenticated MG01 RPC reuses persisted OS credentials after daemon restart", async () => {
+  const { qualifyOsTransfer } = await import(
+    "../settings-transfer/os-case.mjs"
+  );
+  await qualifyOsTransfer();
+});

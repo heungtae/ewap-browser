@@ -6,6 +6,7 @@ import { Handshake, type Pairing } from "./auth.js";
 import { Session } from "./session.js";
 import { ConnectionTransfers } from "./transfers.js";
 import { capabilityHealth } from "../settings/health.js";
+import type { MigrationRequestContext } from "../../../../packages/shared/src/migration-rpc.js";
 import { EventReplay } from "./replay.js";
 const peers = new WeakMap<Server, Set<Socket>>();
 const paths = new WeakMap<Server, string>();
@@ -23,7 +24,12 @@ export async function stopLocal(server: Server): Promise<void> {
 export async function listenLocal(
   path: string,
   pairing: Pairing,
-  migration?: (command: unknown) => Promise<unknown>,
+  migration?: ((
+    command: unknown,
+    context: MigrationRequestContext,
+  ) => Promise<unknown>) & {
+    settingsMode?: "session-only" | "os-store";
+  },
 ): Promise<Server> {
   if (process.platform === "win32") throw new Error("WINDOWS_ACL_UNQUALIFIED");
   const directory = dirname(path);
@@ -73,6 +79,7 @@ export async function listenLocal(
                 "resumeEvents",
                 "migration.status",
                 "migration.policy",
+                ...(migration.settingsMode ? ["migration.settings"] : []),
               ]
             : ["heartbeat", "resumeEvents"],
           taskReady: false,
@@ -82,7 +89,29 @@ export async function listenLocal(
         let result: unknown;
         if (command.kind.startsWith("migration.")) {
           if (!migration) throw new Error("MIGRATION_UNAVAILABLE");
-          result = await migration(command);
+          const abort = new AbortController();
+          const disconnect = () => abort.abort();
+          const timer = setTimeout(
+            disconnect,
+            Math.max(0, session.deadline - Date.now()),
+          );
+          timer.unref();
+          socket.once("close", disconnect);
+          try {
+            result = await migration(command, {
+              deadline: session.deadline,
+              signal: abort.signal,
+            });
+            if (
+              abort.signal.aborted ||
+              Date.now() >= session.deadline ||
+              socket.destroyed
+            )
+              throw new Error("MIGRATION_EXPIRED");
+          } finally {
+            clearTimeout(timer);
+            socket.removeListener("close", disconnect);
+          }
         } else if (command.kind.startsWith("transfer."))
           result = transfers.handle(command, Date.now());
         else if (command.kind === "resumeEvents")

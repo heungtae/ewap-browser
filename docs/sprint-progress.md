@@ -4,6 +4,18 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 authenticated MG01 settings-transfer continuation
+
+**In Progress — bounded native credential copy/readback, controlled source guard.**
+[Evidence](evidence/s36-settings-transfer-2026-10-25.md) records explicit backend
+capability/mode, prepared source/profile/epoch binding and request expiry/disconnect
+checks. Actual Chrome Session-only transfer/restart/reimport and private OS-backed
+native persistence passed. Unit 1,363/1,363, native 44/44 and OS 5/5 passed; initial
+connection/setup fixture failures are preserved. No secret enters SQL/ACK metadata
+or an enabled provider role. Actual writer freeze/drain and installed all-six
+coordination, large-source support, full UI/OS/live/holdout/release gates remain
+open. Production/design/version 0.1.117 are preserved; S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-25 explicit Linux OS-secret-store continuation
 
 **In Progress — isolated GNOME persistence and MG01 readback.**

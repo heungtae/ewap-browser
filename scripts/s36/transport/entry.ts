@@ -15,3 +15,11 @@ export {
   FrameDecoder,
   encodeFrame,
 } from "../../../apps/agent-server/src/native/framing.js";
+export { settingsTransport } from "../../../apps/chrome-extension/src/migration/settings-rpc.js";
+export { SessionSecrets } from "../../../apps/agent-server/src/settings/service.js";
+export { LinuxSecretServiceStore } from "../../../apps/agent-server/src/settings/linux-secret-store.js";
+
+export { providerSettings } from "../../../extension/tests/unit/migration/s36/mg01-support.js";
+export { migrationDigest } from "../../../apps/chrome-extension/src/migration/migration-digest.js";
+
+export { settingsRequest } from "../../../apps/agent-server/src/migration/settings-rpc.js";

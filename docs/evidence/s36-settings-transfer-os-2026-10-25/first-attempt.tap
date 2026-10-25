@@ -1,0 +1,45 @@
+TAP version 13
+# (node:882612) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+ok 1 - real isolated OS store survives helper and keyring restart; identities/profiles remain separate
+  ---
+  duration_ms: 1181.329038
+  type: 'test'
+  ...
+# Subtest: locked or unavailable OS store fails closed without session/plaintext fallback
+ok 2 - locked or unavailable OS store fails closed without session/plaintext fallback
+  ---
+  duration_ms: 867.846097
+  type: 'test'
+  ...
+# Subtest: MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+ok 3 - MG01 actual SQLite staging keeps OS-secret readback after restart, and lock blocks agreement
+  ---
+  duration_ms: 2671.358916
+  type: 'test'
+  ...
+# Subtest: input/helper boundaries reject unsafe configuration and oversized or NUL values
+ok 4 - input/helper boundaries reject unsafe configuration and oversized or NUL values
+  ---
+  duration_ms: 162.661619
+  type: 'test'
+  ...
+# Subtest: authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+not ok 5 - authenticated MG01 RPC reuses persisted OS credentials after daemon restart
+  ---
+  duration_ms: 209.319619
+  type: 'test'
+  location: '/home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/secrets/os.test.mjs:112:1'
+  failureType: 'testCodeFailure'
+  error: 'settingsArguments is not defined'
+  code: 'ERR_TEST_FAILURE'
+  name: 'ReferenceError'
+  stack: |-
+    start (file:///home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/transport/support.mjs:103:17)
+    fixture (file:///home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/transport/support.mjs:168:9)
+    async qualifyOsTransfer (file:///home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/settings-transfer/os-case.mjs:11:13)
+    async TestContext.<anonymous> (file:///home/heungtae/develop/ai-agent/ewap/ewap-browser/scripts/s36/secrets/os.test.mjs:116:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...

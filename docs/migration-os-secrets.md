@@ -1,6 +1,6 @@
 # Explicit Linux Secret Service storage
 
-`LinuxSecretServiceStore` implements the existing backend `SecretStore` through the OS Secret Service/libsecret API. It is explicitly selected by a trusted backend composition; the normal application and native bridge still default to `SessionSecrets`. No remote secret-transfer/activation command or automatic credential migration is added.
+`LinuxSecretServiceStore` implements the existing backend `SecretStore` through the OS Secret Service/libsecret API. It is explicitly selected by a trusted backend composition; the normal application and native bridge still default to `SessionSecrets`. The adapter adds no remote activation or automatic credential migration. The separately configured [MG01 transport](migration-settings-transfer.md) can explicitly select this store.
 
 ```js
 import { LinuxSecretServiceStore } from "./dist/s36/linux-secret-store.mjs";

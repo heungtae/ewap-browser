@@ -6,6 +6,9 @@ import {
   listenLocal,
   stopLocal,
   migrationEndpoint,
+  SessionSecrets,
+  LinuxSecretServiceStore,
+  migrationProfileGuard,
 } from "../../../dist/s36/transport.mjs";
 // Explicit qualification daemon, never selected by the product or the normal S28 launcher.
 const configPath = resolve(process.argv[2] ?? "");
@@ -37,10 +40,19 @@ try {
   )
     throw new Error("MIGRATION_DATABASE");
   db = new DatabaseSync(path);
+  let store;
+  if (process.argv[3] === "--settings-session-only")
+    store = new SessionSecrets();
+  else if (process.argv[3] === "--settings-os-store" && process.argv[4])
+    store = await LinuxSecretServiceStore.connect(
+      resolve(process.argv[4]),
+      await migrationProfileGuard(config.installationId, config.profileId),
+    );
+  else if (process.argv[3]) throw new Error("MIGRATION_SETTINGS_CONFIGURATION");
   server = await listenLocal(
     config.socketPath,
     config,
-    await migrationEndpoint(db, config),
+    await migrationEndpoint(db, config, store),
   );
   let stopping = false;
   const stop = () => {

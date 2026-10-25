@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "scope": "qualification-only",
+  "releaseId": "787366012dd4b587c225687389c780123c69948f374e65a232a778f330575f2b",
+  "source": {
+    "revision": "1ac8e74f2f154645a0f818168e115ceea625d77c",
+    "dirty": true
+  },
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "credentials": "session-only",
+  "files": 34,
+  "bytes": 1994356,
+  "registered": false,
+  "installed": false,
+  "delivered": false,
+  "productionAdmission": "unchanged",
+  "directory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/settings-transfer-bounded-release-2026-10-25"
+}

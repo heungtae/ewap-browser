@@ -129,7 +129,9 @@ export class NativeBridge {
       !this.capabilities.has(
         payload.kind === "migration.status"
           ? "migration.status"
-          : "migration.policy",
+          : payload.kind.startsWith("migration.settings.")
+            ? "migration.settings"
+            : "migration.policy",
       )
     )
       throw new Error("MIGRATION_UNAVAILABLE");

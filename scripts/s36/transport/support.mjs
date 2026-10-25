@@ -16,8 +16,15 @@ import {
   Mg02Staging,
   openDatabase,
   MigrationJournal,
+  settingsTransport,
+  migrationDigest,
 } from "../../../dist/s36/transport.mjs";
-export async function fixture(seed = true) {
+export async function fixture(
+  seed = true,
+  settingsSource,
+  enableSettings = true,
+  settingsArguments = ["--settings-session-only"],
+) {
   const directory = await mkdtemp(`${tmpdir()}/s36-rpc-`),
     configPath = `${directory}/pairing.json`;
   const config = {
@@ -32,7 +39,12 @@ export async function fixture(seed = true) {
     config.installationId,
     config.profileId,
   );
-  const data = policySource(),
+  const data = {
+      ...policySource(),
+      ...(settingsSource === undefined
+        ? {}
+        : { provider_settings: settingsSource }),
+    },
     original = JSON.stringify(data);
   const source = {
     async get() {
@@ -62,7 +74,9 @@ export async function fixture(seed = true) {
         sourceDigests: Object.fromEntries(
           ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"].map((unit) => [
             unit,
-            digest,
+            unit === "MG01" && settingsSource !== undefined
+              ? migrationDigest({ provider_settings: settingsSource })
+              : digest,
           ]),
         ),
       },
@@ -83,7 +97,13 @@ export async function fixture(seed = true) {
       process.execPath,
       legacy
         ? [resolve("dist/s28/agent-server/launcher.cjs"), "daemon", configPath]
-        : [resolve("scripts/s36/transport/daemon.mjs"), configPath],
+        : [
+            resolve("scripts/s36/transport/daemon.mjs"),
+            configPath,
+            ...(settingsSource !== undefined && enableSettings
+              ? settingsArguments
+              : []),
+          ],
       { stdio: "ignore" },
     );
     daemonClosed = new Promise((r) => daemon.once("close", r));
@@ -140,6 +160,9 @@ export async function fixture(seed = true) {
     );
     return {
       bridge,
+      settings: settingsTransport(profile, source, (value) =>
+        bridge.request(value),
+      ),
       rpc: migrationTransport(profile, (value) => bridge.request(value)),
     };
   }

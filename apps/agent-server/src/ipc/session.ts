@@ -8,6 +8,7 @@ export class Session {
   private seen = new Set<string>();
   private lastSentAt = 0;
   messageId = "";
+  deadline = 0;
   browserGeneration: number | undefined;
   constructor(
     readonly pairing: Pairing,
@@ -30,6 +31,7 @@ export class Session {
       throw new Error("INVALID_ENVELOPE");
     if (this.seen.size >= 4096) throw new Error("SESSION_LIMIT");
     this.messageId = e.messageId;
+    this.deadline = e.deadline;
     this.seen.add(e.messageId);
     this.lastSentAt = e.sentAt;
     if (e.payload.kind === "browser.connected") {
