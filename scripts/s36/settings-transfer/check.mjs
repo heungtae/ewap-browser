@@ -7,10 +7,9 @@ import {
   digest,
   validateInventory,
 } from "../../s26-inventory.mjs";
-const manifest = read("docs/baselines/s36-startup-stop/disposition.json");
-for (const entry of read(
-  "docs/baselines/s36-install-coordination/disposition.json",
-).files)
+const manifest = read("docs/baselines/s36-installed-start/disposition.json");
+for (const entry of read("docs/baselines/s36-startup-stop/disposition.json")
+  .files)
   assert.deepEqual(
     manifest.files.find((item) => item.path === entry.path),
     entry,
@@ -74,6 +73,7 @@ assert.ok(
 const backend = await build({
   entryPoints: [
     "apps/agent-server/src/migration/session.ts",
+    "apps/agent-server/src/migration/installed-start.ts",
     "apps/agent-server/src/migration/rpc.ts",
     "apps/agent-server/src/migration/settings-rpc.ts",
     "apps/agent-server/src/settings/linux-secret-store.ts",

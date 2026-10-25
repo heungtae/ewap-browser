@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "scope": "qualification-only",
+  "releaseId": "3d65a6ab5e8d189f296bed497997613206efcf8fadbc9800e9a19d665460b663",
+  "source": {
+    "revision": "fc35f18cbd15d2cc13bbe137d51c9f5ec951b228",
+    "dirty": true
+  },
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "credentials": "session-only",
+  "linuxSecretsPackaged": true,
+  "files": 37,
+  "bytes": 3607498,
+  "registered": false,
+  "installed": false,
+  "delivered": false,
+  "productionAdmission": "unchanged",
+  "directory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/installed-start-2026-10-25"
+}

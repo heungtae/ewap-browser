@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 installed-start binding
+
+**In Progress.** [Evidence](evidence/s36-installed-start-2026-10-25.md) records
+optional installed-mode receipt/plan/pairing/wrapper verification under the shared
+lifecycle lock. Actual registered native forward/reverse same-version continuity,
+stale/uninstalled startup rejection and private OS locked startup passed. Native
+44/44 and OS 8/8 passed. Full installed ownership, writer freeze, managed normal-user
+deployment and cross-version qualification remain open; S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-25 graceful startup cancellation
 
 **In Progress.** [Evidence](evidence/s36-startup-stop-2026-10-25.md) and

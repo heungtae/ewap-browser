@@ -1,0 +1,284 @@
+TAP version 13
+# Subtest: private install, repair, interrupted preparation and uninstall preserve pairing and unrelated data
+ok 1 - private install, repair, interrupted preparation and uninstall preserve pairing and unrelated data
+  ---
+  duration_ms: 47.764829
+  type: 'test'
+  ...
+# Subtest: invalid release and identity changes fail before replacing an owned installation
+ok 2 - invalid release and identity changes fail before replacing an owned installation
+  ---
+  duration_ms: 10.113549
+  type: 'test'
+  ...
+# Subtest: foreign files, altered pairing and unsafe permissions are preserved and rejected
+ok 3 - foreign files, altered pairing and unsafe permissions are preserved and rejected
+  ---
+  duration_ms: 40.116584
+  type: 'test'
+  ...
+# Subtest: active socket or competing lock prevents install and removal
+ok 4 - active socket or competing lock prevents install and removal
+  ---
+  duration_ms: 15.110714
+  type: 'test'
+  ...
+# Subtest: unowned registration is not adopted even when the pairing directory is empty
+ok 5 - unowned registration is not adopted even when the pairing directory is empty
+  ---
+  duration_ms: 4.59656
+  type: 'test'
+  ...
+# Subtest: removal remains possible after the entire artifact directory disappears
+ok 6 - removal remains possible after the entire artifact directory disappears
+  ---
+  duration_ms: 10.678
+  type: 'test'
+  ...
+# Subtest: interrupted removal resumes and cannot be mistaken for installation repair
+ok 7 - interrupted removal resumes and cannot be mistaken for installation repair
+  ---
+  duration_ms: 29.802872
+  type: 'test'
+  ...
+# Subtest: a different valid release requires a separate upgrade operation and cannot replace current files
+ok 8 - a different valid release requires a separate upgrade operation and cannot replace current files
+  ---
+  duration_ms: 14.731479
+  type: 'test'
+  ...
+# Subtest: malformed existing pairing errors never expose its raw content
+ok 9 - malformed existing pairing errors never expose its raw content
+  ---
+  duration_ms: 15.602391
+  type: 'test'
+  ...
+# Subtest: installation and registry roots cannot overlap the immutable artifact tree
+ok 10 - installation and registry roots cannot overlap the immutable artifact tree
+  ---
+  duration_ms: 4.92942
+  type: 'test'
+  ...
+# Subtest: explicit forward and reverse transition preserve pairing and registry ownership
+ok 11 - explicit forward and reverse transition preserve pairing and registry ownership
+  ---
+  duration_ms: 57.685198
+  type: 'test'
+  ...
+# Subtest: each controlled interruption resumes the exact externally pinned transition
+ok 12 - each controlled interruption resumes the exact externally pinned transition
+  ---
+  duration_ms: 106.912838
+  type: 'test'
+  ...
+# Subtest: active backend, invalid target, foreign files and changed pairing block transition
+ok 13 - active backend, invalid target, foreign files and changed pairing block transition
+  ---
+  duration_ms: 56.277909
+  type: 'test'
+  ...
+# Subtest: pending journal tampering cannot select another release or overwrite foreign state
+ok 14 - pending journal tampering cannot select another release or overwrite foreign state
+  ---
+  duration_ms: 23.907137
+  type: 'test'
+  ...
+# Subtest: complete pinned tree verifies and only accepts the independently pinned release ID
+ok 15 - complete pinned tree verifies and only accepts the independently pinned release ID
+  ---
+  duration_ms: 23.921804
+  type: 'test'
+  ...
+# Subtest: optional Linux secret package requires both pinned artifacts and safe modes
+ok 16 - optional Linux secret package requires both pinned artifacts and safe modes
+  ---
+  duration_ms: 12.025575
+  type: 'test'
+  ...
+# Subtest: missing, changed and additional artifacts invalidate a previously accepted predicate
+ok 17 - missing, changed and additional artifacts invalidate a previously accepted predicate
+  ---
+  duration_ms: 37.387981
+  type: 'test'
+  ...
+# Subtest: symlinked files and components are rejected rather than hashed through external paths
+ok 18 - symlinked files and components are rejected rather than hashed through external paths
+  ---
+  duration_ms: 19.18305
+  type: 'test'
+  ...
+# Subtest: rewritten manifest and version/protocol/runtime skew fail closed
+ok 19 - rewritten manifest and version/protocol/runtime skew fail closed
+  ---
+  duration_ms: 14.014775
+  type: 'test'
+  ...
+# Subtest: oversized sparse artifacts are rejected before reading their contents
+ok 20 - oversized sparse artifacts are rejected before reading their contents
+  ---
+  duration_ms: 3.654829
+  type: 'test'
+  ...
+# (node:942478) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual six-unit coordinator checks the prior artifact set immediately before rollback
+ok 21 - actual six-unit coordinator checks the prior artifact set immediately before rollback
+  ---
+  duration_ms: 470.793919
+  type: 'test'
+  ...
+# Subtest: daemon blocks install/uninstall/transition throughout a paused pre-socket OS probe
+ok 22 - daemon blocks install/uninstall/transition throughout a paused pre-socket OS probe
+  ---
+  duration_ms: 4204.67114
+  type: 'test'
+  ...
+# Subtest: live daemon holds the installation lock and graceful stop permits repair/unregister
+ok 23 - live daemon holds the installation lock and graceful stop permits repair/unregister
+  ---
+  duration_ms: 127.092164
+  type: 'test'
+  ...
+# Subtest: installer respects a historical migration lock even without a socket
+ok 24 - installer respects a historical migration lock even without a socket
+  ---
+  duration_ms: 13.444037
+  type: 'test'
+  ...
+# (node:942490) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: packaged daemon rejects invalid pin, mode, permissions and concurrent ownership before database creation
+ok 25 - packaged daemon rejects invalid pin, mode, permissions and concurrent ownership before database creation
+  ---
+  duration_ms: 1084.342108
+  type: 'test'
+  ...
+# Subtest: packaged Session-only daemon transfers credentials without adding activation authority
+ok 26 - packaged Session-only daemon transfers credentials without adding activation authority
+  ---
+  duration_ms: 569.400754
+  type: 'test'
+  ...
+# Subtest: installed startup binds actual registered native transport across forward/reverse release switches
+ok 27 - installed startup binds actual registered native transport across forward/reverse release switches
+  ---
+  duration_ms: 1118.274795
+  type: 'test'
+  ...
+# Subtest: installed startup rejects incomplete, stale or altered installation before database/socket creation
+ok 28 - installed startup rejects incomplete, stale or altered installation before database/socket creation
+  ---
+  duration_ms: 1562.310404
+  type: 'test'
+  ...
+# Subtest: SIGTERM during successful OS probe retains ownership until completion and suppresses startup
+ok 29 - SIGTERM during successful OS probe retains ownership until completion and suppresses startup
+  ---
+  duration_ms: 398.659189
+  type: 'test'
+  ...
+# Subtest: SIGINT during successful OS probe retains ownership until completion and suppresses startup
+ok 30 - SIGINT during successful OS probe retains ownership until completion and suppresses startup
+  ---
+  duration_ms: 352.997681
+  type: 'test'
+  ...
+# Subtest: SIGTERM during failing OS probe retains ownership until completion and suppresses startup
+ok 31 - SIGTERM during failing OS probe retains ownership until completion and suppresses startup
+  ---
+  duration_ms: 345.287138
+  type: 'test'
+  ...
+# (node:942509) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: disconnect during secret read prevents subsequent writes and final checkpoint publication
+ok 32 - disconnect during secret read prevents subsequent writes and final checkpoint publication
+  ---
+  duration_ms: 388.350925
+  type: 'test'
+  ...
+# Subtest: valid v1 provider settings use the same authenticated conversion/readback path
+ok 33 - valid v1 provider settings use the same authenticated conversion/readback path
+  ---
+  duration_ms: 261.007196
+  type: 'test'
+  ...
+# (node:942516) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual MG01 credential transfer stages metadata only; session restart requires an explicit fresh copy
+ok 34 - actual MG01 credential transfer stages metadata only; session restart requires an explicit fresh copy
+  ---
+  duration_ms: 775.413362
+  type: 'test'
+  ...
+# Subtest: settings mode is explicit and cannot silently downgrade OS-store requests
+ok 35 - settings mode is explicit and cannot silently downgrade OS-store requests
+  ---
+  duration_ms: 283.923924
+  type: 'test'
+  ...
+# Subtest: no settings capability exists without explicit backend composition
+ok 36 - no settings capability exists without explicit backend composition
+  ---
+  duration_ms: 202.783248
+  type: 'test'
+  ...
+# Subtest: wrong snapshot, stale epoch and an unprepared backend never authorize credential copy
+ok 37 - wrong snapshot, stale epoch and an unprepared backend never authorize credential copy
+  ---
+  duration_ms: 476.592646
+  type: 'test'
+  ...
+# (node:942525) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: actual native subprocess and authenticated daemon mirror real MG02 staging, then persist across restart
+ok 38 - actual native subprocess and authenticated daemon mirror real MG02 staging, then persist across restart
+  ---
+  duration_ms: 627.427682
+  type: 'test'
+  ...
+# Subtest: unauthenticated and wrong-profile calls cannot mutate SQLite
+ok 39 - unauthenticated and wrong-profile calls cannot mutate SQLite
+  ---
+  duration_ms: 383.688227
+  type: 'test'
+  ...
+# Subtest: remote mirroring cannot create a fence or prepare a migration
+ok 40 - remote mirroring cannot create a fence or prepare a migration
+  ---
+  duration_ms: 206.083565
+  type: 'test'
+  ...
+# Subtest: stale epoch and unknown migration IDs close the request without publishing agreement
+ok 41 - stale epoch and unknown migration IDs close the request without publishing agreement
+  ---
+  duration_ms: 331.542087
+  type: 'test'
+  ...
+# Subtest: a persisted DB owner cannot be rebound to another paired profile
+ok 42 - a persisted DB owner cannot be rebound to another paired profile
+  ---
+  duration_ms: 199.248335
+  type: 'test'
+  ...
+# Subtest: an ordinary bridge does not advertise or accept migration RPC
+ok 43 - an ordinary bridge does not advertise or accept migration RPC
+  ---
+  duration_ms: 293.576594
+  type: 'test'
+  ...
+# Subtest: committed target keeps ACK readback available while rejecting further puts
+ok 44 - committed target keeps ACK readback available while rejecting further puts
+  ---
+  duration_ms: 227.413026
+  type: 'test'
+  ...
+1..44
+# tests 44
+# suites 0
+# pass 44
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4533.332442

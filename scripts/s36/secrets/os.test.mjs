@@ -182,3 +182,8 @@ test("installed pinned Linux secret package reads OS values and uninstall retain
     await k.close();
   }
 });
+
+test("installed OS-mode daemon authenticates via registered host and refuses a locked store", async () => {
+  const { installedOs } = await import("./installed-os.mjs");
+  await installedOs();
+});

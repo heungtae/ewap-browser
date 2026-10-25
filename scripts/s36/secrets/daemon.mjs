@@ -19,6 +19,7 @@ import { SessionSecrets } from "../../../apps/agent-server/src/settings/service.
 import { LinuxSecretServiceStore } from "../../../apps/agent-server/src/settings/linux-secret-store.ts";
 import { migrationProfileGuard } from "../../../packages/shared/src/migration-rpc.ts";
 import { acquireInstallLock } from "../../../apps/agent-server/src/migration/install-files.ts";
+import { assertInstalledStart } from "../../../apps/agent-server/src/migration/installed-start.ts";
 // Explicit qualification entrypoint. No test helpers, remote prepare/commit or default activation.
 let db, server, lock, lockPath, releaseInstallation;
 let stopping = false,
@@ -50,11 +51,12 @@ process.on("SIGTERM", stop);
 process.on("SIGINT", stop);
 try {
   const [releaseId, configPath, mode, ...extra] = process.argv.slice(2);
+  const installed = extra.length === 1 && extra[0] === "--installed";
   if (
     !configPath ||
     !isAbsolute(configPath) ||
     resolve(configPath) !== configPath ||
-    extra.length ||
+    (extra.length && !installed) ||
     !["--settings-session-only", "--settings-os-store"].includes(mode)
   )
     throw new Error("MIGRATION_CONFIGURATION");
@@ -70,8 +72,18 @@ try {
   )
     throw new Error("MIGRATION_DIRECTORY");
   releaseInstallation = acquireInstallLock(directory);
+  if (installed && configPath !== `${directory}/pairing.json`)
+    throw new Error("INSTALL_PAIRING_CONFLICT");
+  const extensionId = installed
+    ? assertInstalledStart(directory, root, releaseId)
+    : undefined;
   const config = await readConfig(configPath);
   assertStarting();
+  if (
+    extensionId &&
+    (config.extensionIds.length !== 1 || config.extensionIds[0] !== extensionId)
+  )
+    throw new Error("INSTALL_PAIRING_CONFLICT");
   if (config.socketPath !== `${directory}/agent.sock`)
     throw new Error("MIGRATION_SOCKET");
   if (existsSync(config.socketPath)) throw new Error("MIGRATION_ACTIVE");

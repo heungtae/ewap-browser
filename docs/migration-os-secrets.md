@@ -81,3 +81,28 @@ freeze and prepared journal creation still require trusted local orchestration.
 The packaged bundle excludes test fixture imports. [Evidence](evidence/s36-packaged-daemon-2026-10-25.md)
 separates native OS restart qualification from full installed orchestration.
 Run `pnpm test:s36:daemon` under Node 22 after the release/secrets/transport builds.
+
+## Binding explicit startup to an installation
+
+After installing the same pinned release with the qualification installer, add
+`--installed` as the final argument:
+
+```sh
+node /absolute/release/agent-server/migration-daemon.mjs EXPECTED_RELEASE_ID /absolute/private/pairing.json --settings-os-store --installed
+```
+
+This mode checks the active installation receipt, canonical private registry,
+matching release/executable/pairing and complete generated wrapper/registration
+under the lifetime installation lock before probing secrets or opening SQLite.
+It rejects pending transitions, partial/uninstalled receipts and missing/altered
+owned files. It never repairs installation implicitly. Use the installer to finish
+repair/transition before starting; after a release switch invoke the newly selected
+package with its independently pinned ID. The old package is rejected in installed
+mode. Removing registration also prevents this installed mode from starting.
+The same flag works with explicit Session-only mode.
+
+Without the flag the explicit standalone qualification mode still accepts a private
+pairing configuration without requiring installation. The flag is a local startup
+choice, not a remote grant or defense against a malicious OS user. No service unit
+is installed/started automatically. [Dated native/OS evidence](evidence/s36-installed-start-2026-10-25.md)
+records same-version forward/reverse selection and private-keyring locked startup.

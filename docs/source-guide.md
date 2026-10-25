@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Installed startup: [binding checks](../apps/agent-server/src/migration/installed-start.ts), [native regression](../scripts/s36/secrets/installed-start.test.mjs), [operations](migration-os-secrets.md#binding-explicit-startup-to-an-installation), [evidence](evidence/s36-installed-start-2026-10-25.md).
+
 Graceful startup cancellation: [daemon](../scripts/s36/secrets/daemon.mjs), [regression](../scripts/s36/secrets/startup-stop.test.mjs), [issue](issues/records/2026-10-25-daemon-startup-stop.md), [evidence](evidence/s36-startup-stop-2026-10-25.md).
 
 Install/daemon exclusion: [shared lock](../apps/agent-server/src/migration/install-files.ts), [regression](../scripts/s36/secrets/coordination.test.mjs), [issue](issues/records/2026-10-25-install-daemon-coordination.md), [evidence](evidence/s36-install-coordination-2026-10-25.md).

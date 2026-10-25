@@ -49,3 +49,9 @@ pnpm check:s36:install
 ```
 
 The Chrome runner requires `CHROME_FOR_TESTING_BIN`, `S36_INSTALL_RELEASE_DIR` and an independently pinned `S36_INSTALL_RELEASE_ID`. Set `S36_INSTALL_EVIDENCE_DIR` to a new evidence directory when retaining a report. It creates a temporary profile, installs/repairs a native host, exercises the real authenticated S28 bridge and backend restart, unregisters the host and removes the temporary profile. It does not use live providers or run business actions. Windows/macOS, normal-profile deployment, system service management, OS credential persistence, full target-runtime installation and cross-version upgrade remain unverified.
+
+The optional packaged migration daemon can bind explicit startup to this active
+receipt with final `--installed`; see [commands and checks](migration-os-secrets.md#binding-explicit-startup-to-an-installation).
+Missing/changed owned files and pending/uninstalled states block startup rather
+than triggering repair. This remains opt-in qualification composition, not a
+normal-user service or full installed migration orchestration.
