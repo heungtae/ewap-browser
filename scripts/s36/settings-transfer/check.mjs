@@ -7,11 +7,9 @@ import {
   digest,
   validateInventory,
 } from "../../s26-inventory.mjs";
-const manifest = read(
-  "docs/baselines/s36-install-coordination/disposition.json",
-);
+const manifest = read("docs/baselines/s36-startup-stop/disposition.json");
 for (const entry of read(
-  "docs/baselines/s36-settings-transfer/disposition.json",
+  "docs/baselines/s36-install-coordination/disposition.json",
 ).files)
   assert.deepEqual(
     manifest.files.find((item) => item.path === entry.path),

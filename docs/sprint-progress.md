@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-25 graceful startup cancellation
+
+**In Progress.** [Evidence](evidence/s36-startup-stop-2026-10-25.md) and
+[ISS-20261025-002](issues/records/2026-10-25-daemon-startup-stop.md) preserve
+pre-fix signal failures and qualify early SIGTERM/SIGINT observation. Ownership is
+retained until bounded startup work settles; further startup is suppressed and
+owned locks released. Probe failure stays failure. Native 42/42 and private OS
+7/7 passed. Crash recovery/full writer freeze/installed coordination remain open.
+
 ## Browser Agent S36 — 2026-10-25 install/daemon coordination
 
 **In Progress.** [Evidence](evidence/s36-install-coordination-2026-10-25.md) and

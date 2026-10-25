@@ -12,6 +12,7 @@
 
 | ID               | 발생일     | 이슈                                                                                                | 상태    | 최근 갱신  | 다음 작업                                                |
 | ---------------- | ---------- | --------------------------------------------------------------------------------------------------- | ------- | ---------- | -------------------------------------------------------- |
+| ISS-20261025-002 | 2026-10-25 | [Graceful stop during migration-daemon initialization](records/2026-10-25-daemon-startup-stop.md) | 해결 | 2026-10-25 | Bounded signal/probe acceptance passed; forced-death recovery unverified |
 | ISS-20261025-001 | 2026-10-25 | [Migration daemon preparation and installation exclusion](records/2026-10-25-install-daemon-coordination.md) | 해결 | 2026-10-25 | Bounded native/OS acceptance passed; deployment unverified |
 | ISS-20261018-004 | 2026-10-18 | [개발 진단 원문·릴리스 마스킹 빌드 구분](records/2026-10-18-development-diagnostics.md) | 해결 | 2026-10-18 | 0.1.117 사용자 원문·호출 연결 확인; 실행 전 검토 실패는 별도 |
 | ISS-20261018-003 | 2026-10-18 | [Provider 응답 투영 후 호출 ID·처리 로그 누락](records/2026-10-18-provider-call-correlation.md) | 해결 | 2026-10-18 | unit 78건·0.1.116 사용자 진단에서 연결 확인; 실행 오류 분류는 별도 |

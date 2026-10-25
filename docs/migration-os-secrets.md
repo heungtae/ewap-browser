@@ -66,7 +66,11 @@ exclusive `migration-daemon.lock` prevents concurrent instances; the daemon also
 holds the shared `install.lock` before reading pairing or probing the OS store and
 through server/database shutdown, excluding install/repair/unregister/transitions; an existing socket
 also blocks startup and is never removed as a startup recovery action. Graceful
-SIGTERM/SIGINT closes clients/database and releases the owned locks. A crash or forced termination during initialization can
+SIGTERM/SIGINT is observed during initialization as well as runtime. A stop during
+the OS probe retains the locks until the existing bounded helper call settles,
+then suppresses further startup and releases owned locks. Repeated signals share
+one shutdown path; an actual probe failure still exits with failure. Runtime stop
+closes clients/database before releasing locks. SIGKILL or a crash can
 leave locks/socket; investigate ownership and stop all old writers before manual
 recovery. The daemon never guesses that a lock is stale or takes over an endpoint.
 

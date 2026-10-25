@@ -21,12 +21,33 @@ import { migrationProfileGuard } from "../../../packages/shared/src/migration-rp
 import { acquireInstallLock } from "../../../apps/agent-server/src/migration/install-files.ts";
 // Explicit qualification entrypoint. No test helpers, remote prepare/commit or default activation.
 let db, server, lock, lockPath, releaseInstallation;
+let stopping = false,
+  shutdown;
 const releaseLock = () => {
   if (lock === undefined) return;
   closeSync(lock);
   lock = undefined;
   unlinkSync(lockPath);
 };
+const close = () => {
+  db?.close();
+  db = undefined;
+  releaseLock();
+  releaseInstallation?.();
+};
+const stopServer = () => (shutdown ??= stopLocal(server).finally(close));
+const stop = () => {
+  stopping = true;
+  if (server)
+    void stopServer().catch(() => {
+      process.exitCode = 1;
+    });
+};
+const assertStarting = () => {
+  if (stopping) throw new Error("MIGRATION_STOPPED");
+};
+process.on("SIGTERM", stop);
+process.on("SIGINT", stop);
 try {
   const [releaseId, configPath, mode, ...extra] = process.argv.slice(2);
   if (
@@ -50,6 +71,7 @@ try {
     throw new Error("MIGRATION_DIRECTORY");
   releaseInstallation = acquireInstallLock(directory);
   const config = await readConfig(configPath);
+  assertStarting();
   if (config.socketPath !== `${directory}/agent.sock`)
     throw new Error("MIGRATION_SOCKET");
   if (existsSync(config.socketPath)) throw new Error("MIGRATION_ACTIVE");
@@ -62,6 +84,7 @@ try {
           `${import.meta.dirname}/secret-service.py`,
           await migrationProfileGuard(config.installationId, config.profileId),
         );
+  assertStarting();
   process.umask(0o077);
   const path = `${directory}/migration.sqlite`;
   try {
@@ -83,25 +106,8 @@ try {
     config,
     await migrationEndpoint(db, config, store),
   );
-  let stopping = false;
-  const stop = () => {
-    if (stopping) return;
-    stopping = true;
-    void stopLocal(server)
-      .catch(() => {
-        process.exitCode = 1;
-      })
-      .finally(() => {
-        db.close();
-        releaseLock();
-        releaseInstallation();
-      });
-  };
-  process.on("SIGTERM", stop);
-  process.on("SIGINT", stop);
-} catch {
-  db?.close();
-  releaseLock();
-  releaseInstallation?.();
-  process.exitCode = 1;
+  if (stopping) await stopServer();
+} catch (error) {
+  close();
+  if (error.message !== "MIGRATION_STOPPED") process.exitCode = 1;
 }

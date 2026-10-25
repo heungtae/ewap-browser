@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 startup cancellation](s36-startup-stop-2026-10-25.md): early SIGTERM/SIGINT observation, bounded probe settlement, retained exclusion and owned-lock cleanup; crash recovery remains pending.
+
 [S36 install/daemon coordination](s36-install-coordination-2026-10-25.md): reproduced pre-socket race, shared lifecycle lock, historical-lock guard and graceful release; managed service/full writer freeze remain pending.
 
 [S36 explicit packaged daemon](s36-packaged-daemon-2026-10-25.md): fixture-free opt-in runtime, pinned release verification, exclusive ownership and OS-mode native restart/readback; managed service and real writer freeze remain pending.

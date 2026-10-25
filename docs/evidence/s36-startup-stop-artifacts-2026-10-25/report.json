@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "scope": "qualification-only",
+  "releaseId": "5274a0ff77a9b75b42a565f04f2f2ba68b31c7ba8a57a456e153c6eee5e5dc6b",
+  "source": {
+    "revision": "3d7fc70a193bba6830dfe47b8afeba7c7d54ed2b",
+    "dirty": true
+  },
+  "versions": {
+    "extension": "0.1.117",
+    "backend": "0.0.0",
+    "browserApp": "0.0.0"
+  },
+  "protocol": {
+    "major": 1,
+    "minor": 0
+  },
+  "credentials": "session-only",
+  "linuxSecretsPackaged": true,
+  "files": 37,
+  "bytes": 3601068,
+  "registered": false,
+  "installed": false,
+  "delivered": false,
+  "productionAdmission": "unchanged",
+  "directory": "/home/heungtae/develop/ai-agent/ewap/ewap-browser/dist/s36/startup-stop-2026-10-25"
+}
