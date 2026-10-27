@@ -5,9 +5,13 @@ import {
 } from "../../../../packages/policy-engine/src/migration-contract.js";
 import {
   migrationStatusSchema,
+  migrationResumeScopeSchema,
+  migrationResumeResultSchema,
   type MigrationCommand,
 } from "../../../../packages/shared/src/migration-rpc.js";
 import { migrationDigest } from "./migration-digest.js";
+import { migrationUnits } from "../../../../packages/shared/src/migration.js";
+import type { BrowserMigrationPort } from "../../../../packages/shared/src/migration-ports.js";
 export function migrationTransport(
   profileGuard: string,
   request: (value: MigrationCommand) => Promise<unknown>,
@@ -52,6 +56,49 @@ export function migrationTransport(
   };
   return {
     port,
+    async checkResume(
+      raw: { migrationId: string; epoch: number; revision: number },
+      source: Pick<
+        BrowserMigrationPort,
+        "profileGuard" | "assertFrozen" | "sourceDigest"
+      >,
+    ) {
+      if (source.profileGuard !== profileGuard)
+        throw new Error("MIGRATION_PROFILE");
+      const scope = migrationResumeScopeSchema.parse({
+        profileGuard,
+        migrationId: raw.migrationId,
+        epoch: raw.epoch,
+        revision: raw.revision,
+      });
+      const observe = async () => {
+        await source.assertFrozen(scope.epoch);
+        const digests = {} as Record<(typeof migrationUnits)[number], string>;
+        for (const unit of migrationUnits)
+          digests[unit] = await source.sourceDigest(unit, scope.epoch);
+        await source.assertFrozen(scope.epoch);
+        return digests;
+      };
+      const sourceDigests = await observe();
+      const result = migrationResumeResultSchema.parse(
+        await call({
+          kind: "migration.resume.check",
+          ...scope,
+          sourceDigests,
+        }),
+      );
+      if (
+        result.profileGuard !== profileGuard ||
+        result.migrationId !== scope.migrationId ||
+        result.epoch !== scope.epoch ||
+        result.revision !== scope.revision
+      )
+        throw new Error("MIGRATION_RESUME_SCOPE");
+      const current = await observe();
+      if (migrationUnits.some((unit) => current[unit] !== sourceDigests[unit]))
+        throw new Error("SOURCE_CHANGED");
+      return result;
+    },
     async status() {
       const value = migrationStatusSchema.parse(
         await call({ kind: "migration.status", profileGuard }),

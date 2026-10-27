@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Authenticated resume observation: [daemon endpoint](../apps/agent-server/src/migration/rpc.ts), [browser source observation](../apps/chrome-extension/src/migration/rpc.ts), [strict contracts](../packages/shared/src/migration-rpc.ts), [operations](migration-transport.md), [2026-10-27 evidence](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27). Read-only; global orchestration and actual writer freeze remain pending.
+
 Opt-in foreground launcher: [installation](../apps/agent-server/src/migration/daemon-installation.ts), [plan](../apps/agent-server/src/migration/daemon-launcher-plan.ts), [operations](migration-daemon-launcher.md), [evidence](evidence/s36-daemon-launcher-2026-10-25.md).
 
 Session resume checks: [implementation](../apps/agent-server/src/migration/session.ts), [native regression](../scripts/s36/integration/resume.test.mjs), [issue](issues/records/2026-10-25-migration-resume-source.md), [evidence](evidence/s36-resume-preflight-2026-10-25.md).

@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { DatabaseSync } from "node:sqlite";
 import { spawnSync } from "node:child_process";
 import {
   mkdtempSync,
@@ -15,6 +16,7 @@ import { fixture } from "../transport/support.mjs";
 import {
   providerSettings,
   migrationDigest,
+  MigrationJournal,
 } from "../../../dist/s36/transport.mjs";
 test("packaged daemon rejects invalid pin, mode, permissions and concurrent ownership before database creation", () => {
   for (const fault of [
@@ -118,6 +120,21 @@ test("packaged Session-only daemon transfers credentials without adding activati
       status = await client.rpc.status();
     assert.equal(status.settingsMode, "session-only");
     assert.equal(status.admission, false);
+    const db = new DatabaseSync(f.dbPath);
+    const view = new MigrationJournal(db).read();
+    db.close();
+    const scope = { migrationId: "wire", epoch: 1, revision: view.revision };
+    const source = {
+      profileGuard: f.profile,
+      async assertFrozen() {},
+      async sourceDigest(unit) {
+        return view.manifest.sourceDigests[unit];
+      },
+    };
+    assert.equal(
+      (await client.rpc.checkResume(scope, source)).sourceMatched,
+      true,
+    );
     const cp = await client.settings.stage(
       "wire",
       1,
@@ -126,6 +143,18 @@ test("packaged Session-only daemon transfers credentials without adding activati
     );
     await f.stop();
     await f.start();
+    assert.equal(
+      (await f.client().rpc.checkResume(scope, source)).phase,
+      "prepared",
+    );
+    await assert.rejects(
+      f.client().rpc.checkResume(scope, {
+        ...source,
+        async sourceDigest(unit) {
+          return unit === "MG04" ? "0".repeat(64) : source.sourceDigest(unit);
+        },
+      }),
+    );
     await assert.rejects(
       f.client().settings.validate("wire", 1, cp, "session-only"),
     );

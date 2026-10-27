@@ -4,6 +4,7 @@ import { parseMigrationCommand } from "../../../../packages/policy-engine/src/mi
 import {
   migrationProfileGuard,
   migrationStatusSchema,
+  migrationResumeResultSchema,
   type MigrationRequestContext,
 } from "../../../../packages/shared/src/migration-rpc.js";
 import type { Sqlite } from "../tasks/database.js";
@@ -11,6 +12,7 @@ import type { Pairing } from "../ipc/auth.js";
 import { transaction } from "../tasks/database.js";
 import { MigrationJournal } from "./journal.js";
 import { SqlitePolicyMirror } from "./mg02-mirror.js";
+import { migrationUnits } from "../../../../packages/shared/src/migration.js";
 export async function migrationEndpoint(
   db: Sqlite,
   pairing: Pick<Pairing, "installationId" | "profileId">,
@@ -48,6 +50,43 @@ export async function migrationEndpoint(
       (view && view.manifest.profileGuard !== profileGuard)
     )
       throw new Error("MIGRATION_FENCE");
+    if (command.kind === "migration.resume.check") {
+      return transaction(db, () => {
+        const view = journal.read(),
+          state = journal.state();
+        if (
+          !context ||
+          context.signal.aborted ||
+          Date.now() >= context.deadline
+        )
+          throw new Error("MIGRATION_EXPIRED");
+        if (
+          !view ||
+          state.admission !== 0 ||
+          view.manifest.profileGuard !== profileGuard ||
+          state.namespace !== "legacy" ||
+          !["prepared", "copying", "validated"].includes(view.phase) ||
+          view.manifest.migrationId !== command.migrationId ||
+          view.epoch !== command.epoch ||
+          state.epoch !== command.epoch ||
+          view.revision !== command.revision
+        )
+          throw new Error("MIGRATION_RESUME_SCOPE");
+        for (const unit of migrationUnits)
+          if (command.sourceDigests[unit] !== view.manifest.sourceDigests[unit])
+            throw new Error("SOURCE_CHANGED");
+        // Observation only. Never publish an owner ACK or change journal/admission.
+        return migrationResumeResultSchema.parse({
+          schema: "wca.migration-resume-check/v1",
+          profileGuard,
+          migrationId: command.migrationId,
+          epoch: view.epoch,
+          revision: view.revision,
+          phase: view.phase,
+          sourceMatched: true,
+        });
+      });
+    }
     if (command.kind === "migration.status")
       return migrationStatusSchema.parse({
         schema: "wca.migration-status/v1",

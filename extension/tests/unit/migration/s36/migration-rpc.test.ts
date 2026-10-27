@@ -2,6 +2,7 @@ import { expect, it } from "vitest";
 import {
   migrationProfileGuard,
   migrationStatusSchema,
+  migrationResumeCheckSchema,
 } from "../../../../../packages/shared/src/migration-rpc.js";
 import { parseMigrationCommand } from "../../../../../packages/policy-engine/src/migration-rpc.js";
 import { migrationTransport } from "../../../../../apps/chrome-extension/src/migration/rpc.js";
@@ -14,6 +15,108 @@ it("binds the profile to both authenticated installation and profile IDs", async
   expect(await migrationProfileGuard("install", "profile")).toBe(first);
   expect(await migrationProfileGuard("other", "profile")).not.toBe(first);
   expect(await migrationProfileGuard("install", "other")).not.toBe(first);
+});
+const units = ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"] as const;
+const resumeScope = {
+  profileGuard: "a".repeat(64),
+  migrationId: "resume",
+  epoch: 1,
+  revision: 2,
+};
+const resumeResult = {
+  ...resumeScope,
+  schema: "wca.migration-resume-check/v1",
+  phase: "validated",
+  sourceMatched: true,
+};
+it("requires exactly six bounded digests and rejects raw sources", () => {
+  const value = {
+    ...resumeScope,
+    sourceDigests: Object.fromEntries(
+      units.map((unit) => [unit, "b".repeat(64)]),
+    ),
+  };
+  expect(migrationResumeCheckSchema.safeParse(value).success).toBe(true);
+  for (const unit of units) {
+    const digests = { ...value.sourceDigests };
+    delete digests[unit];
+    expect(
+      migrationResumeCheckSchema.safeParse({ ...value, sourceDigests: digests })
+        .success,
+    ).toBe(false);
+  }
+  expect(
+    migrationResumeCheckSchema.safeParse({ ...value, source: "PRIVATE_CANARY" })
+      .success,
+  ).toBe(false);
+});
+it("freshly observes all sources before and after the authenticated check", async () => {
+  const reads: string[] = [];
+  let calls = 0;
+  const rpc = migrationTransport(resumeScope.profileGuard, async (command) => {
+    calls++;
+    expect(command.kind).toBe("migration.resume.check");
+    expect(reads).toEqual([...units]);
+    return resumeResult;
+  });
+  const result = await rpc.checkResume(resumeScope, {
+    profileGuard: resumeScope.profileGuard,
+    async assertFrozen() {},
+    async sourceDigest(unit) {
+      reads.push(unit);
+      return "b".repeat(64);
+    },
+  });
+  expect(result).toEqual(resumeResult);
+  expect(reads).toEqual([...units, ...units]);
+  expect(calls).toBe(1);
+});
+it("rejects source drift or freeze loss while the backend check is in flight", async () => {
+  for (const race of ["source", "freeze"]) {
+    let replied = false;
+    const rpc = migrationTransport(resumeScope.profileGuard, async () => {
+      replied = true;
+      return resumeResult;
+    });
+    await expect(
+      rpc.checkResume(resumeScope, {
+        profileGuard: resumeScope.profileGuard,
+        async assertFrozen() {
+          if (replied && race === "freeze")
+            throw new Error("SOURCE_NOT_FROZEN");
+        },
+        async sourceDigest(unit) {
+          return (replied && unit === "MG04" ? "c" : "b").repeat(64);
+        },
+      }),
+    ).rejects.toThrow(
+      race === "source" ? "SOURCE_CHANGED" : "SOURCE_NOT_FROZEN",
+    );
+  }
+});
+it("rejects a mismatched or authority-bearing resume response", async () => {
+  for (const patch of [
+    { profileGuard: "c".repeat(64) },
+    { migrationId: "other" },
+    { epoch: 2 },
+    { revision: 3 },
+    { phase: "committed" },
+    { admission: true },
+  ]) {
+    const rpc = migrationTransport(resumeScope.profileGuard, async () => ({
+      ...resumeResult,
+      ...patch,
+    }));
+    await expect(
+      rpc.checkResume(resumeScope, {
+        profileGuard: resumeScope.profileGuard,
+        async assertFrozen() {},
+        async sourceDigest() {
+          return "b".repeat(64);
+        },
+      }),
+    ).rejects.toThrow();
+  }
 });
 it("rejects raw source and remote authority commands before forwarding", () => {
   const profileGuard = "a".repeat(64);

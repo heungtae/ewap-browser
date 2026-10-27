@@ -79,6 +79,7 @@ export async function listenLocal(
                 "resumeEvents",
                 "migration.status",
                 "migration.policy",
+                "migration.resume",
                 ...(migration.settingsMode ? ["migration.settings"] : []),
               ]
             : ["heartbeat", "resumeEvents"],

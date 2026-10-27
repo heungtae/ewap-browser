@@ -2,6 +2,20 @@
 
 S36 exposes bounded MG02 mirror/status operations and an explicitly configured [MG01 settings-transfer service](migration-settings-transfer.md) over the existing authenticated S28 native bridge. This is not a full migration endpoint: no remote prepare, fence, commit, activation or rollback command exists. Source-writer freeze and complete coordinator composition remain pending.
 
+The optional daemon also advertises `migration.resume` for the read-only
+`migration.resume.check` operation. `migrationTransport(...).checkResume(scope,
+browserOwner)` observes all six source digests before sending and again after
+the reply, checking the supplied owner's freeze guard on both sides. The daemon
+checks the authenticated profile, migration ID, epoch, journal revision and all
+six digests in one SQLite transaction. Only nonterminal journals in the legacy
+namespace with closed admission qualify. Missing/changed sources, stale scope,
+expired requests and disconnected peers fail closed. The result is an observation,
+not an owner acknowledgment, staged-target validation or permission to resume a
+mutation. The command cannot create a journal, recover lost session sources or
+activate a namespace. Freeze still depends on the caller's real writer ownership.
+Earlier daemons without the capability are rejected before dispatch. See the
+[2026-10-27 continuation](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27).
+
 Use pnpm 9.15.4 and Node 22.23.2 for the qualification daemon. Build `pnpm build:s28`, `pnpm build:s36:transport` and `pnpm build:s36:install`. [Install the pinned native host](migration-linux-install.md) into an explicitly selected isolated profile, then run:
 
 ```sh

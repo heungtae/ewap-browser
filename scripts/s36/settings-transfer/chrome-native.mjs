@@ -142,6 +142,7 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       credentialMode: mode,
       sixUnitBrowserReadbackVerified: all,
       browserOwnerAckReopenVerified: all,
+      sourceBoundResumeCheckVerified: all,
       missingUnitProfileAndExpiryRejected: all,
       globalCommit: false,
       backendPhase: "prepared",

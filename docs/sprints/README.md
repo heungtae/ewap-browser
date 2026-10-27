@@ -14,6 +14,8 @@
 
 ## Web Codebase Agent migration S26-S37
 
+Latest S36 continuation: [2026-10-27 authenticated resume observation](../evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27). Installed daemon source checking is connected; full recovery and global coordination remain pending.
+
 **S26 completed its recorded baseline; S27–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and
 72 verification scenarios define the original scope; completion and runtime evidence are recorded per Sprint.

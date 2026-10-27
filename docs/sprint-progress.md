@@ -4,6 +4,16 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-27 authenticated resume observation
+
+**In Progress.** The [daemon continuation](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27)
+connects a strict, capability-gated read-only resume check through the native bridge.
+All-six source observations are checked against a transactionally read journal and
+re-observed after the reply. Actual installed Chrome/source/IndexedDB and packaged
+daemon checks pass in an isolated Linux Session-only profile. Global coordinator
+composition, lost-session-source recovery and actual writer freeze remain pending;
+S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-25 explicit foreground daemon launcher
 
 **In Progress.** [Evidence](evidence/s36-daemon-launcher-2026-10-25.md) records

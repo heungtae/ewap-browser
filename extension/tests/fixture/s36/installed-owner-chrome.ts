@@ -163,6 +163,8 @@ export function ownerFixture(
     async reopen() {
       db.close();
       db = await openDatabase(indexedDB, profile);
+      const rpc = migrationTransport(profile, request);
+      await rpc.checkResume((await rpc.status()).migration!, browser());
       check(await browser().verifyAcknowledgment(view), "BROWSER_ACK_REOPEN");
       return true;
     },

@@ -1,8 +1,22 @@
 import { z } from "zod";
-import { migrationCheckpointSchema } from "./migration.js";
+import { migrationCheckpointSchema, migrationUnits } from "./migration.js";
 const profileGuard = z.string().regex(/^[a-f0-9]{64}$/);
 const migrationId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
 const epoch = z.number().int().positive().safe();
+export const migrationResumeScopeSchema = z.strictObject({
+  profileGuard,
+  migrationId,
+  epoch,
+  revision: z.number().int().nonnegative().safe(),
+});
+export const migrationResumeCheckSchema = migrationResumeScopeSchema.extend({
+  sourceDigests: z.record(z.enum(migrationUnits), profileGuard),
+});
+export const migrationResumeResultSchema = migrationResumeScopeSchema.extend({
+  schema: z.literal("wca.migration-resume-check/v1"),
+  phase: z.enum(["prepared", "copying", "validated"]),
+  sourceMatched: z.literal(true),
+});
 const settingsScope = {
   profileGuard,
   migrationId,
@@ -21,6 +35,9 @@ export const migrationSettingsAckSchema = z.strictObject({
   verified: z.literal(true),
 });
 export const migrationCommandSchema = z.discriminatedUnion("kind", [
+  migrationResumeCheckSchema.extend({
+    kind: z.literal("migration.resume.check"),
+  }),
   z.strictObject({
     kind: z.literal("migration.settings.stage"),
     ...settingsScope,

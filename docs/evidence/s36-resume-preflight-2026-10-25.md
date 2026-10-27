@@ -51,3 +51,55 @@ source recovery, managed normal-user service, UI parity, cross-version/crash rec
 live JEV and holdouts remain open. No silent source rehydration, historical approval
 reuse, dispatch/admission or production cutover was added. Original architecture,
 individual Sprint designs, UI templates and production entrypoints are preserved.
+
+## Authenticated daemon continuation — 2026-10-27
+
+Parent `cb304d81df72ee591e82b2a2abaf8eb64688684f` plus this uncommitted
+continuation; version 0.1.117. The original session-only evidence above remains
+historical. The installed optional daemon now exposes a separate read-only
+`migration.resume.check` operation, advertised as `migration.resume` and validated
+at both privileged endpoints. It does not compose `MigrationSession` or enable
+remote prepare/copy/ACK/commit.
+
+The browser adapter takes fresh observations from the supplied browser owner
+before and after the request, checking freeze and all-six digest stability. The
+daemon binds profile/ID/epoch/revision and requires prepared/copying/validated,
+legacy namespace and closed admission in a SQLite transaction. The result contains
+only scope, phase and `sourceMatched`; no source values or executable authority.
+The native regression rejects drift in each of MG01–MG06, stale ID/epoch/revision,
+invalid authentication, expired/aborted/missing contexts and unavailable capability.
+Successful checks and failures preserve journal, checkpoints, ACKs and fence.
+
+Executed on Linux with pnpm 9.15.4, Node 20.19.6 for TS/unit/build and Node
+22.23.2 for native SQLite/Chrome; Chrome 147.0.7727.15:
+
+- `pnpm test:unit`: 277 files / 1,367 tests pass, including S36 114 tests.
+- Node 22 `--test scripts/s36/transport/*.test.mjs scripts/s36/settings-transfer/*.test.mjs scripts/s36/secrets/daemon.test.mjs`:
+  16/16 pass after the final transaction change, including packaged Session-only
+  daemon restart and read-only source matching/drift rejection.
+- Version-preserving S28, transport, secrets, release and installation builds pass.
+- TypeScript checks, ESLint/Prettier, module boundaries, cumulative
+  `check:s36:settings-transfer` (1,902 files; 209 checked modules), frozen
+  production/design hashes and `git diff --check` pass.
+- Actual `scripts/s36/settings-transfer/owner-chrome.mjs` passes using the final
+  pinned qualification artifact set
+  `6a971960267bb7b8325459f144044d7db467429153ef360937c3d09bf9f130b2`.
+  The report at `dist/s36/resume-rpc-chrome-20261027-final/report.json` records
+  `sourceBoundResumeCheckVerified:true`, six-unit browser readback, installed
+  startup, MG01/MG02 persistence, browser ACK reopen and zero CSP violations.
+  The actual browser owner re-observes Chrome local/session sources and IndexedDB
+  around Worker → registered native host → packaged daemon requests after daemon
+  restart. The prepared backend journal and freeze remain controlled fixtures.
+
+Initial sandbox native runs could not create Unix sockets (`EPERM`); permitted
+reruns pass. Local artifact capture/one direct inventory invocation also hit child
+Git `EPERM`; permitted execution is required in this environment. The historical
+`check:s36:transport` inventory predates the daemon launcher and reports that
+existing file as unmapped; the cumulative `check:s36:settings-transfer` is the
+current inventory check. An interrupted pnpm launcher was replaced by equivalent
+local installed CLI/build commands without changing dependencies.
+
+No OS-store, browser-process restart, live JEV, holdout, public release or full UI
+qualification is added by this continuation. The result remains an observation;
+actual source-writer freeze, session-source recovery and global installed
+coordination/commit are still pending. S36 remains In Progress and S37 Planned.
