@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { MigrationJournal } from "../../../dist/s36/transport.mjs";
-export function verifyReadback(dbPath, joint) {
+export function verifyReadback(dbPath, joint, checkpoints = false) {
   const stored = new DatabaseSync(dbPath);
   assert.equal(
     stored.prepare("SELECT COUNT(*) AS n FROM mg01_settings_stage").get().n,
@@ -38,7 +38,13 @@ export function verifyReadback(dbPath, joint) {
   const db = new DatabaseSync(dbPath);
   try {
     const journal = new MigrationJournal(db);
-    assert.equal(journal.read().phase, "prepared");
+    const view = journal.read();
+    assert.equal(view.phase, checkpoints ? "copying" : "prepared");
+    if (checkpoints) {
+      assert.equal(Object.keys(view.stores).length, 6);
+      assert.equal(view.revision, 1);
+      assert.deepEqual(view.acknowledgments, {});
+    }
     assert.equal(journal.state().namespace, "legacy");
   } finally {
     db.close();

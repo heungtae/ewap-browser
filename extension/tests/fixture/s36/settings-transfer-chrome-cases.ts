@@ -1,4 +1,5 @@
 import { ownerFixture } from "./installed-owner-chrome.js";
+import { checkpointTransport } from "../../../../apps/chrome-extension/src/migration/checkpoints-rpc.js";
 import { policyFixture } from "./installed-policy-chrome.js";
 import "../../../../apps/chrome-extension/src/bridge/schema-config.js";
 import { settingsTransport } from "../../../../apps/chrome-extension/src/migration/settings-rpc.js";
@@ -162,6 +163,17 @@ export const reopenOwner = () => owner.reopen();
 export const ownerNegatives = () => owner.negatives();
 
 export const ownerCandidate = () => owner.candidate();
+export function checkpointsClient() {
+  return checkpointTransport(
+    profile,
+    request,
+    owner.browser(),
+    async (id, epoch, cp) => {
+      await client().validate(id, epoch, cp, storeMode);
+      return true;
+    },
+  );
+}
 export async function restoreAfterBrowserRestart(
   profileGuard: string,
   mode: "session-only" | "os-store",

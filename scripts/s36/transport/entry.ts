@@ -23,3 +23,5 @@ export { providerSettings } from "../../../extension/tests/unit/migration/s36/mg
 export { migrationDigest } from "../../../apps/chrome-extension/src/migration/migration-digest.js";
 
 export { settingsRequest } from "../../../apps/agent-server/src/migration/settings-rpc.js";
+export { checkpointTransport } from "../../../apps/chrome-extension/src/migration/checkpoints-rpc.js";
+export { parseMigrationCommand } from "../../../packages/policy-engine/src/migration-rpc.js";

@@ -1,4 +1,5 @@
 import { settingsRequest } from "./settings-rpc.js";
+import { checkpointsRequest } from "./checkpoints-rpc.js";
 import type { SecretStore } from "../settings/service.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import {
@@ -50,6 +51,11 @@ export async function migrationEndpoint(
       (view && view.manifest.profileGuard !== profileGuard)
     )
       throw new Error("MIGRATION_FENCE");
+    if (
+      command.kind === "migration.checkpoints.publish" ||
+      command.kind === "migration.checkpoints.read"
+    )
+      return checkpointsRequest(db, profileGuard, command, context);
     if (command.kind === "migration.resume.check") {
       return transaction(db, () => {
         const view = journal.read(),

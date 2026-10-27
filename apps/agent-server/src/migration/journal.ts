@@ -53,26 +53,35 @@ export class MigrationJournal {
     return row;
   }
   write(expected: number | undefined, next: Journal) {
+    transaction(this.db, () => this.replace(expected, next));
+  }
+  update(transform: (current: Journal) => Journal): Journal {
+    return transaction(this.db, () => {
+      const current = this.read();
+      if (!current) throw new Error("MIGRATION_MISSING");
+      const next = transform(current);
+      if (next !== current) this.replace(current.revision, next);
+      return next;
+    });
+  }
+  private replace(expected: number | undefined, next: Journal) {
     if (!migrationJournalSchema.safeParse(next).success)
       throw new Error("MIGRATION_JOURNAL_INVALID");
-    transaction(this.db, () => {
-      const current = this.read();
-      if (
-        current?.revision !== expected ||
-        next.epoch !== this.state().epoch ||
-        next.revision !== (expected === undefined ? 0 : expected + 1)
-      )
-        throw new Error("MIGRATION_CAS");
-      if (
-        current &&
-        manifestDigest(current.manifest, {}) !==
-          manifestDigest(next.manifest, {})
-      )
-        throw new Error("MIGRATION_CONFLICT");
-      this.db
-        .prepare("INSERT OR REPLACE INTO migration_journal VALUES (1,?)")
-        .run(JSON.stringify(next));
-    });
+    const current = this.read();
+    if (
+      current?.revision !== expected ||
+      next.epoch !== this.state().epoch ||
+      next.revision !== (expected === undefined ? 0 : expected + 1)
+    )
+      throw new Error("MIGRATION_CAS");
+    if (
+      current &&
+      manifestDigest(current.manifest, {}) !== manifestDigest(next.manifest, {})
+    )
+      throw new Error("MIGRATION_CONFLICT");
+    this.db
+      .prepare("INSERT OR REPLACE INTO migration_journal VALUES (1,?)")
+      .run(JSON.stringify(next));
   }
   activate(journal: Journal, namespace: "legacy" | "target") {
     transaction(this.db, () => {

@@ -15,6 +15,8 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     releaseId: process.env.S36_INSTALL_RELEASE_ID,
   };
   const all = process.env.S36_INSTALLED_ALL === "1";
+  const checkpoints = process.env.S36_PUBLISH_CHECKPOINTS === "1";
+  if (checkpoints && !all) throw new Error("CHECKPOINTS_REQUIRE_ALL_UNITS");
   const joint = process.env.S36_INSTALLED_JOINT === "1";
   const mode = process.env.S36_SETTINGS_MODE ?? "session-only";
   if (!["session-only", "os-store"].includes(mode))
@@ -88,6 +90,18 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
 
     if (all)
       assert.equal(await evaluate(panel, "S36Settings.stageOwner()"), true);
+    if (checkpoints) {
+      for (let attempt = 0; attempt < 2; attempt++)
+        assert.equal(
+          (
+            await evaluate(
+              panel,
+              "S36Settings.checkpointsClient().publish(S36Settings.ownerCandidate(),0)",
+            )
+          ).revision,
+          1,
+        );
+    }
     daemon.child.kill("SIGTERM");
     await daemon.closed;
     daemon = launch();
@@ -125,6 +139,16 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     if (joint)
       assert.equal(await evaluate(panel, "S36Settings.validatePolicy()"), true);
     if (all) {
+      if (checkpoints)
+        assert.equal(
+          (
+            await evaluate(
+              panel,
+              "S36Settings.checkpointsClient().read(S36Settings.ownerCandidate().manifest,{migrationId:'wire',epoch:1,revision:1})",
+            )
+          ).phase,
+          "copying",
+        );
       assert.equal(await evaluate(panel, "S36Settings.reopenOwner()"), true);
       assert.equal(await evaluate(panel, "S36Settings.ownerNegatives()"), true);
     }
@@ -132,7 +156,7 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     assert.equal(await evaluate(panel, "globalThis.s36CspViolations"), 0);
     daemon.child.kill("SIGTERM");
     await daemon.closed;
-    verifyReadback(dbPath, joint);
+    verifyReadback(dbPath, joint, checkpoints);
     uninstallRelease(input);
     return {
       result: "PASS",
@@ -143,9 +167,11 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       sixUnitBrowserReadbackVerified: all,
       browserOwnerAckReopenVerified: all,
       sourceBoundResumeCheckVerified: all,
+      sixUnitBackendCheckpointPublication: checkpoints,
+      checkpointDuplicateAndRestartReadback: checkpoints,
       missingUnitProfileAndExpiryRejected: all,
       globalCommit: false,
-      backendPhase: "prepared",
+      backendPhase: checkpoints ? "copying" : "prepared",
       jointPolicyRestartVerified: joint,
       policySourceDriftAndEpochRejected: joint,
       installedStartVerified: installed,

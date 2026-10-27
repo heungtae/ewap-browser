@@ -1,6 +1,6 @@
 # Controlled authenticated migration transport
 
-S36 exposes bounded MG02 mirror/status operations and an explicitly configured [MG01 settings-transfer service](migration-settings-transfer.md) over the existing authenticated S28 native bridge. This is not a full migration endpoint: no remote prepare, fence, commit, activation or rollback command exists. Source-writer freeze and complete coordinator composition remain pending.
+S36 exposes bounded MG02 mirror/status operations, six-unit staging checkpoint publication/readback and an explicitly configured [MG01 settings-transfer service](migration-settings-transfer.md) over the existing authenticated S28 native bridge. This is not a full migration endpoint: no remote prepare, fence, commit, activation or rollback command exists. Source-writer freeze and complete coordinator composition remain pending.
 
 The optional daemon also advertises `migration.resume` for the read-only
 `migration.resume.check` operation. `migrationTransport(...).checkResume(scope,
@@ -15,6 +15,25 @@ mutation. The command cannot create a journal, recover lost session sources or
 activate a namespace. Freeze still depends on the caller's real writer ownership.
 Earlier daemons without the capability are rejected before dispatch. See the
 [2026-10-27 continuation](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27).
+
+For an already prepared journal, the optional `migration.checkpoints` capability
+accepts `migration.checkpoints.publish/read`. The [browser adapter](../apps/chrome-extension/src/migration/checkpoints-rpc.ts)
+takes the pinned manifest, current browser owner and an explicit MG01 credential
+readback callback. It validates all six current sources/targets before publication
+and after the reply. The daemon atomically compares source digests, scope/revision,
+existing checkpoints, typed MG01 staging metadata and the MG02 mirror, then stores
+all six checkpoints in `copying` with empty owner ACKs. It does not mark the
+browser targets validated or check credential availability itself. Exact duplicate
+publication returns the saved revision; conflicts, stale scope, existing owner ACKs
+and validated/terminal journals reject publication. Read requires the exact current
+revision. The browser read adapter revalidates targets/credentials; lost Session-only
+credentials require explicit reimport before that readback can succeed.
+
+Use a new pinned artifact set including the checkpoint-capable daemon, the existing
+isolated Chrome environment variables, and `pnpm test:chrome-s36:checkpoints` to run
+the all-six publication/duplicate/restart-readback scenario. See
+[dated evidence and limits](evidence/s36-checkpoints-2026-10-27.md). Neither the new
+metadata endpoint nor a retained `copying` journal grants validation/commit authority.
 
 Use pnpm 9.15.4 and Node 22.23.2 for the qualification daemon. Build `pnpm build:s28`, `pnpm build:s36:transport` and `pnpm build:s36:install`. [Install the pinned native host](migration-linux-install.md) into an explicitly selected isolated profile, then run:
 

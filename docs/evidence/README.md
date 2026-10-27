@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 installed six-unit checkpoint publication](s36-checkpoints-2026-10-27.md): actual Chrome sources/IndexedDB → native IPC → backend SQLite, idempotent publication and restart readback; backend now `copying` with six checkpoints and no owner ACKs. Independent validation/consensus/commit and actual writer freeze remain pending.
+
 [S36 explicit foreground daemon launcher](s36-daemon-launcher-2026-10-25.md): separate opt-in mode/release-pinned script, shared exclusion, owned repair/update/removal and actual private OS retention; managed normal-user service remains pending.
 
 [S36 source-bound session resume](s36-resume-preflight-2026-10-25.md): all-six source/fence/revision preflight, preserved checkpoints/ACKs and terminal history; installed global session composition remains pending.

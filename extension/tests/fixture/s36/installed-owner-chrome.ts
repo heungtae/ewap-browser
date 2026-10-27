@@ -64,6 +64,7 @@ export function ownerFixture(
       () => now,
     );
   return {
+    browser,
     candidate: () => structuredClone(view),
     async restoreLostSources(profileGuard: string, raw: Journal) {
       profile = profileGuard;

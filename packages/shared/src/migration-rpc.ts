@@ -17,6 +17,17 @@ export const migrationResumeResultSchema = migrationResumeScopeSchema.extend({
   phase: z.enum(["prepared", "copying", "validated"]),
   sourceMatched: z.literal(true),
 });
+export const migrationCheckpointsSchema = z.record(
+  z.enum(migrationUnits),
+  migrationCheckpointSchema,
+);
+export const migrationCheckpointResultSchema =
+  migrationResumeScopeSchema.extend({
+    schema: z.literal("wca.migration-checkpoints/v1"),
+    phase: z.literal("copying"),
+    manifestDigest: profileGuard,
+    stores: migrationCheckpointsSchema,
+  });
 const settingsScope = {
   profileGuard,
   migrationId,
@@ -35,6 +46,15 @@ export const migrationSettingsAckSchema = z.strictObject({
   verified: z.literal(true),
 });
 export const migrationCommandSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("migration.checkpoints.publish"),
+    ...migrationResumeCheckSchema.shape,
+    stores: migrationCheckpointsSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("migration.checkpoints.read"),
+    ...migrationResumeScopeSchema.shape,
+  }),
   migrationResumeCheckSchema.extend({
     kind: z.literal("migration.resume.check"),
   }),

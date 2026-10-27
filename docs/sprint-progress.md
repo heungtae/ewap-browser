@@ -4,6 +4,17 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-27 installed checkpoint publication
+
+**In Progress.** [Evidence](evidence/s36-checkpoints-2026-10-27.md) records all-six
+browser source/target validation, authenticated native checkpoint publication to
+the backend journal, atomic revision/fence/readback checks and idempotent retries.
+Actual installed Chrome publication and daemon restart readback pass in Session-only
+mode with explicit credential reimport. Backend is `copying`, six checkpoints,
+empty owner ACKs and legacy namespace with closed admission. Global validation,
+both-owner consensus/commit, source recovery and real writer freeze remain open;
+S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-27 authenticated resume observation
 
 **In Progress.** The [daemon continuation](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27)

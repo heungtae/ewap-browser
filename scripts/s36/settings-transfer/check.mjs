@@ -7,8 +7,8 @@ import {
   digest,
   validateInventory,
 } from "../../s26-inventory.mjs";
-const manifest = read("docs/baselines/s36-daemon-launcher/disposition.json");
-for (const entry of read("docs/baselines/s36-resume-preflight/disposition.json")
+const manifest = read("docs/baselines/s36-checkpoints/disposition.json");
+for (const entry of read("docs/baselines/s36-daemon-launcher/disposition.json")
   .files)
   assert.deepEqual(
     manifest.files.find((item) => item.path === entry.path),
@@ -42,6 +42,7 @@ const output = await build({
     "apps/chrome-extension/src/bridge/worker.ts",
     "apps/chrome-extension/src/migration/rpc.ts",
     "apps/chrome-extension/src/migration/settings-rpc.ts",
+    "apps/chrome-extension/src/migration/checkpoints-rpc.ts",
     "apps/chrome-extension/src/migration/mg02-staging.ts",
     "packages/policy-engine/src/migration-evaluate.ts",
     "apps/chrome-extension/src/migration/coordinator-staging.ts",

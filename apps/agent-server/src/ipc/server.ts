@@ -80,6 +80,7 @@ export async function listenLocal(
                 "migration.status",
                 "migration.policy",
                 "migration.resume",
+                "migration.checkpoints",
                 ...(migration.settingsMode ? ["migration.settings"] : []),
               ]
             : ["heartbeat", "resumeEvents"],
