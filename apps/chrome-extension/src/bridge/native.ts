@@ -133,9 +133,11 @@ export class NativeBridge {
             ? "migration.resume"
             : payload.kind.startsWith("migration.checkpoints.")
               ? "migration.checkpoints"
-              : payload.kind.startsWith("migration.settings.")
-                ? "migration.settings"
-                : "migration.policy",
+              : payload.kind.startsWith("migration.consensus.")
+                ? "migration.consensus"
+                : payload.kind.startsWith("migration.settings.")
+                  ? "migration.settings"
+                  : "migration.policy",
       )
     )
       throw new Error("MIGRATION_UNAVAILABLE");

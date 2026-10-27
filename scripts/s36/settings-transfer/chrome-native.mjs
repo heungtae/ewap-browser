@@ -6,6 +6,7 @@ import { uninstallRelease } from "../../../dist/s36/installation.mjs";
 import { evaluate, waitFor } from "../../chrome-cdp-utils.mjs";
 import { verifyReadback } from "./chrome-readback.mjs";
 import { prepareTransfer } from "./chrome-setup.mjs";
+import { qualifyConsensus } from "./consensus-chrome-cases.mjs";
 export async function qualifyNative({ profile, extensionId, worker, panel }) {
   const input = {
     directory: `${profile}/agent`,
@@ -16,6 +17,9 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
   };
   const all = process.env.S36_INSTALLED_ALL === "1";
   const checkpoints = process.env.S36_PUBLISH_CHECKPOINTS === "1";
+  const consensus = process.env.S36_CONSENSUS === "1";
+  if (consensus && !checkpoints)
+    throw new Error("CONSENSUS_REQUIRES_CHECKPOINTS");
   if (checkpoints && !all) throw new Error("CHECKPOINTS_REQUIRE_ALL_UNITS");
   const joint = process.env.S36_INSTALLED_JOINT === "1";
   const mode = process.env.S36_SETTINGS_MODE ?? "session-only";
@@ -87,7 +91,6 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
         true,
       );
     }
-
     if (all)
       assert.equal(await evaluate(panel, "S36Settings.stageOwner()"), true);
     if (checkpoints) {
@@ -150,14 +153,16 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
           "copying",
         );
       assert.equal(await evaluate(panel, "S36Settings.reopenOwner()"), true);
+      if (consensus) await qualifyConsensus(panel);
       assert.equal(await evaluate(panel, "S36Settings.ownerNegatives()"), true);
     }
     assert.equal(await evaluate(panel, "S36Settings.revoked()"), true);
     assert.equal(await evaluate(panel, "globalThis.s36CspViolations"), 0);
     daemon.child.kill("SIGTERM");
     await daemon.closed;
-    verifyReadback(dbPath, joint, checkpoints);
+    verifyReadback(dbPath, joint, checkpoints, consensus);
     uninstallRelease(input);
+    const backendPhase = checkpoints ? "copying" : "prepared";
     return {
       result: "PASS",
       actualChromeSettingsToSqlite: true,
@@ -169,9 +174,10 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       sourceBoundResumeCheckVerified: all,
       sixUnitBackendCheckpointPublication: checkpoints,
       checkpointDuplicateAndRestartReadback: checkpoints,
+      bothOwnerConsensusVerified: consensus,
       missingUnitProfileAndExpiryRejected: all,
       globalCommit: false,
-      backendPhase: checkpoints ? "copying" : "prepared",
+      backendPhase: consensus ? "validated" : backendPhase,
       jointPolicyRestartVerified: joint,
       policySourceDriftAndEpochRejected: joint,
       installedStartVerified: installed,

@@ -4,6 +4,16 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-27 installed validation and owner agreement
+
+**In Progress.** [Evidence](evidence/s36-consensus-2026-10-27.md) records fresh
+all-six browser source/target checks, backend credential/policy readback, guarded
+validation and atomic matching extension/backend owner ACKs over installed native
+IPC. Actual Chrome reaches `validated` at revision 2 and agreement at revision 3;
+duplicates retain revision, namespace remains legacy and admission stays closed.
+Actual writer freeze/drain, source recovery, installed commit, OS/UI/live/holdout
+and release gates remain open; S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-27 installed checkpoint publication
 
 **In Progress.** [Evidence](evidence/s36-checkpoints-2026-10-27.md) records all-six

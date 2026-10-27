@@ -5,11 +5,10 @@ import {
   type MigrationRequestContext,
 } from "../../../../packages/shared/src/migration-rpc.js";
 import type { Journal } from "../../../../packages/shared/src/migration-types.js";
-import { mg02MirrorSchema } from "../../../../packages/policy-engine/src/migration-contract.js";
 import type { Sqlite } from "../tasks/database.js";
 import { transaction } from "../tasks/database.js";
 import { MigrationJournal, manifestDigest } from "./journal.js";
-import { SqliteMg01Journal } from "./mg01-journal.js";
+import { assertCheckpointReadback } from "./checkpoint-readback.js";
 import { settingsDigest } from "./mg01-source.js";
 type Command = Extract<
   MigrationCommand,
@@ -77,30 +76,7 @@ export function checkpointsRequest(
       )
         throw new Error("MIGRATION_CHECKPOINT_CONFLICT");
     }
-    const mg01 = new SqliteMg01Journal(db).load(
-      profileGuard,
-      command.migrationId,
-    );
-    const row = db
-      .prepare(
-        "SELECT body FROM mg02_policy_mirror WHERE profile_guard=? AND migration_id=?",
-      )
-      .get(profileGuard, command.migrationId);
-    const mg02 = row
-      ? mg02MirrorSchema.parse(JSON.parse(String(row.body)))
-      : undefined;
-    if (
-      !mg01 ||
-      mg01.epoch !== command.epoch ||
-      settingsDigest(mg01.checkpoint) !== settingsDigest(command.stores.MG01) ||
-      !mg02 ||
-      mg02.profileGuard !== profileGuard ||
-      mg02.migrationId !== command.migrationId ||
-      mg02.epoch !== command.epoch ||
-      settingsDigest(mg02.conversion) !== mg02.checkpoint.targetDigest ||
-      settingsDigest(mg02.checkpoint) !== settingsDigest(command.stores.MG02)
-    )
-      throw new Error("MIGRATION_CHECKPOINT_READBACK");
+    assertCheckpointReadback(db, { ...current, stores: command.stores });
     const same =
       current.phase === "copying" &&
       settingsDigest(current.stores) === settingsDigest(command.stores);

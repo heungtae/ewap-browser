@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Installed validation and owner agreement: [backend](../apps/agent-server/src/migration/consensus-rpc.ts), [browser](../apps/chrome-extension/src/migration/consensus-rpc.ts), [shared backend readback](../apps/agent-server/src/migration/checkpoint-readback.ts), [actual Chrome runner](../scripts/s36/settings-transfer/consensus-chrome.mjs), [evidence](evidence/s36-consensus-2026-10-27.md). Qualified with controlled freeze; no namespace switch or commit.
+
 Six-unit checkpoint publication: [backend transaction](../apps/agent-server/src/migration/checkpoints-rpc.ts), [browser validation and RPC](../apps/chrome-extension/src/migration/checkpoints-rpc.ts), [actual Chrome runner](../scripts/s36/settings-transfer/checkpoints-chrome.mjs), [evidence](evidence/s36-checkpoints-2026-10-27.md). Stores staging metadata as `copying`; global validation/ACK/commit and actual writer freeze remain pending.
 
 Authenticated resume observation: [daemon endpoint](../apps/agent-server/src/migration/rpc.ts), [browser source observation](../apps/chrome-extension/src/migration/rpc.ts), [strict contracts](../packages/shared/src/migration-rpc.ts), [operations](migration-transport.md), [2026-10-27 evidence](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27). Read-only; global orchestration and actual writer freeze remain pending.

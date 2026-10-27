@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { migrationCheckpointSchema, migrationUnits } from "./migration.js";
+import {
+  migrationCheckpointSchema,
+  migrationUnits,
+  migrationOwnerAckSchema,
+} from "./migration.js";
 const profileGuard = z.string().regex(/^[a-f0-9]{64}$/);
 const migrationId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
 const epoch = z.number().int().positive().safe();
@@ -36,6 +40,24 @@ const settingsScope = {
   secretMode: z.enum(["session-only", "os-store"]),
   source: z.unknown().optional(),
 };
+const consensusScope = {
+  ...migrationResumeCheckSchema.shape,
+  manifestDigest: profileGuard,
+  secretMode: settingsScope.secretMode,
+  source: z.unknown().optional(),
+};
+export const migrationConsensusResultSchema = migrationResumeScopeSchema.extend(
+  {
+    schema: z.literal("wca.migration-consensus/v1"),
+    phase: z.literal("validated"),
+    manifestDigest: profileGuard,
+    stores: migrationCheckpointsSchema,
+    acknowledgments: z.strictObject({
+      extension: profileGuard.optional(),
+      backend: profileGuard.optional(),
+    }),
+  },
+);
 export const migrationSettingsAckSchema = z.strictObject({
   schema: z.literal("wca.mg01-ack/v1"),
   profileGuard,
@@ -46,6 +68,15 @@ export const migrationSettingsAckSchema = z.strictObject({
   verified: z.literal(true),
 });
 export const migrationCommandSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("migration.consensus.validate"),
+    ...consensusScope,
+  }),
+  z.strictObject({
+    kind: z.literal("migration.consensus.acknowledge"),
+    ...consensusScope,
+    ack: migrationOwnerAckSchema.extend({ owner: z.literal("extension") }),
+  }),
   z.strictObject({
     kind: z.literal("migration.checkpoints.publish"),
     ...migrationResumeCheckSchema.shape,

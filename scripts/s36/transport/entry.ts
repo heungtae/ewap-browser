@@ -25,3 +25,4 @@ export { migrationDigest } from "../../../apps/chrome-extension/src/migration/mi
 export { settingsRequest } from "../../../apps/agent-server/src/migration/settings-rpc.js";
 export { checkpointTransport } from "../../../apps/chrome-extension/src/migration/checkpoints-rpc.js";
 export { parseMigrationCommand } from "../../../packages/policy-engine/src/migration-rpc.js";
+export { consensusTransport } from "../../../apps/chrome-extension/src/migration/consensus-rpc.js";

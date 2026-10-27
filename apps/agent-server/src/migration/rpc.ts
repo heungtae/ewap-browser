@@ -1,5 +1,6 @@
 import { settingsRequest } from "./settings-rpc.js";
 import { checkpointsRequest } from "./checkpoints-rpc.js";
+import { consensusRequest } from "./consensus-rpc.js";
 import type { SecretStore } from "../settings/service.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import {
@@ -51,6 +52,13 @@ export async function migrationEndpoint(
       (view && view.manifest.profileGuard !== profileGuard)
     )
       throw new Error("MIGRATION_FENCE");
+    if (
+      command.kind === "migration.consensus.validate" ||
+      command.kind === "migration.consensus.acknowledge"
+    ) {
+      if (!settings) throw new Error("MIGRATION_SETTINGS_UNAVAILABLE");
+      return consensusRequest(db, profileGuard, settings, command, context);
+    }
     if (
       command.kind === "migration.checkpoints.publish" ||
       command.kind === "migration.checkpoints.read"

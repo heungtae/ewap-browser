@@ -91,6 +91,13 @@ export function checkpointTransport(
     return result;
   };
   return {
+    async validateStores(manifest: Manifest, current: Scope, stores: unknown) {
+      return validate(
+        manifestFor(manifest, current.migrationId),
+        scope(current),
+        stores,
+      );
+    },
     async publish(raw: Journal, expectedRevision: number) {
       const candidate = migrationJournalSchema.parse(raw) as Journal;
       if (

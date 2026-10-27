@@ -1,5 +1,6 @@
 import { ownerFixture } from "./installed-owner-chrome.js";
 import { checkpointTransport } from "../../../../apps/chrome-extension/src/migration/checkpoints-rpc.js";
+import { consensusTransport } from "../../../../apps/chrome-extension/src/migration/consensus-rpc.js";
 import { policyFixture } from "./installed-policy-chrome.js";
 import "../../../../apps/chrome-extension/src/bridge/schema-config.js";
 import { settingsTransport } from "../../../../apps/chrome-extension/src/migration/settings-rpc.js";
@@ -8,25 +9,7 @@ import { migrationDigest } from "../../../../apps/chrome-extension/src/migration
 import type { MigrationCommand } from "../../../../packages/shared/src/migration-rpc.js";
 import type { Journal } from "../../../../packages/shared/src/migration-types.js";
 import type { Checkpoint } from "../../../../packages/shared/src/migration-types.js";
-const chrome = (
-  globalThis as unknown as {
-    chrome: {
-      runtime: {
-        sendMessage(value: unknown): Promise<{ ok: boolean; result: unknown }>;
-      };
-      storage: {
-        session: {
-          get(keys: string[]): Promise<Record<string, unknown>>;
-          set(value: Record<string, unknown>): Promise<void>;
-        };
-        local: {
-          get(keys: string[]): Promise<Record<string, unknown>>;
-          set(value: Record<string, unknown>): Promise<void>;
-        };
-      };
-    };
-  }
-).chrome;
+import { chrome } from "./settings-chrome-api.js";
 let profile: string,
   frozen = true,
   digest: string,
@@ -172,6 +155,15 @@ export function checkpointsClient() {
       await client().validate(id, epoch, cp, storeMode);
       return true;
     },
+  );
+}
+export function consensusClient() {
+  return consensusTransport(
+    profile,
+    request,
+    owner.browser(),
+    source,
+    storeMode,
   );
 }
 export async function restoreAfterBrowserRestart(

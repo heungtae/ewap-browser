@@ -35,6 +35,27 @@ the all-six publication/duplicate/restart-readback scenario. See
 [dated evidence and limits](evidence/s36-checkpoints-2026-10-27.md). Neither the new
 metadata endpoint nor a retained `copying` journal grants validation/commit authority.
 
+An explicitly composed settings store also enables `migration.consensus`. The
+[consensus client](../apps/chrome-extension/src/migration/consensus-rpc.ts) takes
+the current journal, browser owner, frozen settings source and selected secret
+mode. `validate` rechecks all six sources/targets and credentials before/after
+the RPC. The daemon independently checks MG01 staging and actual credential
+readback, MG02 mirror and current revision/fence/context before storing
+`validated`. This operation preserves the owner-ACK map. `acknowledge` first
+persists and freshly verifies the browser owner ACK, then sends it with the same
+manifest/checkpoint/source binding. The daemon repeats its own readback and stores
+matching extension/backend digests atomically; duplicates retain the revision.
+The client verifies current sources/targets and persisted browser ACK afterward.
+
+MG01 settings source uses the existing bounded, transient credential-validation
+path; no raw source is persisted or returned. Backend validation of MG03–MG06
+targets relies on the authenticated browser owner. Qualification still supplies a
+controlled writer-freeze assertion. Saved ACKs never bypass current readback or
+enable task admission. No new commit/activation command exists. With the same
+isolated/pinned Chrome environment, `pnpm test:chrome-s36:consensus` checks
+validation, both-owner agreement and idempotency; see
+[evidence and limits](evidence/s36-consensus-2026-10-27.md).
+
 Use pnpm 9.15.4 and Node 22.23.2 for the qualification daemon. Build `pnpm build:s28`, `pnpm build:s36:transport` and `pnpm build:s36:install`. [Install the pinned native host](migration-linux-install.md) into an explicitly selected isolated profile, then run:
 
 ```sh

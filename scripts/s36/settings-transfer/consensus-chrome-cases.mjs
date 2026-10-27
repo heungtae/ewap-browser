@@ -1,0 +1,39 @@
+import assert from "node:assert/strict";
+import { evaluate } from "../../chrome-cdp-utils.mjs";
+export async function qualifyConsensus(panel) {
+  const validated = await evaluate(
+    panel,
+    "S36Settings.consensusClient().validate({...S36Settings.ownerCandidate(),phase:'copying',revision:1}).then(v=>(globalThis.s36Validated=v,v))",
+  );
+  assert.equal(validated.phase, "validated");
+  assert.equal(validated.revision, 2);
+  assert.deepEqual(validated.acknowledgments, {});
+  const agreed = await evaluate(
+    panel,
+    "S36Settings.consensusClient().acknowledge(globalThis.s36Validated).then(v=>(globalThis.s36Agreed=v,v))",
+  );
+  assert.equal(agreed.revision, 3);
+  assert.match(agreed.acknowledgments.extension, /^[a-f0-9]{64}$/);
+  assert.equal(
+    agreed.acknowledgments.extension,
+    agreed.acknowledgments.backend,
+  );
+  assert.equal(
+    (
+      await evaluate(
+        panel,
+        "S36Settings.consensusClient().acknowledge(globalThis.s36Validated)",
+      )
+    ).revision,
+    3,
+  );
+  assert.equal(
+    (
+      await evaluate(
+        panel,
+        "S36Settings.consensusClient().validate(globalThis.s36Agreed)",
+      )
+    ).revision,
+    3,
+  );
+}

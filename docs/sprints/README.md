@@ -14,7 +14,7 @@
 
 ## Web Codebase Agent migration S26-S37
 
-Latest S36 continuation: [2026-10-27 installed checkpoint publication](../evidence/s36-checkpoints-2026-10-27.md). All-six checkpoints persist in the installed backend as `copying`; full validation, both-owner consensus/commit and recovery remain pending.
+Latest S36 continuation: [2026-10-27 installed validation and owner agreement](../evidence/s36-consensus-2026-10-27.md). All-six browser checks, backend credential/policy readback and matching owner ACKs reach `validated` with controlled freeze; installed commit, actual writer ownership and recovery remain pending.
 
 **S26 completed its recorded baseline; S27–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and

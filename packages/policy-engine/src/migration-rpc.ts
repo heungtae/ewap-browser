@@ -6,7 +6,9 @@ export function parseMigrationCommand(raw: unknown) {
   const value = migrationCommandSchema.parse(raw);
   if (
     value.kind === "migration.settings.stage" ||
-    value.kind === "migration.settings.validate"
+    value.kind === "migration.settings.validate" ||
+    value.kind === "migration.consensus.validate" ||
+    value.kind === "migration.consensus.acknowledge"
   ) {
     if (new TextEncoder().encode(JSON.stringify(value)).length > 192 * 1024)
       throw new Error("MG01_TRANSFER_LIMIT");
