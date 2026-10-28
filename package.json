@@ -62,6 +62,8 @@
     "test:s27": "vitest run extension/tests/unit/migration/s27",
     "check:s27": "node scripts/s27/check-boundaries.mjs && node scripts/s27/export-contracts.mjs && node scripts/s27/check-inventory.mjs docs/baselines/s36-observed-restart/disposition.json",
     "test:s27:live": "node scripts/s27/live-qualification.mjs",
+    "check:s27:native-selections": "node scripts/s27/check-native-selections.mjs",
+    "test:s27:clarified": "node scripts/s27/clarified-exploration.mjs",
     "check:s27:qualification": "node scripts/s27/check-qualification.mjs",
     "build:s28": "node scripts/s28/build.mjs",
     "test:s28": "vitest run extension/tests/unit/migration/s28",

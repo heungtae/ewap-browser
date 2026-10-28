@@ -1,0 +1,80 @@
+{
+  "schema": "s27-clarified-exploration/v1",
+  "at": "2026-10-28T08:16:06.278Z",
+  "scope": "Development examples; not an independent holdout or activation qualification",
+  "model": "jev-1.13.0",
+  "results": [
+    {
+      "id": "intent-read",
+      "phase": "intent",
+      "expected": "READ",
+      "selected": "READ",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.37
+    },
+    {
+      "id": "intent-analysis",
+      "phase": "intent",
+      "expected": "ANALYSIS",
+      "selected": "ANALYSIS",
+      "matched": true,
+      "confidence": 0.59,
+      "evidenceSufficiency": 0.4
+    },
+    {
+      "id": "semantic-filter",
+      "phase": "semantic_selection",
+      "expected": "FILTER_CONTROL",
+      "selected": "FILTER_CONTROL",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.32
+    },
+    {
+      "id": "semantic-results",
+      "phase": "semantic_selection",
+      "expected": "RESULT_COLLECTION",
+      "selected": "RESULT_COLLECTION",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.35
+    },
+    {
+      "id": "processor-interpret",
+      "phase": "processor",
+      "expected": "GPT_ANALYSIS",
+      "selected": "GPT_ANALYSIS",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.32
+    },
+    {
+      "id": "processor-aggregate",
+      "phase": "processor",
+      "expected": "RUNTIME",
+      "selected": "RUNTIME",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.28
+    },
+    {
+      "id": "recovery-stop",
+      "phase": "recovery",
+      "expected": "STOP",
+      "selected": "STOP",
+      "matched": true,
+      "confidence": 0.94,
+      "evidenceSufficiency": 0.33
+    },
+    {
+      "id": "recovery-inspect",
+      "phase": "recovery",
+      "expected": "INSPECT",
+      "selected": "INSPECT",
+      "matched": true,
+      "confidence": 0.99,
+      "evidenceSufficiency": 0.33
+    }
+  ]
+}

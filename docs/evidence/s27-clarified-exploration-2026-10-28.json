@@ -1,0 +1,91 @@
+{
+  "schema": "s27-clarified-exploration/v1",
+  "at": "2026-10-28T08:17:40.882Z",
+  "scope": "Development examples; not an independent holdout or activation qualification",
+  "model": "jev-1.13.0",
+  "corpusHash": "88b2a25e4a5fd5bac4cd2523cc09fd5e1cdb7c4ef37641b7e3d258b318742570",
+  "protocolSourceDigest": "f24d9d72ed0d4f00e22941aef448dcb620dae4403fa800f15c191454a13615ef",
+  "scriptDigest": "acb6b7ebd1bcbe53582f5fd9c809a8167a40f719d8ba1ff7b298ca6d899319e2",
+  "results": [
+    {
+      "id": "intent-read",
+      "phase": "intent",
+      "expected": "READ",
+      "selected": "READ",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.37,
+      "requestDigest": "6cbae2f152aae6042acf00d393a556fcc4a37e0eba66d634df4b3d5dc7771137"
+    },
+    {
+      "id": "intent-analysis",
+      "phase": "intent",
+      "expected": "ANALYSIS",
+      "selected": "ANALYSIS",
+      "matched": true,
+      "confidence": 0.59,
+      "evidenceSufficiency": 0.46,
+      "requestDigest": "20c2df825c98d14514dfe3e22763a1593fa973cb1021248236919d0b3ed67997"
+    },
+    {
+      "id": "semantic-filter",
+      "phase": "semantic_selection",
+      "expected": "FILTER_CONTROL",
+      "selected": "FILTER_CONTROL",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.33,
+      "requestDigest": "a4e6cfe5cde598bb3006e4b0eb57364db38b7102ba98866e36de5ce07e2e9864"
+    },
+    {
+      "id": "semantic-results",
+      "phase": "semantic_selection",
+      "expected": "RESULT_COLLECTION",
+      "selected": "RESULT_COLLECTION",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.35,
+      "requestDigest": "b3b1693fdd76cf820de923f26435d99ac7b66755ca80c29a81ff7b2ccb5c9ddf"
+    },
+    {
+      "id": "processor-interpret",
+      "phase": "processor",
+      "expected": "GPT_ANALYSIS",
+      "selected": "GPT_ANALYSIS",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.32,
+      "requestDigest": "f81d8d7aa9e0593709ade7e20abfdcbbe4129b7afcfce3bf64ed6bb11a5288e6"
+    },
+    {
+      "id": "processor-aggregate",
+      "phase": "processor",
+      "expected": "RUNTIME",
+      "selected": "RUNTIME",
+      "matched": true,
+      "confidence": 1,
+      "evidenceSufficiency": 0.27,
+      "requestDigest": "fc5bd619402d7a58e4e0fbc8342f38dc8d1dae2a2f2fae1b635bfbbe54868d8c"
+    },
+    {
+      "id": "recovery-stop",
+      "phase": "recovery",
+      "expected": "STOP",
+      "selected": "STOP",
+      "matched": true,
+      "confidence": 0.96,
+      "evidenceSufficiency": 0.33,
+      "requestDigest": "7e320d1ba768986a3c62a1df0ea8e6f4ebefdaff2d23e5a3cec19d04da258ba5"
+    },
+    {
+      "id": "recovery-inspect",
+      "phase": "recovery",
+      "expected": "INSPECT",
+      "selected": "INSPECT",
+      "matched": true,
+      "confidence": 0.99,
+      "evidenceSufficiency": 0.32,
+      "requestDigest": "c822a7e6129e48a320ca0e56e55a2888b2bd37d734055a09363cadf8148773f8"
+    }
+  ]
+}
