@@ -94,6 +94,7 @@ try {
     releaseId,
     ...result,
     sourceChangeObservationVerified: result.bothOwnerConsensusVerified,
+    observedOwnerChangeRejected: result.bothOwnerConsensusVerified,
     privateDbus: process.env.S36_PRIVATE_SECRET_BUS === "1",
     keyring:
       result.credentialMode === "os-store"

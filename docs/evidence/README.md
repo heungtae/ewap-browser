@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 observed migration owner](s36-observed-owner-2026-10-28.md): opt-in owner wrapper checks both source watchers around staging/ACK; actual Chrome change/revert blocks the next consensus request. Event observation is not a writer lock or installed startup integration.
+
 [S36 storage source-change observation](s36-source-watch-2026-10-28.md): opt-in epoch/key-scoped watcher and isolated actual Chrome change/revert test. Event observation is not writer blocking or installed ownership.
 
 [S36 installed validation and owner agreement](s36-consensus-2026-10-27.md): actual Chrome source/target and IndexedDB ACK checks with native credential/policy readback, `validated` journal and matching owner digests. Controlled writer freeze; namespace remains legacy and admission closed; no global commit.

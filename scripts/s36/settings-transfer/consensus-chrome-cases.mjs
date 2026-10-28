@@ -37,6 +37,19 @@ export async function qualifyConsensus(panel) {
     ).revision,
     3,
   );
+  await evaluate(
+    panel,
+    "S36Settings.observedConsensus().then(v=>(globalThis.s36Observed=v,true))",
+  );
+  assert.equal(
+    (
+      await evaluate(
+        panel,
+        "globalThis.s36Observed.client.validate(globalThis.s36Agreed)",
+      )
+    ).revision,
+    3,
+  );
   const fixture = await build({
     entryPoints: ["extension/tests/fixture/s36/source-watch-chrome.ts"],
     bundle: true,
@@ -47,4 +60,14 @@ export async function qualifyConsensus(panel) {
   });
   await evaluate(panel, fixture.outputFiles[0].text);
   assert.equal(await evaluate(panel, "S36SourceWatch.run()"), true);
+  const count = await evaluate(panel, "globalThis.s36Observed.count()");
+  assert.equal(
+    await evaluate(
+      panel,
+      "globalThis.s36Observed.client.validate(globalThis.s36Agreed).then(()=> 'ACCEPTED',e=>e.message)",
+    ),
+    "MIGRATION_SOURCE_CHANGED",
+  );
+  assert.equal(await evaluate(panel, "globalThis.s36Observed.count()"), count);
+  await evaluate(panel, "globalThis.s36Observed.dispose(); true");
 }

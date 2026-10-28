@@ -14,7 +14,7 @@
 
 ## Web Codebase Agent migration S26-S37
 
-Latest S36 continuation: [2026-10-28 storage source-change observation](../evidence/s36-source-watch-2026-10-28.md). Actual Chrome change/revert detection is verified; installed integration, writer blocking, commit and recovery remain pending.
+Latest S36 continuation: [2026-10-28 observed migration owner](../evidence/s36-observed-owner-2026-10-28.md). Controlled Chrome checks owner/consensus rejection after change/revert; installed startup integration, writer blocking, commit and recovery remain pending.
 
 **S26 completed its recorded baseline; S27–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and

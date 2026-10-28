@@ -4,6 +4,14 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-28 observed migration owner
+
+**In Progress.** [Evidence](evidence/s36-observed-owner-2026-10-28.md) records
+opt-in local/session source watchers around owner operations. Actual controlled
+Chrome validation succeeds before a settings change and rejects the next
+consensus request after change/revert without sending it. Writer blocking,
+installed startup/restart ownership and global commit remain open; S37 is Planned.
+
 ## Browser Agent S36 — 2026-10-28 storage source-change observation
 
 **In Progress.** [Evidence](evidence/s36-source-watch-2026-10-28.md) records an

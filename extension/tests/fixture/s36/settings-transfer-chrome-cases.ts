@@ -1,6 +1,10 @@
 import { ownerFixture } from "./installed-owner-chrome.js";
 import { checkpointTransport } from "../../../../apps/chrome-extension/src/migration/checkpoints-rpc.js";
 import { consensusTransport } from "../../../../apps/chrome-extension/src/migration/consensus-rpc.js";
+import {
+  createObserved,
+  checkPolicyDrift,
+} from "./settings-observed-fixture.js";
 import { policyFixture } from "./installed-policy-chrome.js";
 import "../../../../apps/chrome-extension/src/bridge/schema-config.js";
 import { settingsTransport } from "../../../../apps/chrome-extension/src/migration/settings-rpc.js";
@@ -133,13 +137,8 @@ export async function validatePersisted() {
 
 export const stagePolicy = () => policy.copy();
 export const validatePolicy = () => policy.validate();
-export async function rejectPolicyDriftAndEpoch() {
-  const count = policyRequests;
-  await policy.wrongEpoch();
-  await policy.drift();
-  if (count !== policyRequests) throw new Error("STALE_POLICY_FORWARDED");
-  return policy.validate();
-}
+export const rejectPolicyDriftAndEpoch = () =>
+  checkPolicyDrift(policy, () => policyRequests);
 
 export const stageOwner = () => owner.copy(checkpoint);
 export const reopenOwner = () => owner.reopen();
@@ -166,6 +165,8 @@ export function consensusClient() {
     storeMode,
   );
 }
+export const observedConsensus = () =>
+  createObserved(profile, request, owner.browser(), source, storeMode);
 export async function restoreAfterBrowserRestart(
   profileGuard: string,
   mode: "session-only" | "os-store",

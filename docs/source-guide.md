@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Observed migration owner: [adapter](../apps/chrome-extension/src/migration/observed-owner.ts), [unit checks](../extension/tests/unit/migration/s36/observed-owner.test.ts), [controlled Chrome composition](../extension/tests/fixture/s36/settings-observed-fixture.ts), [evidence and limitations](evidence/s36-observed-owner-2026-10-28.md). The caller must establish freeze/drain and re-arm observation after restart.
+
 Storage source-change observation: [opt-in watcher](../apps/chrome-extension/src/migration/source-watch.ts), [unit tests](../extension/tests/unit/migration/s36/source-watch.test.ts), [Chrome fixture](../extension/tests/fixture/s36/source-watch-chrome.ts), [evidence and limits](evidence/s36-source-watch-2026-10-28.md). It detects delivered change events; it does not block legacy writers or establish a freeze.
 
 Installed validation and owner agreement: [backend](../apps/agent-server/src/migration/consensus-rpc.ts), [browser](../apps/chrome-extension/src/migration/consensus-rpc.ts), [shared backend readback](../apps/agent-server/src/migration/checkpoint-readback.ts), [actual Chrome runner](../scripts/s36/settings-transfer/consensus-chrome.mjs), [evidence](evidence/s36-consensus-2026-10-27.md). Qualified with controlled freeze; no namespace switch or commit.
