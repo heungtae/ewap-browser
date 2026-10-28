@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 storage source-change observation](s36-source-watch-2026-10-28.md): opt-in epoch/key-scoped watcher and isolated actual Chrome change/revert test. Event observation is not writer blocking or installed ownership.
+
 [S36 installed validation and owner agreement](s36-consensus-2026-10-27.md): actual Chrome source/target and IndexedDB ACK checks with native credential/policy readback, `validated` journal and matching owner digests. Controlled writer freeze; namespace remains legacy and admission closed; no global commit.
 
 [S36 installed six-unit checkpoint publication](s36-checkpoints-2026-10-27.md): actual Chrome sources/IndexedDB → native IPC → backend SQLite, idempotent publication and restart readback; backend now `copying` with six checkpoints and no owner ACKs. Independent validation/consensus/commit and actual writer freeze remain pending.

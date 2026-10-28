@@ -1,7 +1,45 @@
 import { expect, it, vi } from "vitest";
 import { migrationUnits } from "../../../../../packages/shared/src/migration.js";
 import { parseMigrationCommand } from "../../../../../packages/policy-engine/src/migration-rpc.js";
+import {
+  watchFrozenSource,
+  type StorageChanges,
+} from "../../../../../apps/chrome-extension/src/migration/source-watch.js";
 import { consensusFixture as fixture } from "./consensus-support.js";
+it("blocks consensus when a watched source changes even if its value is restored", async () => {
+  const f = fixture();
+  let listener:
+    | ((changes: Record<string, unknown>, area: string) => void)
+    | undefined;
+  const events: StorageChanges = {
+    addListener(value) {
+      listener = value;
+    },
+    removeListener() {
+      listener = undefined;
+    },
+  };
+  const watched = watchFrozenSource(
+    {
+      async get() {
+        return {};
+      },
+      async assertFrozen() {},
+    },
+    events,
+    "local",
+    ["provider_settings"],
+    1,
+  );
+  f.browser.assertFrozen = watched.assertFrozen;
+  listener?.({ provider_settings: {} }, "local");
+  listener?.({ provider_settings: {} }, "local");
+  await expect(f.client.validate(f.view)).rejects.toThrow(
+    "MIGRATION_SOURCE_CHANGED",
+  );
+  expect(f.calls()).toHaveLength(0);
+  watched.dispose();
+});
 it("keeps source parsing strict and refuses backend-owned ACKs on the browser channel", async () => {
   const f = fixture();
   await f.client.validate(f.view);

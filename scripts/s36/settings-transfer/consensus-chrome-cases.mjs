@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { evaluate } from "../../chrome-cdp-utils.mjs";
+import { build } from "esbuild";
 export async function qualifyConsensus(panel) {
   const validated = await evaluate(
     panel,
@@ -36,4 +37,14 @@ export async function qualifyConsensus(panel) {
     ).revision,
     3,
   );
+  const fixture = await build({
+    entryPoints: ["extension/tests/fixture/s36/source-watch-chrome.ts"],
+    bundle: true,
+    write: false,
+    platform: "browser",
+    format: "iife",
+    globalName: "S36SourceWatch",
+  });
+  await evaluate(panel, fixture.outputFiles[0].text);
+  assert.equal(await evaluate(panel, "S36SourceWatch.run()"), true);
 }

@@ -4,6 +4,14 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-28 storage source-change observation
+
+**In Progress.** [Evidence](evidence/s36-source-watch-2026-10-28.md) records an
+opt-in, epoch/key-scoped watcher and actual isolated Chrome source change/revert
+detection. This is an observation aid, not a writer lock or an installed owner
+integration. Actual freeze/drain, restart ownership, source recovery and installed
+commit remain open; S37 stays Planned.
+
 ## Browser Agent S36 — 2026-10-27 installed validation and owner agreement
 
 **In Progress.** [Evidence](evidence/s36-consensus-2026-10-27.md) records fresh
