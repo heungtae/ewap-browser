@@ -82,6 +82,8 @@
 
 [S27 controller protocol](s27-controller-protocol-2026-10-19.md): contract/binder/native/budget implementation and frozen live attempts; live feasibility failed, S27 remains In Progress and S33 completion is blocked.
 
+[S27 live qualification, 2026-10-28](s27-live-2026-10-28.md): interactive-shell credential used for a fresh frozen-corpus run; all 12 cases failed the semantic gate despite HTTP 200 responses.
+
 [S26 migration baseline](s26-migration-baseline-2026-10-19.md): exact RF/file inventory, 26 UI captures, storage/consumer catalog and frozen qualification; 993 unit checks and controlled Chrome, with source-size and diagnostics ZIP baseline failures preserved.
 
 [Development diagnostics](development-diagnostics-2026-10-18.md): unmasked development and masked release modes, 990 unit checks, two fixture/E2E checks, compiled policy and release packaging guard; user 0.1.117 export confirms raw values and correlated handling, with a separate prepared-action review failure.

@@ -368,6 +368,30 @@ endpoint와 고정 버전(`jev-1.13.0` 등)을 사용하며 API key는 write-onl
 한국어·영어 holdout, 호출 수·사용량·지연을 기록한다. 키와 원문 payload는 기록하지 않는다.
 현재 실행 범위와 미검증 항목은 [S25 증거](evidence/s25-jev-routing-2026-10-14.md)를 따른다.
 
+## S27 native JEV live qualification
+
+The live runner reads `TYPESAFE_API_KEY`, falling back to `JEV_API_KEY` only
+when the first variable is unset. Check presence without printing either value:
+
+```bash
+bash -ic 'if [ "${TYPESAFE_API_KEY+x}" = x ]; then key=$TYPESAFE_API_KEY; else key=${JEV_API_KEY:-}; fi; if [ -n "$key" ]; then printf "JEV credential present\n"; else printf "JEV credential unavailable\n"; fi'
+```
+
+On this development machine the existing credential is exported by the
+interactive Bash configuration (`~/.bashrc`), so a non-interactive parent
+process may not inherit it. Run the frozen qualification in that interactive
+environment without placing the credential in a command argument or report:
+
+```bash
+bash -ic 'S27_REPORT=/tmp/s27-live-qualification.json pnpm test:s27:live'
+pnpm check:s27:qualification /tmp/s27-live-qualification.json
+```
+
+Use only a trusted local shell configuration. Never print or commit the key, and
+check saved evidence for secrets before sharing it. HTTP success alone does not
+qualify the controller. The [2026-10-28 result](evidence/s27-live-2026-10-28.md)
+records the latest failed semantic gate; do not lower the frozen thresholds.
+
 ## Options UI regression
 
 After a version-preserving artifact build, run:

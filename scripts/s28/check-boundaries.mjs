@@ -66,6 +66,8 @@ const browser = await build({
 assert.ok(
   Object.keys(browser.metafile.inputs).every(
     (p) =>
+      // Legacy provider contract constants are pinned above; execution code is forbidden.
+      p === "extension/src/providers/types.ts" ||
       !/extension\/src\/(providers|policy|service-worker)|apps\/agent-server|packages\/task-engine/.test(
         p,
       ),

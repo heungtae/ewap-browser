@@ -77,6 +77,11 @@ for (const root of roots) {
             value === "zod" ||
               (root.endsWith("provider-adapters") &&
                 value === "@contextpilot/task-engine/decisions") ||
+              (file.startsWith("packages/provider-adapters/src/responses/") &&
+                [
+                  "@contextpilot/codebase-schema",
+                  "@contextpilot/analysis-engine/contracts",
+                ].includes(value)) ||
               (file.endsWith("/digest.ts") && value === "node:crypto"),
             `forbidden dependency ${file}: ${value}`,
           );

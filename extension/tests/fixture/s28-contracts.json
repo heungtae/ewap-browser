@@ -58,6 +58,547 @@
               {
                 "type": "object",
                 "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.resume.snapshot"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "manifestDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "revision",
+                  "manifestDigest"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.consensus.validate"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceDigests": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "required": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                  },
+                  "manifestDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "secretMode": {
+                    "type": "string",
+                    "enum": ["session-only", "os-store"]
+                  },
+                  "source": {}
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "revision",
+                  "sourceDigests",
+                  "manifestDigest",
+                  "secretMode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.consensus.acknowledge"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceDigests": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "required": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                  },
+                  "manifestDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "secretMode": {
+                    "type": "string",
+                    "enum": ["session-only", "os-store"]
+                  },
+                  "source": {},
+                  "ack": {
+                    "type": "object",
+                    "properties": {
+                      "schema": {
+                        "type": "string",
+                        "const": "wca.migration-ack/v1"
+                      },
+                      "owner": { "type": "string", "const": "extension" },
+                      "migrationId": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                      },
+                      "profileGuard": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "epoch": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "manifestDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "schema",
+                      "owner",
+                      "migrationId",
+                      "profileGuard",
+                      "epoch",
+                      "manifestDigest"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "revision",
+                  "sourceDigests",
+                  "manifestDigest",
+                  "secretMode",
+                  "ack"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.checkpoints.publish"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceDigests": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "required": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                  },
+                  "stores": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "sourceDigest": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "targetDigest": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "copied": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "quarantined": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "sourceCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "sourceDigest",
+                        "targetDigest",
+                        "copied",
+                        "quarantined",
+                        "sourceCount"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "required": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                  }
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "revision",
+                  "sourceDigests",
+                  "stores"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.checkpoints.read"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "revision"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceDigests": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string",
+                      "enum": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                    },
+                    "additionalProperties": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "required": ["MG01", "MG02", "MG03", "MG04", "MG05", "MG06"]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.resume.check"
+                  }
+                },
+                "required": [
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "revision",
+                  "sourceDigests",
+                  "kind"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.settings.stage"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "secretMode": {
+                    "type": "string",
+                    "enum": ["session-only", "os-store"]
+                  },
+                  "source": {}
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "sourceDigest",
+                  "secretMode"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.settings.validate"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "sourceDigest": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "secretMode": {
+                    "type": "string",
+                    "enum": ["session-only", "os-store"]
+                  },
+                  "source": {},
+                  "checkpoint": {
+                    "type": "object",
+                    "properties": {
+                      "sourceDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "targetDigest": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "copied": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "quarantined": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "sourceCount": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "sourceDigest",
+                      "targetDigest",
+                      "copied",
+                      "quarantined",
+                      "sourceCount"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "kind",
+                  "profileGuard",
+                  "migrationId",
+                  "epoch",
+                  "sourceDigest",
+                  "secretMode",
+                  "checkpoint"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "migration.status" },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": ["kind", "profileGuard"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "migration.policy.put" },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "value": {}
+                },
+                "required": ["kind", "profileGuard", "value"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "migration.policy.read"
+                  },
+                  "profileGuard": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "migrationId": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]{1,128}$"
+                  },
+                  "epoch": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["kind", "profileGuard", "migrationId", "epoch"],
+                "additionalProperties": false
+              }
+            ]
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
                   "kind": { "type": "string", "const": "transfer.open" },
                   "id": { "type": "string", "minLength": 1, "maxLength": 128 },
                   "count": { "type": "integer", "minimum": 1, "maximum": 256 },
@@ -238,9 +779,22 @@
         "maximum": 9007199254740991
       },
       "capabilities": {
-        "maxItems": 2,
+        "maxItems": 9,
         "type": "array",
-        "items": { "type": "string", "enum": ["heartbeat", "resumeEvents"] }
+        "items": {
+          "type": "string",
+          "enum": [
+            "heartbeat",
+            "resumeEvents",
+            "migration.status",
+            "migration.policy",
+            "migration.settings",
+            "migration.resume",
+            "migration.resumeSnapshot",
+            "migration.checkpoints",
+            "migration.consensus"
+          ]
+        }
       },
       "taskReady": { "type": "boolean", "const": false }
     },
