@@ -18,6 +18,11 @@ import { migrationProfileGuard } from "../../../dist/s36/transport.mjs";
 import { openChrome } from "./chrome-process.mjs";
 import { prepareTransfer, injectSettings } from "./chrome-setup.mjs";
 import { verifyReadback } from "./chrome-readback.mjs";
+import {
+  prepareObservedRestart,
+  qualifyObservedRestart,
+  validateCredentialReadback,
+} from "./observed-restart-cases.mjs";
 const directory = process.env.S36_INSTALL_RELEASE_DIR,
   releaseId = process.env.S36_INSTALL_RELEASE_ID;
 if (!process.env.CHROME_FOR_TESTING_BIN || !directory || !releaseId)
@@ -86,6 +91,10 @@ try {
   assert.equal((await evaluate(chrome.panel, "S36Settings.stage()")).copied, 1);
   assert.equal(await evaluate(chrome.panel, "S36Settings.stagePolicy()"), true);
   assert.equal(await evaluate(chrome.panel, "S36Settings.stageOwner()"), true);
+  const observed =
+    process.env.S36_OBSERVED_RESTART === "1"
+      ? await prepareObservedRestart(chrome.panel)
+      : undefined;
   const candidate = await evaluate(
     chrome.panel,
     "S36Settings.ownerCandidate()",
@@ -120,10 +129,11 @@ try {
     await evaluate(chrome.panel, "S36Settings.rejectLostSources()"),
     true,
   );
-  assert.equal(
-    await evaluate(chrome.panel, "S36Settings.validatePersisted()"),
-    true,
-  );
+  const observedResult = observed
+    ? await qualifyObservedRestart(chrome.panel, observed)
+    : undefined;
+  const credentialReadback = await validateCredentialReadback(chrome.panel);
+  assert.equal(credentialReadback.result, true);
   assert.equal(
     await evaluate(chrome.panel, "S36Settings.validatePolicy()"),
     true,
@@ -132,7 +142,7 @@ try {
   assert.equal(await readFile(prepared.configPath, "utf8"), pairing);
   daemon.kill("SIGTERM");
   await daemonClosed;
-  verifyReadback(dbPath, true);
+  verifyReadback(dbPath, true, false, false, !!observed);
   uninstallRelease(input);
   const report = {
     result: "PASS",
@@ -152,14 +162,20 @@ try {
     cspViolations: 0,
     admission: false,
     namespace: "legacy",
-    backendPhase: "prepared",
+    backendPhase: observed ? "validated" : "prepared",
+    observedRebindRejectsLostSources: !!observed,
+    explicitSyntheticReimportRebind: !!observed,
+    firstRebindFailure: observedResult?.firstRebindFailure ?? null,
+    firstCredentialReadbackFailure:
+      credentialReadback.first === true ? null : credentialReadback.first,
     globalCommit: false,
     providerCalls: 0,
     businessDispatches: 0,
     approvals: 0,
     sourceFreeze: "controlled assertion",
-    scope:
-      "browser restart rejects old ACK after session source loss; no source rehydration/global commit",
+    scope: observed
+      ? "fresh observation rejects lost sources; explicit synthetic reimport only; no global commit"
+      : "browser restart rejects old ACK after session source loss; no source rehydration/global commit",
   };
   const output =
     process.env.S36_INSTALL_EVIDENCE_DIR ?? "dist/s36/browser-restart";

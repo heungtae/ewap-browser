@@ -1,6 +1,7 @@
 import { settingsRequest } from "./settings-rpc.js";
 import { checkpointsRequest } from "./checkpoints-rpc.js";
 import { consensusRequest } from "./consensus-rpc.js";
+import { resumeSnapshot } from "./resume-snapshot.js";
 import type { SecretStore } from "../settings/service.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import {
@@ -52,6 +53,8 @@ export async function migrationEndpoint(
       (view && view.manifest.profileGuard !== profileGuard)
     )
       throw new Error("MIGRATION_FENCE");
+    if (command.kind === "migration.resume.snapshot")
+      return resumeSnapshot(db, profileGuard, command, context);
     if (
       command.kind === "migration.consensus.validate" ||
       command.kind === "migration.consensus.acknowledge"

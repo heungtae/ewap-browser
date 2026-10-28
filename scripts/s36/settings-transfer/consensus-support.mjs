@@ -121,6 +121,8 @@ export async function preparedConsensus() {
       client,
       ack,
       digest,
+      browser,
+      source,
       direct,
       async close() {
         db.close();

@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Observed-owner restart rebind: [read-only backend snapshot](../apps/agent-server/src/migration/resume-snapshot.ts), [fresh browser rebind](../apps/chrome-extension/src/migration/resume-observed.ts), [Chrome restart runner](../scripts/s36/settings-transfer/observed-restart-chrome.mjs), [evidence and limits](evidence/s36-observed-restart-2026-10-28.md). No historical ACK use or automatic session restoration.
+
 Observed migration owner: [adapter](../apps/chrome-extension/src/migration/observed-owner.ts), [unit checks](../extension/tests/unit/migration/s36/observed-owner.test.ts), [controlled Chrome composition](../extension/tests/fixture/s36/settings-observed-fixture.ts), [evidence and limitations](evidence/s36-observed-owner-2026-10-28.md). The caller must establish freeze/drain and re-arm observation after restart.
 
 Storage source-change observation: [opt-in watcher](../apps/chrome-extension/src/migration/source-watch.ts), [unit tests](../extension/tests/unit/migration/s36/source-watch.test.ts), [Chrome fixture](../extension/tests/fixture/s36/source-watch-chrome.ts), [evidence and limits](evidence/s36-source-watch-2026-10-28.md). It detects delivered change events; it does not block legacy writers or establish a freeze.

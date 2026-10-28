@@ -14,7 +14,7 @@
 
 ## Web Codebase Agent migration S26-S37
 
-Latest S36 continuation: [2026-10-28 observed migration owner](../evidence/s36-observed-owner-2026-10-28.md). Controlled Chrome checks owner/consensus rejection after change/revert; installed startup integration, writer blocking, commit and recovery remain pending.
+Latest S36 continuation: [2026-10-28 observed-owner restart rebind](../evidence/s36-observed-restart-2026-10-28.md). Actual Chrome rejects lost session sources and rebinds after explicit synthetic input without historical ACK use; installed startup integration, writer blocking, user-data recovery and commit remain pending.
 
 **S26 completed its recorded baseline; S27–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and

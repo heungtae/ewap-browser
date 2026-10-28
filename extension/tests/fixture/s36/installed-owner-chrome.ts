@@ -14,11 +14,8 @@ import type {
 import type { FrozenSource } from "../../../../apps/chrome-extension/src/migration/local-staging.js";
 import type { MigrationCommand } from "../../../../packages/shared/src/migration-rpc.js";
 import { savedSource } from "../../unit/migration/s36/mg03-support.js";
-import { historySource } from "../../unit/migration/s36/mg04-support.js";
-import {
-  diagnosticsSource,
-  diagnosticsNow,
-} from "../../unit/migration/s36/mg06-support.js";
+import { diagnosticsNow } from "../../unit/migration/s36/mg06-support.js";
+import { controlledSessionSource } from "./installed-owner-seed.js";
 const check = (value: unknown, code: string) => {
   if (!value) throw new Error(code);
 };
@@ -65,6 +62,10 @@ export function ownerFixture(
     );
   return {
     browser,
+    async reimportControlledSession() {
+      await writeSession(controlledSessionSource());
+      return true;
+    },
     candidate: () => structuredClone(view),
     async restoreLostSources(profileGuard: string, raw: Journal) {
       profile = profileGuard;
@@ -100,24 +101,7 @@ export function ownerFixture(
     async prepare(profileGuard: string) {
       profile = profileGuard;
       await writeLocal(savedSource());
-      await writeSession({
-        ...historySource(),
-        ...diagnosticsSource(),
-        execution_requests_v1: [
-          {
-            request_id: "20000000-0000-4000-8000-000000000001",
-            revision: 1,
-            state: "TERMINAL",
-            stage: "TERMINAL",
-            tab_id: 4,
-            owner: "old-owner",
-            started_at_ms: 0,
-            stage_started_at_ms: 0,
-            last_progress_at_ms: 0,
-            outcome: "VERIFIED",
-          },
-        ],
-      });
+      await writeSession(controlledSessionSource());
       db = await openDatabase(indexedDB, profile);
       const owner = browser();
       check((await owner.freezeAndDrain(1)).ready, "CONTROLLED_DRAIN");

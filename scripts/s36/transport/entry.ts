@@ -26,3 +26,4 @@ export { settingsRequest } from "../../../apps/agent-server/src/migration/settin
 export { checkpointTransport } from "../../../apps/chrome-extension/src/migration/checkpoints-rpc.js";
 export { parseMigrationCommand } from "../../../packages/policy-engine/src/migration-rpc.js";
 export { consensusTransport } from "../../../apps/chrome-extension/src/migration/consensus-rpc.js";
+export { resumeObservedOwner } from "../../../apps/chrome-extension/src/migration/resume-observed.js";

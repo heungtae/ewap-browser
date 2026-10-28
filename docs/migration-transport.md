@@ -16,6 +16,19 @@ activate a namespace. Freeze still depends on the caller's real writer ownership
 Earlier daemons without the capability are rejected before dispatch. See the
 [2026-10-27 continuation](evidence/s36-resume-preflight-2026-10-25.md#authenticated-daemon-continuation--2026-10-27).
 
+`migration.resume.snapshot` requires its own `migration.resumeSnapshot` capability;
+older peers without it reject before dispatch. It is a read-only binding to a `copying` or
+`validated` journal's profile, migration ID, epoch, revision and manifest/store
+digest. It returns no historical ACKs or source values. The opt-in
+[`resumeObservedOwner`](../apps/chrome-extension/src/migration/resume-observed.ts)
+arms a new owner watcher after the caller establishes freeze/drain and a fresh
+pairing. It checks the backend snapshot and six current sources, validates the
+browser staging targets and settings credentials twice, and repeats scope checks.
+It never reads historical owner ACKs or grants permission to commit. Dispose the
+returned observer when its current ownership ends; failed attempts dispose it
+automatically. Session data must be present as current input; there is no automatic
+reimport or user-data restoration. See [restart evidence](evidence/s36-observed-restart-2026-10-28.md).
+
 For an already prepared journal, the optional `migration.checkpoints` capability
 accepts `migration.checkpoints.publish/read`. The [browser adapter](../apps/chrome-extension/src/migration/checkpoints-rpc.ts)
 takes the pinned manifest, current browser owner and an explicit MG01 credential

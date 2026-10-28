@@ -1,5 +1,7 @@
 # 검증 증거 안내
 
+[S36 observed-owner restart rebind](s36-observed-restart-2026-10-28.md): new Chrome process rejects lost session sources and rebinds after explicit synthetic input without historical ACK use; OS-store readback initially disconnected and required one read-only retry. Actual writer ownership, user-data recovery and global commit remain pending.
+
 [S36 observed migration owner](s36-observed-owner-2026-10-28.md): opt-in owner wrapper checks both source watchers around staging/ACK; actual Chrome change/revert blocks the next consensus request. Event observation is not a writer lock or installed startup integration.
 
 [S36 storage source-change observation](s36-source-watch-2026-10-28.md): opt-in epoch/key-scoped watcher and isolated actual Chrome change/revert test. Event observation is not writer blocking or installed ownership.

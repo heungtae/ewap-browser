@@ -6,6 +6,7 @@ export function verifyReadback(
   joint,
   checkpoints = false,
   consensus = false,
+  validationOnly = false,
 ) {
   const stored = new DatabaseSync(dbPath);
   assert.equal(
@@ -46,11 +47,15 @@ export function verifyReadback(
     const view = journal.read();
     assert.equal(
       view.phase,
-      consensus ? "validated" : checkpoints ? "copying" : "prepared",
+      consensus || validationOnly
+        ? "validated"
+        : checkpoints
+          ? "copying"
+          : "prepared",
     );
-    if (checkpoints) {
+    if (checkpoints || validationOnly) {
       assert.equal(Object.keys(view.stores).length, 6);
-      assert.equal(view.revision, consensus ? 3 : 1);
+      assert.equal(view.revision, consensus ? 3 : validationOnly ? 2 : 1);
       if (consensus) {
         assert.match(view.acknowledgments.extension, /^[a-f0-9]{64}$/);
         assert.equal(

@@ -149,6 +149,7 @@
     "check:s36:secrets": "node scripts/s36/secrets/check.mjs",
     "test:s36:settings-transfer": "node --test scripts/s36/settings-transfer/*.test.mjs",
     "test:chrome-s36:browser-restart": "node scripts/s36/settings-transfer/restart-chrome.mjs",
+    "test:chrome-s36:observed-restart": "node scripts/s36/settings-transfer/observed-restart-chrome.mjs",
     "test:chrome-s36:browser-restart:os": "/usr/bin/dbus-run-session -- env S36_PRIVATE_SECRET_BUS=1 node scripts/s36/settings-transfer/restart-chrome.mjs --os-store",
     "test:chrome-s36:installed-owner": "node scripts/s36/settings-transfer/owner-chrome.mjs",
     "test:chrome-s36:checkpoints": "node scripts/s36/settings-transfer/checkpoints-chrome.mjs",

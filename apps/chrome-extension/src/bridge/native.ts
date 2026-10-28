@@ -129,15 +129,17 @@ export class NativeBridge {
       !this.capabilities.has(
         payload.kind === "migration.status"
           ? "migration.status"
-          : payload.kind === "migration.resume.check"
-            ? "migration.resume"
-            : payload.kind.startsWith("migration.checkpoints.")
-              ? "migration.checkpoints"
-              : payload.kind.startsWith("migration.consensus.")
-                ? "migration.consensus"
-                : payload.kind.startsWith("migration.settings.")
-                  ? "migration.settings"
-                  : "migration.policy",
+          : payload.kind === "migration.resume.snapshot"
+            ? "migration.resumeSnapshot"
+            : payload.kind.startsWith("migration.resume.")
+              ? "migration.resume"
+              : payload.kind.startsWith("migration.checkpoints.")
+                ? "migration.checkpoints"
+                : payload.kind.startsWith("migration.consensus.")
+                  ? "migration.consensus"
+                  : payload.kind.startsWith("migration.settings.")
+                    ? "migration.settings"
+                    : "migration.policy",
       )
     )
       throw new Error("MIGRATION_UNAVAILABLE");

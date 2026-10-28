@@ -4,6 +4,15 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S36 — 2026-10-28 observed-owner restart rebind
+
+**In Progress.** [Evidence](evidence/s36-observed-restart-2026-10-28.md) records
+read-only backend scope/digest binding and fresh all-six source/target/credential
+checks without historical ACK use. Actual Chrome restart rejects lost session data;
+explicit synthetic fixture reimport allows rebind. The OS-store run preserved an
+`RPC_UNAVAILABLE` first read and passed one read-only retry. Actual user-data
+recovery, writer freeze, startup ownership and global commit remain open.
+
 ## Browser Agent S36 — 2026-10-28 observed migration owner
 
 **In Progress.** [Evidence](evidence/s36-observed-owner-2026-10-28.md) records

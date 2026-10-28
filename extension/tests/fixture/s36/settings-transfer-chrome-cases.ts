@@ -4,6 +4,7 @@ import { consensusTransport } from "../../../../apps/chrome-extension/src/migrat
 import {
   createObserved,
   checkPolicyDrift,
+  rebindObserved,
 } from "./settings-observed-fixture.js";
 import { policyFixture } from "./installed-policy-chrome.js";
 import "../../../../apps/chrome-extension/src/bridge/schema-config.js";
@@ -167,6 +168,10 @@ export function consensusClient() {
 }
 export const observedConsensus = () =>
   createObserved(profile, request, owner.browser(), source, storeMode);
+export const rebindCurrentOwner = (view: Journal) =>
+  rebindObserved(view, request, owner.browser(), source, storeMode);
+export const reimportControlledSession = () =>
+  owner.reimportControlledSession();
 export async function restoreAfterBrowserRestart(
   profileGuard: string,
   mode: "session-only" | "os-store",
