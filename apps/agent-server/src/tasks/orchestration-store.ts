@@ -1,9 +1,11 @@
 import { reduceOrchestration } from "../../../../packages/task-engine/src/orchestration/reduce.js";
+import { advanceTask } from "../../../../packages/task-engine/src/orchestration/advance-task.js";
 import { digest } from "../../../../packages/task-engine/src/decisions/digest.js";
 import type {
   JournalEntry,
   Orchestration,
   OrchestrationStore,
+  Transition,
 } from "../../../../packages/task-engine/src/orchestration/index.js";
 import type { TaskStore } from "./store.js";
 import { transaction } from "./database.js";
@@ -54,6 +56,10 @@ export class SqliteOrchestrationStore implements OrchestrationStore {
     const state = JSON.parse(String(row.body)) as Orchestration;
     this.fence(state);
     return state;
+  }
+  // Internal trusted callers supply the transition; persisted state is authoritative.
+  async advance(event: Transition): Promise<Orchestration> {
+    return advanceTask(this.load(), event, this, this.now());
   }
   async commit(entry: JournalEntry): Promise<void> {
     transaction(this.tasks.db, () => {

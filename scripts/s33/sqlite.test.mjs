@@ -73,7 +73,8 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
     await assert.rejects(advanceTask(state, event, a, 1), /INJECTED_QUOTA/);
     assert.deepEqual(b.load(), state);
     db.exec("DROP TRIGGER fail_s33");
-    const next = await advanceTask(state, event, a, 1);
+    const next = await a.advance(event);
+    await assert.rejects(b.advance(event), /REVISION_CONFLICT/);
     await assert.rejects(advanceTask(state, event, b, 1), /REVISION_CONFLICT/);
     assert.deepEqual(b.load(), next);
     await assert.rejects(
@@ -100,6 +101,7 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       1,
     );
     remote.cancel(task.id, "owner");
+    await assert.rejects(a.advance(event), /TASK_TERMINAL/);
     await assert.rejects(
       advanceTask(
         next,

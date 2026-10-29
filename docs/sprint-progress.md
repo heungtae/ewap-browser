@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S33 — 2026-10-30 persisted advance
+
+**In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates.
+
 ## Browser Agent S27 — 2026-10-30 controller qualification
 
 **Completed within the native controller qualification scope.** [Evidence](evidence/s27-qualification-2026-10-30.md) records 96/96 live decisions across all original reference sequences, with shared per-case budgets and 16 reconstructed argument bindings, and 288/288 independently authored synthetic phase observations. The user-directed score-gate removal and ambiguous-label exclusions apply; the historical v1 failure remains recorded. Observations are synthetic; actual browser execution, task continuity and release remain S33/S36 work.
