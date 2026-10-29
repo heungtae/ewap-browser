@@ -3740,6 +3740,20 @@
       "sprint": "S33"
     },
     {
+      "path": "docs/evidence/s33-persisted-advance-2026-10-30.md",
+      "owner": "RF04",
+      "target": "docs/evidence/s33-persisted-advance-2026-10-30.md",
+      "disposition": "reuse",
+      "sprint": "S33"
+    },
+    {
+      "path": "docs/evidence/s33-initial-state-2026-10-30.md",
+      "owner": "RF04",
+      "target": "docs/evidence/s33-initial-state-2026-10-30.md",
+      "disposition": "reuse",
+      "sprint": "S33"
+    },
+    {
       "path": "docs/evidence/s34-evidence-analysis-2026-10-21.md",
       "owner": "RF17",
       "target": "docs/evidence/s34-evidence-analysis-2026-10-21.md",

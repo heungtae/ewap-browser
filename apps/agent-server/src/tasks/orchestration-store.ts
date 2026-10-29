@@ -1,5 +1,6 @@
 import { reduceOrchestration } from "../../../../packages/task-engine/src/orchestration/reduce.js";
 import { advanceTask } from "../../../../packages/task-engine/src/orchestration/advance-task.js";
+import { admitOrchestration } from "../../../../packages/task-engine/src/orchestration/admission.js";
 import { digest } from "../../../../packages/task-engine/src/decisions/digest.js";
 import type {
   JournalEntry,
@@ -43,6 +44,15 @@ export class SqliteOrchestrationStore implements OrchestrationStore {
     transaction(this.tasks.db, () => {
       this.fence(state);
       if (state.phase !== "admission") throw new Error("ADMISSION_REQUIRED");
+      // Readiness is checked by the trusted admission caller; this validates shape only.
+      const initial = admitOrchestration(
+        state.context,
+        { enabled: true, configured: true, qualified: true },
+        state.deadline,
+        this.now(),
+      );
+      if (state.context.taskRevision !== 0 || digest(initial) !== digest(state))
+        throw new Error("ORCHESTRATION_INITIAL_STATE_INVALID");
       this.tasks.db
         .prepare("INSERT INTO orchestration_states VALUES (?,?,?)")
         .run(this.taskId, state.context.taskRevision, JSON.stringify(state));

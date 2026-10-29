@@ -58,6 +58,22 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       0,
       () => 1,
     );
+    for (const forged of [
+      { ...state, verifiedSteps: ["forged"] },
+      { ...state, turns: 1 },
+      { ...state, outcome: "VERIFIED" },
+      { ...state, extra: true },
+      { ...state, context: { ...state.context, taskRevision: 2 } },
+    ]) {
+      assert.throws(
+        () => a.initialize(forged),
+        /ORCHESTRATION_INITIAL_STATE_INVALID/,
+      );
+    }
+    assert.equal(
+      db.prepare("SELECT count(*) AS n FROM orchestration_states").get().n,
+      0,
+    );
     a.initialize(state);
     assert.deepEqual(b.load(), state);
     const event = {
