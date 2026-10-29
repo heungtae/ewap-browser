@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "id": "d01",
+      "language": "en",
+      "request": "Read the shipment records currently displayed and report their shipment codes and delivery statuses.",
+      "category": "read"
+    },
+    {
+      "id": "d02",
+      "language": "ko",
+      "request": "현재 표시된 사고 기록에서 심각도가 높음인 항목의 개수를 세어 주세요.",
+      "category": "read"
+    },
+    {
+      "id": "d03",
+      "language": "en",
+      "request": "Count the maintenance records marked overdue in the already loaded table.",
+      "category": "read"
+    },
+    {
+      "id": "d04",
+      "language": "ko",
+      "request": "현재 표시된 물류 기록에서 배송 상태가 지연인 항목의 기록 코드와 상태를 읽어 주세요.",
+      "category": "read"
+    },
+    {
+      "id": "d05",
+      "language": "en",
+      "request": "Enter QRY-103 into the observed shipment search form and submit the form.",
+      "category": "action"
+    },
+    {
+      "id": "d06",
+      "language": "ko",
+      "request": "관찰된 사고 기록 검색 폼에 QRY-204를 입력하고 해당 폼을 제출해 주세요.",
+      "category": "action"
+    },
+    {
+      "id": "d07",
+      "language": "en",
+      "request": "Enter QRY-305 into the observed maintenance search form and submit the form.",
+      "category": "action"
+    },
+    {
+      "id": "d08",
+      "language": "ko",
+      "request": "관찰된 물류 기록 검색 폼에 QRY-406을 입력하고 해당 폼을 제출해 주세요.",
+      "category": "action"
+    },
+    {
+      "id": "d09",
+      "language": "en",
+      "request": "Using only the shipment data already acquired, explain the patterns in delivery delays across warehouse codes.",
+      "category": "analysis"
+    },
+    {
+      "id": "d10",
+      "language": "ko",
+      "request": "이미 확보한 사고 기록 데이터만 사용하여 교대 시간대별 사고 발생 패턴을 설명해 주세요.",
+      "category": "analysis"
+    },
+    {
+      "id": "d11",
+      "language": "en",
+      "request": "Using only the maintenance data already acquired, explain the patterns in recurring faults across equipment types.",
+      "category": "analysis"
+    },
+    {
+      "id": "d12",
+      "language": "ko",
+      "request": "이미 확보한 물류 데이터만 사용하여 운송 경로별 지연 빈도의 패턴을 설명해 주세요.",
+      "category": "analysis"
+    }
+  ]
+}

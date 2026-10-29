@@ -6,7 +6,7 @@ import { validateProviderActivity } from "../../../src/contracts/provider-activi
 import { acceptedChoice } from "../../../src/providers/jev-response.js";
 
 describe("S25 decision gates", () => {
-  it("confidence and selected probability are separate gates; reordered choices keep native identity", () => {
+  it("accepts valid choices regardless of confidence and probability", () => {
     const response = nativeResponse(task.questions);
     const answer = response.answers.verdict as {
       type: "choice";
@@ -15,10 +15,10 @@ describe("S25 decision gates", () => {
       probabilities: Record<string, number>;
     };
     answer.confidence = 0.4;
-    expect(acceptedChoice(response as never, "verdict")).toBeUndefined();
+    expect(acceptedChoice(response as never, "verdict")).toBe("read");
     answer.confidence = 0.99;
     answer.probabilities = { read: 0.7, action: 0.3 };
-    expect(acceptedChoice(response as never, "verdict")).toBeUndefined();
+    expect(acceptedChoice(response as never, "verdict")).toBe("read");
     answer.probabilities = { action: 0, read: 1 };
     expect(acceptedChoice(response as never, "verdict")).toBe("read");
   });
@@ -100,7 +100,7 @@ describe("S25 decision gates", () => {
     expect(onDelta).not.toHaveBeenCalled();
   });
   it.each(["routing", "evidence"])(
-    "native low %s certainty delegates without asserting direct authority",
+    "native low %s score preserves the selected processor",
     async (gate) => {
       const questions = {
         ...task.questions,
@@ -122,18 +122,38 @@ describe("S25 decision gates", () => {
       const { runtime } = setup(async () => json(response));
       await dual(runtime);
       const onRole = vi.fn();
-      await expect(
-        runtime.decide(
-          { ...task, questions },
-          { signal: new AbortController().signal, onRole },
-        ),
-      ).resolves.toBeUndefined();
-      expect(onRole.mock.calls.at(-1)?.[0]).toMatchObject({
-        provider_role: "primary",
-        stage: "DELEGATING",
-      });
+      const result = await runtime.decide(
+        { ...task, questions },
+        { signal: new AbortController().signal, onRole },
+      );
+      expect(result).toMatchObject({ source: "jev" });
     },
   );
+  it("delegates when the processor selects PRIMARY_LLM even with low confidence", async () => {
+    const questions = {
+      ...task.questions,
+      processor: {
+        type: "choice" as const,
+        instructions: "Choose processor",
+        criteria: { JEV_DECISION: "Finite", PRIMARY_LLM: "Generation" },
+      },
+    };
+    const answer = nativeResponse(questions, { processor: "PRIMARY_LLM" });
+    (answer.answers.processor as { confidence: number }).confidence = 0.2;
+    const { runtime } = setup(async () => json(answer));
+    await dual(runtime);
+    const onRole = vi.fn();
+    await expect(
+      runtime.decide(
+        { ...task, questions },
+        { signal: new AbortController().signal, onRole },
+      ),
+    ).resolves.toBeUndefined();
+    expect(onRole.mock.calls.at(-1)?.[0]).toMatchObject({
+      provider_role: "primary",
+      stage: "DELEGATING",
+    });
+  });
   it("pre-dispatch failure preserves a full approved primary plan; post-dispatch failure blocks every further dispatch", async () => {
     const { runtime } = setup(async () => new Response("", { status: 503 }));
     await dual(runtime);

@@ -1,0 +1,196 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import { loadS27 } from "./bundle.mjs";
+import { schedule } from "./multiphase-schedule.mjs";
+import { makeBinding, makeContext, makeFrame } from "./multiphase-fixture.mjs";
+import { changedSourceCheck } from "./multiphase-negative.mjs";
+import { verifySinglePhaseBudget } from "./reference-budget-check.mjs";
+const hash = (data) => createHash("sha256").update(data).digest("hex");
+const bytes = await readFile("docs/baselines/s27-cross2/corpus.json");
+const corpus = JSON.parse(bytes);
+const auditOnly = process.argv.includes("--audit");
+const reportPath =
+  process.argv.slice(2).find((value) => value !== "--audit") ??
+  "/tmp/s27-multiphase.json";
+const report = JSON.parse(await readFile(reportPath, "utf8"));
+assert.equal(
+  hash(bytes),
+  "5cf9326b047e59ca664c749150e5e97b9e3bd1e6408445e419055fda7cd5aa55",
+);
+assert.equal(corpus.cases.length, 12);
+assert.equal(new Set(corpus.cases.map((item) => item.id)).size, 12);
+for (const language of ["en", "ko"])
+  assert.equal(
+    corpus.cases.filter((item) => item.language === language).length,
+    6,
+  );
+for (const category of ["read", "action", "analysis"])
+  assert.equal(
+    corpus.cases.filter((item) => item.category === category).length,
+    4,
+  );
+assert.equal(report.schema, "s27-cross/v2");
+assert.equal(report.corpusHash, hash(bytes));
+const { module: s27, protocolSourceDigest } = await loadS27();
+assert.equal(report.protocolSourceDigest, protocolSourceDigest);
+for (const [field, path] of Object.entries({
+  runnerDigest: "scripts/s27/live-multiphase.mjs",
+  fixtureDigest: "scripts/s27/multiphase-fixture.mjs",
+  observationsDigest: "scripts/s27/multiphase-observations.mjs",
+  vocabularyDigest: "scripts/s27/multiphase-vocabulary.mjs",
+  scheduleDigest: "scripts/s27/multiphase-schedule.mjs",
+  negativeDigest: "scripts/s27/multiphase-negative.mjs",
+}))
+  assert.equal(report[field], hash(await readFile(path)), field);
+assert.equal(report.model, "jev-1.13.0");
+assert.equal(report.templateVersion, "controller-v2");
+assert.equal(report.gptControllerCalls, 0);
+assert.equal(report.browserDispatches, 0);
+assert.equal(report.approvalFacts, 0);
+const scheduled = schedule();
+assert.equal(scheduled.length, 24);
+assert.equal(report.results.length, corpus.cases.length);
+assert.equal(
+  new Set(report.results.map((result) => result.id)).size,
+  corpus.cases.length,
+);
+assert.equal(report.http.length, corpus.cases.length * scheduled.length);
+assert.ok(report.http.every((status) => status === 200));
+const contextIds = new Set();
+const mismatches = [];
+for (const [index, item] of corpus.cases.entries()) {
+  const result = report.results.find((entry) => entry.id === item.id);
+  assert.ok(result, `missing ${item.id}`);
+  assert.equal(result.language, item.language);
+  assert.equal(result.results.length, scheduled.length);
+  for (const [offset, { phase, condition }] of scheduled.entries()) {
+    const row = result.results[offset];
+    assert.equal(row.phase, phase);
+    assert.deepEqual(row.condition, condition);
+    const context = row.frame.context;
+    assert.match(context.taskId, /^series-[0-9a-f-]{36}$/);
+    assert.ok(!contextIds.has(context.taskId), "reused observation context");
+    contextIds.add(context.taskId);
+    const { taskId: _expectedId, ...expectedContext } = makeContext(
+      item,
+      phase,
+      condition,
+    );
+    const { taskId: _actualId, ...actualContext } = context;
+    assert.deepEqual(actualContext, expectedContext);
+    assert.equal(row.frame.budgets.calls, 0);
+    assert.equal(row.frame.budgets.inputTokens, 0);
+    assert.equal(row.frame.budgets.outputTokens, 0);
+    s27.validateFrame(row.frame);
+    const binding = makeBinding(s27, item, context);
+    const budget = { snapshot: () => row.frame.budgets };
+    const { frame, expected } = makeFrame(
+      s27,
+      item,
+      index,
+      context,
+      budget,
+      phase,
+      binding,
+      condition,
+    );
+    assert.deepEqual(row.frame, frame, `frame ${item.id}/${phase}`);
+    assert.equal(row.requestDigest, s27.digest(s27.nativeRequest(frame)));
+    assert.equal(row.httpStatus, 200);
+    assert.equal(row.captureError, null);
+    assert.equal(
+      report.http[index * scheduled.length + offset],
+      row.httpStatus,
+    );
+    const accepted = s27.acceptResult(frame, row.validatedResult);
+    assert.equal(row.nativeResponse?.contentType, "application/json");
+    assert.equal(
+      row.nativeResponse.bodyDigest,
+      s27.digest(row.nativeResponse.body),
+    );
+    const parsed = s27.parseNativeResponse(
+      row.nativeResponse.body,
+      s27.nativeRequest(frame).questions,
+      report.model,
+    );
+    verifySinglePhaseBudget(s27, row, frame, parsed);
+    assert.equal(parsed.model, accepted.result.model);
+    assert.deepEqual(parsed.answers, accepted.result.answers);
+    assert.deepEqual(parsed.usage, accepted.result.usage);
+    assert.equal(accepted.outcome, row.outcome);
+    assert.equal(accepted.selection, row.selection);
+    assert.equal(accepted.result.answers.decision.choice, row.nativeSelection);
+    assert.equal(row.counters.inputTokens, accepted.result.usage.input_tokens);
+    assert.equal(
+      row.counters.outputTokens,
+      accepted.result.usage.output_tokens,
+    );
+    assert.equal(row.expected, expected);
+    assert.equal(row.counters.calls, 1);
+    assert.ok(
+      row.counters.inputTokens <= 48000 && row.counters.outputTokens <= 4000,
+    );
+    const selected = frame.candidateSet.candidates.find(
+      (candidate) => candidate.id === row.selection,
+    );
+    const bound = selected
+      ? s27.bindFragment(selected, binding.sources, binding.bindingContext)
+      : undefined;
+    const argumentName =
+      phase === "next_tool"
+        ? item.category === "action"
+          ? "query"
+          : item.category === "analysis"
+            ? "dataset"
+            : null
+        : null;
+    assert.equal(row.argumentName, argumentName);
+    const argument = argumentName
+      ? bound?.arguments.get(argumentName)
+      : undefined;
+    const argumentMatched = argumentName
+      ? argument?.status === "BOUND" && argument.value === binding.expectedValue
+      : null;
+    const hasArguments = selected?.steps.some((step) => step.parameters.length);
+    const negative = changedSourceCheck(s27, selected, binding, argumentName);
+    assert.deepEqual(row.negative, negative);
+    const negativePassed =
+      !argumentName ||
+      (negative?.sourceValid &&
+        negative.rejected &&
+        negative.reason === "ARGUMENT_SOURCE_CHANGED");
+    assert.equal(
+      row.binding,
+      hasArguments ? (bound?.status ?? "MISSING") : "NOT_APPLICABLE",
+    );
+    assert.equal(row.argumentMatched, argumentMatched);
+    const matched =
+      row.outcome === "SELECTED" &&
+      row.selection === expected &&
+      bound?.status === "BOUND" &&
+      (!argumentName || argumentMatched) &&
+      negativePassed;
+    assert.equal(row.matched, matched);
+    if (!matched) mismatches.push(`${item.id}/${phase}`);
+  }
+  assert.equal(
+    result.passed,
+    result.results.every((row) => row.matched),
+  );
+}
+console.log(
+  JSON.stringify({
+    result: mismatches.length ? "FEASIBILITY_FAILED" : "PASS",
+    observations: corpus.cases.length * scheduled.length,
+    mismatches: mismatches.length,
+    casesPassed: report.results.filter((result) => result.passed).length,
+    cases: corpus.cases.length,
+  }),
+);
+if (!auditOnly)
+  assert.equal(
+    mismatches.length,
+    0,
+    "S27 cross-case selection evaluation failed",
+  );

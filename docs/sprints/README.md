@@ -16,7 +16,7 @@
 
 Latest S36 continuation: [2026-10-28 observed-owner restart rebind](../evidence/s36-observed-restart-2026-10-28.md). Actual Chrome rejects lost session sources and rebinds after explicit synthetic input without historical ACK use; installed startup integration, writer blocking, user-data recovery and commit remain pending.
 
-**S26 completed its recorded baseline; S27–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
+**S26 completed its recorded baseline; S27 completed scoped controller qualification; S28–S36 remain In Progress; S37 is Planned.** These 12 Sprints implement the full internal
 migration while preserving current UI structure. The 63 implementation cards and
 72 verification scenarios define the original scope; completion and runtime evidence are recorded per Sprint.
 
@@ -30,7 +30,7 @@ baseline first; S27 qualifies the JEV controller before S33 can complete.
 | Sprint                                       | Migration slice | Scope                                                    | Status  | Cards / scenarios |
 | -------------------------------------------- | --------------- | -------------------------------------------------------- | ------- | ----------------- |
 | [S26](s26-migration-baseline.md)             | M00             | Migration baseline and preservation inventory            | Completed | 5 / 6             |
-| [S27](s27-jev-controller-contract.md)        | M01             | JEV controller protocol and feasibility                  | In Progress | 5 / 6             |
+| [S27](s27-jev-controller-contract.md)        | M01             | JEV controller protocol and feasibility                  | Completed, synthetic controller scope ([evidence](../evidence/s27-qualification-2026-10-30.md)) | 5 / 6             |
 | [S28](s28-workspace-backend-bridge.md)       | M02             | Workspace, preserved UI seam and local backend bridge    | In Progress ([evidence](../evidence/s28-workspace-bridge-2026-10-19.md)) | 5 / 6             |
 | [S29](s29-semantic-codebase-construction.md) | M03             | Semantic Codebase construction and repository            | In Progress ([evidence](../evidence/s29-construction-2026-10-19.md)) | 7 / 6             |
 | [S30](s30-shared-tool-policy-runtime.md)     | M04             | Shared Tool Registry, policy and browser execution       | In Progress ([evidence](../evidence/s30-runtime-2026-10-19.md)) | 5 / 6             |

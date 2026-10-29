@@ -1,0 +1,182 @@
+import { randomUUID } from "node:crypto";
+import { phaseFacts, phaseExpected } from "./multiphase-observations.mjs";
+import { vocabulary, options } from "./multiphase-vocabulary.mjs";
+export function makeContext(item, phase, condition) {
+  return {
+    taskId: `series-${randomUUID()}`,
+    taskRevision: 1,
+    planRevision: 1,
+    graphRevision: 1,
+    evidenceRevision: 1,
+    capabilityRevision: 1,
+    cancellationGeneration: 0,
+    mode:
+      phase === "intent"
+        ? condition.intentMode
+        : item.category === "action" || phase === "recovery"
+          ? "act"
+          : "ask",
+    scopeId: "fixture-page",
+  };
+}
+export function makeBinding(s27, item, context) {
+  const bindingContext = {
+    current: context,
+    request: item.request,
+    sensitiveSpans: [],
+    admittedAt: "2026-10-29T03:00:00Z",
+    timezone: "Asia/Seoul",
+    approved: new Map(),
+    observed: new Map(),
+  };
+  const sources = new Map();
+  let expectedValue = null;
+  if (item.category === "action") {
+    const match = item.request.match(/\b(?:SKU|ORD|APT|QRY)-\d{3}\b/);
+    if (!match || match.index === undefined)
+      throw new Error("HOLDOUT_IDENTIFIER_MISSING");
+    expectedValue = match[0];
+    sources.set("query", {
+      kind: "user_span",
+      start: match.index,
+      end: match.index + match[0].length,
+      spanDigest: s27.digest(match[0]),
+      valueType: "string",
+      unit: null,
+    });
+  }
+  if (item.category === "analysis") {
+    expectedValue = "dataset:acquired";
+    bindingContext.observed.set("acquired", {
+      value: expectedValue,
+      unit: null,
+      sensitive: false,
+      authorized: true,
+      contextDigest: s27.digest(context),
+      graphRevision: context.graphRevision,
+      evidenceRevision: context.evidenceRevision,
+    });
+    sources.set("dataset", {
+      kind: "observed_value",
+      ref: "acquired",
+      graphRevision: context.graphRevision,
+      evidenceRevision: context.evidenceRevision,
+      valueType: "string",
+      unit: null,
+    });
+  }
+  return { bindingContext, sources, expectedValue };
+}
+export function makeFrame(
+  s27,
+  item,
+  index,
+  context,
+  budget,
+  phase,
+  binding,
+  condition,
+) {
+  const facts = phaseFacts(item, phase, condition);
+  const expected = phaseExpected(item, phase, condition);
+  const bound = new Map();
+  for (const [name, source] of binding.sources) {
+    const result = s27.bindArgument(source, binding.bindingContext);
+    if (result.status !== "BOUND") throw new Error("BINDING_INVALID");
+    bound.set(name, result);
+  }
+  const inputs = options[phase].map((id) => {
+    const search = phase === "next_tool" && id === "search_form";
+    const dataset =
+      phase === "next_tool" && ["count_dataset", "interpret_data"].includes(id);
+    const step = (id, tool, effect, parameters, dependencies = []) => ({
+      id,
+      tool,
+      effect,
+      parameters,
+      dependencies,
+      actionRef: `target:${id}`,
+      goalPredicateRefs: ["result"],
+      preconditionRefs: ["fresh"],
+    });
+    const steps = search
+      ? [
+          step("fill", "web.fill", "local-ui", ["query"]),
+          step("submit", "web.click", "external", [], ["fill"]),
+          step("verify", "task.verify", "read", [], ["submit"]),
+        ]
+      : phase === "next_tool"
+        ? [
+            step(
+              "read",
+              id === "read_table"
+                ? "web.get_table_data"
+                : id === "count_dataset"
+                  ? "web.query"
+                  : "analysis.run",
+              "read",
+              dataset ? ["dataset"] : [],
+            ),
+          ]
+        : [];
+    return {
+      candidate: {
+        id,
+        semanticId: id,
+        description:
+          phase === "evidence_sufficiency" && id === "ACCEPT"
+            ? "All observations required to propose the next step are present"
+            : phase === "evidence_sufficiency" && id === "REJECT"
+              ? "A required observation to propose the next step is missing"
+              : vocabulary[id],
+        source: "registered",
+        scopeId: context.scopeId,
+        modes: ["ask", "act"],
+        capabilityRefs: ["fixture"],
+        evidenceRefs: ["observation"],
+        unresolvedInputs: [],
+        bindingDigests:
+          search && bound.has("query")
+            ? { query: bound.get("query").sourceDigest }
+            : dataset && bound.has("dataset")
+              ? { dataset: bound.get("dataset").sourceDigest }
+              : {},
+        steps,
+      },
+      policyPermitted: !(
+        phase === "next_tool" &&
+        item.category === "analysis" &&
+        id === "read_table"
+      ),
+      uniqueTarget: true,
+      fresh: true,
+      userMentionMatch: 0,
+      workflowMatch: false,
+      evidenceTime: 1,
+      resolvedParameters: [...bound.keys()],
+    };
+  });
+  let page = s27.enumerateCandidates(context, inputs, new Set(["fixture"]));
+  if (condition.reverse) {
+    const { id: _id, digest: _digest, ...payload } = page;
+    payload.candidates.reverse();
+    page = {
+      ...payload,
+      id: `set:${s27.digest(payload)}`,
+      digest: s27.digest(payload),
+    };
+  }
+  const frame = s27.createFrame({
+    protocol: "wca.task/v1",
+    templateVersion: "controller-v2",
+    model: "jev-1.13.0",
+    modelRevision: 1,
+    context,
+    phase,
+    candidateSet: page,
+    budgets: budget.snapshot(),
+    facts,
+    stateComplete: true,
+  });
+  return { frame, expected };
+}

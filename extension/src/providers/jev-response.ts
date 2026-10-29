@@ -96,12 +96,7 @@ export const parseJevResponse = (
 export const acceptedChoice = (
   response: { answers: DecisionResponse["answers"] },
   id: string,
-  floor = 0.9,
 ): string | undefined => {
   const answer = response.answers[id];
-  return answer?.type === "choice" &&
-    answer.confidence >= floor &&
-    answer.probabilities[answer.choice]! >= floor
-    ? answer.choice
-    : undefined;
+  return answer?.type === "choice" ? answer.choice : undefined;
 };

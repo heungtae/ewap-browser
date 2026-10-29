@@ -83,7 +83,7 @@ S29: [schemas](../packages/codebase-schema/src/index.ts), [collector](../package
 
 S28 target paths: [browser presentation](../apps/chrome-extension/src/presentation), [bridge adapters](../apps/chrome-extension/src/bridge), [native backend](../apps/agent-server/src), [shared protocol](../packages/shared/src/bridge.ts), [isolated build](../scripts/s28/build.mjs). Normal production packaging retains the existing entrypoint; [acceptance gaps](evidence/s28-workspace-bridge-2026-10-19.md) remain.
 
-S27 target-only decision contracts live in [task-engine decisions](../packages/task-engine/src/decisions/index.ts), with the [native adapter](../packages/provider-adapters/src/jev/index.ts) and [checks](../extension/tests/unit/migration/s27). This path is not selected by production routing; [live feasibility failed](evidence/s27-controller-protocol-2026-10-19.md).
+S27 target-only decision contracts live in [task-engine decisions](../packages/task-engine/src/decisions/index.ts), with the [native adapter](../packages/provider-adapters/src/jev/index.ts) and [checks](../extension/tests/unit/migration/s27). The [v2 qualification](evidence/s27-qualification-2026-10-30.md) passed for native controller decisions on synthetic reference sequences and independent cases; production routing is not switched and the earlier v1 live failure remains recorded.
 
 ## S24 learned page profiles
 

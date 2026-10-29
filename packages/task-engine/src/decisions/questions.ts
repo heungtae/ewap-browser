@@ -17,6 +17,17 @@ const instructions: Record<Phase, string> = {
   result_acceptance:
     "Select ACCEPT only if current required goal predicates and evidence are satisfied; otherwise select REJECT or inspect.",
 };
+const clarified: Record<Phase, string> = {
+  ...instructions,
+  intent:
+    "Classify deterministic reading, grouping and counting without page changes as READ when offered; reserve analysis for evidence-based interpretation beyond deterministic computation. Use only the supplied candidates and facts.",
+  semantic_selection:
+    "Select the candidate supported by observed facts for the explicitly stated current subgoal. If the subgoal is missing or ambiguous, select UNKNOWN or INSPECT_MORE. Names alone cannot prove execution identity.",
+  processor:
+    "Choose the processor for the explicitly stated current step: deterministic extraction and aggregation use RUNTIME; complex evidence-based interpretation after permitted acquisition uses GPT_ANALYSIS. If the step or evidence is unclear, select UNKNOWN or INSPECT_MORE.",
+  recovery:
+    "Never repeat an ambiguous or already dispatched mutation. Inspect only when a specific safe authorized read-only observation is available; stop when none remains. If availability is unknown, select UNKNOWN or INSPECT_MORE.",
+};
 export function nativeRequest(frame: DecisionFrame) {
   validateFrame(frame);
   const criteria: Record<string, string> = Object.fromEntries(
@@ -40,7 +51,7 @@ export function nativeRequest(frame: DecisionFrame) {
     questions: {
       decision: {
         type: "choice" as const,
-        instructions: `${instructions[frame.phase]} Select only a supplied ID. UNKNOWN, NEED_INPUT and UNSUPPORTED are valid. A selected fragment is a proposal, not an approval or dispatch.`,
+        instructions: `${(frame.templateVersion === "controller-v2" ? clarified : instructions)[frame.phase]} Select only a supplied ID. UNKNOWN, NEED_INPUT and UNSUPPORTED are valid. A selected fragment is a proposal, not an approval or dispatch.`,
         criteria,
       },
       evidence_sufficient: {

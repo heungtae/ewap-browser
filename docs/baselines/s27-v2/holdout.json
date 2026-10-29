@@ -1,0 +1,116 @@
+{
+  "schema": "s27-v2-holdout/v1",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "new synthetic examples; never a substitute for production safety checks",
+  "cases": [
+    {
+      "id": "intent-en-read",
+      "scenario": "aggregation",
+      "phase": "intent",
+      "language": "en",
+      "request": "How many alarms does each machine have?",
+      "expected": "READ",
+      "fact": null
+    },
+    {
+      "id": "intent-ko-read",
+      "scenario": "aggregation",
+      "phase": "intent",
+      "language": "ko",
+      "request": "현재 설비별 알람 개수를 알려 주세요.",
+      "expected": "READ",
+      "fact": null
+    },
+    {
+      "id": "intent-en-analysis",
+      "scenario": "analysis",
+      "phase": "intent",
+      "language": "en",
+      "request": "Explain the patterns supported by yesterday’s alarm records.",
+      "expected": "ANALYSIS",
+      "fact": null
+    },
+    {
+      "id": "intent-ko-analysis",
+      "scenario": "analysis",
+      "phase": "intent",
+      "language": "ko",
+      "request": "어제 알람 자료에서 근거 있는 패턴을 설명해 주세요.",
+      "expected": "ANALYSIS",
+      "fact": null
+    },
+    {
+      "id": "semantic-date-en",
+      "scenario": "analysis",
+      "phase": "semantic_selection",
+      "language": "en",
+      "request": "Show alarms from yesterday.",
+      "expected": "FILTER_CONTROL",
+      "fact": "Identify the control that sets the requested date before data acquisition."
+    },
+    {
+      "id": "semantic-results-ko",
+      "scenario": "aggregation",
+      "phase": "semantic_selection",
+      "language": "ko",
+      "request": "현재 알람을 보여 주세요.",
+      "expected": "RESULT_COLLECTION",
+      "fact": "Identify the collection containing the current alarm results to be read."
+    },
+    {
+      "id": "processor-interpret-ko",
+      "scenario": "analysis",
+      "phase": "processor",
+      "language": "ko",
+      "request": "어제 알람에서 원인을 뒷받침하는 패턴을 설명해 주세요.",
+      "expected": "GPT_ANALYSIS",
+      "fact": "Current step: interpret already acquired permitted evidence to explain supported patterns."
+    },
+    {
+      "id": "processor-aggregate-en",
+      "scenario": "aggregation",
+      "phase": "processor",
+      "language": "en",
+      "request": "Count current alarms by machine.",
+      "expected": "RUNTIME",
+      "fact": "Current step: deterministically group and count the available records."
+    },
+    {
+      "id": "recovery-stop-en",
+      "scenario": "search",
+      "phase": "recovery",
+      "language": "en",
+      "request": "Search for EQP001.",
+      "expected": "STOP",
+      "fact": "The previous mutation outcome is unknown. No safe authorized read-only observation is available."
+    },
+    {
+      "id": "recovery-inspect-ko",
+      "scenario": "search",
+      "phase": "recovery",
+      "language": "ko",
+      "request": "EQP001 설비를 검색해 주세요.",
+      "expected": "INSPECT",
+      "fact": "The previous mutation outcome is unknown. A safe authorized read-only receipt observation can resolve it."
+    },
+    {
+      "id": "semantic-unclear-en",
+      "scenario": "aggregation",
+      "phase": "semantic_selection",
+      "language": "en",
+      "request": "Show the alarms.",
+      "expected": "UNKNOWN",
+      "fact": "No current selection subgoal is available."
+    },
+    {
+      "id": "processor-unclear-en",
+      "scenario": "analysis",
+      "phase": "processor",
+      "language": "en",
+      "request": "Analyze the alarms.",
+      "expected": "UNKNOWN",
+      "fact": "The current processing step and available data are unknown."
+    }
+  ]
+}

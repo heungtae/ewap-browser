@@ -1,15 +1,19 @@
+import { currentPreservedSourceHashes } from "../s26-inventory.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { files, read, digest, validateInventory } from "../s26-inventory.mjs";
-const manifest = read("docs/baselines/s36/disposition.json");
+import {
+  files,
+  read,
+  digest,
+  validateCurrentInventory,
+} from "../s26-inventory.mjs";
+const manifest = read("docs/baselines/s27-v2/disposition.json");
 for (const entry of read("docs/baselines/s35/disposition.json").files)
   assert.deepEqual(
     manifest.files.find((item) => item.path === entry.path),
     entry,
   );
-for (const [path, expected] of Object.entries(
-  read("docs/baselines/s27/entry.json").preservedSourceHashes,
-))
+for (const [path, expected] of Object.entries(currentPreservedSourceHashes()))
   assert.equal(digest(readFileSync(path)), expected, path);
 const sources = files().filter(
   (path) =>
@@ -27,7 +31,8 @@ console.log(
   JSON.stringify({
     result: "PASS",
     modules: sources.length,
-    ...validateInventory(manifest),
-    productionAndDesign: "unchanged",
+    ...validateCurrentInventory(manifest),
+    productionAndDesign:
+      "baseline with authorized S25 source and S27 status changes",
   }),
 );

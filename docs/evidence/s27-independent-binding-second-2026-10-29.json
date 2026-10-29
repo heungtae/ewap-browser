@@ -1,0 +1,66 @@
+{
+  "schema": "s27-independent-binding/v1",
+  "at": "2026-10-29T04:03:04.016Z",
+  "corpusHash": "654eec4155c043c89c3e5c9646c773055c92c4e08b63d53d8f1fd685d2c029fc",
+  "protocolSourceDigest": "60fbf1e7f92393d65a5899124f7c790b7091faf3225a03f1286718ad087fa7d0",
+  "runnerDigest": "9fbdd1c3062424ab62663cf95ac22837785af055c574b6065b5979dbf274bfc6",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "synthetic tool selection and binding; no browser or approval",
+  "http": [
+    200,
+    200,
+    200,
+    200
+  ],
+  "results": [
+    {
+      "id": "c03",
+      "language": "en",
+      "order": "forward",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceRejected": true,
+      "passed": true,
+      "reason": null
+    },
+    {
+      "id": "c06",
+      "language": "ko",
+      "order": "reversed",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceRejected": true,
+      "passed": true,
+      "reason": null
+    },
+    {
+      "id": "c08",
+      "language": "ko",
+      "order": "forward",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceRejected": true,
+      "passed": true,
+      "reason": null
+    },
+    {
+      "id": "c11",
+      "language": "en",
+      "order": "reversed",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceRejected": true,
+      "passed": true,
+      "reason": null
+    }
+  ]
+}

@@ -19,7 +19,7 @@ export const decisionResultSchema = z.strictObject({
   protocol: z.literal("wca.task/v1"),
   frameDigest: digestSchema,
   candidateDigest: digestSchema,
-  templateVersion: z.literal("controller-v1"),
+  templateVersion: z.enum(["controller-v1", "controller-v2"]),
   model: z.string().min(1).max(128),
   modelRevision: revision,
   context: decisionFrameSchema.shape.context,

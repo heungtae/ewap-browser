@@ -1,0 +1,75 @@
+{
+  "schema": "s27-independent-binding/v1",
+  "at": "2026-10-29T04:04:58.090Z",
+  "corpusHash": "654eec4155c043c89c3e5c9646c773055c92c4e08b63d53d8f1fd685d2c029fc",
+  "protocolSourceDigest": "60fbf1e7f92393d65a5899124f7c790b7091faf3225a03f1286718ad087fa7d0",
+  "runnerDigest": "3a3c75d5c158815c474135d042337108b9f3cd8db8168e59731cd7fb2de95efa",
+  "negativeHelperDigest": "872e890deab6a429bd938dc3ab326010713c3a30276d0a5c3945828a6c709791",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "synthetic tool selection and binding; no browser or approval",
+  "http": [
+    200,
+    200,
+    200,
+    200
+  ],
+  "results": [
+    {
+      "id": "c03",
+      "language": "en",
+      "order": "forward",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceValid": true,
+      "changedSourceRejected": true,
+      "changedSourceReason": "ARGUMENT_SOURCE_CHANGED",
+      "passed": true,
+      "reason": null
+    },
+    {
+      "id": "c06",
+      "language": "ko",
+      "order": "reversed",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceValid": true,
+      "changedSourceRejected": true,
+      "changedSourceReason": "ARGUMENT_SOURCE_CHANGED",
+      "passed": true,
+      "reason": null
+    },
+    {
+      "id": "c08",
+      "language": "ko",
+      "order": "forward",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceValid": true,
+      "changedSourceRejected": true,
+      "changedSourceReason": "ARGUMENT_SOURCE_CHANGED",
+      "passed": true,
+      "reason": null
+    },
+    {
+      "id": "c11",
+      "language": "en",
+      "order": "reversed",
+      "selection": "search_form",
+      "outcome": "SELECTED",
+      "binding": "BOUND",
+      "valueMatched": true,
+      "changedSourceValid": true,
+      "changedSourceRejected": true,
+      "changedSourceReason": "ARGUMENT_SOURCE_CHANGED",
+      "passed": true,
+      "reason": null
+    }
+  ]
+}

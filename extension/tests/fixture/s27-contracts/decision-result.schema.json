@@ -5,7 +5,10 @@
     "protocol": { "type": "string", "const": "wca.task/v1" },
     "frameDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "candidateDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "templateVersion": { "type": "string", "const": "controller-v1" },
+    "templateVersion": {
+      "type": "string",
+      "enum": ["controller-v1", "controller-v2"]
+    },
     "model": { "type": "string", "minLength": 1, "maxLength": 128 },
     "modelRevision": {
       "type": "integer",

@@ -1,0 +1,3830 @@
+{
+  "schema": "s27-reference-v2/v1",
+  "at": "2026-10-29T21:38:21.505Z",
+  "corpusHash": "88b2a25e4a5fd5bac4cd2523cc09fd5e1cdb7c4ef37641b7e3d258b318742570",
+  "protocolSourceDigest": "60fbf1e7f92393d65a5899124f7c790b7091faf3225a03f1286718ad087fa7d0",
+  "runnerDigest": "7c248f4998d0521e45e20b5980d453541a75d33c3fd03d38b8bce4f67092c1eb",
+  "fixtureDigest": "abef8b079ab93ad84d35ac10e41e6f442c1e18dbe2d7312bfeb7ef79c09ce6cb",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "reference next-step selection and bound arguments only; no browser dispatch or approval",
+  "gptControllerCalls": 0,
+  "browserDispatches": 0,
+  "approvalFacts": 0,
+  "http": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "results": [
+    {
+      "id": "S27-H-aggregation-en-forward",
+      "language": "en",
+      "scenario": "aggregation",
+      "order": "forward",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-9469d375-a60d-432c-8f3a-e35e5dd5fb50",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:555d061fef1d5141f6a3066d59fef27c8fe34af5497b193d1ef8a543bb045e54",
+          "digest": "555d061fef1d5141f6a3066d59fef27c8fe34af5497b193d1ef8a543bb045e54",
+          "sourceDigest": "d438781eb3f0454689ac8085f4444931946087047651c5c22a4f5416a30d29b4",
+          "contextDigest": "63470c17e43f032ecc3058ec1d0f19865c14e35b94f66d2e414e7674adcda440",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "d3629e469a8b23f0b36cd330f441e07bd85fc6075e8a05b4f5e9913ef7e96874"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 1,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310501508,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "Which equipment has the most current alarms?"
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "8107916a20286c12c69da071cb937df728889379c69e3cd81145b8746ebd2cdc"
+      },
+      "requestDigest": "fe2907844e1dd7e4c5400b2d8858ede9d69cb94cc030c16dd35a4b0ff257528f",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "aggregate",
+              "confidence": 1,
+              "probabilities": {
+                "aggregate": 1,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.66
+            }
+          },
+          "usage": {
+            "input_tokens": 1721,
+            "output_tokens": 82
+          }
+        },
+        "bodyDigest": "9fd00490920a1e070222d9b98047fa1187bf4821c4ce901cea16edd6d4f300a5"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "8107916a20286c12c69da071cb937df728889379c69e3cd81145b8746ebd2cdc",
+        "candidateDigest": "555d061fef1d5141f6a3066d59fef27c8fe34af5497b193d1ef8a543bb045e54",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-9469d375-a60d-432c-8f3a-e35e5dd5fb50",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "aggregate",
+            "confidence": 1,
+            "probabilities": {
+              "aggregate": 1,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.66
+          }
+        },
+        "usage": {
+          "input_tokens": 1721,
+          "output_tokens": 82
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "aggregate",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "d3629e469a8b23f0b36cd330f441e07bd85fc6075e8a05b4f5e9913ef7e96874",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 1721,
+        "outputTokens": 82,
+        "activeMs": 363,
+        "overallDeadline": 1793310501508,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-aggregation-en-reversed",
+      "language": "en",
+      "scenario": "aggregation",
+      "order": "reversed",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-e0b1070d-89ed-480b-9b98-7fc59d5e922a",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:92c4534c8df0dfaf95471199609fd2a4ee08da4580b96fdfe1fd4aae6e4a782d",
+          "digest": "92c4534c8df0dfaf95471199609fd2a4ee08da4580b96fdfe1fd4aae6e4a782d",
+          "sourceDigest": "6ca220d1631100ab508f3b162121e187991092f6d5e156551658a782c9b30ae8",
+          "contextDigest": "2bc9e9c5c4afa67b754691af804c811171e8b802d3785ed0075bd4fbc36aea7d",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "1901bc6ca2cbf2a58f9d88dcb91cd6de5eb8e393ccdc26642906e9fef206e4eb"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 1,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310501890,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "Which equipment has the most current alarms?"
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "c9941eca1e1afa7011d82421cd58d400784745e1a97170cc5051ed82ea8a68aa"
+      },
+      "requestDigest": "23a9d03cb721b4ece9ff5a7ce9b919f7c1bb91ce35f8e67907744007ef18dfe7",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "aggregate",
+              "confidence": 1,
+              "probabilities": {
+                "aggregate": 1,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.65
+            }
+          },
+          "usage": {
+            "input_tokens": 1699,
+            "output_tokens": 82
+          }
+        },
+        "bodyDigest": "be31f5f09021f162a4f3f3d540e1ceec7c72c8fa0ae09047361b7177910ff8d8"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "c9941eca1e1afa7011d82421cd58d400784745e1a97170cc5051ed82ea8a68aa",
+        "candidateDigest": "92c4534c8df0dfaf95471199609fd2a4ee08da4580b96fdfe1fd4aae6e4a782d",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-e0b1070d-89ed-480b-9b98-7fc59d5e922a",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "aggregate",
+            "confidence": 1,
+            "probabilities": {
+              "aggregate": 1,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.65
+          }
+        },
+        "usage": {
+          "input_tokens": 1699,
+          "output_tokens": 82
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "aggregate",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "1901bc6ca2cbf2a58f9d88dcb91cd6de5eb8e393ccdc26642906e9fef206e4eb",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 1699,
+        "outputTokens": 82,
+        "activeMs": 173,
+        "overallDeadline": 1793310501890,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-aggregation-ko-forward",
+      "language": "ko",
+      "scenario": "aggregation",
+      "order": "forward",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-2b0aed2a-3e81-4f79-8740-d52583f274f7",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:7ffb4eb4a2ca2a011ad9927d65433371d27d2472617d4b9c0af76787d2c5501c",
+          "digest": "7ffb4eb4a2ca2a011ad9927d65433371d27d2472617d4b9c0af76787d2c5501c",
+          "sourceDigest": "ba75eaecea2de5a146ba78896c7c34d18f8f00378fa4a1709ecabecbdf342e30",
+          "contextDigest": "d7613963950f3ddd8396f220284cc24f70a11d1e3d6dc919500b258bd27f05c7",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "c8106758341a5b3b87c43dfb72e57d027c54447e038003c5f85e2f0d6ec343fd"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 1,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310502067,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "현재 알람이 가장 많은 설비는 무엇인가요?"
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "1ea8c46fae72fe33cd2291ef9e60ad756677ae1e94a34302a3462505b81292f0"
+      },
+      "requestDigest": "420a7886c5affc3829eaa3855c9ab514f8830eb99884e68f6ee4a56450bcea3a",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "aggregate",
+              "confidence": 1,
+              "probabilities": {
+                "aggregate": 1,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.61
+            }
+          },
+          "usage": {
+            "input_tokens": 1724,
+            "output_tokens": 82
+          }
+        },
+        "bodyDigest": "1b9698919035a118cb1dc3c7dff143567b060bfc612c084655c1d0ecdfe89087"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "1ea8c46fae72fe33cd2291ef9e60ad756677ae1e94a34302a3462505b81292f0",
+        "candidateDigest": "7ffb4eb4a2ca2a011ad9927d65433371d27d2472617d4b9c0af76787d2c5501c",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-2b0aed2a-3e81-4f79-8740-d52583f274f7",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "aggregate",
+            "confidence": 1,
+            "probabilities": {
+              "aggregate": 1,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.61
+          }
+        },
+        "usage": {
+          "input_tokens": 1724,
+          "output_tokens": 82
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "aggregate",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "c8106758341a5b3b87c43dfb72e57d027c54447e038003c5f85e2f0d6ec343fd",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 1724,
+        "outputTokens": 82,
+        "activeMs": 170,
+        "overallDeadline": 1793310502067,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-aggregation-ko-reversed",
+      "language": "ko",
+      "scenario": "aggregation",
+      "order": "reversed",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-780c45ab-5ece-4aa9-9c07-df3c1197a532",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:0ace88cdbded5a4b0d66485aab9c5ebd727896b3e0ba82f55fa2e751c2703e5a",
+          "digest": "0ace88cdbded5a4b0d66485aab9c5ebd727896b3e0ba82f55fa2e751c2703e5a",
+          "sourceDigest": "7d18f5c88b9ae97cdf7ab7cb9fdf27fcb75ec9dcf3b06f97bd66da5535c8e001",
+          "contextDigest": "b01071e1842a408034145622505e7320fdb40928714d7abd4a1789b3e6b3c431",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "297300f9ce6da8692cd1fa24ecc314f8bd91126e1cfaf50969c51ad747f8944f"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 1,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310502241,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "현재 알람이 가장 많은 설비는 무엇인가요?"
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "9fc10d7d2b593b9c58c0ad336ace0679ada34021e50838192938ccd0fdadc576"
+      },
+      "requestDigest": "74743d39448b0b7c597a75522c318bc57f23e611c69ee0467a949786be59ed7b",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "aggregate",
+              "confidence": 1,
+              "probabilities": {
+                "aggregate": 1,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.62
+            }
+          },
+          "usage": {
+            "input_tokens": 1705,
+            "output_tokens": 82
+          }
+        },
+        "bodyDigest": "c1e047a1f251d4f503860f94f068ab9b514ec9b66c0a0b4113bc4337c38b782a"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "9fc10d7d2b593b9c58c0ad336ace0679ada34021e50838192938ccd0fdadc576",
+        "candidateDigest": "0ace88cdbded5a4b0d66485aab9c5ebd727896b3e0ba82f55fa2e751c2703e5a",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-780c45ab-5ece-4aa9-9c07-df3c1197a532",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "ask",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "aggregate",
+            "confidence": 1,
+            "probabilities": {
+              "aggregate": 1,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.62
+          }
+        },
+        "usage": {
+          "input_tokens": 1705,
+          "output_tokens": 82
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "aggregate",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "297300f9ce6da8692cd1fa24ecc314f8bd91126e1cfaf50969c51ad747f8944f",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 1705,
+        "outputTokens": 82,
+        "activeMs": 175,
+        "overallDeadline": 1793310502241,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-search-en-forward",
+      "language": "en",
+      "scenario": "search",
+      "order": "forward",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-ae3b147e-2ef8-4ab5-80a3-fa5cbed094f7",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:359cd48ca40d318269c747df42e940bb03290e82ccba4c7616ebfe356db89725",
+          "digest": "359cd48ca40d318269c747df42e940bb03290e82ccba4c7616ebfe356db89725",
+          "sourceDigest": "1de27c84149d83b980f770a6a854dd0ba3dcebfbfe2a81f1aa6cbe85104434e5",
+          "contextDigest": "017356026db0bc37536bfe4e363077ad8316dc49589486ef5c2af6f850a373ca",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "52fcf37f1dbe0e4ecdb3f4ab708397ee94a8b459fc9edbdfa9fed92d384aea77",
+                "equipment": "e5bcf8573be45fe4c15a3db225522591c4346442fbd1b92abba67adee129ab77"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "date_range"
+              ],
+              "bindingDigests": {
+                "dataset": "52fcf37f1dbe0e4ecdb3f4ab708397ee94a8b459fc9edbdfa9fed92d384aea77",
+                "equipment": "e5bcf8573be45fe4c15a3db225522591c4346442fbd1b92abba67adee129ab77"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "52fcf37f1dbe0e4ecdb3f4ab708397ee94a8b459fc9edbdfa9fed92d384aea77",
+                "equipment": "e5bcf8573be45fe4c15a3db225522591c4346442fbd1b92abba67adee129ab77"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310502421,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "Search for EQP001."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "c91d0f4ebd3c68518572445479666d0a616eaf8b50e18af950464d45bf93ff31"
+      },
+      "requestDigest": "973330e60121952cabe05a20e391258758bb49c392909905de1c511825be7d33",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "equipment_search",
+              "confidence": 1,
+              "probabilities": {
+                "aggregate": 0,
+                "dated_alarms": 0,
+                "equipment_search": 1,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.71
+            }
+          },
+          "usage": {
+            "input_tokens": 2833,
+            "output_tokens": 101
+          }
+        },
+        "bodyDigest": "024508e2269a27c502a51f00ccacff94c28216a3adeffe9b2ef4971d580ff501"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "c91d0f4ebd3c68518572445479666d0a616eaf8b50e18af950464d45bf93ff31",
+        "candidateDigest": "359cd48ca40d318269c747df42e940bb03290e82ccba4c7616ebfe356db89725",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-ae3b147e-2ef8-4ab5-80a3-fa5cbed094f7",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "equipment_search",
+            "confidence": 1,
+            "probabilities": {
+              "aggregate": 0,
+              "dated_alarms": 0,
+              "equipment_search": 1,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.71
+          }
+        },
+        "usage": {
+          "input_tokens": 2833,
+          "output_tokens": 101
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "equipment_search",
+      "reason": null,
+      "argumentsByName": {
+        "equipment": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "e5bcf8573be45fe4c15a3db225522591c4346442fbd1b92abba67adee129ab77",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2833,
+        "outputTokens": 101,
+        "activeMs": 205,
+        "overallDeadline": 1793310502421,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-search-en-reversed",
+      "language": "en",
+      "scenario": "search",
+      "order": "reversed",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-3a13d33e-8c7d-4cd3-9140-9c6bcaff5af1",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:1327b395cffa6cefb954a471d839d864f801cad8aafc76ef2146355acb6ed39c",
+          "digest": "1327b395cffa6cefb954a471d839d864f801cad8aafc76ef2146355acb6ed39c",
+          "sourceDigest": "a534759f77e5669ba0c2208beba77eafee469906b8c8c5118bac2003978c32ae",
+          "contextDigest": "c38cbde24d679c830a3450edd37c95994cbc69ded7c3d044d9138e3ec899042f",
+          "candidates": [
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "4a96fec3c54561480b12836a72d3dfa384a0f4155642ff5f9b1ee7a185f56fa3",
+                "equipment": "d2f02e31dd217674d3128647ec579a33cfa051dc3390cd29f79c57f0003348a9"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "date_range"
+              ],
+              "bindingDigests": {
+                "dataset": "4a96fec3c54561480b12836a72d3dfa384a0f4155642ff5f9b1ee7a185f56fa3",
+                "equipment": "d2f02e31dd217674d3128647ec579a33cfa051dc3390cd29f79c57f0003348a9"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "4a96fec3c54561480b12836a72d3dfa384a0f4155642ff5f9b1ee7a185f56fa3",
+                "equipment": "d2f02e31dd217674d3128647ec579a33cfa051dc3390cd29f79c57f0003348a9"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310502633,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "Search for EQP001."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "6d531c54f567974ba74bca8cd0d4f862dc87e423c3676542f1ea4cc6e56818bb"
+      },
+      "requestDigest": "04ce2953556d238ac3229ec603518c89d0a1879141b6699f8d0a53d1f5afa808",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "equipment_search",
+              "confidence": 1,
+              "probabilities": {
+                "equipment_search": 1,
+                "dated_alarms": 0,
+                "aggregate": 0,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.64
+            }
+          },
+          "usage": {
+            "input_tokens": 2870,
+            "output_tokens": 101
+          }
+        },
+        "bodyDigest": "918bf0679923b6ac3c54deb6946a2bb2c70a8dcb8a76b18841e3c1617bd4d4f6"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "6d531c54f567974ba74bca8cd0d4f862dc87e423c3676542f1ea4cc6e56818bb",
+        "candidateDigest": "1327b395cffa6cefb954a471d839d864f801cad8aafc76ef2146355acb6ed39c",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-3a13d33e-8c7d-4cd3-9140-9c6bcaff5af1",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "equipment_search",
+            "confidence": 1,
+            "probabilities": {
+              "equipment_search": 1,
+              "dated_alarms": 0,
+              "aggregate": 0,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.64
+          }
+        },
+        "usage": {
+          "input_tokens": 2870,
+          "output_tokens": 101
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "equipment_search",
+      "reason": null,
+      "argumentsByName": {
+        "equipment": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "d2f02e31dd217674d3128647ec579a33cfa051dc3390cd29f79c57f0003348a9",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2870,
+        "outputTokens": 101,
+        "activeMs": 179,
+        "overallDeadline": 1793310502633,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-search-ko-forward",
+      "language": "ko",
+      "scenario": "search",
+      "order": "forward",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-568713a5-f19e-4b14-95c7-051ee555c5d9",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:0f818271cb4c3b7606dcd1d568db8901043d37f8b8b26b30e0e3536a3bd607e8",
+          "digest": "0f818271cb4c3b7606dcd1d568db8901043d37f8b8b26b30e0e3536a3bd607e8",
+          "sourceDigest": "4011eb1591ff2faf8ae0afaede0b61e28e8279b7aa6bdd4159489df60b274244",
+          "contextDigest": "a58dd94621f2645d923f5cec8c5e4098f7195ce497aff280a9c1e03cfb70ff50",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "01cd237bcbcf07330ae67ff049b30d31e651d11c826bddf4a2525392fcdb7bc0",
+                "equipment": "76cd65bfdfafc747e35f36d42efeb81fdda9499976d89281a3c3ef9ce3654adc"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "date_range"
+              ],
+              "bindingDigests": {
+                "dataset": "01cd237bcbcf07330ae67ff049b30d31e651d11c826bddf4a2525392fcdb7bc0",
+                "equipment": "76cd65bfdfafc747e35f36d42efeb81fdda9499976d89281a3c3ef9ce3654adc"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "01cd237bcbcf07330ae67ff049b30d31e651d11c826bddf4a2525392fcdb7bc0",
+                "equipment": "76cd65bfdfafc747e35f36d42efeb81fdda9499976d89281a3c3ef9ce3654adc"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310502818,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "EQP001 설비를 검색해 주세요."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "8148c384c31dd46da1d283d6635f829ca66615cb406b8da19c37e232beccbc7d"
+      },
+      "requestDigest": "6bf82c3cac1887144781d84ed142df207e966d2e408ce62e89318e453ae68603",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "equipment_search",
+              "confidence": 0.99,
+              "probabilities": {
+                "aggregate": 0,
+                "dated_alarms": 0,
+                "equipment_search": 0.99,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0.01,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.62
+            }
+          },
+          "usage": {
+            "input_tokens": 2855,
+            "output_tokens": 101
+          }
+        },
+        "bodyDigest": "3965b416546ca06776320a0c7ca94e2e486046ed49ef7bfa34c0f5a3ad3424bb"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "8148c384c31dd46da1d283d6635f829ca66615cb406b8da19c37e232beccbc7d",
+        "candidateDigest": "0f818271cb4c3b7606dcd1d568db8901043d37f8b8b26b30e0e3536a3bd607e8",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-568713a5-f19e-4b14-95c7-051ee555c5d9",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "equipment_search",
+            "confidence": 0.99,
+            "probabilities": {
+              "aggregate": 0,
+              "dated_alarms": 0,
+              "equipment_search": 0.99,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0.01,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.62
+          }
+        },
+        "usage": {
+          "input_tokens": 2855,
+          "output_tokens": 101
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "equipment_search",
+      "reason": null,
+      "argumentsByName": {
+        "equipment": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "76cd65bfdfafc747e35f36d42efeb81fdda9499976d89281a3c3ef9ce3654adc",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2855,
+        "outputTokens": 101,
+        "activeMs": 181,
+        "overallDeadline": 1793310502818,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-search-ko-reversed",
+      "language": "ko",
+      "scenario": "search",
+      "order": "reversed",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-f989e6ef-a4ee-4f09-9d3f-69e7a9958f56",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:060d84cecbc42c034be30ee923963763d6db53480860fa466b38b41ec976bc89",
+          "digest": "060d84cecbc42c034be30ee923963763d6db53480860fa466b38b41ec976bc89",
+          "sourceDigest": "b70bed7483b6b5c8b1ff51bc98626d079496cd3a7ac5bfbad54410105fd9ca10",
+          "contextDigest": "dd93a073996e529a0cdffb7be98b2471ce5ffcbde55dcc29be067091f57ba350",
+          "candidates": [
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "42b05a4fe69fbeb0c9d5b0999d7b0719e02b3015bc32a2e95adb68b2ce7d56b4",
+                "equipment": "3c533a5f251211586a152323ba828202c8bc98a21933435e2c57cde9aca6a6f2"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "date_range"
+              ],
+              "bindingDigests": {
+                "dataset": "42b05a4fe69fbeb0c9d5b0999d7b0719e02b3015bc32a2e95adb68b2ce7d56b4",
+                "equipment": "3c533a5f251211586a152323ba828202c8bc98a21933435e2c57cde9aca6a6f2"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "42b05a4fe69fbeb0c9d5b0999d7b0719e02b3015bc32a2e95adb68b2ce7d56b4",
+                "equipment": "3c533a5f251211586a152323ba828202c8bc98a21933435e2c57cde9aca6a6f2"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310503003,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "EQP001 설비를 검색해 주세요."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "b6ad86d6a9c620ae6ec31d457429c7e28752e5ebd1dbd06847452f38c7ce11e7"
+      },
+      "requestDigest": "cbe282456cf50d489bf8734d9abc68100ee77063a6d8f0890c51236a716ad237",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "equipment_search",
+              "confidence": 0.99,
+              "probabilities": {
+                "equipment_search": 0.99,
+                "dated_alarms": 0,
+                "aggregate": 0,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0.01,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.61
+            }
+          },
+          "usage": {
+            "input_tokens": 2874,
+            "output_tokens": 101
+          }
+        },
+        "bodyDigest": "720e86ea6859ea9363f99303ec19bf439a67f2784b93e98eda7e366cf90e0a37"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "b6ad86d6a9c620ae6ec31d457429c7e28752e5ebd1dbd06847452f38c7ce11e7",
+        "candidateDigest": "060d84cecbc42c034be30ee923963763d6db53480860fa466b38b41ec976bc89",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-f989e6ef-a4ee-4f09-9d3f-69e7a9958f56",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "equipment_search",
+            "confidence": 0.99,
+            "probabilities": {
+              "equipment_search": 0.99,
+              "dated_alarms": 0,
+              "aggregate": 0,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0.01,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.61
+          }
+        },
+        "usage": {
+          "input_tokens": 2874,
+          "output_tokens": 101
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "equipment_search",
+      "reason": null,
+      "argumentsByName": {
+        "equipment": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "3c533a5f251211586a152323ba828202c8bc98a21933435e2c57cde9aca6a6f2",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2874,
+        "outputTokens": 101,
+        "activeMs": 175,
+        "overallDeadline": 1793310503003,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-analysis-en-forward",
+      "language": "en",
+      "scenario": "analysis",
+      "order": "forward",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-b2cd17fa-93a8-431c-a0ab-f77bbe48e60c",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:78463eef232c2c0a2fd6b3dfd02ade0b287994335717c5fc95b6be64c1a7064c",
+          "digest": "78463eef232c2c0a2fd6b3dfd02ade0b287994335717c5fc95b6be64c1a7064c",
+          "sourceDigest": "326453b245e500323b2c23b4330b4a1db7f775cf9eac52e7421455d371836e85",
+          "contextDigest": "1ff613b772ac959203eb7165e4ac1995c491c052ead9c92eb10b0be0e29db87f",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "ef96dff084f340527563544c39fb4f9e98ffdcb431ae53f1e62d3b66a6b1ae8e",
+                "date_range": "6748bec00942d198f8948bc8648b11ee4bbaaa4bc7950c43908abb4859731f4c"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "ef96dff084f340527563544c39fb4f9e98ffdcb431ae53f1e62d3b66a6b1ae8e",
+                "date_range": "6748bec00942d198f8948bc8648b11ee4bbaaa4bc7950c43908abb4859731f4c"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "equipment"
+              ],
+              "bindingDigests": {
+                "dataset": "ef96dff084f340527563544c39fb4f9e98ffdcb431ae53f1e62d3b66a6b1ae8e",
+                "date_range": "6748bec00942d198f8948bc8648b11ee4bbaaa4bc7950c43908abb4859731f4c"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310503182,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "Analyze yesterday's alarms and explain supported patterns."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "defb8f782b96cabb996d617b7c4ccbcec8c21897efb12bb5356ddc4274c2cc09"
+      },
+      "requestDigest": "9006a6a4117fff953a54edff863e1504d4bd664feb9592c6fdddd8a66a4956b6",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "dated_alarms",
+              "confidence": 0.99,
+              "probabilities": {
+                "aggregate": 0.01,
+                "dated_alarms": 0.99,
+                "equipment_search": 0,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.48
+            }
+          },
+          "usage": {
+            "input_tokens": 2860,
+            "output_tokens": 103
+          }
+        },
+        "bodyDigest": "91867a08ae2f21efd9b688a22f324c733ac24c86065761117f60bfe0b7ee25d2"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "defb8f782b96cabb996d617b7c4ccbcec8c21897efb12bb5356ddc4274c2cc09",
+        "candidateDigest": "78463eef232c2c0a2fd6b3dfd02ade0b287994335717c5fc95b6be64c1a7064c",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-b2cd17fa-93a8-431c-a0ab-f77bbe48e60c",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "dated_alarms",
+            "confidence": 0.99,
+            "probabilities": {
+              "aggregate": 0.01,
+              "dated_alarms": 0.99,
+              "equipment_search": 0,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.48
+          }
+        },
+        "usage": {
+          "input_tokens": 2860,
+          "output_tokens": 103
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "dated_alarms",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "ef96dff084f340527563544c39fb4f9e98ffdcb431ae53f1e62d3b66a6b1ae8e",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        },
+        "date_range": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "6748bec00942d198f8948bc8648b11ee4bbaaa4bc7950c43908abb4859731f4c",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2860,
+        "outputTokens": 103,
+        "activeMs": 179,
+        "overallDeadline": 1793310503182,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-analysis-en-reversed",
+      "language": "en",
+      "scenario": "analysis",
+      "order": "reversed",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-0a72db12-a7a8-4a49-a136-636f0e653f5e",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:c3ca1e915366fb9ebabd66acf9f56dd08b6d2974903b6d2dd620093d937e5cc4",
+          "digest": "c3ca1e915366fb9ebabd66acf9f56dd08b6d2974903b6d2dd620093d937e5cc4",
+          "sourceDigest": "bc804fe745c25f67d744f38573e2b9cb4462e1d06e474a5fe826b17cca27b067",
+          "contextDigest": "2dafc1092b026da49745b4b106f477bc179d46529a15f85cfc128b236fb99303",
+          "candidates": [
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "equipment"
+              ],
+              "bindingDigests": {
+                "dataset": "8a3cf6071afd9b3108b934a3862f22df99a15b789333d8115a0dd1dc9fae6dca",
+                "date_range": "03f30dca2f4f0f4e31a6daa0db037ba932eddd0d8916c4b03c846adcd967fbd0"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "8a3cf6071afd9b3108b934a3862f22df99a15b789333d8115a0dd1dc9fae6dca",
+                "date_range": "03f30dca2f4f0f4e31a6daa0db037ba932eddd0d8916c4b03c846adcd967fbd0"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "8a3cf6071afd9b3108b934a3862f22df99a15b789333d8115a0dd1dc9fae6dca",
+                "date_range": "03f30dca2f4f0f4e31a6daa0db037ba932eddd0d8916c4b03c846adcd967fbd0"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310503379,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "Analyze yesterday's alarms and explain supported patterns."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "f6a2ae70650c5f210a440315f5d38c77381da13943dbed72b174fa25ce684fd6"
+      },
+      "requestDigest": "64d1045ab2676a9ee790e7dd860266bdb84a4ea0d16847f3673ee109b840fc13",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "dated_alarms",
+              "confidence": 0.96,
+              "probabilities": {
+                "equipment_search": 0,
+                "dated_alarms": 0.97,
+                "aggregate": 0.03,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.44
+            }
+          },
+          "usage": {
+            "input_tokens": 2862,
+            "output_tokens": 103
+          }
+        },
+        "bodyDigest": "85b2424ee9aa295a59ef3bac2a7cd9f9ff46e7a901d2fb65932078d3e18646b9"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "f6a2ae70650c5f210a440315f5d38c77381da13943dbed72b174fa25ce684fd6",
+        "candidateDigest": "c3ca1e915366fb9ebabd66acf9f56dd08b6d2974903b6d2dd620093d937e5cc4",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-0a72db12-a7a8-4a49-a136-636f0e653f5e",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "dated_alarms",
+            "confidence": 0.96,
+            "probabilities": {
+              "equipment_search": 0,
+              "dated_alarms": 0.97,
+              "aggregate": 0.03,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.44
+          }
+        },
+        "usage": {
+          "input_tokens": 2862,
+          "output_tokens": 103
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "dated_alarms",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "8a3cf6071afd9b3108b934a3862f22df99a15b789333d8115a0dd1dc9fae6dca",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        },
+        "date_range": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "03f30dca2f4f0f4e31a6daa0db037ba932eddd0d8916c4b03c846adcd967fbd0",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2862,
+        "outputTokens": 103,
+        "activeMs": 190,
+        "overallDeadline": 1793310503379,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-analysis-ko-forward",
+      "language": "ko",
+      "scenario": "analysis",
+      "order": "forward",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-1c0f9b97-54f2-4f8c-9abb-b6dfac0b16b5",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:77440368136b125d5b84e82ea3e9e8d9ddc732234844a35c2d0bd444481e4ed4",
+          "digest": "77440368136b125d5b84e82ea3e9e8d9ddc732234844a35c2d0bd444481e4ed4",
+          "sourceDigest": "45ede14add0a8be4ef17cf3afcf865e19c1aaa2f6074cf4588efd930b7aad3b7",
+          "contextDigest": "7b017e8beebb336b136c5b348cf1a526e375c1a30aa8deace218517bf34527f4",
+          "candidates": [
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "d5d5fb8ac987a54815105439a72011ee2ebb97e9d60b949df47fb0e1743e3ca7",
+                "date_range": "3388d6f9ade1dfe8857f4365a0b95a64683e5093f3bb14d862c071596af9b0ce"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "d5d5fb8ac987a54815105439a72011ee2ebb97e9d60b949df47fb0e1743e3ca7",
+                "date_range": "3388d6f9ade1dfe8857f4365a0b95a64683e5093f3bb14d862c071596af9b0ce"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "equipment"
+              ],
+              "bindingDigests": {
+                "dataset": "d5d5fb8ac987a54815105439a72011ee2ebb97e9d60b949df47fb0e1743e3ca7",
+                "date_range": "3388d6f9ade1dfe8857f4365a0b95a64683e5093f3bb14d862c071596af9b0ce"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310503577,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "어제 알람을 분석하고 자료로 뒷받침되는 패턴을 설명해 주세요."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "3e9af49c8b741308fe194d03f172ad1ad2166799919015517a103a9f26c83ae4"
+      },
+      "requestDigest": "8695f4a818aeaeaebf09cec2f27b6fddd8b394f23cb1269f549acaab29a8d9d0",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "dated_alarms",
+              "confidence": 0.99,
+              "probabilities": {
+                "aggregate": 0.01,
+                "dated_alarms": 0.99,
+                "equipment_search": 0,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.45
+            }
+          },
+          "usage": {
+            "input_tokens": 2891,
+            "output_tokens": 103
+          }
+        },
+        "bodyDigest": "07fbc7ed2781906222e2c46db98e80bb6e7770dbfa8308b99e4b287f74da94a6"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "3e9af49c8b741308fe194d03f172ad1ad2166799919015517a103a9f26c83ae4",
+        "candidateDigest": "77440368136b125d5b84e82ea3e9e8d9ddc732234844a35c2d0bd444481e4ed4",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-1c0f9b97-54f2-4f8c-9abb-b6dfac0b16b5",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "dated_alarms",
+            "confidence": 0.99,
+            "probabilities": {
+              "aggregate": 0.01,
+              "dated_alarms": 0.99,
+              "equipment_search": 0,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.45
+          }
+        },
+        "usage": {
+          "input_tokens": 2891,
+          "output_tokens": 103
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "dated_alarms",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "d5d5fb8ac987a54815105439a72011ee2ebb97e9d60b949df47fb0e1743e3ca7",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        },
+        "date_range": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "3388d6f9ade1dfe8857f4365a0b95a64683e5093f3bb14d862c071596af9b0ce",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2891,
+        "outputTokens": 103,
+        "activeMs": 172,
+        "overallDeadline": 1793310503577,
+        "responseByteLimit": 1024
+      }
+    },
+    {
+      "id": "S27-H-analysis-ko-reversed",
+      "language": "ko",
+      "scenario": "analysis",
+      "order": "reversed",
+      "frame": {
+        "protocol": "wca.task/v1",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-064cca05-56c5-4a9e-a5b0-0f6c7dac8c2d",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "phase": "next_tool",
+        "candidateSet": {
+          "id": "set:e5502063f48a5cd3f5fcac2425a4803a8a62a8bc5183537b6b875a116344636b",
+          "digest": "e5502063f48a5cd3f5fcac2425a4803a8a62a8bc5183537b6b875a116344636b",
+          "sourceDigest": "9f986f8b860aa21f85a7088fd6610c2fc500fa818086cd9f04f8a84fde1be217",
+          "contextDigest": "bcbe87e55ae637de1c52bb631204666431fad896b12955e3b945d4eadfc96b55",
+          "candidates": [
+            {
+              "id": "equipment_search",
+              "semanticId": "equipment_search",
+              "description": "Fill the equipment Search field with the exact user equipment ID, click Search once and verify the current filtered grid",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [
+                "equipment"
+              ],
+              "bindingDigests": {
+                "dataset": "2d586b87bb5aa4a4a4e9afa6602e4970c264c4c546c352a484744a984bf88ca7",
+                "date_range": "e00488fcabfeaef9704bec8e7c7526120b6e198e2629fbb59443ecc83c1b874b"
+              },
+              "steps": [
+                {
+                  "id": "fill",
+                  "tool": "web.fill",
+                  "actionRef": "registered:fill",
+                  "dependencies": [],
+                  "parameters": [
+                    "equipment"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "submit",
+                  "tool": "web.click",
+                  "actionRef": "registered:submit",
+                  "dependencies": [
+                    "fill"
+                  ],
+                  "parameters": [],
+                  "effect": "external",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "verify",
+                  "tool": "task.verify",
+                  "actionRef": "registered:verify",
+                  "dependencies": [
+                    "submit"
+                  ],
+                  "parameters": [],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "dated_alarms",
+              "semanticId": "dated_alarms",
+              "description": "Set the alarm date filter to the bound previous local calendar day, read all permitted rows and verify coverage for later complex analysis",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "2d586b87bb5aa4a4a4e9afa6602e4970c264c4c546c352a484744a984bf88ca7",
+                "date_range": "e00488fcabfeaef9704bec8e7c7526120b6e198e2629fbb59443ecc83c1b874b"
+              },
+              "steps": [
+                {
+                  "id": "date",
+                  "tool": "web.select",
+                  "actionRef": "registered:date",
+                  "dependencies": [],
+                  "parameters": [
+                    "date_range"
+                  ],
+                  "effect": "local-ui",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "read",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:read",
+                  "dependencies": [
+                    "date"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "aggregate",
+              "semanticId": "aggregate",
+              "description": "Read the current alarms dataset and deterministically group/count by equipment, return maxima and ties with coverage; no form changes",
+              "source": "registered",
+              "scopeId": "alarm-page",
+              "modes": [
+                "ask",
+                "act"
+              ],
+              "capabilityRefs": [
+                "qualified-fixture"
+              ],
+              "evidenceRefs": [
+                "observed-alarm-page"
+              ],
+              "unresolvedInputs": [],
+              "bindingDigests": {
+                "dataset": "2d586b87bb5aa4a4a4e9afa6602e4970c264c4c546c352a484744a984bf88ca7",
+                "date_range": "e00488fcabfeaef9704bec8e7c7526120b6e198e2629fbb59443ecc83c1b874b"
+              },
+              "steps": [
+                {
+                  "id": "table",
+                  "tool": "web.get_table_data",
+                  "actionRef": "registered:table",
+                  "dependencies": [],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                },
+                {
+                  "id": "group-count",
+                  "tool": "web.query",
+                  "actionRef": "registered:group-count",
+                  "dependencies": [
+                    "table"
+                  ],
+                  "parameters": [
+                    "dataset"
+                  ],
+                  "effect": "read",
+                  "goalPredicateRefs": [
+                    "current-result-verified"
+                  ],
+                  "preconditionRefs": [
+                    "fixture-current-capability"
+                  ]
+                }
+              ]
+            }
+          ],
+          "totalEligible": 3,
+          "omitted": 0,
+          "cursor": null
+        },
+        "budgets": {
+          "version": "task-budget-v1",
+          "calls": 0,
+          "inputTokens": 0,
+          "outputTokens": 0,
+          "activeMs": 0,
+          "overallDeadline": 1793310503756,
+          "responseByteLimit": 1024
+        },
+        "facts": [
+          {
+            "id": "user_request",
+            "value": "어제 알람을 분석하고 자료로 뒷받침되는 패턴을 설명해 주세요."
+          },
+          {
+            "id": "observed",
+            "value": "Current alarms collection, uniquely identified equipment search form and date filter have registered relations to results."
+          },
+          {
+            "id": "complete_authorized_dataset",
+            "value": true
+          },
+          {
+            "id": "goal_predicates_verified",
+            "value": false
+          },
+          {
+            "id": "previous_dispatch",
+            "value": "not_dispatched; planning the next permitted step"
+          },
+          {
+            "id": "admitted_timezone",
+            "value": "Asia/Seoul"
+          }
+        ],
+        "stateComplete": true,
+        "digest": "0b1109884a652d6258ccf38bd51408b3c40081a4349d79b55fc80f9f83f70dc7"
+      },
+      "requestDigest": "995cf069bdc5c6f48c0905bc53787e199141c76b6ae1e3b7965000dbf256b5ae",
+      "httpStatus": 200,
+      "nativeResponse": {
+        "contentType": "application/json",
+        "body": {
+          "model": "jev-1.13.0",
+          "answers": {
+            "decision": {
+              "type": "choice",
+              "choice": "dated_alarms",
+              "confidence": 0.95,
+              "probabilities": {
+                "equipment_search": 0,
+                "dated_alarms": 0.96,
+                "aggregate": 0.04,
+                "INSPECT_MORE": 0,
+                "NEED_INPUT": 0,
+                "UNSUPPORTED": 0,
+                "UNKNOWN": 0
+              }
+            },
+            "evidence_sufficient": {
+              "type": "noul",
+              "noul": 0.4
+            }
+          },
+          "usage": {
+            "input_tokens": 2892,
+            "output_tokens": 103
+          }
+        },
+        "bodyDigest": "28ca3c8bcb0b8bf4547b2726b7bf23cd9a063198eef72e3e5521682d4017766f"
+      },
+      "validatedResult": {
+        "protocol": "wca.task/v1",
+        "frameDigest": "0b1109884a652d6258ccf38bd51408b3c40081a4349d79b55fc80f9f83f70dc7",
+        "candidateDigest": "e5502063f48a5cd3f5fcac2425a4803a8a62a8bc5183537b6b875a116344636b",
+        "templateVersion": "controller-v2",
+        "model": "jev-1.13.0",
+        "modelRevision": 1,
+        "context": {
+          "taskId": "reference-064cca05-56c5-4a9e-a5b0-0f6c7dac8c2d",
+          "taskRevision": 1,
+          "planRevision": 1,
+          "graphRevision": 1,
+          "evidenceRevision": 1,
+          "capabilityRevision": 1,
+          "cancellationGeneration": 0,
+          "mode": "act",
+          "scopeId": "alarm-page"
+        },
+        "answers": {
+          "decision": {
+            "type": "choice",
+            "choice": "dated_alarms",
+            "confidence": 0.95,
+            "probabilities": {
+              "equipment_search": 0,
+              "dated_alarms": 0.96,
+              "aggregate": 0.04,
+              "INSPECT_MORE": 0,
+              "NEED_INPUT": 0,
+              "UNSUPPORTED": 0,
+              "UNKNOWN": 0
+            }
+          },
+          "evidence_sufficient": {
+            "type": "noul",
+            "noul": 0.4
+          }
+        },
+        "usage": {
+          "input_tokens": 2892,
+          "output_tokens": 103
+        }
+      },
+      "outcome": "SELECTED",
+      "selection": "dated_alarms",
+      "reason": null,
+      "argumentsByName": {
+        "dataset": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "2d586b87bb5aa4a4a4e9afa6602e4970c264c4c546c352a484744a984bf88ca7",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        },
+        "date_range": {
+          "status": "BOUND",
+          "valueMatched": true,
+          "sourceDigest": "e00488fcabfeaef9704bec8e7c7526120b6e198e2629fbb59443ecc83c1b874b",
+          "alternateValid": true,
+          "alternateRejected": true,
+          "alternateReason": "ARGUMENT_SOURCE_CHANGED"
+        }
+      },
+      "passed": true,
+      "counters": {
+        "version": "task-budget-v1",
+        "calls": 1,
+        "inputTokens": 2892,
+        "outputTokens": 103,
+        "activeMs": 177,
+        "overallDeadline": 1793310503756,
+        "responseByteLimit": 1024
+      }
+    }
+  ]
+}

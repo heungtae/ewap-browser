@@ -1,0 +1,176 @@
+import { vocabulary, options } from "./multiphase-vocabulary.mjs";
+export function makeContext(index) {
+  return {
+    taskId: `series-${String(index + 1).padStart(3, "0")}`,
+    taskRevision: 1,
+    planRevision: 1,
+    graphRevision: 1,
+    evidenceRevision: 1,
+    capabilityRevision: 1,
+    cancellationGeneration: 0,
+    mode: "act",
+    scopeId: "fixture-page",
+  };
+}
+export function makeBinding(s27, item, context) {
+  const bindingContext = {
+    current: context,
+    request: item.request,
+    sensitiveSpans: [],
+    admittedAt: "2026-10-29T03:00:00Z",
+    timezone: "Asia/Seoul",
+    approved: new Map(),
+    observed: new Map(),
+  };
+  const sources = new Map();
+  let expectedValue = null;
+  if (item.category === "action") {
+    const match = item.request.match(/\b(?:SKU|ORD|APT|QRY)-\d{3}\b/);
+    if (!match || match.index === undefined)
+      throw new Error("HOLDOUT_IDENTIFIER_MISSING");
+    expectedValue = match[0];
+    sources.set("query", {
+      kind: "user_span",
+      start: match.index,
+      end: match.index + match[0].length,
+      spanDigest: s27.digest(match[0]),
+      valueType: "string",
+      unit: null,
+    });
+  }
+  return { bindingContext, sources, expectedValue };
+}
+export function makeFrame(s27, item, index, context, budget, phase, binding) {
+  const action = item.category === "action",
+    analysis = item.category === "analysis";
+  const evidenceComplete = index % 2 === 0,
+    canInspect = index % 2 === 1;
+  const active = action
+    ? "Use the observed search form to submit the user's identifier"
+    : analysis
+      ? "Interpret the already acquired records to explain supported patterns"
+      : "Read the current records and perform any requested deterministic count";
+  const target = action
+    ? "the observed search form that accepts the identifier"
+    : "the observed result table containing the requested records";
+  const facts = [
+    { id: "user_request", value: item.request },
+    { id: "current_step", value: active },
+    {
+      id: "observed",
+      value: `A unique search form filters a unique result table. The current subgoal is to identify ${target}.`,
+    },
+    {
+      id: "evidence",
+      value: evidenceComplete
+        ? "All evidence required for this phase is present, complete, authorized and verified."
+        : "A required evidence item is missing and the goal is unverified.",
+    },
+    {
+      id: "recovery",
+      value: canInspect
+        ? "A previous mutation has an unknown outcome; a specific authorized read-only receipt can be inspected without repeating the mutation."
+        : "A previous mutation has an unknown outcome; no safe authorized observation remains and it must not be repeated.",
+    },
+    {
+      id: "goal",
+      value: evidenceComplete
+        ? "All current required goal predicates have independently been verified."
+        : "At least one current required goal predicate has not been verified.",
+    },
+  ];
+  const expected = {
+    intent: { read: "READ", action: "ACTION", analysis: "ANALYSIS" }[
+      item.category
+    ],
+    evidence_sufficiency: evidenceComplete ? "ACCEPT" : "REJECT",
+    semantic_selection: action ? "SEARCH_FORM" : "RESULT_COLLECTION",
+    semantic_relation: action ? "SEARCH_FORM" : "RESULT_COLLECTION",
+    next_tool: action
+      ? "search_form"
+      : analysis
+        ? "interpret_data"
+        : "read_table",
+    processor: analysis ? "GPT_ANALYSIS" : "RUNTIME",
+    recovery: canInspect ? "INSPECT" : "STOP",
+    result_acceptance: evidenceComplete ? "ACCEPT" : "REJECT",
+  }[phase];
+  const bound = binding.sources.has("query")
+    ? s27.bindArgument(binding.sources.get("query"), binding.bindingContext)
+    : undefined;
+  if (bound && bound.status !== "BOUND") throw new Error("BINDING_INVALID");
+  const inputs = options[phase].map((id) => {
+    const search = phase === "next_tool" && id === "search_form";
+    const step = (id, tool, effect, parameters, dependencies = []) => ({
+      id,
+      tool,
+      effect,
+      parameters,
+      dependencies,
+      actionRef: `target:${id}`,
+      goalPredicateRefs: ["result"],
+      preconditionRefs: ["fresh"],
+    });
+    const steps = search
+      ? [
+          step("fill", "web.fill", "local-ui", ["query"]),
+          step("submit", "web.click", "external", [], ["fill"]),
+          step("verify", "task.verify", "read", [], ["submit"]),
+        ]
+      : phase === "next_tool"
+        ? [
+            step(
+              "read",
+              id === "read_table" ? "web.get_table_data" : "analysis.run",
+              "read",
+              [],
+            ),
+          ]
+        : [];
+    return {
+      candidate: {
+        id,
+        semanticId: id,
+        description: vocabulary[id],
+        source: "registered",
+        scopeId: context.scopeId,
+        modes: ["act"],
+        capabilityRefs: ["fixture"],
+        evidenceRefs: ["observation"],
+        unresolvedInputs: [],
+        bindingDigests: search && bound ? { query: bound.sourceDigest } : {},
+        steps,
+      },
+      policyPermitted: true,
+      uniqueTarget: true,
+      fresh: true,
+      userMentionMatch: 0,
+      workflowMatch: false,
+      evidenceTime: 1,
+      resolvedParameters: bound ? ["query"] : [],
+    };
+  });
+  let page = s27.enumerateCandidates(context, inputs, new Set(["fixture"]));
+  if (index % 2) {
+    const { id: _id, digest: _digest, ...payload } = page;
+    payload.candidates.reverse();
+    page = {
+      ...payload,
+      id: `set:${s27.digest(payload)}`,
+      digest: s27.digest(payload),
+    };
+  }
+  const frame = s27.createFrame({
+    protocol: "wca.task/v1",
+    templateVersion: "controller-v2",
+    model: "jev-1.13.0",
+    modelRevision: 1,
+    context,
+    phase,
+    candidateSet: page,
+    budgets: budget.snapshot(),
+    facts,
+    stateComplete: true,
+  });
+  return { frame, expected };
+}

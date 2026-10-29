@@ -1,0 +1,48 @@
+export const phases = [
+  "intent",
+  "evidence_sufficiency",
+  "semantic_selection",
+  "semantic_relation",
+  "next_tool",
+  "processor",
+  "recovery",
+  "result_acceptance",
+];
+export const vocabulary = {
+  READ: "Read existing data or compute deterministic counts without page changes",
+  ACTION:
+    "Fill and submit the user-requested search form using the specified identifier",
+  ANALYSIS: "Explain evidence-supported patterns from already acquired data",
+  ACCEPT: "All required facts and goal conditions are verified",
+  REJECT: "A required fact or goal condition remains unverified",
+  SEARCH_FORM: "Observed search form and its identifier field",
+  RESULT_COLLECTION: "Observed table containing the current records",
+  form_filters_table: "The search form filters the displayed table",
+  table_opens_detail: "A table row opens the corresponding detail panel",
+  form_opens_detail: "The search form directly opens the detail panel",
+  RUNTIME: "Deterministic data reading, form interaction or counting",
+  GPT_ANALYSIS: "Evidence-based interpretation of acquired records",
+  STOP: "Stop if no safe authorized observation is available; never repeat an uncertain mutation",
+  INSPECT:
+    "Inspect the available authorized read-only receipt; never repeat an uncertain mutation",
+  REPLAN: "Replan an undispatched step",
+  read_table:
+    "Read the current table and compute requested deterministic counts",
+  search_form:
+    "Fill the requested search field, submit once and verify the result",
+  interpret_data: "Delegate interpretation of already acquired data",
+};
+export const options = {
+  intent: ["READ", "ACTION", "ANALYSIS"],
+  evidence_sufficiency: ["ACCEPT", "REJECT"],
+  semantic_selection: ["SEARCH_FORM", "RESULT_COLLECTION"],
+  semantic_relation: [
+    "form_filters_table",
+    "table_opens_detail",
+    "form_opens_detail",
+  ],
+  next_tool: ["read_table", "search_form", "interpret_data"],
+  processor: ["RUNTIME", "GPT_ANALYSIS"],
+  recovery: ["STOP", "INSPECT", "REPLAN"],
+  result_acceptance: ["ACCEPT", "REJECT"],
+};

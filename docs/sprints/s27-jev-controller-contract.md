@@ -1,6 +1,6 @@
 # Browser Agent S27 — JEV controller protocol and feasibility
 
-**Status: Planned. Created: 2026-10-18. Implementation: not started.**
+**Status: Completed within the synthetic native-controller qualification scope. Created: 2026-10-18.** See [qualification evidence](../evidence/s27-qualification-2026-10-30.md). Numerical score gates and ambiguous labels below were superseded by user direction; the historical criteria are retained for context.
 
 Owner: Task Engine and JEV adapter maintainer. Migration slice: M01. Prerequisites: [S26](s26-migration-baseline.md).
 
@@ -22,7 +22,7 @@ Preserve current Side Panel/Options/profile-manager presentation structure, expl
 
 ## Implementation cards
 
-All cards are Planned. Execute as reviewable changes with the listed regression checks; no product implementation is authorized merely by creating this Sprint.
+The following cards and checks record the original plan; current completion evidence and user-directed criterion changes are linked above.
 
 | ID     | Change                                                                                                                                                                                                             | Acceptance / linked checks                                                                                                                            |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |

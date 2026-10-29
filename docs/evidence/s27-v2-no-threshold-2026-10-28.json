@@ -1,0 +1,194 @@
+{
+  "schema": "s27-v2-evaluation/v1",
+  "at": "2026-10-28T09:03:11.491Z",
+  "corpusHash": "c764598f841b0fc26218300a09e03f265c40a47deda017ed4209208d5870a861",
+  "protocolSourceDigest": "60fbf1e7f92393d65a5899124f7c790b7091faf3225a03f1286718ad087fa7d0",
+  "runnerDigest": "a5786fac3737a733dcfd42f34f9a5f6ccd2918818a79ad7905bab62d9adbbf12",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "new synthetic examples; no browser dispatch, approval or production qualification",
+  "results": [
+    {
+      "id": "intent-en-read",
+      "phase": "intent",
+      "expected": [
+        "READ"
+      ],
+      "nativeSelection": "READ",
+      "nativeMatch": true,
+      "gatedSelection": "READ",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.93,
+      "selectedProbability": 0.9400000000000001,
+      "evidenceSufficiency": 0.32
+    },
+    {
+      "id": "intent-ko-read",
+      "phase": "intent",
+      "expected": [
+        "READ"
+      ],
+      "nativeSelection": "READ",
+      "nativeMatch": true,
+      "gatedSelection": "READ",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.92,
+      "selectedProbability": 0.93,
+      "evidenceSufficiency": 0.33
+    },
+    {
+      "id": "intent-en-analysis",
+      "phase": "intent",
+      "expected": [
+        "ANALYSIS"
+      ],
+      "nativeSelection": "ANALYSIS",
+      "nativeMatch": true,
+      "gatedSelection": "ANALYSIS",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.59,
+      "selectedProbability": 0.65,
+      "evidenceSufficiency": 0.36
+    },
+    {
+      "id": "intent-ko-analysis",
+      "phase": "intent",
+      "expected": [
+        "ANALYSIS"
+      ],
+      "nativeSelection": "ANALYSIS",
+      "nativeMatch": true,
+      "gatedSelection": "ANALYSIS",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.79,
+      "selectedProbability": 0.8200000000000001,
+      "evidenceSufficiency": 0.39
+    },
+    {
+      "id": "semantic-date-en",
+      "phase": "semantic_selection",
+      "expected": [
+        "FILTER_CONTROL"
+      ],
+      "nativeSelection": "FILTER_CONTROL",
+      "nativeMatch": true,
+      "gatedSelection": "FILTER_CONTROL",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.65
+    },
+    {
+      "id": "semantic-results-ko",
+      "phase": "semantic_selection",
+      "expected": [
+        "RESULT_COLLECTION"
+      ],
+      "nativeSelection": "RESULT_COLLECTION",
+      "nativeMatch": true,
+      "gatedSelection": "RESULT_COLLECTION",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.71
+    },
+    {
+      "id": "processor-interpret-ko",
+      "phase": "processor",
+      "expected": [
+        "GPT_ANALYSIS"
+      ],
+      "nativeSelection": "GPT_ANALYSIS",
+      "nativeMatch": true,
+      "gatedSelection": "GPT_ANALYSIS",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.34
+    },
+    {
+      "id": "processor-aggregate-en",
+      "phase": "processor",
+      "expected": [
+        "RUNTIME"
+      ],
+      "nativeSelection": "RUNTIME",
+      "nativeMatch": true,
+      "gatedSelection": "RUNTIME",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.35
+    },
+    {
+      "id": "recovery-stop-en",
+      "phase": "recovery",
+      "expected": [
+        "STOP"
+      ],
+      "nativeSelection": "STOP",
+      "nativeMatch": true,
+      "gatedSelection": "STOP",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.73,
+      "selectedProbability": 0.77,
+      "evidenceSufficiency": 0.22
+    },
+    {
+      "id": "recovery-inspect-ko",
+      "phase": "recovery",
+      "expected": [
+        "INSPECT"
+      ],
+      "nativeSelection": "INSPECT",
+      "nativeMatch": true,
+      "gatedSelection": "INSPECT",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.89,
+      "selectedProbability": 0.91,
+      "evidenceSufficiency": 0.44
+    },
+    {
+      "id": "semantic-unclear-en",
+      "phase": "semantic_selection",
+      "expected": [
+        "UNKNOWN",
+        "INSPECT_MORE"
+      ],
+      "nativeSelection": "UNKNOWN",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.59,
+      "selectedProbability": 0.65,
+      "evidenceSufficiency": 0.48
+    },
+    {
+      "id": "processor-unclear-en",
+      "phase": "processor",
+      "expected": [
+        "UNKNOWN",
+        "INSPECT_MORE"
+      ],
+      "nativeSelection": "UNKNOWN",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": true,
+      "reason": null,
+      "confidence": 0.71,
+      "selectedProbability": 0.76,
+      "evidenceSufficiency": 0.17
+    }
+  ]
+}

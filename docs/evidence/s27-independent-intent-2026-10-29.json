@@ -1,0 +1,170 @@
+{
+  "schema": "s27-independent-intent/v1",
+  "at": "2026-10-29T03:57:42.008Z",
+  "corpusHash": "654eec4155c043c89c3e5c9646c773055c92c4e08b63d53d8f1fd685d2c029fc",
+  "protocolSourceDigest": "60fbf1e7f92393d65a5899124f7c790b7091faf3225a03f1286718ad087fa7d0",
+  "runnerDigest": "5b1fa58f27f7575b6f43b5f785c53e5463d37f97246e2082d766256b89bd6650",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "separately authored synthetic intent cases; no browser dispatch, approval or complete task execution",
+  "http": [
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200,
+    200
+  ],
+  "results": [
+    {
+      "id": "c01",
+      "language": "en",
+      "order": "forward",
+      "expected": "READ",
+      "selection": "READ",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c02",
+      "language": "ko",
+      "order": "reversed",
+      "expected": "ANALYSIS",
+      "selection": "ANALYSIS",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c03",
+      "language": "en",
+      "order": "forward",
+      "expected": "ACTION",
+      "selection": "ACTION",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": {
+        "status": "BOUND",
+        "matches": true
+      },
+      "reason": null
+    },
+    {
+      "id": "c04",
+      "language": "ko",
+      "order": "reversed",
+      "expected": "READ",
+      "selection": "READ",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c05",
+      "language": "en",
+      "order": "forward",
+      "expected": "ANALYSIS",
+      "selection": "ANALYSIS",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c06",
+      "language": "ko",
+      "order": "reversed",
+      "expected": "ACTION",
+      "selection": "ACTION",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": {
+        "status": "BOUND",
+        "matches": true
+      },
+      "reason": null
+    },
+    {
+      "id": "c07",
+      "language": "en",
+      "order": "forward",
+      "expected": "READ",
+      "selection": "READ",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c08",
+      "language": "ko",
+      "order": "reversed",
+      "expected": "ACTION",
+      "selection": "ACTION",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": {
+        "status": "BOUND",
+        "matches": true
+      },
+      "reason": null
+    },
+    {
+      "id": "c09",
+      "language": "en",
+      "order": "forward",
+      "expected": "ANALYSIS",
+      "selection": "ANALYSIS",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c10",
+      "language": "ko",
+      "order": "reversed",
+      "expected": "READ",
+      "selection": "READ",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    },
+    {
+      "id": "c11",
+      "language": "en",
+      "order": "forward",
+      "expected": "ACTION",
+      "selection": "ACTION",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": {
+        "status": "BOUND",
+        "matches": true
+      },
+      "reason": null
+    },
+    {
+      "id": "c12",
+      "language": "ko",
+      "order": "reversed",
+      "expected": "ANALYSIS",
+      "selection": "ANALYSIS",
+      "outcome": "SELECTED",
+      "matched": true,
+      "binding": null,
+      "reason": null
+    }
+  ]
+}

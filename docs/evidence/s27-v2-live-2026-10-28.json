@@ -1,0 +1,194 @@
+{
+  "schema": "s27-v2-evaluation/v1",
+  "at": "2026-10-28T08:59:04.489Z",
+  "corpusHash": "c764598f841b0fc26218300a09e03f265c40a47deda017ed4209208d5870a861",
+  "protocolSourceDigest": "588e35f5ca40b68cec10a6cc44567253331b340d5753fcefdd1b9f892eff6830",
+  "runnerDigest": "7776442d74aa78d92a6dac80fbbadfadf11e62df5afc2546dff5270f467de17f",
+  "model": "jev-1.13.0",
+  "templateVersion": "controller-v2",
+  "scope": "new synthetic examples; no browser dispatch, approval or production qualification",
+  "results": [
+    {
+      "id": "intent-en-read",
+      "phase": "intent",
+      "expected": [
+        "READ"
+      ],
+      "nativeSelection": "READ",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "confidence": 0.94,
+      "selectedProbability": 0.95,
+      "evidenceSufficiency": 0.3
+    },
+    {
+      "id": "intent-ko-read",
+      "phase": "intent",
+      "expected": [
+        "READ"
+      ],
+      "nativeSelection": "READ",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "confidence": 0.92,
+      "selectedProbability": 0.93,
+      "evidenceSufficiency": 0.32
+    },
+    {
+      "id": "intent-en-analysis",
+      "phase": "intent",
+      "expected": [
+        "ANALYSIS"
+      ],
+      "nativeSelection": "ANALYSIS",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "LOW_CONFIDENCE",
+      "confidence": 0.64,
+      "selectedProbability": 0.6900000000000001,
+      "evidenceSufficiency": 0.39
+    },
+    {
+      "id": "intent-ko-analysis",
+      "phase": "intent",
+      "expected": [
+        "ANALYSIS"
+      ],
+      "nativeSelection": "ANALYSIS",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "LOW_CONFIDENCE",
+      "confidence": 0.8,
+      "selectedProbability": 0.83,
+      "evidenceSufficiency": 0.36
+    },
+    {
+      "id": "semantic-date-en",
+      "phase": "semantic_selection",
+      "expected": [
+        "FILTER_CONTROL"
+      ],
+      "nativeSelection": "FILTER_CONTROL",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.66
+    },
+    {
+      "id": "semantic-results-ko",
+      "phase": "semantic_selection",
+      "expected": [
+        "RESULT_COLLECTION"
+      ],
+      "nativeSelection": "RESULT_COLLECTION",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.71
+    },
+    {
+      "id": "processor-interpret-ko",
+      "phase": "processor",
+      "expected": [
+        "GPT_ANALYSIS"
+      ],
+      "nativeSelection": "GPT_ANALYSIS",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.36
+    },
+    {
+      "id": "processor-aggregate-en",
+      "phase": "processor",
+      "expected": [
+        "RUNTIME"
+      ],
+      "nativeSelection": "RUNTIME",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "confidence": 1,
+      "selectedProbability": 1,
+      "evidenceSufficiency": 0.35
+    },
+    {
+      "id": "recovery-stop-en",
+      "phase": "recovery",
+      "expected": [
+        "STOP"
+      ],
+      "nativeSelection": "STOP",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "LOW_CONFIDENCE",
+      "confidence": 0.78,
+      "selectedProbability": 0.81,
+      "evidenceSufficiency": 0.23
+    },
+    {
+      "id": "recovery-inspect-ko",
+      "phase": "recovery",
+      "expected": [
+        "INSPECT"
+      ],
+      "nativeSelection": "INSPECT",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": false,
+      "reason": "LOW_CONFIDENCE",
+      "confidence": 0.87,
+      "selectedProbability": 0.89,
+      "evidenceSufficiency": 0.43
+    },
+    {
+      "id": "semantic-unclear-en",
+      "phase": "semantic_selection",
+      "expected": [
+        "UNKNOWN",
+        "INSPECT_MORE"
+      ],
+      "nativeSelection": "UNKNOWN",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": true,
+      "reason": "LOW_CONFIDENCE",
+      "confidence": 0.53,
+      "selectedProbability": 0.6,
+      "evidenceSufficiency": 0.48
+    },
+    {
+      "id": "processor-unclear-en",
+      "phase": "processor",
+      "expected": [
+        "UNKNOWN",
+        "INSPECT_MORE"
+      ],
+      "nativeSelection": "UNKNOWN",
+      "nativeMatch": true,
+      "gatedSelection": "UNKNOWN",
+      "gatedMatch": true,
+      "reason": "LOW_CONFIDENCE",
+      "confidence": 0.69,
+      "selectedProbability": 0.74,
+      "evidenceSufficiency": 0.2
+    }
+  ]
+}

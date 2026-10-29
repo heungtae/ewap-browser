@@ -80,13 +80,33 @@
 
 [S28 workspace and bridge](s28-workspace-bridge-2026-10-19.md): isolated apps, authenticated local IPC, bounded transfers and controlled target presentation; In Progress with full UI/registration/reconnect qualification pending.
 
-[S27 controller protocol](s27-controller-protocol-2026-10-19.md): contract/binder/native/budget implementation and frozen live attempts; live feasibility failed, S27 remains In Progress and S33 completion is blocked.
+[S27 controller protocol](s27-controller-protocol-2026-10-19.md): contract/binder/native/budget implementation and frozen live attempts; historical live feasibility failed; see the later S27 qualification below.
 
 [S27 live qualification, 2026-10-28](s27-live-2026-10-28.md): interactive-shell credential used for a fresh frozen-corpus run; all 12 cases failed the semantic gate despite HTTP 200 responses.
 
 [S27 native-selection analysis](s27-native-selection-analysis-2026-10-28.md): 75 recorded choices match frozen labels; 21 mismatches are grouped by phase, with possible causes and limits.
 
 [S27 clarified development examples](s27-clarified-exploration-2026-10-28.md): eight explicit paired questions matched in a live exploratory run; this is not an independent qualification.
+
+[S27 controller-v2 live evaluation](s27-v2-live-2026-10-28.md): 12 synthetic native choices matched; the unchanged execution gate accepted none of the ten positive decisions.
+
+[S27 v2 without numerical thresholds](s27-v2-no-threshold-2026-10-28.md): user-requested acceptance change and 12/12 repeated synthetic selections; independent qualification remains open.
+
+[S25 numerical threshold removal](s25-no-09-threshold-2026-10-29.md): existing product JEV path now routes by selected identifier without score thresholds.
+
+[S27 live continuation, 2026-10-29](s27-continuation-2026-10-29.md): historical v1 corpus remains 2/12; separately authored intent cases pass 12/12 with a separate user-span check, without full task qualification.
+
+[S27 phase evaluation first run](s27-multiphase-first-2026-10-29.md): 94/96 selections match, but review found ambiguous and verdict-like inputs; result is not qualified.
+
+[S27 cross-case evaluation first run](s27-cross-first-2026-10-29.md): 281/288 synthetic observations match; seven analysis next-step labels lack sufficient state and remain unqualified.
+
+[S27 cross-case independent evaluation](s27-cross2-first-2026-10-29.md): 288/288 synthetic phase observations match with query/dataset source binding and changed-source negatives; task continuity and browser execution are separate.
+
+[S27 v2 reference next steps](s27-reference-v2-first-2026-10-30.md): 12/12 reference selections and 16 reconstructable query/date/dataset bindings with valid alternate-source rejection; no browser execution.
+
+[S27 v2 reference phases](s27-reference-phases-first-2026-10-30.md): 96/96 live decisions with shared per-case context/budget and source binding; observations are synthetic, without browser execution.
+
+[S27 controller qualification](s27-qualification-2026-10-30.md): R01–R06 passed within synthetic controller scope; actual browser execution and product integration remain separate.
 
 [S26 migration baseline](s26-migration-baseline-2026-10-19.md): exact RF/file inventory, 26 UI captures, storage/consumer catalog and frozen qualification; 993 unit checks and controlled Chrome, with source-size and diagnostics ZIP baseline failures preserved.
 

@@ -1,8 +1,14 @@
+import { currentPreservedSourceHashes } from "../s26-inventory.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { build } from "esbuild";
 import ts from "typescript";
-import { files, read, digest, validateInventory } from "../s26-inventory.mjs";
+import {
+  files,
+  read,
+  digest,
+  validateCurrentInventory,
+} from "../s26-inventory.mjs";
 const roots = [
   "collector",
   "codebase-schema",
@@ -57,9 +63,7 @@ for (const name of roots) {
     `Node import ${name}`,
   );
 }
-for (const [path, expected] of Object.entries(
-  read("docs/baselines/s27/entry.json").preservedSourceHashes,
-))
+for (const [path, expected] of Object.entries(currentPreservedSourceHashes()))
   assert.equal(
     digest(await readFile(path)),
     expected,
@@ -76,7 +80,8 @@ console.log(
   JSON.stringify({
     result: "PASS",
     modules: sources.length,
-    ...validateInventory(manifest),
-    productionAndDesign: "unchanged",
+    ...validateCurrentInventory(manifest),
+    productionAndDesign:
+      "baseline with authorized S25 source and S27 status changes",
   }),
 );

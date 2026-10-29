@@ -45,13 +45,7 @@ export function acceptResult(
     ? "INCOMPLETE_STATE"
     : !frame.candidateSet.candidates.length
       ? "EMPTY_CANDIDATES"
-      : choice.confidence < 0.9
-        ? "LOW_CONFIDENCE"
-        : probabilities[choice.choice]! < 0.9
-          ? "LOW_SELECTED_PROBABILITY"
-          : result.answers.evidence_sufficient.noul < 0.9
-            ? "INSUFFICIENT_EVIDENCE"
-            : undefined;
+      : undefined;
   if (reason)
     return { outcome: "UNKNOWN", selection: "UNKNOWN", result, reason };
   if (choice.choice === "UNSUPPORTED" && frame.candidateSet.omitted > 0)

@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "id": "e01",
+      "language": "en",
+      "category": "read",
+      "request": "From the currently displayed warehouse parcel tracking table, list the parcel reference, status, and last scan location for each row marked Delayed."
+    },
+    {
+      "id": "e02",
+      "language": "en",
+      "category": "read",
+      "request": "Count the currently displayed helpdesk ticket rows whose priority is High and status is Open. Count each displayed row once."
+    },
+    {
+      "id": "e03",
+      "language": "ko",
+      "category": "read",
+      "request": "현재 표시된 유지보수 점검 표에서 결과가 '재점검 필요'인 행의 설비 코드, 점검 항목, 점검일을 보여줘."
+    },
+    {
+      "id": "e04",
+      "language": "ko",
+      "category": "read",
+      "request": "현재 표시된 창고 택배 추적 표에서 상태가 '배송 준비'이고 보관 구역이 'B구역'인 행을 각각 한 번씩 세어 총건수를 알려줘."
+    },
+    {
+      "id": "e05",
+      "language": "en",
+      "category": "action",
+      "request": "In the observed helpdesk ticket search form, enter QRY-142 in the search field and submit the form."
+    },
+    {
+      "id": "e06",
+      "language": "en",
+      "category": "action",
+      "request": "In the observed maintenance inspection search form, enter QRY-386 in the search field and submit the form."
+    },
+    {
+      "id": "e07",
+      "language": "ko",
+      "category": "action",
+      "request": "관찰된 창고 택배 추적 검색 폼의 검색 입력란에 QRY-507을 입력하고 폼을 제출해."
+    },
+    {
+      "id": "e08",
+      "language": "ko",
+      "category": "action",
+      "request": "관찰된 헬프데스크 티켓 검색 폼의 검색 입력란에 QRY-824를 입력하고 폼을 제출해."
+    },
+    {
+      "id": "e09",
+      "language": "en",
+      "category": "analysis",
+      "request": "Using only the maintenance inspection records already acquired, explain any recurring failure patterns by equipment type and inspection item. Support each explanation with record references and counts, distinguish observed associations from causes, and state when evidence is insufficient."
+    },
+    {
+      "id": "e10",
+      "language": "en",
+      "category": "analysis",
+      "request": "Using only the warehouse parcel tracking records already acquired, explain whether delayed parcels cluster around particular scan locations or dispatch windows. Cite supporting parcel references and counts, include counterexamples, and avoid claiming causes the records cannot establish."
+    },
+    {
+      "id": "e11",
+      "language": "ko",
+      "category": "analysis",
+      "request": "이미 확보한 헬프데스크 티켓 기록만 사용해서 재접수 패턴이 특정 문제 분류나 처리 상태와 함께 나타나는지 설명해. 근거가 되는 티켓 코드와 건수를 제시하고, 관찰된 연관성과 원인을 구분하며 근거가 부족하면 명시해."
+    },
+    {
+      "id": "e12",
+      "language": "ko",
+      "category": "analysis",
+      "request": "이미 확보한 유지보수 점검 기록만 사용해서 동일 설비의 반복 지적 사항이 점검 회차에 따라 어떻게 나타나는지 설명해. 설비 코드, 점검 기록 코드, 회차별 건수를 근거로 제시하고, 개선이나 악화를 판단할 자료가 부족한 경우 그 한계를 밝혀줘."
+    }
+  ]
+}

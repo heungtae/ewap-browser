@@ -17,7 +17,7 @@ const report = {
   schema: "s27-qualification/v1",
   protocolSourceDigest,
   attemptPurpose:
-    "Current source verification; frozen expectations and 0.9 gates unchanged. Earlier failed attempts retained separately.",
+    "Current source verification with frozen expectations and user-directed acceptance policy. Earlier failed attempts retained separately.",
   at: new Date().toISOString(),
   model: corpus.model,
   endpoint,

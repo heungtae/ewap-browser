@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "id": "f01",
+      "language": "en",
+      "category": "read",
+      "request": "On the public transit service incidents page, list the existing rows marked Active, including incident ID, route, and service impact. Do not change the page."
+    },
+    {
+      "id": "f02",
+      "language": "ko",
+      "category": "read",
+      "request": "박물관 소장품 목록에서 현재 표시된 행 중 재료가 청동으로 기재된 행의 수를 세어 주세요. 페이지를 변경하지 말고 현재 표시된 행만 기준으로 계산해 주세요."
+    },
+    {
+      "id": "f03",
+      "language": "en",
+      "category": "read",
+      "request": "From the laboratory instrument maintenance table, report the existing rows whose maintenance status is Overdue, including instrument ID and scheduled maintenance date. Leave the page unchanged."
+    },
+    {
+      "id": "f04",
+      "language": "ko",
+      "category": "read",
+      "request": "대중교통 운행 장애 표에서 현재 표시된 행 중 상태가 복구 완료인 행은 몇 개인지 세어 주세요. 페이지를 변경하지 말고 표시된 상태 값이 정확히 일치하는 행만 포함해 주세요."
+    },
+    {
+      "id": "f05",
+      "language": "en",
+      "category": "action",
+      "request": "On the museum collection records website, type QRY-418 into the collection search field and submit the search."
+    },
+    {
+      "id": "f06",
+      "language": "ko",
+      "category": "action",
+      "request": "실험실 장비 유지보수 웹사이트의 검색 입력란에 QRY-763을 입력하고 검색을 제출해 주세요."
+    },
+    {
+      "id": "f07",
+      "language": "en",
+      "category": "action",
+      "request": "On the public transit service incidents website, type QRY-205 into the incident search field and submit the search."
+    },
+    {
+      "id": "f08",
+      "language": "ko",
+      "category": "action",
+      "request": "박물관 소장품 기록 웹사이트의 소장품 검색 입력란에 QRY-936을 입력하고 검색을 제출해 주세요."
+    },
+    {
+      "id": "f09",
+      "language": "en",
+      "category": "analysis",
+      "request": "Using only the laboratory instrument maintenance records already acquired from this website, interpret whether recurring faults suggest a persistent maintenance problem. Cite the supporting record IDs, distinguish observations from inferences, and explain any evidence gaps without acquiring more records."
+    },
+    {
+      "id": "f10",
+      "language": "ko",
+      "category": "analysis",
+      "request": "이 웹사이트에서 이미 확보한 대중교통 운행 장애 기록만 근거로, 장애가 특정 노선에 반복되는 양상이 있는지 해석해 주세요. 근거가 되는 기록 ID를 제시하고 관찰 사실과 추론을 구분하며, 추가 기록을 조회하지 말고 증거의 한계를 설명해 주세요."
+    },
+    {
+      "id": "f11",
+      "language": "en",
+      "category": "analysis",
+      "request": "Using only the museum collection records already acquired from this website, assess how consistently the records support their stated provenance. Reference the relevant record IDs, explain documented gaps, and avoid outside research or additional page retrieval."
+    },
+    {
+      "id": "f12",
+      "language": "ko",
+      "category": "analysis",
+      "request": "이 웹사이트에서 이미 확보한 실험실 장비 유지보수 기록만 사용해, 예방 정비 이후 고장 발생 양상이 어떻게 달라졌는지 해석해 주세요. 관련 기록 ID를 근거로 제시하고 인과관계를 단정하지 말며, 추가 조회 없이 자료의 한계를 설명해 주세요."
+    }
+  ]
+}

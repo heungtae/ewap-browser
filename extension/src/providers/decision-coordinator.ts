@@ -99,31 +99,14 @@ export const decide = async (
       settings_revision: binding.revision,
     });
     options.onProgress?.();
-    const sufficiency = response.answers.evidence_sufficient;
-    if (
-      task.questions.evidence_sufficient &&
-      (sufficiency?.type !== "noul" || sufficiency.noul < 0.9)
-    ) {
-      traceDecision(`model.decision.handled:${decisionId}`, {
-        decision_id: decisionId,
-        outcome: "delegated_to_primary",
-        reason: "evidence_insufficient",
-      });
-      options.onRole?.({
-        provider_role: "primary",
-        stage: "DELEGATING",
-        phase: task.phase,
-      });
-      return undefined;
-    }
     if (
       task.questions.processor &&
-      acceptedChoice(response, "processor", 0.8) !== "JEV_DECISION"
+      acceptedChoice(response, "processor") !== "JEV_DECISION"
     ) {
       traceDecision(`model.decision.handled:${decisionId}`, {
         decision_id: decisionId,
         outcome: "delegated_to_primary",
-        reason: "primary_processor_selected_or_uncertain",
+        reason: "primary_processor_selected",
       });
       options.onRole?.({
         provider_role: "primary",

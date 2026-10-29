@@ -1,0 +1,117 @@
+import { createHash } from "node:crypto";
+import { readFile, writeFile } from "node:fs/promises";
+import { loadS27 } from "./bundle.mjs";
+import { phases } from "./multiphase-vocabulary.mjs";
+import { makeBinding, makeContext, makeFrame } from "./multiphase-fixture.mjs";
+
+const hash = (data) => createHash("sha256").update(data).digest("hex");
+const bytes = await readFile("docs/baselines/s27-multiphase/corpus.json");
+const corpusHash = hash(bytes);
+if (
+  corpusHash !==
+  "71a55f4ad24e2e5bbc7e8c19cf8dcf1c077d9bc01e4af0610d20574441c56448"
+)
+  throw new Error("MULTIPHASE_CORPUS_CHANGED");
+const corpus = JSON.parse(bytes);
+const { module: s27, protocolSourceDigest } = await loadS27();
+const key = process.env.TYPESAFE_API_KEY ?? process.env.JEV_API_KEY;
+if (!key) throw new Error("CONTROLLER_CREDENTIAL_UNAVAILABLE");
+const path = process.env.S27_MULTIPHASE_REPORT ?? "/tmp/s27-multiphase.json";
+const report = {
+  schema: "s27-multiphase/v1",
+  at: new Date().toISOString(),
+  corpusHash,
+  protocolSourceDigest,
+  runnerDigest: hash(await readFile(import.meta.filename)),
+  fixtureDigest: hash(await readFile("scripts/s27/multiphase-fixture.mjs")),
+  vocabularyDigest: hash(
+    await readFile("scripts/s27/multiphase-vocabulary.mjs"),
+  ),
+  model: "jev-1.13.0",
+  templateVersion: "controller-v2",
+  scope:
+    "separate synthetic phase observations; no browser dispatch, approval or complete task execution",
+  http: [],
+  results: [],
+  gptControllerCalls: 0,
+  browserDispatches: 0,
+  approvalFacts: 0,
+};
+const adapter = new s27.NativeJevController(
+  {
+    endpoint: "https://api.typesafe.ai/v1/systemone",
+    model: report.model,
+    modelRevision: 1,
+    apiKey: key,
+    enabled: true,
+  },
+  async (url, options) => {
+    const response = await fetch(url, options);
+    report.http.push(response.status);
+    return response;
+  },
+);
+for (const [index, item] of corpus.cases.entries()) {
+  const context = makeContext(index),
+    budget = new s27.DecisionBudget();
+  const binding = makeBinding(s27, item, context);
+  const controller = new s27.DecisionController(adapter, budget, () => context);
+  const observations = [];
+  for (const phase of phases) {
+    const { frame, expected } = makeFrame(
+      s27,
+      item,
+      index,
+      context,
+      budget,
+      phase,
+      binding,
+    );
+    const outcome = await controller.evaluate(frame);
+    const selected = frame.candidateSet.candidates.find(
+      (c) => c.id === outcome.decision?.selection,
+    );
+    const fragment = selected
+      ? s27.bindFragment(selected, binding.sources, binding.bindingContext)
+      : undefined;
+    const argument = fragment?.arguments.get("query");
+    const needsQuery = phase === "next_tool" && item.category === "action";
+    const argumentMatched =
+      !needsQuery ||
+      (argument?.status === "BOUND" &&
+        argument.value === binding.expectedValue);
+    observations.push({
+      phase,
+      expected,
+      selection: outcome.decision?.selection ?? null,
+      nativeSelection: outcome.decision?.result.answers.decision.choice ?? null,
+      outcome: outcome.outcome,
+      reason: outcome.reason ?? null,
+      binding: fragment?.status ?? null,
+      argumentMatched,
+      matched:
+        outcome.outcome === "SELECTED" &&
+        outcome.decision?.selection === expected &&
+        fragment?.status === "BOUND" &&
+        argumentMatched,
+      frameDigest: frame.digest,
+      candidateDigest: frame.candidateSet.digest,
+      counters: outcome.counters,
+    });
+  }
+  report.results.push({
+    id: item.id,
+    language: item.language,
+    order: index % 2 ? "reversed" : "forward",
+    results: observations,
+    passed: observations.every((item) => item.matched),
+  });
+  await writeFile(path, JSON.stringify(report, null, 2) + "\n");
+  console.log(
+    `${item.id}: ${observations.filter((item) => item.matched).length}/${phases.length}`,
+  );
+}
+console.log(
+  `Complete synthetic cases: ${report.results.filter((item) => item.passed).length}/${corpus.cases.length}`,
+);
+if (report.results.some((item) => !item.passed)) process.exitCode = 1;

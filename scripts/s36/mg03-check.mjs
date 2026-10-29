@@ -1,3 +1,4 @@
+import { currentPreservedSourceHashes } from "../s26-inventory.mjs";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { build } from "esbuild";
@@ -8,9 +9,7 @@ for (const entry of read("docs/baselines/s37/disposition.json").files)
     manifest.files.find((item) => item.path === entry.path),
     entry,
   );
-for (const [path, expected] of Object.entries(
-  read("docs/baselines/s27/entry.json").preservedSourceHashes,
-))
+for (const [path, expected] of Object.entries(currentPreservedSourceHashes()))
   assert.equal(digest(readFileSync(path)), expected, path);
 const sources = files().filter(
   (path) =>
@@ -48,6 +47,7 @@ console.log(
     ...validateInventory(manifest),
     modules: sources.length,
     browserBoundary: "PASS",
-    productionAndDesign: "unchanged",
+    productionAndDesign:
+      "baseline with authorized S25 source and S27 status changes",
   }),
 );

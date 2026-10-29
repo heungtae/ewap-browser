@@ -42,7 +42,7 @@ describe("S27-R03 native validation", () => {
     if (kind === "nonfinite") r.answers.decision.confidence = NaN;
     expect(() => acceptResult(f, r)).toThrow();
   });
-  it("low confidence/selected probability/sufficiency and incomplete facts stay UNKNOWN", () => {
+  it("accepts valid low-score decisions while incomplete facts stay UNKNOWN", () => {
     const f = frame();
     for (const kind of ["confidence", "probability", "sufficiency"]) {
       const r = response(f);
@@ -52,7 +52,7 @@ describe("S27-R03 native validation", () => {
         r.answers.decision.probabilities.UNKNOWN = 0.2;
       }
       if (kind === "sufficiency") r.answers.evidence_sufficient.noul = 0.89;
-      expect(acceptResult(f, r).outcome).toBe("UNKNOWN");
+      expect(acceptResult(f, r).outcome).toBe("SELECTED");
     }
     const { digest: _digest, ...p } = f;
     const incomplete = createFrame({ ...p, stateComplete: false });

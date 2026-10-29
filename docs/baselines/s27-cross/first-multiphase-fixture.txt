@@ -1,0 +1,145 @@
+import { randomUUID } from "node:crypto";
+import { phaseFacts, phaseExpected } from "./multiphase-observations.mjs";
+import { vocabulary, options } from "./multiphase-vocabulary.mjs";
+export function makeContext(item, phase, condition) {
+  return {
+    taskId: `series-${randomUUID()}`,
+    taskRevision: 1,
+    planRevision: 1,
+    graphRevision: 1,
+    evidenceRevision: 1,
+    capabilityRevision: 1,
+    cancellationGeneration: 0,
+    mode:
+      phase === "intent"
+        ? condition.intentMode
+        : item.category === "action" || phase === "recovery"
+          ? "act"
+          : "ask",
+    scopeId: "fixture-page",
+  };
+}
+export function makeBinding(s27, item, context) {
+  const bindingContext = {
+    current: context,
+    request: item.request,
+    sensitiveSpans: [],
+    admittedAt: "2026-10-29T03:00:00Z",
+    timezone: "Asia/Seoul",
+    approved: new Map(),
+    observed: new Map(),
+  };
+  const sources = new Map();
+  let expectedValue = null;
+  if (item.category === "action") {
+    const match = item.request.match(/\b(?:SKU|ORD|APT|QRY)-\d{3}\b/);
+    if (!match || match.index === undefined)
+      throw new Error("HOLDOUT_IDENTIFIER_MISSING");
+    expectedValue = match[0];
+    sources.set("query", {
+      kind: "user_span",
+      start: match.index,
+      end: match.index + match[0].length,
+      spanDigest: s27.digest(match[0]),
+      valueType: "string",
+      unit: null,
+    });
+  }
+  return { bindingContext, sources, expectedValue };
+}
+export function makeFrame(
+  s27,
+  item,
+  index,
+  context,
+  budget,
+  phase,
+  binding,
+  condition,
+) {
+  const facts = phaseFacts(item, phase, condition);
+  const expected = phaseExpected(item, phase, condition);
+  const bound = binding.sources.has("query")
+    ? s27.bindArgument(binding.sources.get("query"), binding.bindingContext)
+    : undefined;
+  if (bound && bound.status !== "BOUND") throw new Error("BINDING_INVALID");
+  const inputs = options[phase].map((id) => {
+    const search = phase === "next_tool" && id === "search_form";
+    const step = (id, tool, effect, parameters, dependencies = []) => ({
+      id,
+      tool,
+      effect,
+      parameters,
+      dependencies,
+      actionRef: `target:${id}`,
+      goalPredicateRefs: ["result"],
+      preconditionRefs: ["fresh"],
+    });
+    const steps = search
+      ? [
+          step("fill", "web.fill", "local-ui", ["query"]),
+          step("submit", "web.click", "external", [], ["fill"]),
+          step("verify", "task.verify", "read", [], ["submit"]),
+        ]
+      : phase === "next_tool"
+        ? [
+            step(
+              "read",
+              id === "read_table" ? "web.get_table_data" : "analysis.run",
+              "read",
+              [],
+            ),
+          ]
+        : [];
+    return {
+      candidate: {
+        id,
+        semanticId: id,
+        description:
+          phase === "evidence_sufficiency" && id === "ACCEPT"
+            ? "All observations required to propose the next step are present"
+            : phase === "evidence_sufficiency" && id === "REJECT"
+              ? "A required observation to propose the next step is missing"
+              : vocabulary[id],
+        source: "registered",
+        scopeId: context.scopeId,
+        modes: ["ask", "act"],
+        capabilityRefs: ["fixture"],
+        evidenceRefs: ["observation"],
+        unresolvedInputs: [],
+        bindingDigests: search && bound ? { query: bound.sourceDigest } : {},
+        steps,
+      },
+      policyPermitted: true,
+      uniqueTarget: true,
+      fresh: true,
+      userMentionMatch: 0,
+      workflowMatch: false,
+      evidenceTime: 1,
+      resolvedParameters: bound ? ["query"] : [],
+    };
+  });
+  let page = s27.enumerateCandidates(context, inputs, new Set(["fixture"]));
+  if (condition.reverse) {
+    const { id: _id, digest: _digest, ...payload } = page;
+    payload.candidates.reverse();
+    page = {
+      ...payload,
+      id: `set:${s27.digest(payload)}`,
+      digest: s27.digest(payload),
+    };
+  }
+  const frame = s27.createFrame({
+    protocol: "wca.task/v1",
+    templateVersion: "controller-v2",
+    model: "jev-1.13.0",
+    modelRevision: 1,
+    context,
+    phase,
+    candidateSet: page,
+    budgets: budget.snapshot(),
+    facts,
+    stateComplete: true,
+  });
+  return { frame, expected };
+}

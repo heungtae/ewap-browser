@@ -384,13 +384,23 @@ environment without placing the credential in a command argument or report:
 
 ```bash
 bash -ic 'S27_REPORT=/tmp/s27-live-qualification.json pnpm test:s27:live'
-pnpm check:s27:qualification /tmp/s27-live-qualification.json
+pnpm check:s27:qualification:v1 /tmp/s27-live-qualification.json
 ```
 
 Use only a trusted local shell configuration. Never print or commit the key, and
 check saved evidence for secrets before sharing it. HTTP success alone does not
 qualify the controller. The [2026-10-28 result](evidence/s27-live-2026-10-28.md)
-records the latest failed semantic gate; do not lower the frozen thresholds.
+records the historical failed numerical gate. The user subsequently removed
+the 0.9 confidence, probability and evidence-sufficiency thresholds; old
+reports retain their original results.
+
+For the separately versioned synthetic `controller-v2` evaluation, run
+`bash -ic 'pnpm test:s27:v2'`, then `pnpm check:s27:v2 /tmp/s27-v2-live.json`.
+Native label agreement and the current acceptance result are reported separately.
+The [v2 evidence](evidence/s27-v2-live-2026-10-28.md) records why this corpus
+does not establish independent real-page or production qualification.
+
+`pnpm check:s27:qualification` verifies the scoped S27 controller qualification: boundaries and unit tests, unlabeled-response handling, all original reference sequences with shared budgets and reconstructed source bindings, selected-fragment negative checks, and the pinned independently authored cross-case live report. The v1 command above preserves the historical full-run failure; it is not relabeled as a passing result. Synthetic observations do not establish actual browser execution or product integration.
 
 ## Options UI regression
 

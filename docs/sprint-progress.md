@@ -4,6 +4,19 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S27 — 2026-10-30 controller qualification
+
+**Completed within the native controller qualification scope.** [Evidence](evidence/s27-qualification-2026-10-30.md) records 96/96 live decisions across all original reference sequences, with shared per-case budgets and 16 reconstructed argument bindings, and 288/288 independently authored synthetic phase observations. The user-directed score-gate removal and ambiguous-label exclusions apply; the historical v1 failure remains recorded. Observations are synthetic; actual browser execution, task continuity and release remain S33/S36 work.
+
+## Browser Agent S27 — 2026-10-29 live evaluation continuation
+
+**In Progress.** The original v1 frozen corpus passed 2/12 complete cases after
+the user-directed numerical-gate removal. Separately authored intent cases
+passed 12/12; four selected search fragments also bound their user spans and
+rejected changed sources. The
+[evidence](evidence/s27-continuation-2026-10-29.md) records both runs and the
+remaining multi-phase and runtime acceptance scope.
+
 ## Browser Agent S36 — 2026-10-28 observed-owner restart rebind
 
 **In Progress.** [Evidence](evidence/s36-observed-restart-2026-10-28.md) records

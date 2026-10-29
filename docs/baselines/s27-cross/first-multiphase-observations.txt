@@ -1,0 +1,110 @@
+export function phaseFacts(item, phase, condition) {
+  const facts = [{ id: "user_request", value: item.request }];
+  const action = item.category === "action";
+  const analysis = item.category === "analysis";
+  if (
+    ["semantic_selection", "semantic_relation", "next_tool"].includes(phase)
+  ) {
+    facts.push({
+      id: "page_observation",
+      value:
+        "One current search form has an identifier input and a submit button. Submitting it filters the current result table. Selecting a table row opens its detail panel; the form does not open that panel.",
+    });
+  }
+  if (["semantic_selection", "semantic_relation"].includes(phase)) {
+    facts.push({
+      id: "selection_purpose",
+      value:
+        phase === "semantic_relation"
+          ? action
+            ? "Identify the relation from entering a search identifier to the displayed matching records."
+            : "Identify the relation from a displayed record row to its details."
+          : action
+            ? "Identify where the identifier in the user's request can be entered."
+            : "Identify the source containing the records referenced by the user's request.",
+    });
+  }
+  if (phase === "evidence_sufficiency") {
+    facts.push({
+      id: "decision_scope",
+      value:
+        "Assess evidence for proposing the next step only; do not assume that the user goal has been completed or any action dispatched.",
+    });
+    facts.push({
+      id: "required_observation",
+      value: action
+        ? "The next-step decision requires the user's identifier and a current unique search form. The request contains the identifier."
+        : analysis
+          ? "The next-step decision requires accessible authorized records already acquired for this request."
+          : "The next-step decision requires a current authorized table of records and the user's request. The request is present.",
+    });
+    facts.push({
+      id: "actual_observation",
+      value: action
+        ? condition.complete
+          ? "The search form and its identifier field were observed as unique, current and permitted."
+          : "No current search form or identifier field has been observed."
+        : analysis
+          ? condition.complete
+            ? "The previously acquired records are accessible and authorized for this request."
+            : "The previously acquired records are not accessible to this request."
+          : condition.complete
+            ? "A current authorized records table has been observed."
+            : "No current authorized records table has been observed.",
+    });
+  }
+  if (phase === "processor") {
+    facts.push({
+      id: "data_scope",
+      value:
+        "The user's requested records are already acquired and authorized; assess the work requested by the user.",
+    });
+  }
+  if (phase === "recovery") {
+    facts.push({
+      id: "dispatch_receipt",
+      value:
+        "For this task, a dispatched mutation has an unknown outcome; there is no proof it completed.",
+    });
+    facts.push({
+      id: "available_observation",
+      value: condition.inspect
+        ? "A permitted read-only lookup of the same dispatch receipt is available; it makes no page changes."
+        : "No permitted read-only receipt or other safe observation is available for this dispatch.",
+    });
+  }
+  if (phase === "result_acceptance") {
+    facts.push({
+      id: "acceptance_contract",
+      value:
+        "The current goal requires two independent successful receipts, one from the current document observation and one from the current result verification. Both must bind the current task and current document revision.",
+    });
+    facts.push({
+      id: "receipt_observations",
+      value: condition.complete
+        ? "The document observation and the result verifier each produced a successful receipt bound to this task and the current document revision."
+        : "The document observation produced a successful current receipt. No result-verifier receipt is available for this task and document.",
+    });
+  }
+  return facts;
+}
+export function phaseExpected(item, phase, condition) {
+  const action = item.category === "action",
+    analysis = item.category === "analysis";
+  return {
+    intent: { read: "READ", action: "ACTION", analysis: "ANALYSIS" }[
+      item.category
+    ],
+    evidence_sufficiency: condition.complete ? "ACCEPT" : "REJECT",
+    semantic_selection: action ? "SEARCH_FORM" : "RESULT_COLLECTION",
+    semantic_relation: action ? "form_filters_table" : "table_opens_detail",
+    next_tool: action
+      ? "search_form"
+      : analysis
+        ? "interpret_data"
+        : "read_table",
+    processor: analysis ? "GPT_ANALYSIS" : "RUNTIME",
+    recovery: condition.inspect ? "INSPECT" : "STOP",
+    result_acceptance: condition.complete ? "ACCEPT" : "REJECT",
+  }[phase];
+}

@@ -1,3 +1,4 @@
+import { currentPreservedSourceHashes } from "../s26-inventory.mjs";
 import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
@@ -14,9 +15,7 @@ for (const file of list.filter((p) =>
   if (file.startsWith("apps/agent-server/"))
     assert.ok(!/\bchrome\s*[.[]/.test(text), `Chrome in backend ${file}`);
 }
-for (const [file, expected] of Object.entries(
-  read("docs/baselines/s27/entry.json").preservedSourceHashes,
-))
+for (const [file, expected] of Object.entries(currentPreservedSourceHashes()))
   assert.equal(
     digest(await readFile(file)),
     expected,
@@ -111,7 +110,8 @@ console.log(
   JSON.stringify({
     result: "PASS",
     preservedUI: true,
-    productionAndDesign: "unchanged",
+    productionAndDesign:
+      "baseline with authorized S25 source and S27 status changes",
     browserModules: Object.keys(browser.metafile.inputs).length,
     backendModules: Object.keys(backend.metafile.inputs).length,
     protocolDigest: createHash("sha256")

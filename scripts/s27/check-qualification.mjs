@@ -47,11 +47,6 @@ for (const c of corpus.cases) {
     assert.equal(answer?.selection, expected);
     assert.equal(answer.nativeSelection, expected);
     assert.ok(
-      answer.nativeConfidence >= 0.9 &&
-        answer.nativeProbabilities[expected] >= 0.9 &&
-        answer.evidenceSufficiency >= 0.9,
-    );
-    assert.ok(
       answer.counters.calls <= 24 &&
         answer.counters.inputTokens <= 48000 &&
         answer.counters.outputTokens <= 4000,
