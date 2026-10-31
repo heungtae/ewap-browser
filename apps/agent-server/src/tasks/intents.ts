@@ -71,6 +71,7 @@ export class DurableIntents implements IntentJournal {
         !old ||
         old.task_id !== taskId ||
         old.digest !== receipt.preparedDigest ||
+        old.step_id !== receipt.stepId ||
         receipt.dispatchId !== `dispatch_${receipt.toolCallId}`
       )
         throw new Error("RECEIPT_CONFLICT");

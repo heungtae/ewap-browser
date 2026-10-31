@@ -329,6 +329,11 @@ test("R02 intent/receipt survive separate connections and cannot conflict", () =
       noOp: false,
       goalVerified: false,
     };
+    assert.throws(
+      () => intents.settle(task.id, { ...receipt, stepId: "other" }),
+      /RECEIPT_CONFLICT/,
+    );
+    assert.equal(intents.reconcile(task.id)[0].receipt, null);
     intents.settle(task.id, receipt);
     intents.settle(task.id, receipt);
     assert.equal(

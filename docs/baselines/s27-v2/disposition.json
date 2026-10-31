@@ -4876,6 +4876,13 @@
       "disposition": "preserve"
     },
     {
+      "path": "docs/issues/records/2026-10-31-receipt-step-binding.md",
+      "owner": "RF30",
+      "sprint": "S31",
+      "target": "S31 durable receipt step binding issue evidence",
+      "disposition": "preserve"
+    },
+    {
       "path": "extension/tests/unit/migration/s28/ipc-generation.test.ts",
       "owner": "RF30",
       "disposition": "reuse",
