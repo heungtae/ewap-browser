@@ -23,6 +23,9 @@ it("does not dispatch snapshot to a peer advertising only the older resume capab
     secret: "b".repeat(64),
   });
   try {
+    receive({ kind: "challenge", major: 1, minor: 0, nonce: "c".repeat(64) });
+    await vi.waitFor(() => expect(postMessage).toHaveBeenCalledTimes(1));
+    expect(postMessage.mock.calls[0]?.[0]).toMatchObject({ kind: "hello" });
     receive({
       kind: "ready",
       connectionId: "10000000-0000-4000-8000-000000000001",
@@ -33,7 +36,7 @@ it("does not dispatch snapshot to a peer advertising only the older resume capab
     await expect(
       bridge.request({ kind: "migration.resume.snapshot" }),
     ).rejects.toThrow("MIGRATION_UNAVAILABLE");
-    expect(postMessage).not.toHaveBeenCalled();
+    expect(postMessage).toHaveBeenCalledTimes(1);
   } finally {
     bridge.close();
   }
