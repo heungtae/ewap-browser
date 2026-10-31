@@ -4853,6 +4853,13 @@
       "target": "S28 browser generation reconnect issue evidence"
     },
     {
+      "path": "extension/tests/unit/migration/s28/ipc-generation.test.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 authenticated browser generation regression"
+    },
+    {
       "path": "docs/migration-daemon-launcher.md",
       "owner": "RF30",
       "disposition": "preserve",
