@@ -3,6 +3,7 @@ import { connect, type Socket, type Server } from "node:net";
 import { mkdtemp, chmod, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createHash } from "node:crypto";
 import { listenLocal } from "../../../../../apps/agent-server/src/ipc/server.js";
 import {
   proof,
@@ -125,6 +126,48 @@ it("authenticates over a real private Unix socket before commands and resumes by
   expect(await send("caps", { kind: "capabilities" })).toMatchObject({
     result: { taskReady: false, browserReady: false },
   });
+  const transfer = {
+    kind: "transfer.open",
+    id: "socket-transfer",
+    count: 1,
+    bytes: 1,
+    digest: createHash("sha256").update("a").digest("hex"),
+    deadline: Date.now() + 1000,
+  };
+  expect(await send("open-transfer", transfer)).toMatchObject({
+    result: { state: "opened" },
+  });
+  expect(
+    await send("chunk-transfer", {
+      kind: "transfer.chunk",
+      id: transfer.id,
+      index: 0,
+      base64: "YQ==",
+    }),
+  ).toMatchObject({ result: { state: "received" } });
+  await new Promise((resolve) => setTimeout(resolve, 1100));
+  const closed = new Promise<void>((resolve) =>
+    t.socket.once("close", () => resolve()),
+  );
+  const now = Date.now();
+  const payload = { kind: "transfer.ack", id: transfer.id, index: 0 };
+  t.socket.write(
+    encodeFrame({
+      major: 1,
+      minor: 0,
+      messageId: "late-ack",
+      connectionId: ready.connectionId,
+      connectionEpoch: ready.connectionEpoch,
+      installationId: pairing.installationId,
+      profileId: pairing.profileId,
+      sender: "extension",
+      sentAt: now,
+      deadline: now + 1000,
+      payloadDigest: digest(payload),
+      payload,
+    }),
+  );
+  await closed;
 });
 it("closes an unauthenticated command before state access", async () => {
   const t = await setup();

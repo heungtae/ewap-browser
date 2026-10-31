@@ -114,3 +114,7 @@ production packaging until these S28 acceptance gaps close.
 Native registration/reference: [Chrome Native Messaging documentation](https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging)
 was checked for per-user registration, allowed origins and launch/framing behavior.
 The application intentionally applies the stricter S28 256-KiB frame limit.
+
+## Transfer continuation — 2026-10-31
+
+Source base `4a7b67eee099ab03bdc1a02a4668b796769ac835` plus this change. `pnpm test:s28` passed 37 tests on Linux/Node 20.19.6, including a real authenticated Unix socket transfer whose ACK arrives after expiration and closes the connection. Connection-level tests also check stalled timeout, late ACK/completion rejection, ID retirement, cancellation of partial data, and a separately completed digest-verified transfer. `pnpm build:s28`, `pnpm check:s28`, and `pnpm typecheck` passed; the isolated build preserved version 0.1.117. There were no provider calls, browser dispatches or approval facts. Browser/Worker reconnection, producer stalls across processes and the other S28 acceptance gaps remain unqualified; S28 remains In Progress.

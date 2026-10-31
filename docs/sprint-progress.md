@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28 — 2026-10-31 transfer continuation
+
+**In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#transfer-continuation--2026-10-31) records authenticated Unix socket expiry and connection-level partial-transfer checks. Full browser reconnect and other S28 gates remain open.
+
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
 **In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state and requires injected controller readiness; real readiness wiring and server admission remain open.
