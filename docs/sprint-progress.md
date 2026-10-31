@@ -10,6 +10,8 @@
 
 The follow-up [ISS-20261031-002](issues/records/2026-10-31-native-handshake-order.md) enforces native challenge/proof/ready ordering; isolated Chrome/native reconnect passed, while normal-user installation and platform qualification remain open.
 
+[ISS-20261031-003](issues/records/2026-10-31-browser-generation-reconnect.md) retains the browser generation high-water mark within one authenticated session after disconnect; process restart and actual browser reconnection remain open.
+
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
 **In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state and requires injected controller readiness; real readiness wiring and server admission remain open.

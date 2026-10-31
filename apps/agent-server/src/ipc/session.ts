@@ -10,6 +10,7 @@ export class Session {
   messageId = "";
   deadline = 0;
   browserGeneration: number | undefined;
+  private lastBrowserGeneration: number | undefined;
   constructor(
     readonly pairing: Pairing,
     readonly connectionEpoch: number,
@@ -36,11 +37,12 @@ export class Session {
     this.lastSentAt = e.sentAt;
     if (e.payload.kind === "browser.connected") {
       if (
-        this.browserGeneration !== undefined &&
-        e.payload.generation <= this.browserGeneration
+        this.lastBrowserGeneration !== undefined &&
+        e.payload.generation <= this.lastBrowserGeneration
       )
         throw new Error("STALE_BROWSER");
       this.browserGeneration = e.payload.generation;
+      this.lastBrowserGeneration = e.payload.generation;
     }
     if (e.payload.kind === "browser.disconnected") this.disconnect();
     return e.payload;

@@ -2,6 +2,51 @@ import { createHash } from "node:crypto";
 import { expect, it, vi } from "vitest";
 import { capabilityHealth } from "../../../../../apps/agent-server/src/settings/health.js";
 import { ConnectionTransfers } from "../../../../../apps/agent-server/src/ipc/transfers.js";
+import {
+  Session,
+  digest,
+} from "../../../../../apps/agent-server/src/ipc/session.js";
+it("does not accept a stale browser generation after disconnect", () => {
+  const session = new Session(
+    {
+      installationId: "install",
+      profileId: "profile",
+      extensionIds: ["a".repeat(32)],
+      secret: "f".repeat(64),
+    },
+    1,
+  );
+  const send = (id: string, payload: unknown) =>
+    session.accept(
+      {
+        major: 1,
+        minor: 0,
+        messageId: id,
+        connectionId: session.connectionId,
+        connectionEpoch: 1,
+        installationId: "install",
+        profileId: "profile",
+        sender: "extension",
+        sentAt: 1,
+        deadline: 100,
+        payloadDigest: digest(payload),
+        payload,
+      },
+      2,
+    );
+  send("first", { kind: "browser.connected", generation: 2 });
+  send("disconnect", { kind: "browser.disconnected" });
+  expect(session.browserAvailable()).toBe(false);
+  expect(() =>
+    send("stale", { kind: "browser.connected", generation: 2 }),
+  ).toThrow("STALE_BROWSER");
+  expect(() =>
+    send("older", { kind: "browser.connected", generation: 1 }),
+  ).toThrow("STALE_BROWSER");
+  expect(session.browserAvailable()).toBe(false);
+  send("fresh", { kind: "browser.connected", generation: 3 });
+  expect(session.browserAvailable()).toBe(true);
+});
 const ready = {
   hostInstalled: true,
   executableValid: true,
