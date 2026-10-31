@@ -3,6 +3,7 @@ import type { Task } from "../../../../packages/task-engine/src/durable/contract
 import { receiptUncertain } from "./receipt-status.js";
 import type { TaskStore } from "./store.js";
 import { transaction } from "./database.js";
+const PAGE_SIZE = 256;
 
 function project(task: Task) {
   const history = new TaskHistory();
@@ -35,7 +36,7 @@ export function resumeTaskHistory(
     // Older retention may have removed receipts; missing evidence cannot prove no effect.
     const dispatchUnknown =
       current.attempts > intents.length || intents.some(receiptUncertain);
-    const rows = tasks.replay(taskId, owner, after);
+    const rows = tasks.replay(taskId, owner, after).slice(0, PAGE_SIZE);
     let cursor = after;
     for (const event of rows) {
       if (
@@ -48,6 +49,7 @@ export function resumeTaskHistory(
         return {
           resync: true as const,
           dispatchUnknown,
+          hasMore: false,
           cursor: current.revision,
           snapshot: project(current),
           events: [],
@@ -55,10 +57,11 @@ export function resumeTaskHistory(
       }
       cursor = event.sequence;
     }
-    if (cursor < current.revision && rows.length < 1000) {
+    if (cursor < current.revision && rows.length < PAGE_SIZE) {
       return {
         resync: true as const,
         dispatchUnknown,
+        hasMore: false,
         cursor: current.revision,
         snapshot: project(current),
         events: [],
@@ -67,6 +70,7 @@ export function resumeTaskHistory(
     return {
       resync: false as const,
       dispatchUnknown,
+      hasMore: cursor < current.revision,
       cursor,
       snapshot: null,
       events: rows.map((event) => project(event.task)),

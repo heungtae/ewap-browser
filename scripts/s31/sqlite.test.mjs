@@ -173,6 +173,7 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
 test("R05 resume pages bounded retained history without treating a full page as a gap", () =>
   fixture(({ a, db, admission }) => {
     const task = a.admit(admission);
+    task.firstFailure = "e".repeat(128);
     const append = db.prepare("INSERT INTO task_events VALUES (?,?,?)");
     for (let revision = 2; revision <= 1002; revision++) {
       task.revision = revision;
@@ -184,12 +185,17 @@ test("R05 resume pages bounded retained history without treating a full page as 
     );
     const first = resumeTaskHistory(a, task.id, "owner", 0);
     assert.equal(first.resync, false);
-    assert.equal(first.events.length, 1000);
-    assert.equal(first.cursor, 1000);
-    const last = resumeTaskHistory(a, task.id, "owner", first.cursor);
+    assert.equal(first.events.length, 256);
+    assert.equal(first.cursor, 256);
+    assert.equal(first.hasMore, true);
+    const second = resumeTaskHistory(a, task.id, "owner", first.cursor);
+    const third = resumeTaskHistory(a, task.id, "owner", second.cursor);
+    const last = resumeTaskHistory(a, task.id, "owner", third.cursor);
     assert.equal(last.resync, false);
-    assert.equal(last.events.length, 2);
+    assert.equal(last.events.length, 234);
     assert.equal(last.cursor, 1002);
+    assert.equal(last.hasMore, false);
+    assert.ok(Buffer.byteLength(JSON.stringify(first)) < 256 * 1024);
     db.prepare(
       "UPDATE task_events SET body=? WHERE task_id=? AND sequence=2",
     ).run(JSON.stringify({ ...task, id: "foreign", revision: 2 }), task.id);

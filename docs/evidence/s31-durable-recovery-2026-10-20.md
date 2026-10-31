@@ -121,7 +121,7 @@ authorize replay of uncertain dispatches.
 
 ## Owner-bound history source — 2026-10-31
 
-Source base `538ed554b` plus this continuation. An internal owner-bound SQLite history reader now returns contiguous bounded projected events or an explicit current-state snapshot when retained history has a gap. It reads under one transaction, rejects invalid cursors and conflicting event identity/revision, and excludes lease IDs and admission digests from the projection. Suspended and cancelled phases remain explicit. A full 1,000-event page is not treated as a gap. The reader creates no authority and is not wired to the S28 bridge or UI.
+Source base `538ed554b` plus this continuation. An internal owner-bound SQLite history reader now returns contiguous bounded projected events or an explicit current-state snapshot when retained history has a gap. It reads under one transaction, rejects invalid cursors and conflicting event identity/revision, and excludes lease IDs and admission digests from the projection. Suspended and cancelled phases remain explicit. The follow-up caps each page at 256 events and returns `hasMore`; a full page is not treated as a gap. The reader creates no authority and is not wired to the S28 bridge or UI.
 
 Node 22.23.2 real SQLite checks passed 10/10, including wrong owner, invalid cursor, pruned history, cancellation, suspension, 1,002-event pagination and altered event identity. `pnpm build:s31`, `pnpm test:s31`, `pnpm check:s31` and `pnpm check:s28` passed on Linux. No browser, provider or user task was exercised. S28 authoritative snapshot transport and UI application, S31 end-to-end runtime recovery and their acceptance gates remain open.
 
