@@ -17,6 +17,11 @@ export class SqliteOrchestrationStore implements OrchestrationStore {
     private owner: string,
     private leaseId: string,
     private generation: number,
+    private readiness: () => {
+      enabled: boolean;
+      configured: boolean;
+      qualified: boolean;
+    },
     private now = Date.now,
   ) {
     tasks.db.exec(`
@@ -44,10 +49,9 @@ export class SqliteOrchestrationStore implements OrchestrationStore {
     transaction(this.tasks.db, () => {
       this.fence(state);
       if (state.phase !== "admission") throw new Error("ADMISSION_REQUIRED");
-      // Readiness is checked by the trusted admission caller; this validates shape only.
       const initial = admitOrchestration(
         state.context,
-        { enabled: true, configured: true, qualified: true },
+        this.readiness(),
         state.deadline,
         this.now(),
       );

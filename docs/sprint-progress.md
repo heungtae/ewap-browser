@@ -6,7 +6,7 @@
 
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
-**In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state; controller readiness and server admission remain separate.
+**In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state and requires injected controller readiness; real readiness wiring and server admission remain open.
 
 ## Browser Agent S27 — 2026-10-30 controller qualification
 

@@ -42,12 +42,14 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       1000,
       1,
     );
+    let readiness = { enabled: true, configured: true, qualified: true };
     const a = new SqliteOrchestrationStore(
       tasks,
       task.id,
       "owner",
       lease.leaseId,
       0,
+      () => readiness,
       () => 1,
     );
     const b = new SqliteOrchestrationStore(
@@ -56,8 +58,21 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       "owner",
       lease.leaseId,
       0,
+      () => readiness,
       () => 1,
     );
+    for (const key of ["enabled", "configured", "qualified"]) {
+      readiness = {
+        enabled: true,
+        configured: true,
+        qualified: true,
+        [key]: false,
+      };
+      assert.throws(() => a.initialize(state), /CONTROLLER_UNAVAILABLE/);
+    }
+    readiness = { enabled: true, configured: true, qualified: "false" };
+    assert.throws(() => a.initialize(state), /CONTROLLER_UNAVAILABLE/);
+    readiness = { enabled: true, configured: true, qualified: true };
     for (const forged of [
       { ...state, verifiedSteps: ["forged"] },
       { ...state, turns: 1 },

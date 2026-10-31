@@ -7,7 +7,11 @@ export function admitOrchestration(
   now: number,
 ): Orchestration {
   const context = contextSchema.parse(raw);
-  if (!readiness.enabled || !readiness.configured || !readiness.qualified)
+  if (
+    readiness.enabled !== true ||
+    readiness.configured !== true ||
+    readiness.qualified !== true
+  )
     throw new Error("CONTROLLER_UNAVAILABLE");
   if (!Number.isSafeInteger(deadline) || deadline <= now)
     throw new Error("TASK_EXPIRED");
