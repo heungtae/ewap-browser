@@ -7,3 +7,5 @@ Retention and history now use the same fail-closed receipt classifier. Missing, 
 The real SQLite regression in `scripts/s31/sqlite.test.mjs` checks null, malformed, failed-verification and mismatched receipts survive cleanup and remain unknown; a bound passed receipt can be removed after the retention threshold. End-to-end browser receipt reconciliation and installed runtime behavior remain unverified.
 
 On 2026-10-31 Linux, Node 22.23.2 real SQLite tests passed 10/10; `pnpm build:s31`, `pnpm test:s31` (5/5), `pnpm check:s31`, `pnpm check:s28`, typecheck and ESLint passed. A passed verification requires an evidence digest; a mismatched call, step or prepared digest is retained as uncertain. No browser or external dispatch was performed.
+
+After commit `0036a288f`, the full unit suite passed 1,411 tests in 285 files on Node 20.19.6. Typecheck and the 423-file module-boundary check also passed. These checks do not qualify installed browser reconciliation.
