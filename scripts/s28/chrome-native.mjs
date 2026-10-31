@@ -91,7 +91,11 @@ export async function qualifyNative({
         );
       }
     }
-    await qualifySidePanel({ panel, targets, worker });
+    const sidePanelEvidence = await qualifySidePanel({
+      panel,
+      targets,
+      worker,
+    });
     const resume = await evaluate(
       panel,
       "chrome.runtime.sendMessage({kind:'resumeEvents',afterSequence:0})",
@@ -137,6 +141,7 @@ export async function qualifyNative({
       actualSidePanelAllowed: true,
       sidePanelWindowId: -1,
       sidePanelMigrationDenied: true,
+      ...sidePanelEvidence,
       taskReady: false,
     };
   } finally {

@@ -42,6 +42,33 @@ export async function qualifySidePanel({ panel, targets, worker }) {
     5000,
     "SIDE_PANEL_DOCUMENT",
   );
+  await evaluate(
+    worker,
+    `chrome.runtime.onConnect.addListener(p=>{if(p.name==='s28-context-probe'){const s=p.sender;void chrome.storage.session.set({s28PortProbe:{documentIdPresent:typeof s?.documentId==='string',tabPresent:!!s?.tab,originMatches:s?.origin==='chrome-extension://'+chrome.runtime.id}})}})`,
+  );
+  await evaluate(
+    sidePanel,
+    `(()=>{window.s28ProbePort=chrome.runtime.connect({name:'s28-context-probe'});return true})()`,
+  );
+  const portSender = await waitFor(
+    () =>
+      evaluate(
+        worker,
+        "chrome.storage.session.get('s28PortProbe').then(v=>v.s28PortProbe)",
+      ),
+    5000,
+    "SIDE_PANEL_PORT_SENDER",
+  );
+  assert.deepEqual(portSender, {
+    documentIdPresent: false,
+    tabPresent: false,
+    originMatches: true,
+  });
+  const selfWindowId = await evaluate(
+    sidePanel,
+    "chrome.windows.getCurrent().then(w=>w.id)",
+  );
+  assert.equal(selfWindowId, windowId);
   const sidePanelResponse = await evaluate(
     sidePanel,
     "chrome.runtime.sendMessage({kind:'capabilities'})",
@@ -71,4 +98,8 @@ export async function qualifySidePanel({ panel, targets, worker }) {
     panel,
     "document.querySelector('#s28-open-panel-test')?.remove()",
   );
+  return {
+    portSenderDocumentIdPresent: false,
+    selfReportedWindowMatches: true,
+  };
 }
