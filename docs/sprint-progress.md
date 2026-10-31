@@ -6,7 +6,7 @@
 
 ## Browser Agent S28 — 2026-10-31 transfer continuation
 
-**In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#transfer-continuation--2026-10-31) records authenticated Unix socket expiry, partial-transfer checks and [ISS-20261031-001](issues/records/2026-10-31-bridge-replay-snapshot.md) replay correction. Full browser reconnect and other S28 gates remain open.
+**In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#transfer-continuation--2026-10-31) records authenticated Unix socket expiry, partial-transfer checks, [ISS-20261031-001](issues/records/2026-10-31-bridge-replay-snapshot.md) replay correction and controlled Chrome/native reconnect. Full snapshot recovery and other S28 gates remain open.
 
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
