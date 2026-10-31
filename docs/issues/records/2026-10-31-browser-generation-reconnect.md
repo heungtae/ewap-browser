@@ -7,3 +7,5 @@ The session now retains a generation high-water mark while independently clearin
 `extension/tests/unit/migration/s28/health.test.ts` covers disconnect, rejection of equal and older generations, continued unavailability, and acceptance of a newer generation. Real browser reconnection and process restart semantics remain unverified; do not mark this issue resolved from the controlled test alone.
 
 On 2026-10-31 Linux/Node 20.19.6, `pnpm test:s28` passed 43 tests, the isolated build, `pnpm check:s28`, typecheck and ESLint passed. The initial boundary check rejected an oversized test module; moving the new test to an existing bounded module fixed the check. No provider call, approval or browser action was made.
+
+An additional authenticated Unix-socket fixture verifies disconnect followed by a newer generation and observes browser availability again. This tests the real socket and session implementation with synthetic browser messages, not an actual Worker restart; process-wide generation recovery remains open.

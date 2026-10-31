@@ -126,6 +126,13 @@ it("authenticates over a real private Unix socket before commands and resumes by
   expect(await send("caps", { kind: "capabilities" })).toMatchObject({
     result: { taskReady: false, browserReady: false },
   });
+  await send("reconnected", { kind: "browser.connected", generation: 2 });
+  expect(
+    await send("reconnected-caps", { kind: "capabilities" }),
+  ).toMatchObject({
+    result: { taskReady: false, browserReady: true },
+  });
+  await send("disconnected-again", { kind: "browser.disconnected" });
   const transfer = {
     kind: "transfer.open",
     id: "socket-transfer",
