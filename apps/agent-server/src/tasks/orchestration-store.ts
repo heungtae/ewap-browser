@@ -2,6 +2,7 @@ import { reduceOrchestration } from "../../../../packages/task-engine/src/orches
 import { advanceTask } from "../../../../packages/task-engine/src/orchestration/advance-task.js";
 import { admitOrchestration } from "../../../../packages/task-engine/src/orchestration/admission.js";
 import { digest } from "../../../../packages/task-engine/src/decisions/digest.js";
+import type { DecisionContext } from "../../../../packages/task-engine/src/decisions/schema.js";
 import type {
   JournalEntry,
   Orchestration,
@@ -44,6 +45,30 @@ export class SqliteOrchestrationStore implements OrchestrationStore {
       state.deadline > task.admission.deadline
     )
       throw new Error("ORCHESTRATION_BINDING_MISMATCH");
+  }
+  admit(
+    input: Pick<
+      DecisionContext,
+      "scopeId" | "graphRevision" | "evidenceRevision" | "capabilityRevision"
+    >,
+  ): Orchestration {
+    const task = this.tasks.load(this.taskId, this.owner);
+    this.tasks.assertFence(task, this.leaseId, this.generation);
+    const state = admitOrchestration(
+      {
+        ...input,
+        taskId: task.id,
+        taskRevision: 0,
+        planRevision: 0,
+        cancellationGeneration: task.generation,
+        mode: task.admission.mode,
+      },
+      this.readiness(),
+      task.admission.deadline,
+      this.now(),
+    );
+    this.initialize(state);
+    return state;
   }
   initialize(state: Orchestration): void {
     transaction(this.tasks.db, () => {

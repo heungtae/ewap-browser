@@ -7,3 +7,7 @@ The isolated S33 build, inventory check and Node 22.23.2 real SQLite test passed
 ## Readiness continuation
 
 Source base `134e394870268c0daf88457ca54617e55a84e738` plus the continuation changes: initialization now obtains readiness from a constructor-injected trusted provider and requires each flag to be exactly `true`. Real SQLite checks reject disabled, unconfigured, unqualified and malformed readiness before insertion. This dependency is not yet wired to actual provider configuration or a runtime qualification source; no product admission or live controller call is established.
+
+## Durable admission continuation — 2026-10-31
+
+Source base `ea6ac64d9941703ce423940019374737954fec69` plus this continuation. The internal store admits orchestration from an owned, leased durable task, deriving task identity, mode, cancellation generation, deadline and initial revisions from durable state. The caller supplies scope and graph/evidence/capability revisions; those are not independently qualified here. Readiness remains injected, and initialization rechecks it and the task fence before insertion. Real SQLite tests cover disabled readiness, wrong owner, stale lease, caller attempts to override derived fields, and cancellation. `pnpm build:s33`, `pnpm test:s33` (21 tests), `pnpm check:s33`, `pnpm typecheck`, ESLint and the Node 22.23.2 SQLite test passed on Linux. No provider, browser or product request route was exercised.

@@ -61,6 +61,32 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       () => readiness,
       () => 1,
     );
+    const input = {
+      scopeId: "scope",
+      graphRevision: 1,
+      evidenceRevision: 1,
+      capabilityRevision: 1,
+    };
+    const wrongOwner = new SqliteOrchestrationStore(
+      tasks,
+      task.id,
+      "other",
+      lease.leaseId,
+      0,
+      () => readiness,
+      () => 1,
+    );
+    const staleLease = new SqliteOrchestrationStore(
+      tasks,
+      task.id,
+      "owner",
+      "stale",
+      0,
+      () => readiness,
+      () => 1,
+    );
+    assert.throws(() => wrongOwner.admit(input), /TASK_OWNER/);
+    assert.throws(() => staleLease.admit(input), /LEASE_STALE/);
     for (const key of ["enabled", "configured", "qualified"]) {
       readiness = {
         enabled: true,
@@ -69,6 +95,7 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
         [key]: false,
       };
       assert.throws(() => a.initialize(state), /CONTROLLER_UNAVAILABLE/);
+      assert.throws(() => a.admit(input), /CONTROLLER_UNAVAILABLE/);
     }
     readiness = { enabled: true, configured: true, qualified: "false" };
     assert.throws(() => a.initialize(state), /CONTROLLER_UNAVAILABLE/);
@@ -89,7 +116,15 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       db.prepare("SELECT count(*) AS n FROM orchestration_states").get().n,
       0,
     );
-    a.initialize(state);
+    const admitted = a.admit({
+      ...input,
+      taskId: "foreign",
+      taskRevision: 99,
+      planRevision: 99,
+      cancellationGeneration: 99,
+      mode: "ask",
+    });
+    assert.deepEqual(admitted, state);
     assert.deepEqual(b.load(), state);
     const event = {
       expectedRevision: 0,
@@ -132,6 +167,7 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       1,
     );
     remote.cancel(task.id, "owner");
+    assert.throws(() => a.admit(input), /TASK_TERMINAL/);
     await assert.rejects(a.advance(event), /TASK_TERMINAL/);
     await assert.rejects(
       advanceTask(
