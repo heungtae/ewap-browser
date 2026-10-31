@@ -161,6 +161,14 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
         .get(task.id).n,
       0,
     );
+    task.attempts = 1;
+    a.db
+      .prepare("UPDATE tasks SET body=? WHERE id=?")
+      .run(JSON.stringify(task), task.id);
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
+      true,
+    );
   }));
 test("R05 resume pages bounded retained history without treating a full page as a gap", () =>
   fixture(({ a, db, admission }) => {

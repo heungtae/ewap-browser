@@ -27,12 +27,14 @@ export function resumeTaskHistory(
   return transaction(tasks.db, () => {
     const current = tasks.load(taskId, owner);
     if (after > current.revision) throw new Error("INVALID_CURSOR");
-    const dispatchUnknown = tasks.db
+    const intents = tasks.db
       .prepare(
         "SELECT id,digest,step_id,receipt FROM dispatch_intents WHERE task_id=?",
       )
-      .all(taskId)
-      .some(receiptUncertain);
+      .all(taskId);
+    // Older retention may have removed receipts; missing evidence cannot prove no effect.
+    const dispatchUnknown =
+      current.attempts > intents.length || intents.some(receiptUncertain);
     const rows = tasks.replay(taskId, owner, after);
     let cursor = after;
     for (const event of rows) {
