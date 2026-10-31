@@ -3754,6 +3754,13 @@
       "sprint": "S28"
     },
     {
+      "path": "docs/evidence/s28-native-handshake-2026-10-31.json",
+      "owner": "RF30",
+      "target": "S28 controlled native handshake and reconnect evidence",
+      "disposition": "preserve",
+      "sprint": "S28"
+    },
+    {
       "path": "docs/evidence/s33-initial-state-2026-10-30.md",
       "owner": "RF04",
       "target": "docs/evidence/s33-initial-state-2026-10-30.md",

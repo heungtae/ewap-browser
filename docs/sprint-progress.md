@@ -8,7 +8,7 @@
 
 **In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#transfer-continuation--2026-10-31) records authenticated Unix socket expiry, partial-transfer checks, [ISS-20261031-001](issues/records/2026-10-31-bridge-replay-snapshot.md) replay correction and controlled Chrome/native reconnect. Full snapshot recovery and other S28 gates remain open.
 
-The follow-up [ISS-20261031-002](issues/records/2026-10-31-native-handshake-order.md) enforces native challenge/proof/ready ordering; installed Chrome and platform qualification remain open.
+The follow-up [ISS-20261031-002](issues/records/2026-10-31-native-handshake-order.md) enforces native challenge/proof/ready ordering; isolated Chrome/native reconnect passed, while normal-user installation and platform qualification remain open.
 
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
