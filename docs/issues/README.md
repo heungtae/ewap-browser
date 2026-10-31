@@ -12,6 +12,7 @@
 
 | ID               | 발생일     | 이슈                                                                                                | 상태    | 최근 갱신  | 다음 작업                                                |
 | ---------------- | ---------- | --------------------------------------------------------------------------------------------------- | ------- | ---------- | -------------------------------------------------------- |
+| ISS-20261031-001 | 2026-10-31 | [Bridge replay advances past an unapplied snapshot](records/2026-10-31-bridge-replay-snapshot.md) | 검증 중 | 2026-10-31 | 단위 회귀 검증; 실제 Worker/Panel 복구와 snapshot 적용 미검증 |
 | ISS-20261025-003 | 2026-10-25 | [Migration resume source preflight](records/2026-10-25-migration-resume-source.md) | 해결 | 2026-10-25 | Composed-session source/fence/revision checks passed; installed recovery pending |
 | ISS-20261025-002 | 2026-10-25 | [Graceful stop during migration-daemon initialization](records/2026-10-25-daemon-startup-stop.md) | 해결 | 2026-10-25 | Bounded signal/probe acceptance passed; forced-death recovery unverified |
 | ISS-20261025-001 | 2026-10-25 | [Migration daemon preparation and installation exclusion](records/2026-10-25-install-daemon-coordination.md) | 해결 | 2026-10-25 | Bounded native/OS acceptance passed; deployment unverified |

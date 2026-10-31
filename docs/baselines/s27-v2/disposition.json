@@ -4818,6 +4818,13 @@
       "target": "S36 source-bound session resume preflight and evidence"
     },
     {
+      "path": "docs/issues/records/2026-10-31-bridge-replay-snapshot.md",
+      "owner": "RF30",
+      "disposition": "preserve",
+      "sprint": "S28",
+      "target": "S28 replay and snapshot recovery issue evidence"
+    },
+    {
       "path": "docs/migration-daemon-launcher.md",
       "owner": "RF30",
       "disposition": "preserve",

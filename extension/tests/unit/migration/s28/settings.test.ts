@@ -52,3 +52,78 @@ it("deduplicates replayed events and exposes disconnect instead of success", asy
   expect(client.available()).toBe(false);
   expect(statuses[0]).toContain("waiting");
 });
+it("does not skip unapplied snapshots or restore availability on later replay", async () => {
+  const requested: number[] = [];
+  const rendered: number[] = [];
+  let resync = true;
+  const client = new BridgeClient(
+    {
+      request: async (_kind, after) => {
+        requested.push(after);
+        return resync
+          ? {
+              events: [],
+              cursor: 10,
+              resync: true,
+              snapshot: { revision: 10, state: "waiting" },
+            }
+          : {
+              events: [{ sequence: 1, revision: 1, kind: "waiting" }],
+              cursor: 1,
+              resync: false,
+            };
+      },
+    },
+    (event) => rendered.push(event.sequence),
+    () => {},
+  );
+  await client.resume();
+  resync = false;
+  await client.resume();
+  expect(requested).toEqual([0, 0]);
+  expect(rendered).toEqual([]);
+  expect(client.available()).toBe(false);
+});
+it("rejects a gapped replay before rendering any partial batch", async () => {
+  const rendered: number[] = [];
+  const client = new BridgeClient(
+    {
+      request: async () => ({
+        events: [
+          { sequence: 1, revision: 1, kind: "message" },
+          { sequence: 3, revision: 3, kind: "message" },
+        ],
+        cursor: 3,
+        resync: false,
+      }),
+    },
+    (event) => rendered.push(event.sequence),
+    () => {},
+  );
+  await expect(client.resume()).rejects.toThrow("EVENT_GAP");
+  expect(rendered).toEqual([]);
+  expect(client.available()).toBe(false);
+});
+it("rejects an incorrect replay cursor and clears availability on transport failure", async () => {
+  let failure = false;
+  let mismatch = false;
+  const client = new BridgeClient(
+    {
+      request: async () => {
+        if (failure) throw new Error("DISCONNECTED");
+        return { events: [], cursor: mismatch ? 1 : 0, resync: false };
+      },
+    },
+    () => {},
+    () => {},
+  );
+  await client.resume();
+  expect(client.available()).toBe(true);
+  failure = true;
+  await expect(client.resume()).rejects.toThrow("DISCONNECTED");
+  expect(client.available()).toBe(false);
+  failure = false;
+  mismatch = true;
+  await expect(client.resume()).rejects.toThrow("EVENT_GAP");
+  expect(client.available()).toBe(false);
+});
