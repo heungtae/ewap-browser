@@ -1,8 +1,11 @@
 import type { NativePort } from "./native.js";
+import { replaySchema } from "@contextpilot/shared/bridge";
+import { z } from "zod";
 interface Sender {
   id?: string;
   url?: string;
   documentId?: string;
+  origin?: string;
 }
 export interface ExtensionContext {
   contextType: string;
@@ -14,9 +17,9 @@ export async function liveUiSender(
   extensionId: string,
   sender: Sender,
   getContexts: () => Promise<ExtensionContext[]>,
+  allowPanelBootstrap = false,
 ): Promise<boolean> {
-  if (!sender.documentId || !sender.url || sender.id !== extensionId)
-    return false;
+  if (!sender.url || sender.id !== extensionId) return false;
   const urls = [
     "sidepanel/index.html",
     "settings/index.html",
@@ -30,22 +33,76 @@ export async function liveUiSender(
     )
   )
     return false;
+  if (!sender.documentId) {
+    if (
+      !allowPanelBootstrap ||
+      sender.url.split("#")[0] !==
+        `chrome-extension://${extensionId}/sidepanel/index.html` ||
+      sender.origin !== `chrome-extension://${extensionId}`
+    )
+      return false;
+    const panels = (await getContexts()).filter(
+      (context) =>
+        context.contextType === "SIDE_PANEL" &&
+        context.documentUrl === sender.url &&
+        !!context.documentId &&
+        Number.isSafeInteger(context.windowId) &&
+        context.windowId >= -1,
+    );
+    return panels.length === 1;
+  }
   const matches = (await getContexts()).filter(
     (context) =>
       (context.contextType === "SIDE_PANEL" || context.contextType === "TAB") &&
       context.documentId === sender.documentId &&
       context.documentUrl === sender.url &&
       Number.isSafeInteger(context.windowId) &&
-      context.windowId >= 0,
+      (context.windowId >= 0 ||
+        (context.contextType === "SIDE_PANEL" && context.windowId === -1)),
   );
   return matches.length === 1;
+}
+const bootstrapCapabilities = z.strictObject({
+  taskReady: z.literal(false),
+  browserReady: z.boolean(),
+  health: z.strictObject({
+    state: z.enum([
+      "MISSING_HOST",
+      "INVALID_EXECUTABLE",
+      "INCOMPATIBLE_VERSION",
+      "UNPAIRED",
+      "SESSION_ONLY",
+      "BRIDGE_READY",
+    ]),
+    taskReady: z.literal(false),
+    browserDispatchReady: z.literal(false),
+  }),
+});
+export function unboundBootstrapResult(kind: unknown, value: unknown): unknown {
+  if (kind === "capabilities") return bootstrapCapabilities.parse(value);
+  if (kind === "resumeEvents") {
+    const result = replaySchema.parse(value);
+    if (
+      result.events.some(
+        (event) =>
+          !["browser.connected", "browser.waiting"].includes(event.kind) ||
+          event.text !== undefined,
+      )
+    )
+      throw new Error("UI_CONTEXT_REQUIRED");
+    return result;
+  }
+  throw new Error("UI_CONTEXT_REQUIRED");
 }
 export interface ChromeApi {
   runtime: {
     id: string;
     connectNative(name: string): NativePort;
     sendMessage(value: unknown): Promise<unknown>;
-    getContexts(filter: { documentIds: string[] }): Promise<ExtensionContext[]>;
+    getContexts(filter: {
+      documentIds?: string[];
+      contextTypes?: string[];
+    }): Promise<ExtensionContext[]>;
     onMessage: {
       addListener(
         callback: (

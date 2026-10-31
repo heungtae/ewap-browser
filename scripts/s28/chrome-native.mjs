@@ -4,6 +4,7 @@ import { access, copyFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { install } from "./install.mjs";
 import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
+import { qualifySidePanel } from "./chrome-sidepanel.mjs";
 export async function qualifyNative({
   profile,
   extensionId,
@@ -90,6 +91,7 @@ export async function qualifyNative({
         );
       }
     }
+    await qualifySidePanel({ panel, targets, worker });
     const resume = await evaluate(
       panel,
       "chrome.runtime.sendMessage({kind:'resumeEvents',afterSequence:0})",
@@ -132,6 +134,9 @@ export async function qualifyNative({
       nativeHandshake: true,
       foreignDocumentDenied: true,
       settingsAndProfilesAllowed: true,
+      actualSidePanelAllowed: true,
+      sidePanelWindowId: -1,
+      sidePanelMigrationDenied: true,
       taskReady: false,
     };
   } finally {

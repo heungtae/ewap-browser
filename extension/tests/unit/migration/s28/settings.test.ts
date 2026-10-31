@@ -4,51 +4,6 @@ import {
   SettingsService,
 } from "../../../../../apps/agent-server/src/settings/service.js";
 import { BridgeClient } from "../../../../../apps/chrome-extension/src/bridge/client.js";
-import { liveUiSender } from "../../../../../apps/chrome-extension/src/bridge/api.js";
-it("binds bridge requests to exactly one live extension document and window", async () => {
-  const id = "a".repeat(32);
-  const sender = {
-    id,
-    url: `chrome-extension://${id}/sidepanel/index.html`,
-    documentId: "doc",
-  };
-  const context = {
-    contextType: "SIDE_PANEL",
-    documentUrl: sender.url,
-    documentId: "doc",
-    windowId: 1,
-  };
-  expect(await liveUiSender(id, sender, async () => [context])).toBe(true);
-  expect(
-    await liveUiSender(id, sender, async () => [
-      { ...context, contextType: "TAB" },
-    ]),
-  ).toBe(true);
-  expect(await liveUiSender(id, sender, async () => [])).toBe(false);
-  expect(await liveUiSender(id, sender, async () => [context, context])).toBe(
-    false,
-  );
-  expect(
-    await liveUiSender(id, { ...sender, documentId: "old" }, async () => [
-      context,
-    ]),
-  ).toBe(false);
-  expect(
-    await liveUiSender(id, sender, async () => [{ ...context, windowId: -1 }]),
-  ).toBe(false);
-  expect(
-    await liveUiSender(id, sender, async () => [
-      { ...context, contextType: "BACKGROUND" },
-    ]),
-  ).toBe(false);
-  expect(
-    await liveUiSender(
-      id,
-      { ...sender, url: `chrome-extension://${id}/other.html` },
-      async () => [context],
-    ),
-  ).toBe(false);
-});
 it("keeps secrets session-only and blank writes confined to identity", async () => {
   const secrets = new SessionSecrets();
   const settings = new SettingsService(secrets);

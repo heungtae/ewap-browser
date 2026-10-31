@@ -3798,6 +3798,13 @@
       "sprint": "S28"
     },
     {
+      "path": "docs/evidence/s28-real-sidepanel-2026-10-31.json",
+      "owner": "RF30",
+      "target": "S28 actual Chrome side panel bootstrap evidence",
+      "disposition": "preserve",
+      "sprint": "S28"
+    },
+    {
       "path": "docs/evidence/s33-initial-state-2026-10-30.md",
       "owner": "RF04",
       "target": "docs/evidence/s33-initial-state-2026-10-30.md",
@@ -4904,11 +4911,25 @@
       "disposition": "preserve"
     },
     {
+      "path": "docs/issues/records/2026-10-31-sidepanel-context-window.md",
+      "owner": "RF30",
+      "sprint": "S28",
+      "target": "S28 real Chrome side panel sender context issue evidence",
+      "disposition": "preserve"
+    },
+    {
       "path": "extension/tests/unit/migration/s28/ipc-generation.test.ts",
       "owner": "RF30",
       "disposition": "reuse",
       "sprint": "S28",
       "target": "S28 authenticated browser generation regression"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/bootstrap.test.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 restricted unbound side-panel bootstrap regression"
     },
     {
       "path": "docs/migration-daemon-launcher.md",
@@ -13587,6 +13608,13 @@
       "disposition": "replace",
       "sprint": "S28",
       "target": "package tests, shared fixtures/integration/evals/e2e, updated operational docs"
+    },
+    {
+      "path": "scripts/s28/chrome-sidepanel.mjs",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 actual Chrome side-panel bootstrap verification"
     },
     {
       "path": "scripts/s28/chrome-smoke.mjs",

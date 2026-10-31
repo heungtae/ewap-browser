@@ -1,7 +1,7 @@
 import "./schema-config.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
-import { api, liveUiSender } from "./api.js";
+import { api, liveUiSender, unboundBootstrapResult } from "./api.js";
 import { NativeBridge } from "./native.js";
 let connection: Promise<NativeBridge> | undefined;
 function connect(): Promise<NativeBridge> {
@@ -74,14 +74,34 @@ api?.runtime.onInstalled.addListener(() => {
   void api!.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
 api?.runtime.onMessage.addListener((value, sender, reply) => {
-  void liveUiSender(api!.runtime.id, sender, () =>
-    api!.runtime.getContexts({ documentIds: [sender.documentId ?? ""] }),
+  const kind =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>).kind
+      : undefined;
+  const bootstrap = kind === "capabilities" || kind === "resumeEvents";
+  void liveUiSender(
+    api!.runtime.id,
+    sender,
+    () =>
+      api!.runtime.getContexts(
+        sender.documentId
+          ? { documentIds: [sender.documentId] }
+          : { contextTypes: ["SIDE_PANEL"] },
+      ),
+    bootstrap,
   )
     .then((trusted) => {
       if (!trusted) throw new Error("UI_SENDER_DENIED");
       return request(value);
     })
-    .then((result) => reply({ ok: true, result }))
+    .then((result) =>
+      reply({
+        ok: true,
+        result: sender.documentId
+          ? result
+          : unboundBootstrapResult(kind, result),
+      }),
+    )
     .catch(() => reply({ ok: false, error: "BACKEND_UNAVAILABLE" }));
   return true;
 });
