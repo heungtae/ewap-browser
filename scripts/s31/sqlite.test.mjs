@@ -130,6 +130,16 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
       resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
       false,
     );
+    a.db
+      .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
+      .run(
+        JSON.stringify({ ...receipt, verification: "passed", stepId: "other" }),
+        task.id,
+      );
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
+      true,
+    );
     assert.equal(
       resumeTaskHistory(a, task.id, "owner", task.revision).resync,
       false,

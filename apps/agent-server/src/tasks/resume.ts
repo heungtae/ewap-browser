@@ -28,13 +28,18 @@ export function resumeTaskHistory(
     const current = tasks.load(taskId, owner);
     if (after > current.revision) throw new Error("INVALID_CURSOR");
     const dispatchUnknown = tasks.db
-      .prepare("SELECT receipt FROM dispatch_intents WHERE task_id=?")
+      .prepare(
+        "SELECT id,digest,step_id,receipt FROM dispatch_intents WHERE task_id=?",
+      )
       .all(taskId)
       .some((row) => {
         if (!row.receipt) return true;
         try {
           const receipt = receiptSchema.parse(JSON.parse(String(row.receipt)));
           return (
+            receipt.dispatchId !== row.id ||
+            receipt.preparedDigest !== row.digest ||
+            receipt.stepId !== row.step_id ||
             receipt.dispatch === "reserved" ||
             receipt.dispatch === "unknown" ||
             (receipt.dispatch === "dispatched" &&
