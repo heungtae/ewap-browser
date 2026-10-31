@@ -61,6 +61,7 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
     assert.equal(replay.resync, false);
     assert.equal(replay.cursor, task.revision);
     assert.equal(replay.events.length, task.revision);
+    assert.equal(replay.dispatchUnknown, false);
     assert.equal(JSON.stringify(replay).includes(task.leaseId), false);
     assert.throws(
       () => resumeTaskHistory(a, task.id, "other", 0),
@@ -76,16 +77,57 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
       "SUSPENDED",
     );
     task = a.cancel(task.id, "owner");
+    a.db
+      .prepare("INSERT INTO dispatch_intents VALUES (?,?,?,?,NULL)")
+      .run("dispatch_uncertain", task.id, "a".repeat(64), "step");
     tick(receiptRetentionMs + 60000);
     pruneTerminalDetails(a, now());
     const resumed = resumeTaskHistory(a, task.id, "owner", 0);
     assert.equal(resumed.resync, true);
+    assert.equal(resumed.dispatchUnknown, true);
     assert.equal(resumed.cursor, task.revision);
     assert.deepEqual(resumed.events, []);
     assert.equal(resumed.snapshot.phase, "cancelled");
     assert.equal(resumed.snapshot.state, "TERMINAL");
     assert.equal(
       JSON.stringify(resumed).includes(task.admission.digest),
+      false,
+    );
+    a.db
+      .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
+      .run("malformed", task.id);
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
+      true,
+    );
+    const receipt = {
+      schema: "wca.tool/v1",
+      kind: "receipt",
+      toolCallId: "call",
+      tool: "web.click",
+      stepId: "step",
+      preparedDigest: "a".repeat(64),
+      dispatchId: "dispatch_uncertain",
+      dispatch: "dispatched",
+      commands: 1,
+      verification: "failed",
+      evidenceDigest: null,
+      error: null,
+      noOp: false,
+      goalVerified: false,
+    };
+    a.db
+      .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
+      .run(JSON.stringify(receipt), task.id);
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
+      true,
+    );
+    a.db
+      .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
+      .run(JSON.stringify({ ...receipt, verification: "passed" }), task.id);
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
       false,
     );
     assert.equal(

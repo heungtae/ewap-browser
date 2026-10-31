@@ -1,5 +1,6 @@
 import { TaskHistory } from "../../../../packages/task-engine/src/durable/presentation.js";
 import type { Task } from "../../../../packages/task-engine/src/durable/contracts.js";
+import { receiptSchema } from "../../../../packages/tool-registry/src/contracts.js";
 import type { TaskStore } from "./store.js";
 import { transaction } from "./database.js";
 
@@ -26,6 +27,23 @@ export function resumeTaskHistory(
   return transaction(tasks.db, () => {
     const current = tasks.load(taskId, owner);
     if (after > current.revision) throw new Error("INVALID_CURSOR");
+    const dispatchUnknown = tasks.db
+      .prepare("SELECT receipt FROM dispatch_intents WHERE task_id=?")
+      .all(taskId)
+      .some((row) => {
+        if (!row.receipt) return true;
+        try {
+          const receipt = receiptSchema.parse(JSON.parse(String(row.receipt)));
+          return (
+            receipt.dispatch === "reserved" ||
+            receipt.dispatch === "unknown" ||
+            (receipt.dispatch === "dispatched" &&
+              receipt.verification !== "passed")
+          );
+        } catch {
+          return true;
+        }
+      });
     const rows = tasks.replay(taskId, owner, after);
     let cursor = after;
     for (const event of rows) {
@@ -38,6 +56,7 @@ export function resumeTaskHistory(
       if (event.sequence !== cursor + 1) {
         return {
           resync: true as const,
+          dispatchUnknown,
           cursor: current.revision,
           snapshot: project(current),
           events: [],
@@ -48,6 +67,7 @@ export function resumeTaskHistory(
     if (cursor < current.revision && rows.length < 1000) {
       return {
         resync: true as const,
+        dispatchUnknown,
         cursor: current.revision,
         snapshot: project(current),
         events: [],
@@ -55,6 +75,7 @@ export function resumeTaskHistory(
     }
     return {
       resync: false as const,
+      dispatchUnknown,
       cursor,
       snapshot: null,
       events: rows.map((event) => project(event.task)),
