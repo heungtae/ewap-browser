@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 import { install } from "./install.mjs";
 import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
 import { qualifySidePanel } from "./chrome-sidepanel.mjs";
+import { qualifyMultiplePanels } from "./chrome-multiwindow.mjs";
 export async function qualifyNative({
   profile,
   extensionId,
@@ -91,8 +92,14 @@ export async function qualifyNative({
         );
       }
     }
-    const sidePanelEvidence = await qualifySidePanel({
+    const { target: sidePanel, ...sidePanelEvidence } = await qualifySidePanel({
       panel,
+      targets,
+      worker,
+    });
+    const multiplePanelEvidence = await qualifyMultiplePanels({
+      panel,
+      sidePanel,
       targets,
       worker,
     });
@@ -142,6 +149,7 @@ export async function qualifyNative({
       sidePanelWindowId: -1,
       sidePanelMigrationDenied: true,
       ...sidePanelEvidence,
+      ...multiplePanelEvidence,
       taskReady: false,
     };
   } finally {

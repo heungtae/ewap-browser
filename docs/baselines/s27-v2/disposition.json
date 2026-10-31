@@ -3819,6 +3819,13 @@
       "sprint": "S28"
     },
     {
+      "path": "docs/evidence/s28-sidepanel-multiwindow-2026-10-31.json",
+      "owner": "RF30",
+      "target": "S28 Chrome side panel multi-window isolation evidence",
+      "disposition": "preserve",
+      "sprint": "S28"
+    },
+    {
       "path": "docs/evidence/s33-initial-state-2026-10-30.md",
       "owner": "RF04",
       "target": "docs/evidence/s33-initial-state-2026-10-30.md",
@@ -13629,6 +13636,13 @@
       "disposition": "reuse",
       "sprint": "S28",
       "target": "S28 actual Chrome side-panel bootstrap verification"
+    },
+    {
+      "path": "scripts/s28/chrome-multiwindow.mjs",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 actual Chrome multi-window fail-closed verification"
     },
     {
       "path": "scripts/s28/chrome-smoke.mjs",

@@ -104,6 +104,7 @@ export async function qualifySidePanel({ panel, targets, worker }) {
     "document.querySelector('#s28-open-panel-test')?.remove()",
   );
   return {
+    target: sidePanel,
     portSenderDocumentIdPresent: false,
     selfReportedWindowMatches: true,
     sidePanelWindowFilterCount: 0,
