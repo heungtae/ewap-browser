@@ -5,6 +5,15 @@ export async function qualifySidePanel({ panel, targets, worker }) {
     panel,
     "chrome.windows.getCurrent().then(w=>w.id)",
   );
+  const openEventSupported = await evaluate(
+    worker,
+    "!!chrome.sidePanel.onOpened",
+  );
+  if (openEventSupported)
+    await evaluate(
+      worker,
+      `chrome.sidePanel.onOpened.addListener(info=>{void chrome.storage.session.set({s28OpenProbe:{windowMatches:info.windowId===${Number(windowId)},documentIdPresent:typeof info.documentId==='string'}})})`,
+    );
   await evaluate(
     panel,
     `(()=>{const button=document.createElement('button');button.id='s28-open-panel-test';button.textContent='test';button.style='position:fixed;left:0;top:0;z-index:2147483647';button.onclick=()=>chrome.sidePanel.open({windowId:${Number(windowId)}}).then(()=>window.s28PanelOpen='opened').catch(e=>window.s28PanelOpen=String(e));document.body.append(button);return true})()`,
@@ -29,6 +38,21 @@ export async function qualifySidePanel({ panel, targets, worker }) {
     "SIDE_PANEL_OPEN",
   );
   assert.equal(opened, "opened");
+  if (openEventSupported) {
+    const openedEvent = await waitFor(
+      () =>
+        evaluate(
+          worker,
+          "chrome.storage.session.get('s28OpenProbe').then(v=>v.s28OpenProbe)",
+        ),
+      5000,
+      "SIDE_PANEL_OPENED_EVENT",
+    );
+    assert.deepEqual(openedEvent, {
+      windowMatches: true,
+      documentIdPresent: false,
+    });
+  }
   const sidePanel = await waitFor(
     async () =>
       (await targets()).find(
@@ -108,5 +132,9 @@ export async function qualifySidePanel({ panel, targets, worker }) {
     portSenderDocumentIdPresent: false,
     selfReportedWindowMatches: true,
     sidePanelWindowFilterCount: 0,
+    openEventSupported,
+    ...(openEventSupported
+      ? { openEventWindowMatches: true, openEventDocumentIdPresent: false }
+      : {}),
   };
 }
