@@ -96,6 +96,7 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
     a.db
       .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
       .run("malformed", task.id);
+    pruneTerminalDetails(a, now());
     assert.equal(
       resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
       true,
@@ -103,7 +104,7 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
     const receipt = {
       schema: "wca.tool/v1",
       kind: "receipt",
-      toolCallId: "call",
+      toolCallId: "uncertain",
       tool: "web.click",
       stepId: "step",
       preparedDigest: "a".repeat(64),
@@ -111,7 +112,7 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
       dispatch: "dispatched",
       commands: 1,
       verification: "failed",
-      evidenceDigest: null,
+      evidenceDigest: "d".repeat(64),
       error: null,
       noOp: false,
       goalVerified: false,
@@ -119,6 +120,7 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
     a.db
       .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
       .run(JSON.stringify(receipt), task.id);
+    pruneTerminalDetails(a, now());
     assert.equal(
       resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
       true,
@@ -140,9 +142,24 @@ test("R05 owner-bound resume detects pruned history and returns a safe snapshot"
       resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
       true,
     );
+    pruneTerminalDetails(a, now());
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", 0).dispatchUnknown,
+      true,
+    );
     assert.equal(
       resumeTaskHistory(a, task.id, "owner", task.revision).resync,
       false,
+    );
+    a.db
+      .prepare("UPDATE dispatch_intents SET receipt=? WHERE task_id=?")
+      .run(JSON.stringify({ ...receipt, verification: "passed" }), task.id);
+    pruneTerminalDetails(a, now());
+    assert.equal(
+      a.db
+        .prepare("SELECT count(*) AS n FROM dispatch_intents WHERE task_id=?")
+        .get(task.id).n,
+      0,
     );
   }));
 test("R05 resume pages bounded retained history without treating a full page as a gap", () =>

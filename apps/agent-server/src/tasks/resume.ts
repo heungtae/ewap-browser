@@ -1,6 +1,6 @@
 import { TaskHistory } from "../../../../packages/task-engine/src/durable/presentation.js";
 import type { Task } from "../../../../packages/task-engine/src/durable/contracts.js";
-import { receiptSchema } from "../../../../packages/tool-registry/src/contracts.js";
+import { receiptUncertain } from "./receipt-status.js";
 import type { TaskStore } from "./store.js";
 import { transaction } from "./database.js";
 
@@ -32,23 +32,7 @@ export function resumeTaskHistory(
         "SELECT id,digest,step_id,receipt FROM dispatch_intents WHERE task_id=?",
       )
       .all(taskId)
-      .some((row) => {
-        if (!row.receipt) return true;
-        try {
-          const receipt = receiptSchema.parse(JSON.parse(String(row.receipt)));
-          return (
-            receipt.dispatchId !== row.id ||
-            receipt.preparedDigest !== row.digest ||
-            receipt.stepId !== row.step_id ||
-            receipt.dispatch === "reserved" ||
-            receipt.dispatch === "unknown" ||
-            (receipt.dispatch === "dispatched" &&
-              receipt.verification !== "passed")
-          );
-        } catch {
-          return true;
-        }
-      });
+      .some(receiptUncertain);
     const rows = tasks.replay(taskId, owner, after);
     let cursor = after;
     for (const event of rows) {

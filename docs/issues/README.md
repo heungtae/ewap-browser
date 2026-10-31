@@ -12,6 +12,7 @@
 
 | ID               | 발생일     | 이슈                                                                                                | 상태    | 최근 갱신  | 다음 작업                                                |
 | ---------------- | ---------- | --------------------------------------------------------------------------------------------------- | ------- | ---------- | -------------------------------------------------------- |
+| ISS-20261031-004 | 2026-10-31 | [Retention removed unsettled dispatch receipts](records/2026-10-31-uncertain-receipt-retention.md) | 검증 중 | 2026-10-31 | SQLite 회귀 검증; 실제 브라우저 영수증 복구 검증 남음 |
 | ISS-20261031-003 | 2026-10-31 | [Browser generation reused after disconnect](records/2026-10-31-browser-generation-reconnect.md) | 검증 중 | 2026-10-31 | 인증 소켓 음성 검증 PASS; 실제 Worker·프로세스 재시작 검증 남음 |
 | ISS-20261031-002 | 2026-10-31 | [Native bridge handshake ordering](records/2026-10-31-native-handshake-order.md) | 검증 중 | 2026-10-31 | 격리 Chrome 정상 연결 PASS; 일반 사용자 설치·플랫폼 검증 남음 |
 | ISS-20261031-001 | 2026-10-31 | [Bridge replay advances past an unapplied snapshot](records/2026-10-31-bridge-replay-snapshot.md) | 검증 중 | 2026-10-31 | 단위 회귀 검증; 실제 Worker/Panel 복구와 snapshot 적용 미검증 |

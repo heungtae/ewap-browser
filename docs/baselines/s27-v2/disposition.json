@@ -758,6 +758,14 @@
       "reason": "Owner-bound task history replay and explicit snapshot source"
     },
     {
+      "path": "apps/agent-server/src/tasks/receipt-status.ts",
+      "owner": "RF05",
+      "sprint": "S31",
+      "target": "apps/agent-server/src/tasks/receipt-status.ts",
+      "disposition": "reuse",
+      "reason": "Conservative dispatch receipt classification for recovery and retention"
+    },
+    {
       "path": "apps/chrome-extension/assets/icons/contextpilot-128.png",
       "owner": "RF23",
       "disposition": "preserve",
@@ -4859,6 +4867,13 @@
       "disposition": "preserve",
       "sprint": "S28",
       "target": "S28 browser generation reconnect issue evidence"
+    },
+    {
+      "path": "docs/issues/records/2026-10-31-uncertain-receipt-retention.md",
+      "owner": "RF30",
+      "sprint": "S31",
+      "target": "S31 uncertain dispatch receipt retention issue evidence",
+      "disposition": "preserve"
     },
     {
       "path": "extension/tests/unit/migration/s28/ipc-generation.test.ts",

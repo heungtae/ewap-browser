@@ -14,6 +14,8 @@ The follow-up [ISS-20261031-002](issues/records/2026-10-31-native-handshake-orde
 
 An [S31 history-source prerequisite](evidence/s31-durable-recovery-2026-10-20.md#owner-bound-history-source--2026-10-31) supplies owner-bound event pages or an explicit snapshot after retention gaps. It is not yet connected to the S28 bridge or presentation.
 
+[ISS-20261031-004](issues/records/2026-10-31-uncertain-receipt-retention.md) prevents terminal retention from deleting uncertain dispatch receipts; installed browser reconciliation remains open.
+
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
 **In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state and requires injected controller readiness; real readiness wiring and server admission remain open.

@@ -4,6 +4,7 @@ import {
 } from "../../../../packages/task-engine/src/durable/index.js";
 import { transaction } from "./database.js";
 import { TaskStore } from "./store.js";
+import { receiptUncertain } from "./receipt-status.js";
 export const receiptRetentionMs = 30 * 24 * 60 * 60 * 1000;
 export function pruneTerminalDetails(tasks: TaskStore, now: number): number {
   return transaction(tasks.db, () => {
@@ -21,11 +22,16 @@ export function pruneTerminalDetails(tasks: TaskStore, now: number): number {
       )
         continue;
       // Retain the admission tombstone forever so lost ACKs/old IDs never reopen.
-      tasks.db
+      for (const intent of tasks.db
         .prepare(
-          "DELETE FROM dispatch_intents WHERE task_id=? AND receipt IS NOT NULL",
+          "SELECT id,digest,step_id,receipt FROM dispatch_intents WHERE task_id=?",
         )
-        .run(task.id);
+        .all(task.id)) {
+        if (!receiptUncertain(intent))
+          tasks.db
+            .prepare("DELETE FROM dispatch_intents WHERE task_id=? AND id=?")
+            .run(task.id, String(intent.id));
+      }
       tasks.db
         .prepare("DELETE FROM task_events WHERE task_id=? AND sequence<?")
         .run(task.id, task.revision);
