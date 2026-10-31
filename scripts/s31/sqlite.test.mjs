@@ -9,6 +9,7 @@ import {
   DurableIntents,
   pruneTerminalDetails,
   receiptRetentionMs,
+  resumeTaskHistory,
 } from "../../dist/s31/tasks.mjs";
 import { TaskHistory } from "../../dist/s31/engine.mjs";
 function fixture(run) {
@@ -51,6 +52,75 @@ const event = (type, code = null) => ({
   code,
   correlationId: "correlation",
 });
+test("R05 owner-bound resume detects pruned history and returns a safe snapshot", () =>
+  fixture(({ a, admission, tick, now }) => {
+    let task = a.admit(admission);
+    task = a.claim(task.id, "owner", task.revision);
+    task = advance(a, task, "started");
+    const replay = resumeTaskHistory(a, task.id, "owner", 0);
+    assert.equal(replay.resync, false);
+    assert.equal(replay.cursor, task.revision);
+    assert.equal(replay.events.length, task.revision);
+    assert.equal(JSON.stringify(replay).includes(task.leaseId), false);
+    assert.throws(
+      () => resumeTaskHistory(a, task.id, "other", 0),
+      /TASK_OWNER/,
+    );
+    assert.throws(
+      () => resumeTaskHistory(a, task.id, "owner", task.revision + 1),
+      /INVALID_CURSOR/,
+    );
+    task = advance(a, task, "suspended");
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", task.revision - 1).events[0].state,
+      "SUSPENDED",
+    );
+    task = a.cancel(task.id, "owner");
+    tick(receiptRetentionMs + 60000);
+    pruneTerminalDetails(a, now());
+    const resumed = resumeTaskHistory(a, task.id, "owner", 0);
+    assert.equal(resumed.resync, true);
+    assert.equal(resumed.cursor, task.revision);
+    assert.deepEqual(resumed.events, []);
+    assert.equal(resumed.snapshot.phase, "cancelled");
+    assert.equal(resumed.snapshot.state, "TERMINAL");
+    assert.equal(
+      JSON.stringify(resumed).includes(task.admission.digest),
+      false,
+    );
+    assert.equal(
+      resumeTaskHistory(a, task.id, "owner", task.revision).resync,
+      false,
+    );
+  }));
+test("R05 resume pages bounded retained history without treating a full page as a gap", () =>
+  fixture(({ a, db, admission }) => {
+    const task = a.admit(admission);
+    const append = db.prepare("INSERT INTO task_events VALUES (?,?,?)");
+    for (let revision = 2; revision <= 1002; revision++) {
+      task.revision = revision;
+      append.run(task.id, revision, JSON.stringify(task));
+    }
+    db.prepare("UPDATE tasks SET body=? WHERE id=?").run(
+      JSON.stringify(task),
+      task.id,
+    );
+    const first = resumeTaskHistory(a, task.id, "owner", 0);
+    assert.equal(first.resync, false);
+    assert.equal(first.events.length, 1000);
+    assert.equal(first.cursor, 1000);
+    const last = resumeTaskHistory(a, task.id, "owner", first.cursor);
+    assert.equal(last.resync, false);
+    assert.equal(last.events.length, 2);
+    assert.equal(last.cursor, 1002);
+    db.prepare(
+      "UPDATE task_events SET body=? WHERE task_id=? AND sequence=2",
+    ).run(JSON.stringify({ ...task, id: "foreign", revision: 2 }), task.id);
+    assert.throws(
+      () => resumeTaskHistory(a, task.id, "owner", 1),
+      /EVENT_CONFLICT/,
+    );
+  }));
 function advance(a, task, type, attempt = false, code = null) {
   return a.advance(
     task.id,

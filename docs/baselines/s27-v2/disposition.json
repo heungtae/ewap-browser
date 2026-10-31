@@ -750,6 +750,14 @@
       "reason": "S31 durable task/recovery implementation or verification artifact"
     },
     {
+      "path": "apps/agent-server/src/tasks/resume.ts",
+      "owner": "RF05",
+      "sprint": "S31",
+      "target": "apps/agent-server/src/tasks/resume.ts",
+      "disposition": "reuse",
+      "reason": "Owner-bound task history replay and explicit snapshot source"
+    },
+    {
       "path": "apps/chrome-extension/assets/icons/contextpilot-128.png",
       "owner": "RF23",
       "disposition": "preserve",
