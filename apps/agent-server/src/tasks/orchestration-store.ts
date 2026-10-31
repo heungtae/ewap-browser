@@ -1,6 +1,7 @@
 import { reduceOrchestration } from "../../../../packages/task-engine/src/orchestration/reduce.js";
 import { advanceTask } from "../../../../packages/task-engine/src/orchestration/advance-task.js";
 import { admitOrchestration } from "../../../../packages/task-engine/src/orchestration/admission.js";
+import { OrchestrationHistory } from "../../../../packages/task-engine/src/orchestration/presentation.js";
 import { digest } from "../../../../packages/task-engine/src/decisions/digest.js";
 import type { DecisionContext } from "../../../../packages/task-engine/src/decisions/schema.js";
 import type {
@@ -95,6 +96,24 @@ export class SqliteOrchestrationStore implements OrchestrationStore {
     const state = JSON.parse(String(row.body)) as Orchestration;
     this.fence(state);
     return state;
+  }
+  presentation() {
+    return transaction(this.tasks.db, () => {
+      const task = this.tasks.load(this.taskId, this.owner);
+      const row = this.tasks.db
+        .prepare("SELECT body FROM orchestration_states WHERE task_id=?")
+        .get(this.taskId);
+      if (!row) throw new Error("ORCHESTRATION_UNAVAILABLE");
+      const state = JSON.parse(String(row.body)) as Orchestration;
+      if (
+        state.context.taskId !== task.id ||
+        state.context.mode !== task.admission.mode
+      )
+        throw new Error("ORCHESTRATION_BINDING_MISMATCH");
+      const history = new OrchestrationHistory();
+      history.accept(state);
+      return { task: history.view(task.id), durablePhase: task.phase };
+    });
   }
   // Internal trusted callers supply the transition; persisted state is authoritative.
   async advance(event: Transition): Promise<Orchestration> {

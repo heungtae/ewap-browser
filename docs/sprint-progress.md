@@ -8,7 +8,7 @@
 
 **In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state and requires injected controller readiness; real readiness wiring and server admission remain open.
 
-The 2026-10-31 continuation adds internal admission from owned durable task state. Product routing, real readiness configuration and browser execution remain open.
+The 2026-10-31 continuations add internal admission from owned durable task state and owner-bound persisted presentation with a separate durable phase. Product routing, real readiness configuration, actual UI reconnect and browser execution remain open.
 
 ## Browser Agent S27 — 2026-10-30 controller qualification
 

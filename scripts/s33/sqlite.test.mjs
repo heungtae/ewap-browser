@@ -126,6 +126,21 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
     });
     assert.deepEqual(admitted, state);
     assert.deepEqual(b.load(), state);
+    assert.throws(() => wrongOwner.presentation(), /TASK_OWNER/);
+    assert.deepEqual(a.presentation(), {
+      task: {
+        taskId: task.id,
+        revision: 0,
+        phase: "admission",
+        outcome: "PENDING",
+        firstFailure: null,
+        waitingFor: null,
+        verifiedSteps: [],
+        dispatchUnknown: false,
+        terminal: false,
+      },
+      durablePhase: "accepted",
+    });
     const event = {
       expectedRevision: 0,
       next: "intent_classification",
@@ -167,6 +182,8 @@ test("S33 atomic journal, concurrent CAS, rollback and Stop fencing", async () =
       1,
     );
     remote.cancel(task.id, "owner");
+    assert.equal(a.presentation().durablePhase, "cancelled");
+    assert.equal(a.presentation().task.phase, "intent_classification");
     assert.throws(() => a.admit(input), /TASK_TERMINAL/);
     await assert.rejects(a.advance(event), /TASK_TERMINAL/);
     await assert.rejects(
