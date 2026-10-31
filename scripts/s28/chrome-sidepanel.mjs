@@ -94,6 +94,11 @@ export async function qualifySidePanel({ panel, targets, worker }) {
   );
   assert.equal(contexts.length, 1);
   assert.equal(contexts[0].windowId, -1);
+  const filteredContexts = await evaluate(
+    worker,
+    `chrome.runtime.getContexts({contextTypes:['SIDE_PANEL'],windowIds:[${Number(windowId)}]}).then(items=>items.length)`,
+  );
+  assert.equal(filteredContexts, 0);
   await evaluate(
     panel,
     "document.querySelector('#s28-open-panel-test')?.remove()",
@@ -101,5 +106,6 @@ export async function qualifySidePanel({ panel, targets, worker }) {
   return {
     portSenderDocumentIdPresent: false,
     selfReportedWindowMatches: true,
+    sidePanelWindowFilterCount: 0,
   };
 }
