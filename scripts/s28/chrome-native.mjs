@@ -58,34 +58,37 @@ export async function qualifyNative({
     assert.equal(response?.ok, true, JSON.stringify(response));
     assert.equal(response.result.taskReady, false);
     assert.equal(response.result.health.state, "SESSION_ONLY");
-    const tabId = await evaluate(
-      worker,
-      `chrome.tabs.create({url:chrome.runtime.getURL('sidepanel/index.html?untrusted=1'),active:false}).then(tab=>tab.id)`,
-    );
-    try {
-      const foreign = await waitFor(
-        async () =>
-          (await targets()).find((item) =>
-            item.url.endsWith("sidepanel/index.html?untrusted=1"),
-          ),
-        5000,
-        "FOREIGN_UI_READY",
-      );
-      await waitFor(
-        () => evaluate(foreign, "document.readyState === 'complete'"),
-        5000,
-        "FOREIGN_UI_DOCUMENT",
-      );
-      const denied = await evaluate(
-        foreign,
-        "chrome.runtime.sendMessage({kind:'capabilities'})",
-      );
-      assert.equal(denied?.ok, false, JSON.stringify(denied));
-    } finally {
-      await evaluate(
+    for (const [path, allowed] of [
+      ["sidepanel/index.html?untrusted=1", false],
+      ["settings/index.html#agent", true],
+      ["settings/learned-profiles.html", true],
+    ]) {
+      const tabId = await evaluate(
         worker,
-        `chrome.tabs.remove(${Number(tabId)}).then(()=>true)`,
+        `chrome.tabs.create({url:chrome.runtime.getURL(${JSON.stringify(path)}),active:false}).then(tab=>tab.id)`,
       );
+      try {
+        const page = await waitFor(
+          async () => (await targets()).find((item) => item.url.endsWith(path)),
+          5000,
+          "UI_CONTEXT_READY",
+        );
+        await waitFor(
+          () => evaluate(page, "document.readyState === 'complete'"),
+          5000,
+          "UI_CONTEXT_DOCUMENT",
+        );
+        const result = await evaluate(
+          page,
+          "chrome.runtime.sendMessage({kind:'capabilities'})",
+        );
+        assert.equal(result?.ok, allowed, JSON.stringify({ path, result }));
+      } finally {
+        await evaluate(
+          worker,
+          `chrome.tabs.remove(${Number(tabId)}).then(()=>true)`,
+        );
+      }
     }
     const resume = await evaluate(
       panel,
@@ -128,6 +131,7 @@ export async function qualifyNative({
       registration: "isolated profile",
       nativeHandshake: true,
       foreignDocumentDenied: true,
+      settingsAndProfilesAllowed: true,
       taskReady: false,
     };
   } finally {
