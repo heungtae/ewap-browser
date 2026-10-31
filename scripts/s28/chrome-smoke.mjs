@@ -10,7 +10,8 @@ const executable = process.env.CHROME_FOR_TESTING_BIN;
 if (!executable) throw new Error("CHROME_FOR_TESTING_BIN required");
 const profile = await mkdtemp(`${tmpdir()}/s28-chrome-`);
 const port = await reservePort();
-const output = "docs/evidence/s28-ui-2026-10-19";
+const output =
+  process.env.S28_EVIDENCE_DIR ?? "docs/evidence/s28-ui-2026-10-19";
 await mkdir(output, { recursive: true });
 const child = spawn(
   executable,
@@ -142,6 +143,7 @@ try {
         extensionId: id,
         worker,
         panel: target,
+        targets,
       });
     records.push({
       name,

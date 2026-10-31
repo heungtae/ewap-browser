@@ -4,7 +4,13 @@ import { access, copyFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { install } from "./install.mjs";
 import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
-export async function qualifyNative({ profile, extensionId, worker, panel }) {
+export async function qualifyNative({
+  profile,
+  extensionId,
+  worker,
+  panel,
+  targets,
+}) {
   const prepared = await install({
     directory: `${profile}/agent`,
     extensionId,
@@ -52,6 +58,35 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
     assert.equal(response?.ok, true, JSON.stringify(response));
     assert.equal(response.result.taskReady, false);
     assert.equal(response.result.health.state, "SESSION_ONLY");
+    const tabId = await evaluate(
+      worker,
+      `chrome.tabs.create({url:chrome.runtime.getURL('sidepanel/index.html?untrusted=1'),active:false}).then(tab=>tab.id)`,
+    );
+    try {
+      const foreign = await waitFor(
+        async () =>
+          (await targets()).find((item) =>
+            item.url.endsWith("sidepanel/index.html?untrusted=1"),
+          ),
+        5000,
+        "FOREIGN_UI_READY",
+      );
+      await waitFor(
+        () => evaluate(foreign, "document.readyState === 'complete'"),
+        5000,
+        "FOREIGN_UI_DOCUMENT",
+      );
+      const denied = await evaluate(
+        foreign,
+        "chrome.runtime.sendMessage({kind:'capabilities'})",
+      );
+      assert.equal(denied?.ok, false, JSON.stringify(denied));
+    } finally {
+      await evaluate(
+        worker,
+        `chrome.tabs.remove(${Number(tabId)}).then(()=>true)`,
+      );
+    }
     const resume = await evaluate(
       panel,
       "chrome.runtime.sendMessage({kind:'resumeEvents',afterSequence:0})",
@@ -92,6 +127,7 @@ export async function qualifyNative({ profile, extensionId, worker, panel }) {
       result: "PASS",
       registration: "isolated profile",
       nativeHandshake: true,
+      foreignDocumentDenied: true,
       taskReady: false,
     };
   } finally {
