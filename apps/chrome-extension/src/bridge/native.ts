@@ -36,6 +36,8 @@ export class NativeBridge {
   private ready: Promise<void>;
   private timer: ReturnType<typeof setTimeout>;
   private closed = false;
+  private handshake: "challenge" | "signing" | "ready" | "connected" =
+    "challenge";
   private capabilities = new Set<string>();
   constructor(
     private port: NativePort,
@@ -56,15 +58,9 @@ export class NativeBridge {
     if (!value || typeof value !== "object" || this.closed)
       throw new Error("INVALID_HOST_RESPONSE");
     const v = value as Record<string, unknown>;
-    if (v.kind === "challenge" && !this.identity) {
-      if (
-        v.major !== 1 ||
-        v.minor !== 0 ||
-        typeof v.nonce !== "string" ||
-        !/^[a-f0-9]{64}$/.test(v.nonce)
-      )
-        throw new Error("VERSION");
-      challengeSchema.parse(value);
+    if (v.kind === "challenge" && this.handshake === "challenge") {
+      const challenge = challengeSchema.parse(value);
+      this.handshake = "signing";
       const p = this.pairing;
       const keyBytes = new TextEncoder().encode(p.secret);
       const key = await crypto.subtle.importKey(
@@ -81,10 +77,13 @@ export class NativeBridge {
           p.installationId,
           p.profileId,
           p.extensionId,
-          v.nonce,
+          challenge.nonce,
         ]),
       );
       const proof = hex(await crypto.subtle.sign("HMAC", key, data));
+      if (this.closed || this.handshake !== "signing")
+        throw new Error("BACKEND_DISCONNECTED");
+      this.handshake = "ready";
       this.port.postMessage({
         kind: "hello",
         major: 1,
@@ -92,23 +91,23 @@ export class NativeBridge {
         installationId: p.installationId,
         profileId: p.profileId,
         extensionId: p.extensionId,
-        nonce: v.nonce,
+        nonce: challenge.nonce,
         proof,
       });
-    } else if (v.kind === "ready" && !this.identity) {
-      if (
-        typeof v.connectionId !== "string" ||
-        !Number.isSafeInteger(v.connectionEpoch)
-      )
-        throw new Error("SESSION");
-      this.capabilities = new Set(readySchema.parse(value).capabilities);
+    } else if (v.kind === "ready" && this.handshake === "ready") {
+      const ready = readySchema.parse(value);
+      this.capabilities = new Set(ready.capabilities);
       this.identity = {
-        connectionId: v.connectionId,
-        connectionEpoch: v.connectionEpoch as number,
+        connectionId: ready.connectionId,
+        connectionEpoch: ready.connectionEpoch,
       };
+      this.handshake = "connected";
       clearTimeout(this.timer);
       this.readyResolve?.();
-    } else if (typeof v.messageId === "string") {
+    } else if (
+      this.handshake === "connected" &&
+      typeof v.messageId === "string"
+    ) {
       responseSchema.parse(value);
       const waiting = this.pending.get(v.messageId);
       if (!waiting) throw new Error("UNBOUND_RESPONSE");

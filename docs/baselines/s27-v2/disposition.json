@@ -4832,6 +4832,13 @@
       "target": "S28 replay and snapshot recovery issue evidence"
     },
     {
+      "path": "docs/issues/records/2026-10-31-native-handshake-order.md",
+      "owner": "RF30",
+      "disposition": "preserve",
+      "sprint": "S28",
+      "target": "S28 native bridge handshake ordering issue evidence"
+    },
+    {
       "path": "docs/migration-daemon-launcher.md",
       "owner": "RF30",
       "disposition": "preserve",

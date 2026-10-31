@@ -14,6 +14,76 @@ import {
   FrameDecoder,
   encodeFrame,
 } from "../../../../../apps/agent-server/src/native/framing.js";
+it("rejects ready before the challenge and does not send a request", async () => {
+  let receive: (value: unknown) => void = () => {};
+  const posted: unknown[] = [];
+  let disconnected = false;
+  const bridge = new NativeBridge(
+    {
+      postMessage: (value) => posted.push(value),
+      disconnect: () => {
+        disconnected = true;
+      },
+      onMessage: {
+        addListener: (listener) => {
+          receive = listener;
+        },
+      },
+      onDisconnect: { addListener: () => {} },
+    },
+    {
+      installationId: "installation",
+      profileId: "profile",
+      extensionId: "a".repeat(32),
+      secret: "b".repeat(64),
+    },
+  );
+  const pending = bridge.request({ kind: "capabilities" });
+  receive({
+    kind: "ready",
+    connectionId: randomUUID(),
+    connectionEpoch: 1,
+    capabilities: ["heartbeat"],
+    taskReady: false,
+  });
+  await expect(pending).rejects.toThrow("BACKEND_DISCONNECTED");
+  expect(disconnected).toBe(true);
+  expect(posted).toEqual([]);
+});
+it("closes on a duplicate challenge while the first proof is pending", async () => {
+  let receive: (value: unknown) => void = () => {};
+  const posted: unknown[] = [];
+  const bridge = new NativeBridge(
+    {
+      postMessage: (value) => posted.push(value),
+      disconnect: () => {},
+      onMessage: {
+        addListener: (listener) => {
+          receive = listener;
+        },
+      },
+      onDisconnect: { addListener: () => {} },
+    },
+    {
+      installationId: "installation",
+      profileId: "profile",
+      extensionId: "a".repeat(32),
+      secret: "b".repeat(64),
+    },
+  );
+  const pending = bridge.request({ kind: "capabilities" });
+  const challenge = {
+    kind: "challenge",
+    major: 1,
+    minor: 0,
+    nonce: "a".repeat(64),
+  };
+  receive(challenge);
+  receive(challenge);
+  await expect(pending).rejects.toThrow("BACKEND_DISCONNECTED");
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  expect(posted).toEqual([]);
+});
 it("crosses browser adapter → real native subprocess → authenticated daemon", async () => {
   const directory = await mkdtemp(join(tmpdir(), "s28-native-"));
   const pairing = {
