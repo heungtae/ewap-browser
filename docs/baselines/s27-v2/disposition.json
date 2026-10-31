@@ -3777,6 +3777,13 @@
       "sprint": "S28"
     },
     {
+      "path": "docs/evidence/s28-ui-context-2026-10-31.json",
+      "owner": "RF30",
+      "target": "S28 live UI context and native bridge evidence",
+      "disposition": "preserve",
+      "sprint": "S28"
+    },
+    {
       "path": "docs/evidence/s33-initial-state-2026-10-30.md",
       "owner": "RF04",
       "target": "docs/evidence/s33-initial-state-2026-10-30.md",

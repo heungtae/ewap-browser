@@ -1,7 +1,7 @@
 import "./schema-config.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
-import { api } from "./api.js";
+import { api, liveUiSender } from "./api.js";
 import { NativeBridge } from "./native.js";
 let connection: Promise<NativeBridge> | undefined;
 function connect(): Promise<NativeBridge> {
@@ -74,21 +74,13 @@ api?.runtime.onInstalled.addListener(() => {
   void api!.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
 api?.runtime.onMessage.addListener((value, sender, reply) => {
-  const paths = [
-    "sidepanel/index.html",
-    "settings/index.html",
-    "settings/learned-profiles.html",
-  ];
-  if (
-    sender.id !== api!.runtime.id ||
-    !paths.some(
-      (p) =>
-        sender.url?.split("#")[0] ===
-        `chrome-extension://${api!.runtime.id}/${p}`,
-    )
+  void liveUiSender(api!.runtime.id, sender, () =>
+    api!.runtime.getContexts({ documentIds: [sender.documentId ?? ""] }),
   )
-    return false;
-  void request(value)
+    .then((trusted) => {
+      if (!trusted) throw new Error("UI_SENDER_DENIED");
+      return request(value);
+    })
     .then((result) => reply({ ok: true, result }))
     .catch(() => reply({ ok: false, error: "BACKEND_UNAVAILABLE" }));
   return true;
