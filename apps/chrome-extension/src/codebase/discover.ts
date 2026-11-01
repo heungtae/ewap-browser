@@ -19,6 +19,7 @@ export interface DiscoveryAdmission {
   signal: AbortSignal;
 }
 export interface CollectorPort {
+  isCurrent?(): boolean;
   collect(admission: DiscoveryAdmission): Promise<Batch>;
 }
 export async function discover(
@@ -37,6 +38,7 @@ export async function discover(
   if (!admission.readAllowed) throw new Error("DISCOVERY_SCOPE_DENIED");
   const fresh = () =>
     !admission.signal.aborted &&
+    collector.isCurrent?.() !== false &&
     Date.now() < admission.deadline &&
     canonical(current()) === canonical(admission.context);
   if (!fresh()) throw new Error("BINDING_STALE");

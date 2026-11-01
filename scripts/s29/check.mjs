@@ -69,6 +69,22 @@ for (const [path, expected] of Object.entries(currentPreservedSourceHashes()))
     expected,
     `production/design ${path}`,
   );
+const content = await build({
+  entryPoints: ["apps/chrome-extension/src/codebase/content-collector.ts"],
+  bundle: true,
+  platform: "browser",
+  write: false,
+  metafile: true,
+});
+assert.ok(
+  Object.keys(content.metafile.inputs).every(
+    (path) =>
+      !/codebase-repository|provider-adapters|task-engine|extension\/src\/(policy|providers|service-worker)/.test(
+        path,
+      ),
+  ),
+  "storage/model/authority in content collector",
+);
 const manifest = read(process.argv[2] ?? "docs/baselines/s29/disposition.json");
 for (const entry of read("docs/baselines/s28/disposition.json").files)
   assert.deepEqual(

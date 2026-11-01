@@ -14948,6 +14948,83 @@
       "disposition": "reuse",
       "sprint": "S28",
       "target": "S28 controlled Chrome connection stream snapshot and restart presentation evidence"
+    },
+    {
+      "path": "apps/chrome-extension/src/codebase/chrome-collector.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Worker document-bound collector port"
+    },
+    {
+      "path": "apps/chrome-extension/src/codebase/collector-protocol.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "closed Worker/content collection messages"
+    },
+    {
+      "path": "apps/chrome-extension/src/codebase/content-collector.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Worker-only content collection listener"
+    },
+    {
+      "path": "apps/chrome-extension/src/content/entry.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "isolated content composition with preserved legacy entry"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/chrome-collector.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "collector document consent cancellation and invalidation regression"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/content-collector.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "content sender route replay and cancellation regression"
+    },
+    {
+      "path": "extension/tests/fixture/s29/extension-worker.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "extension Worker repository integration fixture"
+    },
+    {
+      "path": "scripts/s29/chrome-extension.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "actual extension Worker/content/IndexedDB integration harness"
+    },
+    {
+      "path": "docs/evidence/s29-extension-transport-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "actual Chrome Worker/content/extension-origin repository evidence"
+    },
+    {
+      "path": "docs/evidence/s28-collector-regression-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "native bridge and toolbar regression after content composition"
+    },
+    {
+      "path": "apps/chrome-extension/src/codebase/collection-wait.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "bounded metadata/transport waits for Worker collection"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

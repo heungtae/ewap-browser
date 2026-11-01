@@ -415,3 +415,14 @@ export/import, workflow failure recovery, profile controls, resolver storage,
 Provider deletion and desktop/narrow layouts. Set `OPTIONS_SCREENSHOT_DIR` to an
 existing directory to capture all four pages at both viewport widths.
 [Scope and dated evidence](evidence/options-ux-2026-10-18.md).
+
+
+## S29 isolated extension transport
+
+After `pnpm build:s28`, run the Worker/content/repository fixture with the pinned Chrome for Testing binary:
+
+```sh
+S29_EVIDENCE_DIR=/tmp/s29-extension-check CHROME_FOR_TESTING_BIN=/path/to/chrome node --experimental-websocket scripts/s29/chrome-extension.mjs
+```
+
+The runner uses a disposable profile and a copy of the target extension with localhost-only host grants. It checks extension-origin IndexedDB, first/revisit/delta reads, private/input exclusion, Settings sender rejection and stale document/read handles. Admission is injected by the fixture. It does not establish public task routing, real source-consent integration or release qualification. `pnpm test:chrome-s29` separately checks the broader DOM/resource/atomicity fixture matrix.

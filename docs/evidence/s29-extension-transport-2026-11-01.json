@@ -1,0 +1,82 @@
+{
+  "result": "PASS",
+  "browser": "Chrome/147.0.7727.15",
+  "scope": "isolated extension Worker to content-script transport and extension-origin IndexedDB; synthetic admission, no public task or provider routing",
+  "first": {
+    "revision": 1,
+    "savedRevision": 1,
+    "coverage": {
+      "status": "partial",
+      "examined": 24,
+      "emitted": 4,
+      "omitted": 1,
+      "redactions": 1,
+      "total": 4,
+      "reasons": [
+        "SAMPLE_ONLY",
+        "DENIED_REGION"
+      ],
+      "startedAt": 1793527655821,
+      "endedAt": 1793527655823,
+      "deadline": 1793527665816
+    },
+    "privacy": true,
+    "saveMatches": 2,
+    "identityReused": null,
+    "extensionIndexedDb": true
+  },
+  "revisit": {
+    "revision": 2,
+    "savedRevision": 2,
+    "coverage": {
+      "status": "partial",
+      "examined": 24,
+      "emitted": 4,
+      "omitted": 1,
+      "redactions": 1,
+      "total": 4,
+      "reasons": [
+        "SAMPLE_ONLY",
+        "DENIED_REGION"
+      ],
+      "startedAt": 1793527655850,
+      "endedAt": 1793527655850,
+      "deadline": 1793527665849
+    },
+    "privacy": true,
+    "saveMatches": 2,
+    "identityReused": true,
+    "extensionIndexedDb": true
+  },
+  "delta": {
+    "revision": 3,
+    "savedRevision": 3,
+    "coverage": {
+      "status": "partial",
+      "examined": 22,
+      "emitted": 3,
+      "omitted": 1,
+      "redactions": 1,
+      "total": 3,
+      "reasons": [
+        "SAMPLE_ONLY",
+        "DENIED_REGION"
+      ],
+      "startedAt": 1793527655870,
+      "endedAt": 1793527655870,
+      "deadline": 1793527665869
+    },
+    "privacy": true,
+    "saveMatches": 0,
+    "identityReused": null,
+    "extensionIndexedDb": true
+  },
+  "stale": {
+    "oldDocumentRejected": true,
+    "oldReadRejected": true,
+    "committedRevision": 3,
+    "tabIdMatches": true
+  },
+  "settingsImpersonationDenied": true,
+  "missingReadConsentDenied": true
+}

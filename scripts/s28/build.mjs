@@ -64,7 +64,7 @@ await cp(
   `${output}/managed-storage-schema.json`,
 );
 const manifest = JSON.parse(await readFile("extension/manifest.json", "utf8"));
-manifest.permissions.push("nativeMessaging");
+manifest.permissions.push("nativeMessaging", "webNavigation");
 manifest.action = { default_title: "ContextPilot" };
 manifest.background.service_worker = "js/service-worker.js";
 manifest.content_scripts[0].js = ["js/content.js"];
@@ -77,7 +77,7 @@ await writeFile(
 await build({
   entryPoints: {
     "service-worker": "apps/chrome-extension/src/bridge/worker.ts",
-    content: "extension/src/content/entry.ts",
+    content: "apps/chrome-extension/src/content/entry.ts",
   },
   bundle: true,
   platform: "browser",
