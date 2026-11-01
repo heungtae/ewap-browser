@@ -111,6 +111,20 @@ export async function qualifyNative({
     );
     assert.equal(resume.ok, true);
     assert.equal(resume.result.cursor, 0);
+    assert.equal(resume.result.snapshot.schema, "wca.connection-snapshot/v1");
+    await waitFor(
+      () =>
+        evaluate(
+          panel,
+          "document.querySelector('#status')?.textContent==='Backend connected — controller setup required'",
+        ),
+      5000,
+      "CONNECTED_PRESENTATION",
+    );
+    const count = await evaluate(
+      panel,
+      "document.querySelectorAll('#chat-messages .message').length",
+    );
     daemon.child.kill("SIGTERM");
     await daemon.closed;
     const unavailable = await evaluate(
@@ -118,6 +132,15 @@ export async function qualifyNative({
       "chrome.runtime.sendMessage({kind:'capabilities'})",
     );
     assert.equal(unavailable.ok, false);
+    await waitFor(
+      () =>
+        evaluate(
+          panel,
+          "document.querySelector('#status')?.textContent?.includes('disconnected')",
+        ),
+      5000,
+      "DISCONNECTED_PRESENTATION",
+    );
     daemon = launch();
     await waitFor(
       () =>
@@ -140,6 +163,23 @@ export async function qualifyNative({
     );
     assert.equal(resumed.result.cursor, 0);
     assert.equal(resumed.result.events.length, 0);
+    assert.notEqual(resumed.result.streamId, resume.result.streamId);
+    await waitFor(
+      () =>
+        evaluate(
+          panel,
+          "document.querySelector('#status')?.textContent==='Backend connected — controller setup required'",
+        ),
+      7000,
+      "SNAPSHOT_PRESENTATION_RECOVERED",
+    );
+    assert.equal(
+      await evaluate(
+        panel,
+        "document.querySelectorAll('#chat-messages .message').length",
+      ),
+      count,
+    );
     const ownerEvidence = await qualifyPanelOwner({
       panel,
       worker,
@@ -148,6 +188,8 @@ export async function qualifyNative({
     });
     return {
       ...ownerEvidence,
+      connectionSnapshotRecovered: true,
+      uiReconnectWithoutDuplicateMessages: true,
       restartReconnect: true,
       result: "PASS",
       registration: "isolated profile",

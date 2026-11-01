@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28 — 2026-11-01 connection snapshot recovery
+
+**In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#connection-stream-snapshots--2026-11-01) verifies versioned connection-only snapshots across real daemon restart, UI reconnect without duplicate messages and actual toolbar activation. Task-history snapshots, full UI/management parity and the remaining S28 acceptance matrix are open.
+
 ## Browser Agent S29 — 2026-11-01 numeric range filters
 
 **In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#numeric-range-filter-continuation--2026-11-01) records typed numeric boundaries, semantic goldens and a controlled Chrome IndexedDB check. Typed sorting, grouped counts and [per-group numeric aggregates](evidence/s29-construction-2026-10-19.md#grouped-numeric-aggregates--2026-11-01) are also verified in controlled fixtures. The [bound dataset read service](evidence/s29-construction-2026-10-19.md#bound-dataset-read-service--2026-11-01) also passes controlled Chrome IndexedDB verification. Full transport/runtime integration, row-level aggregate citations and S28 prerequisites remain open.

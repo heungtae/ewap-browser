@@ -73,6 +73,9 @@ async function request(value: unknown): Promise<unknown> {
         : {
             kind: "resumeEvents",
             afterSequence: Number(command.afterSequence),
+            ...(typeof command.streamId === "string"
+              ? { streamId: command.streamId }
+              : {}),
           },
     );
   } catch (error) {

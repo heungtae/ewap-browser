@@ -43,7 +43,7 @@ export async function listenLocal(
     throw new Error("IPC_PRINCIPAL");
   // Do not unlink an existing endpoint: another daemon may own it.
   let epoch = 0;
-  const replay = new EventReplay();
+  const replay = new EventReplay(256, true);
   const connections = new Set<Socket>();
   const server = createServer((socket) => {
     if (connections.size >= 16) {
@@ -120,7 +120,7 @@ export async function listenLocal(
         } else if (command.kind.startsWith("transfer."))
           result = transfers.handle(command, Date.now());
         else if (command.kind === "resumeEvents")
-          result = replay.resume(command.afterSequence);
+          result = replay.resume(command.afterSequence, command.streamId);
         else if (command.kind === "capabilities")
           result = {
             taskReady: false,

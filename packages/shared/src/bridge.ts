@@ -55,6 +55,7 @@ export const commandSchema = z.union([
     z.strictObject({
       kind: z.literal("resumeEvents"),
       afterSequence: z.number().int().nonnegative(),
+      streamId: z.string().uuid().optional(),
     }),
     z.strictObject({
       kind: z.literal("browser.connected"),
@@ -89,17 +90,29 @@ export const replaySchema = z.strictObject({
   events: z.array(bridgeEventSchema).max(4096),
   cursor: z.number().int().nonnegative(),
   resync: z.boolean(),
+  streamId: z.string().uuid().optional(),
   snapshot: z
-    .strictObject({
-      revision: z.number().int().nonnegative(),
-      state: z.literal("waiting"),
-    })
+    .union([
+      z.strictObject({
+        revision: z.number().int().nonnegative(),
+        state: z.literal("waiting"),
+      }),
+      z.strictObject({
+        schema: z.literal("wca.connection-snapshot/v1"),
+        streamId: z.string().uuid(),
+        revision: z.number().int().nonnegative(),
+        state: z.literal("waiting"),
+      }),
+    ])
     .nullable()
     .optional(),
 });
 export type BridgeEvent = z.infer<typeof bridgeEventSchema>;
 export interface TaskClient {
-  resume(afterSequence: number): Promise<z.infer<typeof replaySchema>>;
+  resume(
+    afterSequence: number,
+    streamId?: string,
+  ): Promise<z.infer<typeof replaySchema>>;
 }
 export interface PublicSettings {
   controllerReady: boolean;

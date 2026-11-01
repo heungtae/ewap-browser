@@ -11,8 +11,14 @@ async function request(value: unknown): Promise<unknown> {
   return response.result;
 }
 export const tasks: TaskClient = {
-  resume: async (afterSequence) =>
-    replaySchema.parse(await request({ kind: "resumeEvents", afterSequence })),
+  resume: async (afterSequence, streamId) =>
+    replaySchema.parse(
+      await request({
+        kind: "resumeEvents",
+        afterSequence,
+        ...(streamId ? { streamId } : {}),
+      }),
+    ),
 };
 export const settings: SettingsClient = {
   read: async () => {

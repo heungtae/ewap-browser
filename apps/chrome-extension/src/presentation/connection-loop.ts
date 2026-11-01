@@ -7,6 +7,8 @@ import type { PresentationView } from "./view.js";
 export interface PresentationState {
   cursor: number;
   snapshotRequired: boolean;
+  connectionOnly?: boolean;
+  streamId?: string;
 }
 export interface PresentationClock {
   later(callback: () => void): unknown;
@@ -28,7 +30,9 @@ export function connectPresentation(
   let handle: unknown;
   const update = async () => {
     const [events, config] = await Promise.allSettled([
-      tasks.resume(cursor),
+      state.streamId
+        ? tasks.resume(cursor, state.streamId)
+        : tasks.resume(cursor),
       settings.read(),
     ]);
     if (stopped) return;
@@ -42,13 +46,43 @@ export function connectPresentation(
     }
     if (parsed.success) {
       const batch = parsed.data;
+      if (
+        batch.events.some(
+          (event) =>
+            !["browser.connected", "browser.waiting"].includes(event.kind) ||
+            event.text !== undefined,
+        )
+      )
+        state.connectionOnly = false;
+      const snapshot = batch.snapshot;
+      const reset =
+        state.connectionOnly === true &&
+        batch.resync &&
+        batch.events.length === 0 &&
+        snapshot &&
+        "schema" in snapshot &&
+        snapshot.schema === "wca.connection-snapshot/v1" &&
+        snapshot.revision === batch.cursor &&
+        snapshot.streamId === batch.streamId;
+      if (reset) {
+        cursor = batch.cursor;
+        state.cursor = cursor;
+        state.streamId = snapshot.streamId;
+        snapshotRequired = false;
+      }
       let next = cursor;
       for (const event of batch.events) {
         if (event.sequence <= cursor) continue;
         if (event.sequence !== next + 1) snapshotRequired = true;
         next = event.sequence;
       }
-      if (batch.resync || batch.cursor !== next) snapshotRequired = true;
+      if (
+        !reset &&
+        (batch.resync ||
+          batch.cursor !== next ||
+          (state.streamId !== undefined && batch.streamId !== state.streamId))
+      )
+        snapshotRequired = true;
       if (!snapshotRequired) {
         for (const event of batch.events)
           if (

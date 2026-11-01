@@ -118,8 +118,9 @@ it("authenticates over a real private Unix socket before commands and resumes by
   expect(resumed).toMatchObject({
     result: {
       cursor: 1,
-      resync: false,
-      events: [{ kind: "browser.connected" }],
+      resync: true,
+      events: [],
+      snapshot: { schema: "wca.connection-snapshot/v1", revision: 1 },
     },
   });
   await send("disconnect", { kind: "browser.disconnected" });

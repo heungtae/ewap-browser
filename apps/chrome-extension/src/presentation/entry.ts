@@ -15,7 +15,7 @@ if (failure) {
   );
   if (legacy) legacy.disabled = true;
 }
-const state = { cursor: 0, snapshotRequired: false };
+const state = { cursor: 0, snapshotRequired: false, connectionOnly: true };
 let dispose: (() => void) | undefined;
 const mount = () => {
   dispose ??= mountPresentation(

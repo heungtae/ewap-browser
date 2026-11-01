@@ -157,7 +157,12 @@ it("crosses browser adapter → real native subprocess → authenticated daemon"
     });
     expect(
       await bridge.request({ kind: "resumeEvents", afterSequence: 0 }),
-    ).toMatchObject({ cursor: 0, resync: false, events: [] });
+    ).toMatchObject({
+      cursor: 0,
+      resync: true,
+      events: [],
+      snapshot: { schema: "wca.connection-snapshot/v1" },
+    });
     bridge.close();
     await expect(bridge.request({ kind: "capabilities" })).rejects.toThrow(
       "BACKEND_UNAVAILABLE",

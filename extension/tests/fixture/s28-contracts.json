@@ -704,6 +704,11 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991
+                  },
+                  "streamId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                   }
                 },
                 "required": ["kind", "afterSequence"],
@@ -924,20 +929,51 @@
         "maximum": 9007199254740991
       },
       "resync": { "type": "boolean" },
+      "streamId": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
       "snapshot": {
         "anyOf": [
           {
-            "type": "object",
-            "properties": {
-              "revision": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 9007199254740991
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "state": { "type": "string", "const": "waiting" }
+                },
+                "required": ["revision", "state"],
+                "additionalProperties": false
               },
-              "state": { "type": "string", "const": "waiting" }
-            },
-            "required": ["revision", "state"],
-            "additionalProperties": false
+              {
+                "type": "object",
+                "properties": {
+                  "schema": {
+                    "type": "string",
+                    "const": "wca.connection-snapshot/v1"
+                  },
+                  "streamId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "state": { "type": "string", "const": "waiting" }
+                },
+                "required": ["schema", "streamId", "revision", "state"],
+                "additionalProperties": false
+              }
+            ]
           },
           { "type": "null" }
         ]

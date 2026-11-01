@@ -146,3 +146,16 @@ Verification: `pnpm typecheck`, `pnpm test:s28` (49/49), ESLint for changed Type
 ## Actual toolbar activation — 2026-11-01
 
 Source base `cdebf6ca6` plus changes. The [actual toolbar Chrome report](s28-toolbar-2026-11-01.json) uses the browser's extension action command through its debugging pipe, without injected owner issuance. It qualifies the production target action listener, panel address issuance, `setOptions`/`open`, native bootstrap and copied-address tab denial on Chrome 147/Linux. Awaiting configuration first lost the user gesture; invoking `open` synchronously in the action callback fixes this. [ISS-20261031-006](../issues/records/2026-10-31-sidepanel-context-window.md) retains first failures and navigation-test limits. S28 unit tests pass 50/50 and typecheck/build pass; full S28 completion is still not established.
+
+
+## Connection stream snapshots — 2026-11-01
+
+Source base `068570503` plus this change. The server's explicitly connection-only replay stream has a random process/stream identity and a versioned `wca.connection-snapshot/v1` marker. The stream accepts only `browser.connected`/`browser.waiting` events. An initial request, retention gap, changed stream or cursor beyond a restarted stream receives an authoritative connection cursor snapshot, not a task snapshot. Subsequent requests carry the stream identity. Generic replay retains its original invalid-cursor behavior.
+
+Target presentation explicitly opts into connection-only recovery. It advances only after validating an empty snapshot batch, matching stream identities and matching snapshot/cursor revision. Any task-bearing event disables this opt-in for the document lifetime, including remounts. Generic task clients and legacy waiting markers remain blocked until their actual task snapshot is applied. This does not restore task history, grants, handles or approval state and does not make `taskReady` true.
+
+The [Chrome 147/Linux report](s28-connection-snapshot-2026-11-01.json) verifies real daemon stop/restart, changed stream identity, visible disconnected/connected status, connection snapshot recovery and unchanged message count, alongside actual toolbar/bootstrap negatives. Unit regressions cover retention, a zero-cursor daemon restart, post-reset events, generic/task isolation and malformed snapshot revision. The first inherited IPC/native tests expected ordinary replay on an initial request; expectations were updated for the explicit initial snapshot handshake. S28 remains In Progress: task snapshots, full 26-state UI parity/management and other installation acceptance are still open.
+
+Verification for the final snapshot change: `pnpm test:s28` 54/54, S36 presentation recovery 7/7, `pnpm typecheck`, changed TypeScript ESLint, S28/S29/S30 boundary and schema golden checks, the version-preserving S28 build, actual Chrome native smoke and `git diff --check` pass. No provider call, approval or business dispatch was performed.
+
+The broad unit run (`pnpm exec vitest run extension/tests/unit --reporter=json --outputFile=/tmp/s28-snapshot-unit-20261101.json`) passed 1432/1432 tests on this final source; this includes S29 regressions but is not transport or product qualification for S29.

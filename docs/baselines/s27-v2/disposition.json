@@ -14934,6 +14934,20 @@
       "disposition": "reuse",
       "sprint": "S28",
       "target": "S28 actual Chrome toolbar activation and panel tab impersonation evidence"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/connection-snapshot.test.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 connection snapshot retention/restart and task history isolation regression"
+    },
+    {
+      "path": "docs/evidence/s28-connection-snapshot-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 controlled Chrome connection stream snapshot and restart presentation evidence"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

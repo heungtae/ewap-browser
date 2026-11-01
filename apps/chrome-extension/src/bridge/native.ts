@@ -119,6 +119,7 @@ export class NativeBridge {
   async request(payload: {
     kind: string;
     afterSequence?: number;
+    streamId?: string;
   }): Promise<unknown> {
     await this.ready;
     if (this.closed || !this.identity || this.pending.size >= 4)
