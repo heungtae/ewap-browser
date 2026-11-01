@@ -14,13 +14,21 @@ export interface SecretStore {
 export class SessionSecrets implements SecretStore {
   readonly mode = "session-only" as const;
   private values = new Map<string, string>();
+  constructor(private limit = 64) {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 256)
+      throw new Error("SECRET_LIMIT");
+  }
   async read(identity: string) {
     return this.values.get(identity);
   }
   async write(identity: string, value: string) {
+    if (!value) {
+      this.values.delete(identity);
+      return;
+    }
     if (
       value.length > 65536 ||
-      (!this.values.has(identity) && this.values.size >= 64)
+      (!this.values.has(identity) && this.values.size >= this.limit)
     )
       throw new Error("SECRET_LIMIT");
     this.values.set(identity, value);

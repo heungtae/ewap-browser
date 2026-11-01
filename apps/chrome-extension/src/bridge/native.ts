@@ -1,3 +1,4 @@
+import { commandAvailable } from "./capabilities.js";
 import {
   challengeSchema,
   readySchema,
@@ -124,25 +125,12 @@ export class NativeBridge {
     await this.ready;
     if (this.closed || !this.identity || this.pending.size >= 4)
       throw new Error("BACKEND_UNAVAILABLE");
-    if (
-      payload.kind.startsWith("migration.") &&
-      !this.capabilities.has(
-        payload.kind === "migration.status"
-          ? "migration.status"
-          : payload.kind === "migration.resume.snapshot"
-            ? "migration.resumeSnapshot"
-            : payload.kind.startsWith("migration.resume.")
-              ? "migration.resume"
-              : payload.kind.startsWith("migration.checkpoints.")
-                ? "migration.checkpoints"
-                : payload.kind.startsWith("migration.consensus.")
-                  ? "migration.consensus"
-                  : payload.kind.startsWith("migration.settings.")
-                    ? "migration.settings"
-                    : "migration.policy",
-      )
-    )
-      throw new Error("MIGRATION_UNAVAILABLE");
+    if (!commandAvailable(payload.kind, this.capabilities))
+      throw new Error(
+        payload.kind.startsWith("settings.")
+          ? "SETTINGS_UNAVAILABLE"
+          : "MIGRATION_UNAVAILABLE",
+      );
     const messageId = crypto.randomUUID();
     const payloadDigest = hex(
       await crypto.subtle.digest(

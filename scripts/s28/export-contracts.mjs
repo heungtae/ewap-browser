@@ -26,6 +26,9 @@ for (const name of [
   "transferCommandSchema",
   "replaySchema",
   "bridgeEventSchema",
+  "settingsCommandSchema",
+  "settingsViewSchema",
+  "settingsResultSchema",
 ])
   golden[name] = schemas.z.toJSONSchema(schemas[name]);
 const text = await prettier.format(JSON.stringify(golden), { parser: "json" });
@@ -33,4 +36,6 @@ const path = "extension/tests/fixture/s28-contracts.json";
 if (process.argv.includes("--update")) await writeFile(path, text);
 else
   assert.equal(await readFile(path, "utf8"), text, "S28 contract golden drift");
-console.log("S28 closed bridge schemas: 8 goldens PASS");
+console.log(
+  `S28 closed bridge schemas: ${Object.keys(golden).length} goldens PASS`,
+);

@@ -4,6 +4,7 @@ import { access, copyFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { install } from "./install.mjs";
 import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
+import { qualifySettings } from "./chrome-settings.mjs";
 import { qualifyPanelOwner } from "./chrome-owner.mjs";
 import { qualifySidePanel } from "./chrome-sidepanel.mjs";
 import { qualifyMultiplePanels } from "./chrome-multiwindow.mjs";
@@ -14,6 +15,7 @@ export async function qualifyNative({
   worker,
   panel,
   targets,
+  output,
 }) {
   const prepared = await install({
     directory: `${profile}/agent`,
@@ -125,6 +127,13 @@ export async function qualifyNative({
       panel,
       "document.querySelectorAll('#chat-messages .message').length",
     );
+    const settingsEvidence = await qualifySettings({
+      worker,
+      panel,
+      targets,
+      configPath: prepared.configPath,
+      output,
+    });
     daemon.child.kill("SIGTERM");
     await daemon.closed;
     const unavailable = await evaluate(
@@ -180,6 +189,7 @@ export async function qualifyNative({
       ),
       count,
     );
+    const settingsRestart = await settingsEvidence.afterRestart();
     const ownerEvidence = await qualifyPanelOwner({
       panel,
       worker,
@@ -188,6 +198,7 @@ export async function qualifyNative({
     });
     return {
       ...ownerEvidence,
+      providerSettings: { ...settingsEvidence.before, ...settingsRestart },
       connectionSnapshotRecovered: true,
       uiReconnectWithoutDuplicateMessages: true,
       restartReconnect: true,

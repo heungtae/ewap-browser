@@ -1,16 +1,15 @@
 <section class="settings-card" id="provider-management">
   <h2>LLM Provider 관리</h2>
   <p>
-    연결 설정을 저장한 뒤 사용할 모델을 선택하고 적용하세요. 첫 기본 Provider는
-    저장 시 자동으로 선택됩니다. 기본·판단 Provider를 선택하면 아래 연결 설정에
-    표시되며, 실제 사용은 적용 버튼으로 변경합니다.
+    연결 설정을 저장한 뒤 GPT Analyst와 JEV Controller의 역할을 선택하고
+    적용하세요. 설정 저장과 역할 지정만으로 작업 준비가 완료되지는 않습니다.
   </p>
   <div class="provider-management-controls">
     <div class="provider-role-field">
       <label for="provider-primary-select">GPT Analyst</label>
       <div class="button-row provider-active-row">
         <select id="provider-primary-select"></select>
-        <button id="provider-activate" type="button">기본 모델 적용</button>
+        <button id="provider-activate" type="button">Analyst 역할 적용</button>
       </div>
     </div>
     <details class="advanced-settings">

@@ -15025,6 +15025,146 @@
       "disposition": "replace",
       "sprint": "S29",
       "target": "bounded metadata/transport waits for Worker collection"
+    },
+    {
+      "path": "apps/agent-server/src/ipc/settings-request.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "capability-gated Settings IPC"
+    },
+    {
+      "path": "apps/agent-server/src/settings/provider-file.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "backend Provider settings metadata and credential boundaries"
+    },
+    {
+      "path": "apps/agent-server/src/settings/provider-secrets.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "backend Provider settings metadata and credential boundaries"
+    },
+    {
+      "path": "apps/agent-server/src/settings/provider-service.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "backend Provider settings metadata and credential boundaries"
+    },
+    {
+      "path": "apps/agent-server/src/settings/provider-state.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "backend Provider settings metadata and credential boundaries"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/capabilities.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "capability-gated Settings IPC"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/provider-management.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "preserved Provider forms with injected backend management client"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/provider-role-controls.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "preserved Provider forms with injected backend management client"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/provider-save.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "preserved Provider forms with injected backend management client"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/settings-client.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "preserved Provider forms with injected backend management client"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/settings-entry.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "preserved Provider forms with injected backend management client"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/provider-fixture.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "S28 Provider management and secret boundary verification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/provider-secrets.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "S28 Provider management and secret boundary verification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/provider-settings.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "S28 Provider management and secret boundary verification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/settings-client.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "S28 Provider management and secret boundary verification"
+    },
+    {
+      "path": "packages/shared/src/settings-rpc.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed backend Settings command and public view contracts"
+    },
+    {
+      "path": "scripts/s28/chrome-settings.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "S28 Provider management and secret boundary verification"
+    },
+    {
+      "path": "docs/evidence/s28-provider-settings-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "actual Chrome Provider management and private session credential evidence"
+    },
+    {
+      "path": "docs/evidence/s28-provider-settings-2026-11-01.png",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "actual Chrome Provider management and private session credential evidence"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/provider-guards.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "disabled Controller intent and settings request invalidation regressions"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

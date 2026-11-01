@@ -15,20 +15,26 @@ if (failure) {
   );
   if (legacy) legacy.disabled = true;
 }
-const state = { cursor: 0, snapshotRequired: false, connectionOnly: true };
-let dispose: (() => void) | undefined;
-const mount = () => {
-  dispose ??= mountPresentation(
-    document,
-    createView(document),
-    tasks,
-    settings,
-    state,
+if (document.querySelector("#provider-form")) {
+  void import("./settings-entry.js").then((module) =>
+    module.initializeBackendSettings(),
   );
-};
-window.addEventListener("pagehide", () => {
-  dispose?.();
-  dispose = undefined;
-});
-window.addEventListener("pageshow", mount);
-mount();
+} else {
+  const state = { cursor: 0, snapshotRequired: false, connectionOnly: true };
+  let dispose: (() => void) | undefined;
+  const mount = () => {
+    dispose ??= mountPresentation(
+      document,
+      createView(document),
+      tasks,
+      settings,
+      state,
+    );
+  };
+  window.addEventListener("pagehide", () => {
+    dispose?.();
+    dispose = undefined;
+  });
+  window.addEventListener("pageshow", mount);
+  mount();
+}

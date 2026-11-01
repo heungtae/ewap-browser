@@ -58,6 +58,182 @@
               {
                 "type": "object",
                 "properties": {
+                  "kind": { "type": "string", "const": "settings.read" }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "settings.provider.write"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                  },
+                  "config": {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": ["openai_compatible", "typesafe_jev"]
+                      },
+                      "plugin_id": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                      },
+                      "plugin_version": { "type": "string", "const": "1.0.0" },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                      },
+                      "base_url": {
+                        "type": "string",
+                        "maxLength": 2048,
+                        "format": "uri"
+                      },
+                      "model": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "wire_api": {
+                        "type": "string",
+                        "enum": ["responses", "chat_completions"]
+                      },
+                      "api_key_header": {
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "authorization_bearer",
+                          "api-key",
+                          "x-goog-api-key"
+                        ]
+                      },
+                      "api_key": { "type": "string", "maxLength": 4096 },
+                      "headers": {
+                        "maxItems": 64,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$"
+                            },
+                            "value": { "type": "string", "maxLength": 4096 }
+                          },
+                          "required": ["name", "value"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "timeout_ms": {
+                        "type": "integer",
+                        "minimum": 100,
+                        "maximum": 300000
+                      },
+                      "enabled": { "type": "boolean" },
+                      "private_network_opt_in": {
+                        "default": false,
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "kind",
+                      "plugin_id",
+                      "plugin_version",
+                      "label",
+                      "base_url",
+                      "model",
+                      "wire_api",
+                      "api_key_header",
+                      "api_key",
+                      "headers",
+                      "timeout_ms",
+                      "enabled",
+                      "private_network_opt_in"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["kind", "revision", "id", "config"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "const": "settings.provider.remove"
+                  },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                  }
+                },
+                "required": ["kind", "revision", "id"],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "kind": { "type": "string", "const": "settings.roles.write" },
+                  "revision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "roles": {
+                    "type": "object",
+                    "properties": {
+                      "controller": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                          },
+                          { "type": "null" }
+                        ]
+                      },
+                      "controllerEnabled": { "type": "boolean" },
+                      "analyst": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                          },
+                          { "type": "null" }
+                        ]
+                      }
+                    },
+                    "required": ["controller", "controllerEnabled", "analyst"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["kind", "revision", "roles"],
+                "additionalProperties": false
+              }
+            ]
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
                   "kind": {
                     "type": "string",
                     "const": "migration.resume.snapshot"
@@ -784,11 +960,12 @@
         "maximum": 9007199254740991
       },
       "capabilities": {
-        "maxItems": 9,
+        "maxItems": 10,
         "type": "array",
         "items": {
           "type": "string",
           "enum": [
+            "settings",
             "heartbeat",
             "resumeEvents",
             "migration.status",
@@ -1001,5 +1178,449 @@
     },
     "required": ["sequence", "revision", "kind"],
     "additionalProperties": false
+  },
+  "settingsCommandSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "oneOf": [
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "settings.read" }
+        },
+        "required": ["kind"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "settings.provider.write" },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "config": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["openai_compatible", "typesafe_jev"]
+              },
+              "plugin_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+              },
+              "plugin_version": { "type": "string", "const": "1.0.0" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "base_url": {
+                "type": "string",
+                "maxLength": 2048,
+                "format": "uri"
+              },
+              "model": { "type": "string", "minLength": 1, "maxLength": 128 },
+              "wire_api": {
+                "type": "string",
+                "enum": ["responses", "chat_completions"]
+              },
+              "api_key_header": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "authorization_bearer",
+                  "api-key",
+                  "x-goog-api-key"
+                ]
+              },
+              "api_key": { "type": "string", "maxLength": 4096 },
+              "headers": {
+                "maxItems": 64,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]{1,128}$"
+                    },
+                    "value": { "type": "string", "maxLength": 4096 }
+                  },
+                  "required": ["name", "value"],
+                  "additionalProperties": false
+                }
+              },
+              "timeout_ms": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 300000
+              },
+              "enabled": { "type": "boolean" },
+              "private_network_opt_in": { "default": false, "type": "boolean" }
+            },
+            "required": [
+              "kind",
+              "plugin_id",
+              "plugin_version",
+              "label",
+              "base_url",
+              "model",
+              "wire_api",
+              "api_key_header",
+              "api_key",
+              "headers",
+              "timeout_ms",
+              "enabled",
+              "private_network_opt_in"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["kind", "revision", "id", "config"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "settings.provider.remove" },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          }
+        },
+        "required": ["kind", "revision", "id"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string", "const": "settings.roles.write" },
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "roles": {
+            "type": "object",
+            "properties": {
+              "controller": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                  },
+                  { "type": "null" }
+                ]
+              },
+              "controllerEnabled": { "type": "boolean" },
+              "analyst": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                  },
+                  { "type": "null" }
+                ]
+              }
+            },
+            "required": ["controller", "controllerEnabled", "analyst"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["kind", "revision", "roles"],
+        "additionalProperties": false
+      }
+    ]
+  },
+  "settingsViewSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "revision": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9007199254740991
+      },
+      "providers": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "additionalProperties": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["openai_compatible", "typesafe_jev"]
+            },
+            "plugin_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+            },
+            "plugin_version": { "type": "string", "const": "1.0.0" },
+            "label": { "type": "string", "minLength": 1, "maxLength": 160 },
+            "base_url": {
+              "type": "string",
+              "maxLength": 2048,
+              "format": "uri"
+            },
+            "model": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "wire_api": {
+              "type": "string",
+              "enum": ["responses", "chat_completions"]
+            },
+            "api_key_header": {
+              "type": "string",
+              "enum": [
+                "none",
+                "authorization_bearer",
+                "api-key",
+                "x-goog-api-key"
+              ]
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 300000
+            },
+            "enabled": { "type": "boolean" },
+            "private_network_opt_in": { "default": false, "type": "boolean" },
+            "has_api_key": { "type": "boolean" },
+            "header_names": {
+              "maxItems": 64,
+              "type": "array",
+              "items": { "type": "string", "maxLength": 128 }
+            }
+          },
+          "required": [
+            "kind",
+            "plugin_id",
+            "plugin_version",
+            "label",
+            "base_url",
+            "model",
+            "wire_api",
+            "api_key_header",
+            "timeout_ms",
+            "enabled",
+            "private_network_opt_in",
+            "has_api_key",
+            "header_names"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "roles": {
+        "type": "object",
+        "properties": {
+          "controller": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+              },
+              { "type": "null" }
+            ]
+          },
+          "controllerEnabled": { "type": "boolean" },
+          "analyst": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+              },
+              { "type": "null" }
+            ]
+          }
+        },
+        "required": ["controller", "controllerEnabled", "analyst"],
+        "additionalProperties": false
+      },
+      "controllerFailure": { "type": "string", "const": "stop" },
+      "secretMode": { "type": "string", "enum": ["session-only", "os-store"] },
+      "controllerReady": { "type": "boolean", "const": false },
+      "analystReady": { "type": "boolean", "const": false }
+    },
+    "required": [
+      "revision",
+      "providers",
+      "roles",
+      "controllerFailure",
+      "secretMode",
+      "controllerReady",
+      "analystReady"
+    ],
+    "additionalProperties": false
+  },
+  "settingsResultSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "anyOf": [
+      {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean", "const": true },
+          "state": {
+            "type": "object",
+            "properties": {
+              "revision": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "providers": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                },
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["openai_compatible", "typesafe_jev"]
+                    },
+                    "plugin_id": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                    },
+                    "plugin_version": { "type": "string", "const": "1.0.0" },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 160
+                    },
+                    "base_url": {
+                      "type": "string",
+                      "maxLength": 2048,
+                      "format": "uri"
+                    },
+                    "model": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 128
+                    },
+                    "wire_api": {
+                      "type": "string",
+                      "enum": ["responses", "chat_completions"]
+                    },
+                    "api_key_header": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "authorization_bearer",
+                        "api-key",
+                        "x-goog-api-key"
+                      ]
+                    },
+                    "timeout_ms": {
+                      "type": "integer",
+                      "minimum": 100,
+                      "maximum": 300000
+                    },
+                    "enabled": { "type": "boolean" },
+                    "private_network_opt_in": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "has_api_key": { "type": "boolean" },
+                    "header_names": {
+                      "maxItems": 64,
+                      "type": "array",
+                      "items": { "type": "string", "maxLength": 128 }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "plugin_id",
+                    "plugin_version",
+                    "label",
+                    "base_url",
+                    "model",
+                    "wire_api",
+                    "api_key_header",
+                    "timeout_ms",
+                    "enabled",
+                    "private_network_opt_in",
+                    "has_api_key",
+                    "header_names"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "roles": {
+                "type": "object",
+                "properties": {
+                  "controller": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                      },
+                      { "type": "null" }
+                    ]
+                  },
+                  "controllerEnabled": { "type": "boolean" },
+                  "analyst": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+                      },
+                      { "type": "null" }
+                    ]
+                  }
+                },
+                "required": ["controller", "controllerEnabled", "analyst"],
+                "additionalProperties": false
+              },
+              "controllerFailure": { "type": "string", "const": "stop" },
+              "secretMode": {
+                "type": "string",
+                "enum": ["session-only", "os-store"]
+              },
+              "controllerReady": { "type": "boolean", "const": false },
+              "analystReady": { "type": "boolean", "const": false }
+            },
+            "required": [
+              "revision",
+              "providers",
+              "roles",
+              "controllerFailure",
+              "secretMode",
+              "controllerReady",
+              "analystReady"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["ok", "state"],
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean", "const": false },
+          "code": {
+            "type": "string",
+            "enum": [
+              "SETTINGS_INVALID",
+              "SETTINGS_STALE",
+              "SETTINGS_UNAVAILABLE"
+            ]
+          }
+        },
+        "required": ["ok", "code"],
+        "additionalProperties": false
+      }
+    ]
   }
 }

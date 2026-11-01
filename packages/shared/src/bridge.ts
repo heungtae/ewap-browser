@@ -1,4 +1,6 @@
 import { z } from "zod";
+export * from "./settings-rpc.js";
+import { settingsCommandSchema } from "./settings-rpc.js";
 import { migrationCommandSchema } from "./migration-rpc.js";
 export const MAX_FRAME_BYTES = 256 * 1024;
 export const PROTOCOL = { major: 1, minor: 0 } as const;
@@ -47,6 +49,7 @@ export const transferCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("transfer.cancel"), id }),
 ]);
 export const commandSchema = z.union([
+  settingsCommandSchema,
   migrationCommandSchema,
   transferCommandSchema,
   z.discriminatedUnion("kind", [
@@ -136,6 +139,7 @@ export const readySchema = z.strictObject({
   capabilities: z
     .array(
       z.enum([
+        "settings",
         "heartbeat",
         "resumeEvents",
         "migration.status",
@@ -147,7 +151,7 @@ export const readySchema = z.strictObject({
         "migration.consensus",
       ]),
     )
-    .max(9),
+    .max(10),
   taskReady: z.literal(false),
 });
 export const responseSchema = z.strictObject({

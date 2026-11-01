@@ -7,6 +7,8 @@ import { Session } from "./session.js";
 import { ConnectionTransfers } from "./transfers.js";
 import { capabilityHealth } from "../settings/health.js";
 import type { MigrationRequestContext } from "../../../../packages/shared/src/migration-rpc.js";
+import { requestSettings } from "./settings-request.js";
+import type { ProviderSettingsService } from "../settings/provider-service.js";
 import { EventReplay } from "./replay.js";
 const peers = new WeakMap<Server, Set<Socket>>();
 const paths = new WeakMap<Server, string>();
@@ -30,6 +32,7 @@ export async function listenLocal(
   ) => Promise<unknown>) & {
     settingsMode?: "session-only" | "os-store";
   },
+  settings?: ProviderSettingsService,
 ): Promise<Server> {
   if (process.platform === "win32") throw new Error("WINDOWS_ACL_UNQUALIFIED");
   const directory = dirname(path);
@@ -73,20 +76,23 @@ export async function listenLocal(
           kind: "ready",
           connectionId: session.connectionId,
           connectionEpoch: session.connectionEpoch,
-          capabilities: migration
-            ? [
-                "heartbeat",
-                "resumeEvents",
-                "migration.status",
-                "migration.policy",
-                "migration.resume",
-                "migration.resumeSnapshot",
-                "migration.checkpoints",
-                ...(migration.settingsMode
-                  ? ["migration.settings", "migration.consensus"]
-                  : []),
-              ]
-            : ["heartbeat", "resumeEvents"],
+          capabilities: [
+            ...(migration
+              ? [
+                  "heartbeat",
+                  "resumeEvents",
+                  "migration.status",
+                  "migration.policy",
+                  "migration.resume",
+                  "migration.resumeSnapshot",
+                  "migration.checkpoints",
+                  ...(migration.settingsMode
+                    ? ["migration.settings", "migration.consensus"]
+                    : []),
+                ]
+              : ["heartbeat", "resumeEvents"]),
+            ...(settings ? ["settings"] : []),
+          ],
           taskReady: false,
         });
       } else {
@@ -117,6 +123,14 @@ export async function listenLocal(
             clearTimeout(timer);
             socket.removeListener("close", disconnect);
           }
+        } else if (command.kind.startsWith("settings.")) {
+          if (!settings) throw new Error("SETTINGS_UNAVAILABLE");
+          result = await requestSettings(
+            settings,
+            command,
+            session.deadline,
+            socket,
+          );
         } else if (command.kind.startsWith("transfer."))
           result = transfers.handle(command, Date.now());
         else if (command.kind === "resumeEvents")

@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28 — 2026-11-01 Provider management
+
+**In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#backend-provider-settings-and-preserved-forms--2026-11-01) records typed backend settings, private metadata and session credentials, preserved Provider-form save/blank writes/Analyst assignment/removal, stale revision rejection and actual Chrome/native restart checks. Full profile/workflow/chat parity, task snapshots and the remaining S28 acceptance matrix remain open.
+
 ## Browser Agent S29 — 2026-11-01 extension transport
 
 **In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#extension-workercontent-transport--2026-11-01) verifies actual Worker/content messaging, extension-origin IndexedDB revisions 1/2/3, identity reuse, private/input exclusion, Settings impersonation denial and stale document/read rejection. S28 acceptance, real admission and backend projection/native composition remain open.

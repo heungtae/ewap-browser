@@ -1,4 +1,5 @@
 import "./schema-config.js";
+import { settingsCommandSchema } from "../../../../packages/shared/src/settings-rpc.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
 import { api, liveUiSender, unboundBootstrapResult } from "./api.js";
@@ -49,6 +50,9 @@ async function request(value: unknown): Promise<unknown> {
     typeof command.kind === "string" && command.kind.startsWith("migration.");
   if (
     !isMigration &&
+    !(
+      typeof command.kind === "string" && command.kind.startsWith("settings.")
+    ) &&
     command.kind !== "capabilities" &&
     command.kind !== "resumeEvents"
   )
@@ -56,6 +60,11 @@ async function request(value: unknown): Promise<unknown> {
   let bridge: NativeBridge | undefined;
   try {
     bridge = await connect();
+    if (
+      typeof command.kind === "string" &&
+      command.kind.startsWith("settings.")
+    )
+      return await bridge.request(settingsCommandSchema.parse(command));
     if (isMigration) {
       const parsed = parseMigrationCommand(command);
       const stored = (await api!.storage.session.get("s28Pairing"))
@@ -115,7 +124,14 @@ api?.runtime.onMessage.addListener((value, sender, reply) => {
         ),
     )
     .then((trusted) => {
-      if (!trusted) throw new Error("UI_SENDER_DENIED");
+      if (
+        !trusted ||
+        (typeof kind === "string" &&
+          kind.startsWith("settings.") &&
+          sender.url?.split("#")[0] !==
+            `chrome-extension://${api!.runtime.id}/settings/index.html`)
+      )
+        throw new Error("UI_SENDER_DENIED");
       return request(value);
     })
     .then((result) =>

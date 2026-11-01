@@ -144,6 +144,7 @@ try {
     if (name === "panel" && process.argv.includes("--native"))
       native = await qualifyNative({
         profile,
+        output,
         browserCommand,
         extensionId: id,
         worker,

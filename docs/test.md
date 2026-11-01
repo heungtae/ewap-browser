@@ -426,3 +426,10 @@ S29_EVIDENCE_DIR=/tmp/s29-extension-check CHROME_FOR_TESTING_BIN=/path/to/chrome
 ```
 
 The runner uses a disposable profile and a copy of the target extension with localhost-only host grants. It checks extension-origin IndexedDB, first/revisit/delta reads, private/input exclusion, Settings sender rejection and stale document/read handles. Admission is injected by the fixture. It does not establish public task routing, real source-consent integration or release qualification. `pnpm test:chrome-s29` separately checks the broader DOM/resource/atomicity fixture matrix.
+
+
+## S28 Provider management
+
+`pnpm build:s28` followed by `S28_EVIDENCE_DIR=/tmp/s28-settings-check CHROME_FOR_TESTING_BIN=/path/to/chrome pnpm test:chrome-s28:native` exercises the preserved Provider forms through the real Worker/native/daemon path. The fixture uses synthetic credentials and endpoints, performs no provider request, and verifies session-only loss after daemon restart, stale revision rejection and UI removal. Evidence and screenshots use the explicit output directory. The temporary registration/profile are removed on exit.
+
+The target daemon stores public metadata in `CONFIG.settings.json` under the protected installation directory. Credentials remain in its session-only broker and require reentry after daemon restart. Interrupted writes can have committed before acknowledgement: reread settings/revision before retrying. Normal production entrypoints and legacy provider storage are not selected or migrated by these checks.
