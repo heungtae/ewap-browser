@@ -6,6 +6,7 @@ interface Sender {
   url?: string;
   documentId?: string;
   origin?: string;
+  tab?: unknown;
 }
 export interface ExtensionContext {
   contextType: string;
@@ -115,7 +116,33 @@ export interface ChromeApi {
     onInstalled: { addListener(callback: () => void): void };
   };
   storage: { session: { get(key: string): Promise<Record<string, unknown>> } };
+  action: {
+    onClicked: {
+      addListener(
+        callback: (tab: { id?: number; windowId: number }) => void,
+      ): void;
+    };
+  };
+  tabs: {
+    get(id: number): Promise<{ id?: number; windowId: number }>;
+    onRemoved: { addListener(callback: (id: number) => void): void };
+    onDetached: { addListener(callback: (id: number) => void): void };
+    onUpdated: {
+      addListener(
+        callback: (
+          id: number,
+          change: { status?: string; url?: string },
+        ) => void,
+      ): void;
+    };
+  };
   sidePanel: {
+    setOptions(value: {
+      tabId: number;
+      path: string;
+      enabled: boolean;
+    }): Promise<void>;
+    open(value: { tabId: number }): Promise<void>;
     setPanelBehavior(value: { openPanelOnActionClick: boolean }): Promise<void>;
   };
 }

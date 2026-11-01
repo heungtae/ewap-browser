@@ -2,7 +2,30 @@ import "./schema-config.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
 import { api, liveUiSender, unboundBootstrapResult } from "./api.js";
+import { PanelOwners } from "./panel-owner.js";
 import { NativeBridge } from "./native.js";
+const panelOwners = new PanelOwners(api?.runtime.id ?? "");
+api?.action.onClicked.addListener((tab) => {
+  let tabId: number | undefined;
+  void (async () => {
+    const owner = panelOwners.issue(tab);
+    tabId = owner.tabId;
+    await api!.sidePanel.setOptions({
+      tabId: owner.tabId,
+      path: owner.path,
+      enabled: true,
+    });
+    await api!.sidePanel.open({ tabId: owner.tabId });
+  })().catch(() => {
+    if (tabId !== undefined) panelOwners.revoke(tabId);
+  });
+});
+api?.tabs.onRemoved.addListener((id) => panelOwners.revoke(id));
+api?.tabs.onDetached.addListener((id) => panelOwners.revoke(id));
+api?.tabs.onUpdated.addListener((id, change) => {
+  if (change.status === "loading" || change.url !== undefined)
+    panelOwners.revoke(id);
+});
 let connection: Promise<NativeBridge> | undefined;
 function connect(): Promise<NativeBridge> {
   connection ??= (async () => {
@@ -71,7 +94,7 @@ async function request(value: unknown): Promise<unknown> {
   }
 }
 api?.runtime.onInstalled.addListener(() => {
-  void api!.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+  void api!.sidePanel.setPanelBehavior({ openPanelOnActionClick: false });
 });
 api?.runtime.onMessage.addListener((value, sender, reply) => {
   const kind =
@@ -79,17 +102,27 @@ api?.runtime.onMessage.addListener((value, sender, reply) => {
       ? (value as Record<string, unknown>).kind
       : undefined;
   const bootstrap = kind === "capabilities" || kind === "resumeEvents";
-  void liveUiSender(
-    api!.runtime.id,
-    sender,
-    () =>
-      api!.runtime.getContexts(
-        sender.documentId
-          ? { documentIds: [sender.documentId] }
-          : { contextTypes: ["SIDE_PANEL"] },
-      ),
-    bootstrap,
-  )
+  void panelOwners
+    .resolve(
+      sender,
+      () => api!.runtime.getContexts({ contextTypes: ["SIDE_PANEL"] }),
+      (id) => api!.tabs.get(id),
+    )
+    .then(
+      (owner) =>
+        (bootstrap && owner !== null) ||
+        liveUiSender(
+          api!.runtime.id,
+          sender,
+          () =>
+            api!.runtime.getContexts(
+              sender.documentId
+                ? { documentIds: [sender.documentId] }
+                : { contextTypes: ["SIDE_PANEL"] },
+            ),
+          bootstrap,
+        ),
+    )
     .then((trusted) => {
       if (!trusted) throw new Error("UI_SENDER_DENIED");
       return request(value);

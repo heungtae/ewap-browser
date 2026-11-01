@@ -4,6 +4,7 @@ import { access, copyFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { install } from "./install.mjs";
 import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
+import { qualifyPanelOwner } from "./chrome-owner.mjs";
 import { qualifySidePanel } from "./chrome-sidepanel.mjs";
 import { qualifyMultiplePanels } from "./chrome-multiwindow.mjs";
 export async function qualifyNative({
@@ -138,7 +139,9 @@ export async function qualifyNative({
     );
     assert.equal(resumed.result.cursor, 0);
     assert.equal(resumed.result.events.length, 0);
+    const ownerEvidence = await qualifyPanelOwner({ panel, worker, targets });
     return {
+      ...ownerEvidence,
       restartReconnect: true,
       result: "PASS",
       registration: "isolated profile",

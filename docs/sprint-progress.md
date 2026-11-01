@@ -24,6 +24,8 @@ An [S31 history-source prerequisite](evidence/s31-durable-recovery-2026-10-20.md
 
 The [S28 live document boundary](evidence/s28-workspace-bridge-2026-10-19.md#live-extension-document-boundary--2026-10-31) checks identified extension documents against Chrome contexts. [ISS-20261031-006](issues/records/2026-10-31-sidepanel-context-window.md) limits an unidentifiable real side panel to connection bootstrap; it is not task ownership or approval authority.
 
+The 2026-11-01 [Worker-issued panel address continuation](evidence/s28-workspace-bridge-2026-10-19.md#worker-issued-panel-ownership--2026-11-01) verifies real Chrome sender/context resolution and revocation. Toolbar activation and task snapshot recovery remain open.
+
 ## Browser Agent S33 — 2026-10-30 persisted advance
 
 **In Progress.** The internal SQLite store advances from persisted state with revision and lease fencing; [evidence](evidence/s33-persisted-advance-2026-10-30.md) records the real SQLite check and remaining integration gates. A [follow-up](evidence/s33-initial-state-2026-10-30.md) rejects forged initial state and requires injected controller readiness; real readiness wiring and server admission remain open.

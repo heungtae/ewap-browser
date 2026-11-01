@@ -9325,12 +9325,16 @@
     },
     {
       "path": "extension/tests/unit/migration/s29/group-aggregate.test.ts",
-      "owner": "RF30", "disposition": "reuse", "sprint": "S29",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
       "target": "S29 grouped numeric aggregate regression"
     },
     {
       "path": "extension/tests/fixture/s29/group-aggregate.json",
-      "owner": "RF30", "disposition": "reuse", "sprint": "S29",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
       "target": "S29 grouped numeric aggregate semantic golden"
     },
     {
@@ -14874,6 +14878,34 @@
       "disposition": "replace",
       "sprint": "S27",
       "target": "task engine `{advance-task,plan-candidates,plan-revision,select-next-step,accept-result}.ts`"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/panel-owner.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "S28 fresh Worker-issued panel address binding"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/panel-owner.test.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 panel owner scope and revocation regression"
+    },
+    {
+      "path": "scripts/s28/chrome-owner.mjs",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 real Chrome ownership resolver fixture"
+    },
+    {
+      "path": "docs/evidence/s28-panel-owner-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "S28 real Chrome panel address ownership resolver evidence"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

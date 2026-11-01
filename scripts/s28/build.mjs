@@ -65,6 +65,7 @@ await cp(
 );
 const manifest = JSON.parse(await readFile("extension/manifest.json", "utf8"));
 manifest.permissions.push("nativeMessaging");
+manifest.action = { default_title: "ContextPilot" };
 manifest.background.service_worker = "js/service-worker.js";
 manifest.content_scripts[0].js = ["js/content.js"];
 manifest.side_panel.default_path = "sidepanel/index.html";

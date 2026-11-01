@@ -72,10 +72,10 @@ try {
       () =>
         evaluate(
           target,
-          "document.readyState === 'complete' && !!document.querySelector('#status,#settings-status,#learned-profile-status')?.textContent",
+          "document.readyState === 'complete' && /Backend/.test(document.querySelector('#status,#settings-status,#learned-profile-status')?.textContent ?? '')",
         ),
       5000,
-      "PAGE_READY",
+      `PAGE_READY:${name}`,
     );
     await cdp(
       target.webSocketDebuggerUrl,
