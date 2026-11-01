@@ -3649,6 +3649,13 @@
       "target": "S29 real Chrome IndexedDB grouped counts evidence"
     },
     {
+      "path": "docs/evidence/s29-group-aggregate-chrome-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "preserve",
+      "sprint": "S29",
+      "target": "S29 real Chrome IndexedDB grouped numeric aggregate evidence"
+    },
+    {
       "path": "docs/evidence/s29-first-failures-2026-10-19.json",
       "owner": "RF30",
       "disposition": "replace",
@@ -9317,6 +9324,16 @@
       "target": "S29 typed grouping and count regression"
     },
     {
+      "path": "extension/tests/unit/migration/s29/group-aggregate.test.ts",
+      "owner": "RF30", "disposition": "reuse", "sprint": "S29",
+      "target": "S29 grouped numeric aggregate regression"
+    },
+    {
+      "path": "extension/tests/fixture/s29/group-aggregate.json",
+      "owner": "RF30", "disposition": "reuse", "sprint": "S29",
+      "target": "S29 grouped numeric aggregate semantic golden"
+    },
+    {
       "path": "extension/tests/fixture/s29/group-query.json",
       "owner": "RF30",
       "disposition": "reuse",
@@ -11475,6 +11492,13 @@
       "disposition": "replace",
       "sprint": "S29",
       "target": "collector `data/{reader-registry,read-window,accumulate,coverage,restore-scroll}.ts`"
+    },
+    {
+      "path": "packages/codebase-repository/src/query-group.ts",
+      "owner": "RF12",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 deterministic grouped dataset aggregates"
     },
     {
       "path": "packages/codebase-repository/src/read-service.ts",

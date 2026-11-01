@@ -100,6 +100,12 @@ export const querySchema = z.strictObject({
     .min(1)
     .max(3)
     .optional(),
+  aggregate: z
+    .strictObject({
+      op: z.enum(["sum", "min", "max", "average"]),
+      field: z.string().max(200),
+    })
+    .optional(),
   limit: z.number().int().min(1).max(1000),
 });
 export type Dataset = z.infer<typeof datasetSchema>;

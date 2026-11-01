@@ -92,11 +92,50 @@ export async function runRange(db: IDBDatabase, context: Context) {
     !grouped.truncated
   )
     throw new Error("GROUP_QUERY_FAILED");
+  const { digest: _digest, ...body } = dataset;
+  const aggregateDataset = await makeDataset({
+    ...body,
+    id: "dataset_aggregate_chrome",
+    fields: [
+      { name: "kind", type: "string", unit: null },
+      { name: "amount", type: "number", unit: "ms" },
+    ],
+    rows: [
+      ["a", 1],
+      ["a", 3],
+      ["b", null],
+      ["b", 4],
+    ],
+  });
+  await writeDataset(db, aggregateDataset, 1000);
+  const aggregateRestored = await readDataset(
+    db,
+    aggregateDataset.partitionId,
+    aggregateDataset.pageKey,
+    aggregateDataset.id,
+    1001,
+  );
+  const aggregate = await queryDataset(aggregateRestored, {
+    op: "group",
+    fields: ["kind"],
+    filters: [],
+    aggregate: { op: "sum", field: "amount" },
+    limit: 4,
+  });
+  if (
+    !("groups" in aggregate) ||
+    !("unit" in aggregate) ||
+    JSON.stringify(aggregate.groups) !==
+      '[{"key":"a","count":2,"value":4,"nullsExcluded":0},{"key":"b","count":2,"value":4,"nullsExcluded":1}]' ||
+    aggregate.unit !== "ms"
+  )
+    throw new Error("GROUP_AGGREGATE_FAILED");
   return {
     realIndexedDb: true,
     matchedRows: result.matchedRows,
     truncated: result.truncated,
     sortVerified: true,
     groupVerified: true,
+    groupedSumVerified: true,
   };
 }

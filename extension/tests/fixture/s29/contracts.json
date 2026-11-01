@@ -2168,6 +2168,15 @@
           "additionalProperties": false
         }
       },
+      "aggregate": {
+        "type": "object",
+        "properties": {
+          "op": { "type": "string", "enum": ["sum", "min", "max", "average"] },
+          "field": { "type": "string", "maxLength": 200 }
+        },
+        "required": ["op", "field"],
+        "additionalProperties": false
+      },
       "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
     },
     "required": ["op", "fields", "filters", "limit"],

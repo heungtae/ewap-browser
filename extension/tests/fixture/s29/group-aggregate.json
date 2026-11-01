@@ -1,0 +1,8 @@
+{
+  "cases": [
+    { "op": "sum", "values": [4, 4, -2, null] },
+    { "op": "average", "values": [2, 4, -2, null] },
+    { "op": "min", "values": [1, 4, -2, null] },
+    { "op": "max", "values": [3, 4, -2, null] }
+  ]
+}
