@@ -4,8 +4,6 @@ import {
   importAdvisory,
 } from "../../../../../packages/codebase-builder/src/index.js";
 import {
-  CodebaseRepository,
-  openDatabase,
   makeDataset,
   writeDataset,
   readDataset,
@@ -13,36 +11,8 @@ import {
   CodebaseReadService,
 } from "../../../../../packages/codebase-repository/src/index.js";
 import { batch } from "./support.js";
-async function fixture() {
-  const graph = await buildGraph(await batch());
-  const db = await openDatabase(
-    new (await import("fake-indexeddb")).IDBFactory(),
-    graph.context.profileGuard,
-  );
-  const repo = new CodebaseRepository(
-    db,
-    graph.context.profileGuard,
-    () => 1000,
-  );
-  await repo.commit(graph);
-  const data = await makeDataset({
-    schema: "wca.codebase/v1",
-    kind: "dataset",
-    id: "dataset_one",
-    partitionId: graph.context.partitionId,
-    pageKey: graph.context.pageKey,
-    graphRevision: 1,
-    fields: [{ name: "value", type: "number", unit: "ms" }],
-    rows: [[1], [2], [null]],
-    rowIds: ["row_one", "row_two", "row_three"],
-    source: "static",
-    evidenceIds: graph.evidence.map((e) => e.id),
-    observedAt: 1000,
-    expiresAt: 2000,
-    coverage: { ...graph.coverage, total: 3, examined: 3, emitted: 3 },
-  });
-  return { graph, db, repo, data };
-}
+import { fixture } from "./dataset-fixture.js";
+
 it("keeps immutable dataset chunks/provenance and explicit numeric/null semantics", async () => {
   const { db, data } = await fixture();
   try {
@@ -152,6 +122,55 @@ it("imports only advisory procedure metadata and history, never stored grants/ar
     expect(imported.entity.capability).toBeNull();
     expect(imported.history.sourceRevision).toBe(1);
     expect(JSON.stringify(imported)).not.toContain("execute");
+  } finally {
+    db.close();
+  }
+});
+
+it("queries only the bound current dataset revision and rejects changes during a read", async () => {
+  const { db, data, repo, graph } = await fixture();
+  try {
+    await writeDataset(db, data, 1000);
+    const service = new CodebaseReadService(
+      repo,
+      data.partitionId,
+      data.pageKey,
+    );
+    const query = { op: "sum", fields: ["value"], filters: [], limit: 10 };
+    expect(await service.query(data.id, 1, query)).toMatchObject({
+      value: 3,
+      datasetId: data.id,
+      graphRevision: 1,
+      evidenceIds: data.evidenceIds,
+    });
+    await expect(service.query(data.id, 0, query)).rejects.toThrow(
+      "PROJECTION_STALE",
+    );
+    const foreign = new CodebaseReadService(repo, "other", data.pageKey);
+    await expect(foreign.query(data.id, 1, query)).rejects.toThrow(
+      "SNAPSHOT_UNAVAILABLE",
+    );
+    let checks = 0;
+    const stale = new CodebaseReadService(
+      repo,
+      data.partitionId,
+      data.pageKey,
+      () => ++checks < 2,
+    );
+    await expect(stale.query(data.id, 1, query)).rejects.toThrow(
+      "PROJECTION_STALE",
+    );
+    const original = repo.dataset.bind(repo);
+    repo.dataset = async (...args) => {
+      const read = await original(...args);
+      await repo.commit(
+        await buildGraph(await batch(undefined, 2, 1), graph.entities),
+      );
+      return read;
+    };
+    await expect(service.query(data.id, 1, query)).rejects.toThrow(
+      "PROJECTION_STALE",
+    );
   } finally {
     db.close();
   }

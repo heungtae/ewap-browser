@@ -1,4 +1,5 @@
 import type { Entity, Snapshot } from "@contextpilot/codebase-schema";
+import { queryDataset } from "./query.js";
 import type { CodebaseRepository } from "./repository.js";
 export class CodebaseReadService {
   constructor(
@@ -10,6 +11,25 @@ export class CodebaseReadService {
   async catalog(): Promise<Snapshot> {
     if (!this.current()) throw new Error("PROJECTION_STALE");
     return this.repository.snapshot(this.partitionId, this.pageKey);
+  }
+  async query(datasetId: string, revision: number, query: unknown) {
+    const before = await this.catalog();
+    if (before.revision !== revision) throw new Error("PROJECTION_STALE");
+    const dataset = await this.repository.dataset(
+      this.partitionId,
+      this.pageKey,
+      datasetId,
+    );
+    if (dataset.graphRevision !== revision) throw new Error("PROJECTION_STALE");
+    const result = await queryDataset(dataset, query);
+    const after = await this.catalog();
+    if (
+      !this.current() ||
+      after.revision !== revision ||
+      after.digest !== before.digest
+    )
+      throw new Error("PROJECTION_STALE");
+    return result;
   }
   async search(query: {
     name: string;

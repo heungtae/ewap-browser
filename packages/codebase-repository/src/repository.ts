@@ -3,6 +3,7 @@ import {
   snapshotSchema,
   type Snapshot,
 } from "@contextpilot/codebase-schema";
+import { readDataset } from "./datasets.js";
 import { commitGraph } from "./commit.js";
 import { completed, key, request, stores, type Stored } from "./database.js";
 export class CodebaseRepository {
@@ -63,6 +64,9 @@ export class CodebaseRepository {
     )
       throw new Error("PROJECTION_INTEGRITY");
     return result;
+  }
+  dataset(partitionId: string, pageKey: string, id: string) {
+    return readDataset(this.database, partitionId, pageKey, id, this.now());
   }
   async pin(
     partitionId: string,

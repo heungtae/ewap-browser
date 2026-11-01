@@ -6,7 +6,7 @@
 
 ## Browser Agent S29 — 2026-11-01 numeric range filters
 
-**In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#numeric-range-filter-continuation--2026-11-01) records typed numeric boundaries, semantic goldens and a controlled Chrome IndexedDB check. Typed sorting, grouped counts and [per-group numeric aggregates](evidence/s29-construction-2026-10-19.md#grouped-numeric-aggregates--2026-11-01) are also verified in controlled fixtures. Runtime integration, row-level aggregate citations and S28 prerequisites remain open.
+**In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#numeric-range-filter-continuation--2026-11-01) records typed numeric boundaries, semantic goldens and a controlled Chrome IndexedDB check. Typed sorting, grouped counts and [per-group numeric aggregates](evidence/s29-construction-2026-10-19.md#grouped-numeric-aggregates--2026-11-01) are also verified in controlled fixtures. The [bound dataset read service](evidence/s29-construction-2026-10-19.md#bound-dataset-read-service--2026-11-01) also passes controlled Chrome IndexedDB verification. Full transport/runtime integration, row-level aggregate citations and S28 prerequisites remain open.
 
 ## Browser Agent S28 — 2026-10-31 transfer continuation
 

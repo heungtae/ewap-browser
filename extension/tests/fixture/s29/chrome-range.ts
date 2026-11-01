@@ -1,5 +1,7 @@
 import type { Context } from "../../../../packages/codebase-schema/src/index.js";
 import {
+  CodebaseReadService,
+  CodebaseRepository,
   makeDataset,
   queryDataset,
   readDataset,
@@ -130,7 +132,21 @@ export async function runRange(db: IDBDatabase, context: Context) {
     aggregate.unit !== "ms"
   )
     throw new Error("GROUP_AGGREGATE_FAILED");
+  const service = new CodebaseReadService(
+    new CodebaseRepository(db, context.profileGuard, () => 1001),
+    context.partitionId,
+    context.pageKey,
+  );
+  const bound = await service.query(aggregateDataset.id, 4, {
+    op: "sum",
+    fields: ["amount"],
+    filters: [],
+    limit: 4,
+  });
+  if (!("value" in bound) || bound.value !== 8 || bound.graphRevision !== 4)
+    throw new Error("BOUND_QUERY_FAILED");
   return {
+    boundReadServiceVerified: true,
     realIndexedDb: true,
     matchedRows: result.matchedRows,
     truncated: result.truncated,

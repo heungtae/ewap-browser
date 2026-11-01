@@ -14906,6 +14906,20 @@
       "disposition": "reuse",
       "sprint": "S28",
       "target": "S28 real Chrome panel address ownership resolver evidence"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/dataset-fixture.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 shared repository dataset fixture"
+    },
+    {
+      "path": "docs/evidence/s29-bound-read-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 real Chrome bound dataset read service evidence"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",
