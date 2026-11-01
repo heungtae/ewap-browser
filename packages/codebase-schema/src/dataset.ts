@@ -89,6 +89,17 @@ export const querySchema = z.strictObject({
       ]),
     )
     .max(20),
+  sort: z
+    .array(
+      z.strictObject({
+        field: z.string().max(200),
+        direction: z.enum(["asc", "desc"]),
+        nulls: z.enum(["first", "last"]),
+      }),
+    )
+    .min(1)
+    .max(3)
+    .optional(),
   limit: z.number().int().min(1).max(1000),
 });
 export type Dataset = z.infer<typeof datasetSchema>;

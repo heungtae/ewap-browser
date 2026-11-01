@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "sort": [
+        { "field": "score", "direction": "asc", "nulls": "last" },
+        { "field": "name", "direction": "asc", "nulls": "last" }
+      ],
+      "expected": [["third"], ["fourth"], ["fifth"], ["first"], ["second"]]
+    },
+    {
+      "sort": [{ "field": "score", "direction": "desc", "nulls": "first" }],
+      "expected": [["second"], ["first"], ["fourth"], ["fifth"], ["third"]]
+    },
+    {
+      "sort": [{ "field": "enabled", "direction": "asc", "nulls": "last" }],
+      "expected": [["second"], ["fourth"], ["first"], ["third"], ["fifth"]]
+    }
+  ]
+}

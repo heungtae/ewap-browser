@@ -54,10 +54,59 @@ export async function queryDataset(input: Dataset, query: unknown) {
     coverage: dataset.coverage,
     matchedRows: rows.length,
   };
+  if (q.sort && q.op !== "project") throw new Error("SORT_REQUIRES_PROJECT");
   if (q.op === "count")
     return { ...lineage, value: rows.length, precision: "exact_count" };
   if (q.op === "project") {
     const fields = q.fields.map(field);
+    if (q.sort) {
+      if (new Set(q.sort.map((entry) => entry.field)).size !== q.sort.length)
+        throw new Error("DUPLICATE_SORT_FIELD");
+      const sort = q.sort.map((entry) => {
+        const index = field(entry.field);
+        const type = dataset.fields[index]!.type;
+        if (type !== "number" && type !== "string" && type !== "boolean")
+          throw new Error("SORT_TYPE_UNAVAILABLE");
+        if (
+          dataset.rows.some(
+            (row) => row[index] !== null && typeof row[index] !== type,
+          )
+        )
+          throw new Error("SORT_TYPE_MISMATCH");
+        return { ...entry, index };
+      });
+      const indexed = rows.map((row, index) => ({ row, index }));
+      indexed.sort((left, right) => {
+        for (const order of sort) {
+          const a = left.row[order.index],
+            b = right.row[order.index];
+          if (a === b) continue;
+          if (a === null || b === null)
+            return (a === null ? -1 : 1) * (order.nulls === "first" ? 1 : -1);
+          if (a === undefined || b === undefined)
+            throw new Error("DATASET_SHAPE");
+          const comparison =
+            typeof a === "boolean" && typeof b === "boolean"
+              ? a
+                ? 1
+                : -1
+              : typeof a === "number" && typeof b === "number"
+                ? a < b
+                  ? -1
+                  : 1
+                : typeof a === "string" && typeof b === "string"
+                  ? a < b
+                    ? -1
+                    : 1
+                  : (() => {
+                      throw new Error("SORT_TYPE_MISMATCH");
+                    })();
+          return comparison * (order.direction === "asc" ? 1 : -1);
+        }
+        return left.index - right.index;
+      });
+      rows.splice(0, rows.length, ...indexed.map((entry) => entry.row));
+    }
     return {
       ...lineage,
       fields: q.fields,

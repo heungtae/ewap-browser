@@ -66,9 +66,22 @@ export async function runRange(db: IDBDatabase, context: Context) {
     result.digest !== dataset.digest
   )
     throw new Error("RANGE_QUERY_FAILED");
+  const sorted = await queryDataset(restored, {
+    op: "project",
+    fields: ["value"],
+    filters: [],
+    sort: [{ field: "value", direction: "desc", nulls: "last" }],
+    limit: 4,
+  });
+  if (
+    !("rows" in sorted) ||
+    JSON.stringify(sorted.rows) !== "[[2],[1],[0],[null]]"
+  )
+    throw new Error("SORT_QUERY_FAILED");
   return {
     realIndexedDb: true,
     matchedRows: result.matchedRows,
     truncated: result.truncated,
+    sortVerified: true,
   };
 }

@@ -6,7 +6,7 @@
 
 ## Browser Agent S29 — 2026-11-01 numeric range filters
 
-**In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#numeric-range-filter-continuation--2026-11-01) records typed numeric boundaries, semantic goldens and a controlled Chrome IndexedDB check. Sort/group, runtime integration and S28 prerequisites remain open.
+**In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#numeric-range-filter-continuation--2026-11-01) records typed numeric boundaries, semantic goldens and a controlled Chrome IndexedDB check. [Typed sorting](evidence/s29-construction-2026-10-19.md#typed-sorting-continuation--2026-11-01) is also verified in a controlled fixture. Group queries, runtime integration and S28 prerequisites remain open.
 
 ## Browser Agent S28 — 2026-10-31 transfer continuation
 
