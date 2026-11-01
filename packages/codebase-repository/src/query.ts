@@ -57,6 +57,35 @@ export async function queryDataset(input: Dataset, query: unknown) {
   if (q.sort && q.op !== "project") throw new Error("SORT_REQUIRES_PROJECT");
   if (q.op === "count")
     return { ...lineage, value: rows.length, precision: "exact_count" };
+  if (q.op === "group") {
+    if (q.fields.length !== 1) throw new Error("ONE_GROUP_FIELD_REQUIRED");
+    const index = field(q.fields[0]!);
+    const type = dataset.fields[index]!.type;
+    if (type !== "number" && type !== "string" && type !== "boolean")
+      throw new Error("GROUP_TYPE_UNAVAILABLE");
+    if (
+      dataset.rows.some(
+        (row) => row[index] !== null && typeof row[index] !== type,
+      )
+    )
+      throw new Error("GROUP_TYPE_MISMATCH");
+    const groups = new Map<string | number | boolean | null, number>();
+    for (const row of rows) {
+      const value = row[index];
+      if (value === undefined) throw new Error("DATASET_SHAPE");
+      groups.set(value, (groups.get(value) ?? 0) + 1);
+    }
+    return {
+      ...lineage,
+      field: q.fields[0]!,
+      groups: [...groups]
+        .slice(0, q.limit)
+        .map(([key, count]) => ({ key, count })),
+      totalGroups: groups.size,
+      truncated: groups.size > q.limit,
+      precision: "exact_count",
+    };
+  }
   if (q.op === "project") {
     const fields = q.fields.map(field);
     if (q.sort) {

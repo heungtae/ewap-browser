@@ -788,7 +788,15 @@
           "properties": {
             "op": {
               "type": "string",
-              "enum": ["project", "count", "sum", "min", "max", "average"]
+              "enum": [
+                "project",
+                "count",
+                "group",
+                "sum",
+                "min",
+                "max",
+                "average"
+              ]
             },
             "fields": {
               "maxItems": 50,

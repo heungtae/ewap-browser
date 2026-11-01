@@ -3642,6 +3642,13 @@
       "target": "S29 real Chrome IndexedDB typed sorting evidence"
     },
     {
+      "path": "docs/evidence/s29-group-chrome-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "preserve",
+      "sprint": "S29",
+      "target": "S29 real Chrome IndexedDB grouped counts evidence"
+    },
+    {
       "path": "docs/evidence/s29-first-failures-2026-10-19.json",
       "owner": "RF30",
       "disposition": "replace",
@@ -9301,6 +9308,20 @@
       "disposition": "reuse",
       "sprint": "S29",
       "target": "S29 deterministic typed dataset sorting regression"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/group-query.test.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 typed grouping and count regression"
+    },
+    {
+      "path": "extension/tests/fixture/s29/group-query.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 grouping and count semantic golden"
     },
     {
       "path": "extension/tests/fixture/s29/sort-query.json",

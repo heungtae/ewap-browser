@@ -78,10 +78,25 @@ export async function runRange(db: IDBDatabase, context: Context) {
     JSON.stringify(sorted.rows) !== "[[2],[1],[0],[null]]"
   )
     throw new Error("SORT_QUERY_FAILED");
+  const grouped = await queryDataset(restored, {
+    op: "group",
+    fields: ["value"],
+    filters: [],
+    limit: 2,
+  });
+  if (
+    !("groups" in grouped) ||
+    JSON.stringify(grouped.groups) !==
+      '[{"key":0,"count":1},{"key":1,"count":1}]' ||
+    grouped.totalGroups !== 4 ||
+    !grouped.truncated
+  )
+    throw new Error("GROUP_QUERY_FAILED");
   return {
     realIndexedDb: true,
     matchedRows: result.matchedRows,
     truncated: result.truncated,
     sortVerified: true,
+    groupVerified: true,
   };
 }

@@ -76,7 +76,7 @@ const numericRangeSchema = z
       context.addIssue({ code: "custom", message: "RANGE_BOUNDS_INVALID" });
   });
 export const querySchema = z.strictObject({
-  op: z.enum(["project", "count", "sum", "min", "max", "average"]),
+  op: z.enum(["project", "count", "group", "sum", "min", "max", "average"]),
   fields: z.array(z.string().max(200)).max(50),
   filters: z
     .array(

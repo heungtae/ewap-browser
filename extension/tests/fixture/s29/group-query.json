@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "field": "kind",
+      "expected": [
+        { "key": "a", "count": 2 },
+        { "key": "b", "count": 2 },
+        { "key": null, "count": 1 }
+      ]
+    },
+    {
+      "field": "active",
+      "expected": [
+        { "key": true, "count": 3 },
+        { "key": false, "count": 1 },
+        { "key": null, "count": 1 }
+      ]
+    },
+    {
+      "field": "score",
+      "expected": [
+        { "key": 0, "count": 2 },
+        { "key": 2, "count": 2 },
+        { "key": null, "count": 1 }
+      ]
+    }
+  ]
+}
