@@ -1,93 +1,83 @@
 import assert from "node:assert/strict";
-import { build } from "esbuild";
-import { cdp, evaluate, waitFor } from "../chrome-cdp-utils.mjs";
-// Exercises the ownership resolver with real Chrome sender/context data. The
-// fixture injects issue() in the Worker; it does not simulate toolbar delivery.
-export async function qualifyPanelOwner({ panel, worker, targets }) {
-  const built = await build({
-    entryPoints: ["apps/chrome-extension/src/bridge/panel-owner.ts"],
-    bundle: true,
-    write: false,
-    format: "iife",
-    globalName: "OwnerProbe",
-    platform: "browser",
-  });
-  await evaluate(
-    worker,
-    built.outputFiles[0].text +
-      ";globalThis.ownerProbe=new OwnerProbe.PanelOwners(chrome.runtime.id);true",
-  );
+import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
+// Triggers Chrome's toolbar action, rather than injecting address issuance.
+export async function qualifyPanelOwner({ worker, targets, browserCommand }) {
   const tab = await evaluate(
-    panel,
-    "chrome.tabs.getCurrent().then(t=>({id:t.id,windowId:t.windowId}))",
-  );
-  const address = await evaluate(
     worker,
-    `(()=>{const a=ownerProbe.issue(${JSON.stringify(tab)});globalThis.ownerAddress=a;return a.path})()`,
+    "chrome.tabs.create({url:'about:blank#s28-owner',active:true}).then(t=>({id:t.id,windowId:t.windowId}))",
   );
-  await evaluate(
-    worker,
-    `chrome.sidePanel.setOptions({tabId:${tab.id},path:${JSON.stringify(address)},enabled:true}).then(()=>true)`,
+  const target = await waitFor(
+    async () =>
+      (await targets()).find((t) => t.url === "about:blank#s28-owner"),
+    5000,
+    "OWNER_TAB",
   );
-  await evaluate(
-    worker,
-    `chrome.runtime.onMessage.addListener((v,s)=>{if(v?.kind==='ownerProbe')void ownerProbe.resolve(s,()=>chrome.runtime.getContexts({contextTypes:['SIDE_PANEL']}),id=>chrome.tabs.get(id)).then(o=>{globalThis.ownerResult={resolved:!!o,tabMatches:o?.tabId===${tab.id},windowMatches:o?.windowId===${tab.windowId},documentIdPresent:!!o?.documentId}})});true`,
+  const extensionId = new URL(worker.url).host;
+  await browserCommand("Extensions.triggerAction", {
+    id: extensionId,
+    targetId: (
+      await browserCommand("Target.getTargets", { filter: [{ type: "tab" }] })
+    ).targetInfos.find((t) => t.url === target.url).targetId,
+  });
+  const address = await waitFor(
+    async () => {
+      const result = await evaluate(
+        worker,
+        `chrome.sidePanel.getOptions({tabId:${tab.id}}).then(o=>o.path)`,
+      );
+      return result?.includes("?owner=") ? result : undefined;
+    },
+    5000,
+    "TOOLBAR_ADDRESS",
   );
-  await evaluate(
-    panel,
-    `(()=>{const b=document.createElement('button');b.style='position:fixed;left:0;top:0;z-index:2147483647';b.onclick=()=>chrome.sidePanel.open({tabId:${tab.id}});document.body.append(b);return true})()`,
-  );
-  for (const type of ["mousePressed", "mouseReleased"])
-    await cdp(panel.webSocketDebuggerUrl, "Input.dispatchMouseEvent", {
-      type,
-      x: 15,
-      y: 15,
-      button: "left",
-      clickCount: 1,
-    });
   const owned = await waitFor(
     async () => (await targets()).find((t) => t.url.endsWith(address)),
     5000,
-    "OWNED_PANEL",
+    "TOOLBAR_PANEL",
   );
-  await waitFor(
-    () => evaluate(owned, "document.readyState==='complete'"),
-    5000,
-    "OWNED_PANEL_READY",
+  const response = await waitFor(
+    async () => {
+      const value = await evaluate(
+        owned,
+        "chrome.runtime.sendMessage({kind:'capabilities'})",
+      );
+      return value?.ok ? value : undefined;
+    },
+    7000,
+    "TOOLBAR_CAPABILITIES",
   );
-  await evaluate(
-    owned,
-    "chrome.runtime.sendMessage({kind:'ownerProbe'}).then(()=>true)",
-  );
-  const result = await waitFor(
-    () => evaluate(worker, "globalThis.ownerResult"),
-    5000,
-    "OWNER_RESOLVE",
-  );
-  assert.deepEqual(result, {
-    resolved: true,
-    tabMatches: true,
-    windowMatches: true,
-    documentIdPresent: true,
-  });
-  await evaluate(
+  assert.equal(response.result.taskReady, false);
+  const contexts = await evaluate(
     worker,
-    `ownerProbe.revoke(${tab.id});globalThis.ownerResult=null;true`,
+    `chrome.runtime.getContexts({contextTypes:['SIDE_PANEL']}).then(cs=>cs.filter(c=>c.documentUrl.endsWith(${JSON.stringify(address)})))`,
   );
-  await evaluate(
-    owned,
-    "chrome.runtime.sendMessage({kind:'ownerProbe'}).then(()=>true)",
+  assert.equal(contexts.length, 1);
+  assert.ok(contexts[0].documentId);
+  // An ordinary tab loading the same address cannot impersonate the panel.
+  const copy = await evaluate(
+    worker,
+    `chrome.tabs.create({url:chrome.runtime.getURL(${JSON.stringify(address)}),active:false}).then(t=>t.id)`,
   );
-  const revoked = await waitFor(
-    () => evaluate(worker, "globalThis.ownerResult"),
+  const copied = await waitFor(
+    async () =>
+      (await targets()).find(
+        (t) =>
+          t.type === "page" && t.id !== owned.id && t.url.endsWith(address),
+      ),
     5000,
-    "OWNER_REVOKED",
+    "COPIED_OWNER",
   );
-  assert.equal(revoked.resolved, false);
+  const denied = await evaluate(
+    copied,
+    "chrome.runtime.sendMessage({kind:'capabilities'})",
+  );
+  assert.equal(denied?.ok, false);
+  await evaluate(worker, `chrome.tabs.remove(${copy}).then(()=>true)`);
   return {
+    toolbarActionOpenedPanel: true,
     ownedAddressResolves: true,
-    revokedAddressDenied: true,
+    copiedTabDenied: true,
     ownerScope:
-      "injected issuance, real Chrome sender/context; toolbar activation unqualified",
+      "Chrome toolbar action, live native bootstrap, tab impersonation; no task admission",
   };
 }

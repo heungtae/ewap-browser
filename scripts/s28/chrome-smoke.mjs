@@ -1,3 +1,4 @@
+import { pipeCommands } from "./chrome-pipe.mjs";
 import { qualifyNative } from "./chrome-native.mjs";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
@@ -17,6 +18,8 @@ const child = spawn(
   executable,
   [
     "--headless=new",
+    "--enable-unsafe-extension-debugging",
+    "--remote-debugging-pipe",
     "--no-sandbox",
     "--disable-gpu",
     "--disable-dev-shm-usage",
@@ -26,8 +29,9 @@ const child = spawn(
     `--disable-extensions-except=${resolve("dist/s28/chrome-extension")}`,
     "about:blank",
   ],
-  { stdio: "ignore" },
+  { stdio: ["ignore", "ignore", "ignore", "pipe", "pipe"] },
 );
+const browserCommand = pipeCommands(child);
 const deadline = setTimeout(() => child.kill("SIGKILL"), 50000);
 try {
   const targets = () =>
@@ -140,6 +144,7 @@ try {
     if (name === "panel" && process.argv.includes("--native"))
       native = await qualifyNative({
         profile,
+        browserCommand,
         extensionId: id,
         worker,
         panel: target,

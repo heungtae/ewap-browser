@@ -79,3 +79,31 @@ export class PanelOwners {
     }
   }
 }
+
+export async function openOwnedPanel(
+  owners: PanelOwners,
+  tab: PanelTab,
+  panel: {
+    setOptions(value: {
+      tabId: number;
+      path: string;
+      enabled: boolean;
+    }): Promise<void>;
+    open(value: { tabId: number }): Promise<void>;
+  },
+) {
+  const owner = owners.issue(tab);
+  try {
+    const configured = panel.setOptions({
+      tabId: owner.tabId,
+      path: owner.path,
+      enabled: true,
+    });
+    // Invoke open before yielding the trusted Chrome action gesture.
+    const opened = panel.open({ tabId: owner.tabId });
+    await Promise.all([configured, opened]);
+  } catch (error) {
+    owners.revoke(owner.tabId);
+    throw error;
+  }
+}

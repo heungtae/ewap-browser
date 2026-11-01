@@ -1,5 +1,8 @@
 import { expect, it } from "vitest";
-import { PanelOwners } from "../../../../../apps/chrome-extension/src/bridge/panel-owner.js";
+import {
+  PanelOwners,
+  openOwnedPanel,
+} from "../../../../../apps/chrome-extension/src/bridge/panel-owner.js";
 const id = "a".repeat(32);
 function fixture() {
   const owners = new PanelOwners(id);
@@ -97,4 +100,28 @@ it("bounds owner allocations and rejects invalid Chrome event scope", () => {
   );
   owners.revoke(0);
   expect(() => owners.issue({ id: 256, windowId: 1 })).not.toThrow();
+});
+
+it("opens within the action gesture before asynchronous panel configuration settles", async () => {
+  const owners = new PanelOwners(id);
+  const calls: string[] = [];
+  let finish: (() => void) | undefined;
+  const opened = openOwnedPanel(
+    owners,
+    { id: 7, windowId: 4 },
+    {
+      setOptions: () => {
+        calls.push("configure");
+        return new Promise<void>((done) => {
+          finish = done;
+        });
+      },
+      open: async () => {
+        calls.push("open");
+      },
+    },
+  );
+  expect(calls).toEqual(["configure", "open"]);
+  finish!();
+  await opened;
 });

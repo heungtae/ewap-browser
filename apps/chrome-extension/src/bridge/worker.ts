@@ -2,23 +2,11 @@ import "./schema-config.js";
 import { parseMigrationCommand } from "../../../../packages/policy-engine/src/migration-rpc.js";
 import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
 import { api, liveUiSender, unboundBootstrapResult } from "./api.js";
-import { PanelOwners } from "./panel-owner.js";
+import { PanelOwners, openOwnedPanel } from "./panel-owner.js";
 import { NativeBridge } from "./native.js";
 const panelOwners = new PanelOwners(api?.runtime.id ?? "");
 api?.action.onClicked.addListener((tab) => {
-  let tabId: number | undefined;
-  void (async () => {
-    const owner = panelOwners.issue(tab);
-    tabId = owner.tabId;
-    await api!.sidePanel.setOptions({
-      tabId: owner.tabId,
-      path: owner.path,
-      enabled: true,
-    });
-    await api!.sidePanel.open({ tabId: owner.tabId });
-  })().catch(() => {
-    if (tabId !== undefined) panelOwners.revoke(tabId);
-  });
+  void openOwnedPanel(panelOwners, tab, api!.sidePanel).catch(() => undefined);
 });
 api?.tabs.onRemoved.addListener((id) => panelOwners.revoke(id));
 api?.tabs.onDetached.addListener((id) => panelOwners.revoke(id));

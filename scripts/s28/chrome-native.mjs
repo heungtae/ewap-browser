@@ -9,6 +9,7 @@ import { qualifySidePanel } from "./chrome-sidepanel.mjs";
 import { qualifyMultiplePanels } from "./chrome-multiwindow.mjs";
 export async function qualifyNative({
   profile,
+  browserCommand,
   extensionId,
   worker,
   panel,
@@ -139,7 +140,12 @@ export async function qualifyNative({
     );
     assert.equal(resumed.result.cursor, 0);
     assert.equal(resumed.result.events.length, 0);
-    const ownerEvidence = await qualifyPanelOwner({ panel, worker, targets });
+    const ownerEvidence = await qualifyPanelOwner({
+      panel,
+      worker,
+      targets,
+      browserCommand,
+    });
     return {
       ...ownerEvidence,
       restartReconnect: true,
