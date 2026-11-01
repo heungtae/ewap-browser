@@ -52,11 +52,42 @@ export const datasetBodySchema = z
       c.addIssue({ code: "custom", message: "DATASET_TTL" });
   });
 export const datasetSchema = datasetBodySchema.extend({ digest: hash });
+const numericRangeSchema = z
+  .union([
+    z.strictObject({
+      lower: z.number().finite(),
+      upper: z.number().finite().optional(),
+      lowerInclusive: z.boolean(),
+      upperInclusive: z.boolean(),
+    }),
+    z.strictObject({
+      lower: z.number().finite().optional(),
+      upper: z.number().finite(),
+      lowerInclusive: z.boolean(),
+      upperInclusive: z.boolean(),
+    }),
+  ])
+  .superRefine((range, context) => {
+    if (
+      range.lower !== undefined &&
+      range.upper !== undefined &&
+      range.lower > range.upper
+    )
+      context.addIssue({ code: "custom", message: "RANGE_BOUNDS_INVALID" });
+  });
 export const querySchema = z.strictObject({
   op: z.enum(["project", "count", "sum", "min", "max", "average"]),
   fields: z.array(z.string().max(200)).max(50),
   filters: z
-    .array(z.strictObject({ field: z.string().max(200), equals: cellSchema }))
+    .array(
+      z.union([
+        z.strictObject({ field: z.string().max(200), equals: cellSchema }),
+        z.strictObject({
+          field: z.string().max(200),
+          range: numericRangeSchema,
+        }),
+      ]),
+    )
     .max(20),
   limit: z.number().int().min(1).max(1000),
 });

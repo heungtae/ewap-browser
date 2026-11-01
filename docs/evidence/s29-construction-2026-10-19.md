@@ -135,3 +135,11 @@ before selecting these target paths in production.
 IndexedDB transaction/abort behavior was checked against the
 [W3C IndexedDB specification](https://www.w3.org/TR/IndexedDB/); fake tests follow
 the [fake-indexeddb project API](https://github.com/dumbmatter/fakeIndexedDB).
+
+## Numeric range filter continuation — 2026-11-01
+
+Source base `66a294fd6` plus this change. Numeric range filters accept at least one finite bound and explicit inclusive flags, compare IEEE 754 numbers without string/unit coercion, and exclude null cells. A declared nonnumeric/unknown field or a mixed non-null value rejects; inverted bounds reject in runtime validation. Equality and range filters combine with AND. Counts and aggregates apply to the available dataset rows and retain the original coverage and provenance; a partial sample does not become complete. The published JSON schema expresses that at least one bound is required; cross-field ordering is additionally enforced at runtime.
+
+The S29 semantic golden covers inclusive/exclusive edges and empty matches; tests cover partial sample coverage, combined equality, truncation, nulls, unknown/mixed types, non-finite values and aggregation. S29 unit tests passed 20/20; S30 tests passed 21/21 and S34 tests passed 60/60. S29/S30 contract goldens and boundary checks, typecheck and ESLint passed. The first typecheck exposed a CommonJS-incompatible test fixture path and unknown expectation type; both were corrected and rechecked. The version-preserving S29 build passed.
+
+On Linux with Chrome for Testing 147.0.7727.15, the [controlled Chrome report](s29-range-chrome-2026-11-01.json) records a real IndexedDB write/read and range query with two matching rows and a truncated one-row projection. This is a synthetic fixture, not a live site, Provider, task routing or release qualification. The older statement above that range queries are unavailable is historical; sort and group operators, runtime integration and other S29 gates remain open. S28 and S29 remain In Progress.

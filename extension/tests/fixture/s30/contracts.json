@@ -799,20 +799,66 @@
               "maxItems": 20,
               "type": "array",
               "items": {
-                "type": "object",
-                "properties": {
-                  "field": { "type": "string", "maxLength": 200 },
-                  "equals": {
-                    "anyOf": [
-                      { "type": "string", "maxLength": 4096 },
-                      { "type": "number" },
-                      { "type": "boolean" },
-                      { "type": "null" }
-                    ]
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "field": { "type": "string", "maxLength": 200 },
+                      "equals": {
+                        "anyOf": [
+                          { "type": "string", "maxLength": 4096 },
+                          { "type": "number" },
+                          { "type": "boolean" },
+                          { "type": "null" }
+                        ]
+                      }
+                    },
+                    "required": ["field", "equals"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "field": { "type": "string", "maxLength": 200 },
+                      "range": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "lower": { "type": "number" },
+                              "upper": { "type": "number" },
+                              "lowerInclusive": { "type": "boolean" },
+                              "upperInclusive": { "type": "boolean" }
+                            },
+                            "required": [
+                              "lower",
+                              "lowerInclusive",
+                              "upperInclusive"
+                            ],
+                            "additionalProperties": false
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "lower": { "type": "number" },
+                              "upper": { "type": "number" },
+                              "lowerInclusive": { "type": "boolean" },
+                              "upperInclusive": { "type": "boolean" }
+                            },
+                            "required": [
+                              "upper",
+                              "lowerInclusive",
+                              "upperInclusive"
+                            ],
+                            "additionalProperties": false
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["field", "range"],
+                    "additionalProperties": false
                   }
-                },
-                "required": ["field", "equals"],
-                "additionalProperties": false
+                ]
               }
             },
             "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }

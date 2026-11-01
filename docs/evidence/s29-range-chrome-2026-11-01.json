@@ -1,0 +1,109 @@
+{
+  "result": "PASS",
+  "first": {
+    "status": "partial",
+    "examined": 39,
+    "emitted": 7,
+    "omitted": 2,
+    "redactions": 2,
+    "total": 7,
+    "reasons": [
+      "SAMPLE_ONLY",
+      "DENIED_REGION"
+    ],
+    "startedAt": 1793524445515,
+    "endedAt": 1793524445518,
+    "deadline": 1793524455514
+  },
+  "revisitRevision": 2,
+  "deltaRevision": 3,
+  "large": {
+    "status": "partial",
+    "examined": 5000,
+    "emitted": 0,
+    "omitted": 1,
+    "redactions": 0,
+    "total": null,
+    "reasons": [
+      "NODE_LIMIT"
+    ],
+    "startedAt": 1793524445639,
+    "endedAt": 1793524446018,
+    "deadline": 1793524455639
+  },
+  "emitted": {
+    "status": "partial",
+    "examined": 1101,
+    "emitted": 583,
+    "omitted": 517,
+    "redactions": 0,
+    "total": 1100,
+    "reasons": [
+      "OUTPUT_LIMIT",
+      "BYTE_LIMIT"
+    ],
+    "startedAt": 1793524446022,
+    "endedAt": 1793524446209,
+    "deadline": 1793524456022
+  },
+  "generation": {
+    "components": {
+      "examined": 583,
+      "emitted": 128,
+      "omitted": 455,
+      "deadline": 1793524456022,
+      "status": "partial"
+    },
+    "actions": {
+      "examined": 583,
+      "emitted": 256,
+      "omitted": 327,
+      "deadline": 1793524456022,
+      "status": "partial"
+    },
+    "routes": {
+      "examined": 0,
+      "emitted": 0,
+      "omitted": 0,
+      "deadline": 1793524456022,
+      "status": "partial"
+    }
+  },
+  "components": 128,
+  "actions": 256,
+  "sample": {
+    "status": "partial",
+    "examined": 443,
+    "emitted": 1,
+    "omitted": 126,
+    "redactions": 0,
+    "total": 1,
+    "reasons": [
+      "CELL_TRUNCATED",
+      "SAMPLE_ONLY"
+    ],
+    "startedAt": 1793524446366,
+    "endedAt": 1793524446386,
+    "deadline": 1793524456366
+  },
+  "cancellation": true,
+  "injectedQuotaAbort": true,
+  "realConnectionCas": true,
+  "postRaceRevision": 4,
+  "openShadow": true,
+  "explicitFormOwner": true,
+  "caption": true,
+  "deniedFrame": true,
+  "unitDeadline": true,
+  "numericRange": {
+    "realIndexedDb": true,
+    "matchedRows": 2,
+    "truncated": true
+  },
+  "privacy": true,
+  "realIndexedDB": true,
+  "physicalStorage": {
+    "usage": 2372262,
+    "quota": 10739790502
+  }
+}

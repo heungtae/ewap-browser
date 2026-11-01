@@ -14,12 +14,33 @@ export async function queryDataset(input: Dataset, query: unknown) {
     if (index < 0) throw new Error("UNKNOWN_FIELD");
     return index;
   };
-  const filters = q.filters.map((f) => ({
-    index: field(f.field),
-    equals: f.equals,
-  }));
+  const filters = q.filters.map((f) => {
+    const index = field(f.field);
+    if ("range" in f) {
+      if (dataset.fields[index]!.type !== "number")
+        throw new Error("UNKNOWN_NUMERIC_TYPE");
+      if (
+        dataset.rows.some(
+          (row) => row[index] !== null && typeof row[index] !== "number",
+        )
+      )
+        throw new Error("MIXED_NUMERIC_VALUES");
+    }
+    return { ...f, index };
+  });
   const rows = dataset.rows.filter((row) =>
-    filters.every((f) => row[f.index] === f.equals),
+    filters.every((f) => {
+      const value = row[f.index];
+      if ("equals" in f) return value === f.equals;
+      if (typeof value !== "number") return false;
+      const { lower, upper, lowerInclusive, upperInclusive } = f.range;
+      return (
+        (lower === undefined ||
+          (lowerInclusive ? value >= lower : value > lower)) &&
+        (upper === undefined ||
+          (upperInclusive ? value <= upper : value < upper))
+      );
+    }),
   );
   const lineage = {
     datasetId: dataset.id,

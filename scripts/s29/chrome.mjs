@@ -63,7 +63,8 @@ try {
     target,
     "S29.runCases().then(result=>({result:'PASS',...result})).catch(error=>({result:'FAIL',error:error.stack}))",
   );
-  const output = "docs/evidence/s29-chrome-2026-10-19";
+  const output =
+    process.env.S29_EVIDENCE_DIR ?? "docs/evidence/s29-chrome-2026-10-19";
   await mkdir(output, { recursive: true });
   await writeFile(
     `${output}/report.json`,

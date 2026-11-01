@@ -3628,6 +3628,13 @@
       "target": "package tests, shared fixtures/integration/evals/e2e, updated operational docs"
     },
     {
+      "path": "docs/evidence/s29-range-chrome-2026-11-01.json",
+      "owner": "RF30",
+      "disposition": "preserve",
+      "sprint": "S29",
+      "target": "S29 real Chrome IndexedDB numeric range evidence"
+    },
+    {
       "path": "docs/evidence/s29-first-failures-2026-10-19.json",
       "owner": "RF30",
       "disposition": "replace",
@@ -9273,6 +9280,27 @@
       "disposition": "replace",
       "sprint": "S29",
       "target": "package tests, shared fixtures/integration/evals/e2e, updated operational docs"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/range-query.test.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 typed numeric range query regression"
+    },
+    {
+      "path": "extension/tests/fixture/s29/range-query.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 numeric range query semantic golden"
+    },
+    {
+      "path": "extension/tests/fixture/s29/chrome-range.ts",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S29",
+      "target": "S29 real Chrome IndexedDB numeric range regression"
     },
     {
       "path": "extension/tests/unit/migration/s29/eviction.test.ts",

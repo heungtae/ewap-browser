@@ -2,6 +2,7 @@ import { runScope } from "./chrome-scope.js";
 import { DomCollector } from "../../../../apps/chrome-extension/src/codebase/dom-collector.js";
 import { checkAtomic } from "./chrome-atomic.js";
 import { runLimits } from "./chrome-limits.js";
+import { runRange } from "./chrome-range.js";
 import {
   buildGraph,
   identifyContext,
@@ -138,6 +139,7 @@ export async function runCases() {
   const atomic = await checkAtomic(current, repository, changed.delta.entities);
   const limits = await runLimits(current);
   const scope = await runScope(current);
+  const numericRange = await runRange(db, current);
   const physicalStorage = await navigator.storage.estimate();
   db.close();
   return {
@@ -147,6 +149,7 @@ export async function runCases() {
     ...limits,
     ...atomic,
     ...scope,
+    numericRange,
     privacy: true,
     realIndexedDB: true,
     physicalStorage: {

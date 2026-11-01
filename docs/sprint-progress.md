@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S29 — 2026-11-01 numeric range filters
+
+**In Progress.** [Evidence](evidence/s29-construction-2026-10-19.md#numeric-range-filter-continuation--2026-11-01) records typed numeric boundaries, semantic goldens and a controlled Chrome IndexedDB check. Sort/group, runtime integration and S28 prerequisites remain open.
+
 ## Browser Agent S28 — 2026-10-31 transfer continuation
 
 **In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#transfer-continuation--2026-10-31) records authenticated Unix socket expiry, partial-transfer checks, [ISS-20261031-001](issues/records/2026-10-31-bridge-replay-snapshot.md) replay correction and controlled Chrome/native reconnect. Full snapshot recovery and other S28 gates remain open.

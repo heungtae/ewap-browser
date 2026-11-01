@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "range": {
+        "lower": 0,
+        "upper": 2,
+        "lowerInclusive": false,
+        "upperInclusive": true
+      },
+      "expected": { "rows": [[1], [2]], "matchedRows": 2, "truncated": false }
+    },
+    {
+      "range": { "upper": 1, "lowerInclusive": true, "upperInclusive": false },
+      "expected": { "rows": [[0]], "matchedRows": 1, "truncated": false }
+    },
+    {
+      "range": {
+        "lower": 1,
+        "upper": 1,
+        "lowerInclusive": false,
+        "upperInclusive": true
+      },
+      "expected": { "rows": [], "matchedRows": 0, "truncated": false }
+    }
+  ]
+}
