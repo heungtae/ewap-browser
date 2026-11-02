@@ -16033,6 +16033,83 @@
       "disposition": "replace",
       "sprint": "S28",
       "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "docs/baselines/s28/ui-review.json",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "docs/evidence/s28-s29-completion-2026-11-02-profile-manager.png",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "docs/evidence/s28-s29-completion-2026-11-02-workflow-catalog.png",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "docs/evidence/s28-s29-completion-2026-11-02.json",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "docs/evidence/s28-s29-completion-2026-11-02.md",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "docs/issues/records/2026-11-02-manager-empty-state.md",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "extension/tests/fixture/s29/chrome-dirty.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "scripts/s28/install-version-check.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "scripts/s28/settings-capture.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "scripts/s28/settings-focus.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
+    },
+    {
+      "path": "scripts/s28/verify-ui-review.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Original S28/S29 acceptance audit and enforced preserved UI/resource qualification"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

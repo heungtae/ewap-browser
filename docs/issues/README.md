@@ -12,6 +12,7 @@
 
 | ID               | 발생일     | 이슈                                                                                                | 상태    | 최근 갱신  | 다음 작업                                                |
 | ---------------- | ---------- | --------------------------------------------------------------------------------------------------- | ------- | ---------- | -------------------------------------------------------- |
+| ISS-20261102-003 | 2026-11-02 | [Manager empty-list presentation wrapper](records/2026-11-02-manager-empty-state.md) | 해결 | 2026-11-02 | Controlled 26-state UI and management regression passed; deployment unverified |
 | ISS-20261102-002 | 2026-11-02 | [Codebase catalog after caller revocation](records/2026-11-02-codebase-read-freshness.md) | 해결 | 2026-11-02 | Read-service/native projection scope passed; task admission and deployment unverified |
 | ISS-20261102-001 | 2026-11-02 | [MAIN injection document verification](records/2026-11-02-main-injection-document.md) | 해결 | 2026-11-02 | Target primitive/controlled Chrome acceptance passed; task integration and deployment unverified |
 | ISS-20261031-006 | 2026-10-31 | [Live sender check rejected Chrome side panel](records/2026-10-31-sidepanel-context-window.md) | 검증 중 | 2026-11-01 | 실제 toolbar·복사 탭 차단 검증; task·설치 검증 남음 |

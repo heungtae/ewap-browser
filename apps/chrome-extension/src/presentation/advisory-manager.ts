@@ -112,9 +112,12 @@ export function initializeAdvisoryManager() {
     if (chosen) await show(chosen);
     else {
       detail.textContent = "목록에서 프로파일을 선택하세요.";
-      root.textContent = page.partial
+      const empty = document.createElement("p");
+      empty.className = "empty-state";
+      empty.textContent = page.partial
         ? "이 범위에 일치하는 프로파일이 없습니다. 다음 목록을 확인하세요."
         : "저장된 프로파일이 없습니다.";
+      root.replaceChildren(empty);
     }
     status.textContent =
       "참고 기록을 불러왔습니다. 실행 권한은 포함하지 않습니다.";

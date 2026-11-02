@@ -1,4 +1,6 @@
+import { tabFrom } from "./settings-focus.mjs";
 import assert from "node:assert/strict";
+import { captureSettings } from "./settings-capture.mjs";
 import { build } from "esbuild";
 import { writeFile } from "node:fs/promises";
 import { cdp, evaluate, waitFor } from "../chrome-cdp-utils.mjs";
@@ -167,6 +169,17 @@ export async function qualifyAdvisory({ worker, targets, output, panel }) {
     5000,
     "WORKFLOW_REFRESHED",
   );
+  await cdp(
+    settings.webSocketDebuggerUrl,
+    "Emulation.setDeviceMetricsOverride",
+    { width: 1440, height: 1100, deviceScaleFactor: 1, mobile: false },
+  );
+  await evaluate(settings, "window.scrollTo(0,0);true");
+  const workflowComparison = await captureSettings(
+    settings,
+    output,
+    "workflow-catalog",
+  );
   await evaluate(
     settings,
     "(()=>{const row=document.querySelector('#workflow-records .workflow-row');row.querySelector('input').value='Renamed fixture workflow';[...row.querySelectorAll('button')].find(b=>b.textContent==='이름 저장').click();return true})()",
@@ -232,6 +245,18 @@ export async function qualifyAdvisory({ worker, targets, output, panel }) {
     5000,
     "PROFILE_DELETED",
   );
+  await cdp(
+    manager.webSocketDebuggerUrl,
+    "Emulation.setDeviceMetricsOverride",
+    { width: 1100, height: 800, deviceScaleFactor: 1, mobile: false },
+  );
+  await evaluate(manager, "window.scrollTo(0,0);true");
+  const managerComparison = await captureSettings(
+    manager,
+    output,
+    "profile-manager",
+  );
+  await tabFrom(manager, "#learned-profile-filter", "#learned-profile-refresh");
   const managers = await evaluate(
     worker,
     "chrome.tabs.query({url:chrome.runtime.getURL('settings/learned-profiles.html')}).then(ts=>ts.map(t=>t.id))",
@@ -241,8 +266,10 @@ export async function qualifyAdvisory({ worker, targets, output, panel }) {
     `chrome.tabs.remove(${JSON.stringify([...managers, settingsId])}).then(()=>true)`,
   );
   return {
+    baselineComparisons: [workflowComparison, managerComparison],
     actualIndexedDb: true,
     managerWindowReused: true,
+    managerKeyboardOrder: true,
     profileRenamed: true,
     localNoteSaved: true,
     sourceHistoryShown: true,

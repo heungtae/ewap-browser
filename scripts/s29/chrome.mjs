@@ -41,7 +41,8 @@ try {
             r.json(),
           )
         ).find(
-          (t) => t.type === "page" && t.url.startsWith("http://127.0.0.1"),
+          (t) =>
+            t.type === "page" && t.url === `http://127.0.0.1:${address.port}/`,
         );
       } catch {
         return undefined;
@@ -50,6 +51,24 @@ try {
     10000,
     "CHROME_READY",
   );
+  await waitFor(
+    () =>
+      evaluate(target, "document.readyState==='complete' && !!document.body"),
+    5000,
+    "FIXTURE_DOCUMENT_READY",
+  );
+  const checked = async (expression) => {
+    const result = await cdp(target.webSocketDebuggerUrl, "Runtime.evaluate", {
+      expression,
+      awaitPromise: true,
+      returnByValue: true,
+    });
+    assert.ok(
+      !result.exceptionDetails,
+      JSON.stringify(result.exceptionDetails),
+    );
+    return result.result?.value;
+  };
   const bundle = await build({
     entryPoints: ["extension/tests/fixture/s29/chrome-cases.ts"],
     bundle: true,
@@ -58,9 +77,8 @@ try {
     globalName: "S29",
     write: false,
   });
-  await evaluate(target, bundle.outputFiles[0].text);
-  const report = await evaluate(
-    target,
+  await checked(bundle.outputFiles[0].text);
+  const report = await checked(
     "S29.runCases().then(result=>({result:'PASS',...result})).catch(error=>({result:'FAIL',error:error.stack}))",
   );
   const output =

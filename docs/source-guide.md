@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+S28/S29 completed scope: [original-card/scenario audit](evidence/s28-s29-completion-2026-11-02.md), [reviewed Settings/manager geometry](baselines/s28/ui-review.json), [26-state verifier](../scripts/s28/verify-ui-review.mjs). Production entrypoint, real task/source-consent wiring and later integration/release gates remain separate.
+
 Read-only Codebase projections: [closed contracts](../packages/codebase-schema/src/projection.ts), [browser leases](../apps/chrome-extension/src/codebase/projection-registry.ts), [native endpoint](../apps/chrome-extension/src/bridge/codebase-endpoint.ts), [backend consumer](../apps/agent-server/src/codebase/projection-channel.ts), [actual Chrome runner](../scripts/s29/chrome-projection.mjs), [evidence and scope](evidence/s29-native-projection-2026-11-02.md). Explicit paired capability negotiation; no task/provider advertisement.
 
 Observed-owner restart rebind: [read-only backend snapshot](../apps/agent-server/src/migration/resume-snapshot.ts), [fresh browser rebind](../apps/chrome-extension/src/migration/resume-observed.ts), [Chrome restart runner](../scripts/s36/settings-transfer/observed-restart-chrome.mjs), [evidence and limits](evidence/s36-observed-restart-2026-10-28.md). No historical ACK use or automatic session restoration.

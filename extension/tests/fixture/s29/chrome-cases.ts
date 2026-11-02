@@ -1,3 +1,4 @@
+import { runDirtyObserver } from "./chrome-dirty.js";
 import { runScope } from "./chrome-scope.js";
 import { DomCollector } from "../../../../apps/chrome-extension/src/codebase/dom-collector.js";
 import { checkAtomic } from "./chrome-atomic.js";
@@ -140,6 +141,7 @@ export async function runCases() {
   const limits = await runLimits(current);
   const scope = await runScope(current);
   const numericRange = await runRange(db, current);
+  const dirtyObserver = await runDirtyObserver();
   const physicalStorage = await navigator.storage.estimate();
   db.close();
   return {
@@ -150,6 +152,7 @@ export async function runCases() {
     ...atomic,
     ...scope,
     numericRange,
+    dirtyObserver,
     privacy: true,
     realIndexedDB: true,
     physicalStorage: {

@@ -1,6 +1,7 @@
+import { tabFrom } from "./settings-focus.mjs";
 import assert from "node:assert/strict";
 import { cdp, evaluate, waitFor } from "../chrome-cdp-utils.mjs";
-import { capturePanel } from "./chrome-panel-capture.mjs";
+import { captureSettings } from "./settings-capture.mjs";
 export async function qualifyPreferences({ worker, panel, targets, output }) {
   const tabId = await evaluate(
     worker,
@@ -103,41 +104,20 @@ export async function qualifyPreferences({ worker, panel, targets, output }) {
       "PREFERENCE_NAV",
     );
     await evaluate(target, "window.scrollTo(0,0);true");
-    const reviewed =
-      section === "agent"
-        ? Object.fromEntries(
-            [
-              "settings-content",
-              "agent",
-              "agent-preferences-form",
-              "approval-categories",
-              "approval-constraints",
-              "agent-preferences-status",
-              "screenshot-permission-request",
-              "screenshot-permission-status",
-              "content-recovery-enable",
-              "content-recovery-status",
-              "permission-revoke-all",
-            ].map((id) => [
-              id,
-              id === "content-recovery-enable"
-                ? "unsupported automatic recovery is disabled explicitly"
-                : id === "screenshot-permission-request"
-                  ? "actual Chrome permission state; preserved paragraph wrap shifts controls"
-                  : "current preserved approval explanation wraps one more line; truthful loaded/permission status",
-            ]),
-          )
-        : {};
     comparisons.push(
-      await capturePanel(
-        target,
-        output,
-        `options-${section}`,
-        reviewed,
-        section === "agent",
-      ),
+      await captureSettings(target, output, `options-${section}`),
     );
   }
+  await tabFrom(
+    target,
+    '.settings-nav a[href="#models"]',
+    '.settings-nav a[href="#agent"]',
+  );
+  await tabFrom(
+    target,
+    '.settings-nav a[href="#agent"]',
+    '.settings-nav a[href="#automation"]',
+  );
   await evaluate(worker, `chrome.tabs.remove(${tabId}).then(()=>true)`);
   return {
     savedViaUi: true,
@@ -145,7 +125,8 @@ export async function qualifyPreferences({ worker, panel, targets, output }) {
     revisionBound: true,
     panelWriteDenied: true,
     configurationOnly: true,
-    baselineReviewPending: true,
+    navigationKeyboardOrder: true,
+    baselineReviewPending: process.env.S28_RECORD_UI_REVIEW === "1",
     comparisons,
   };
 }

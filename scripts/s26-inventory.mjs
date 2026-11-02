@@ -23,12 +23,21 @@ export const save = (path, value) =>
   writeFileSync(resolve(root, path), JSON.stringify(value, null, 2) + "\n");
 export const manifestPath = "docs/baselines/s26/disposition.json";
 // Preserve the historical baseline while pinning the user-authorized S25
-// score-gate removals and S27 status metadata. Other hashes remain unchanged.
+// score-gate removals and scoped S27/S28/S29 completion metadata.
+// Original card/scenario/design bodies and historical baselines remain unchanged.
 export function currentPreservedSourceHashes() {
   const hashes = {
     ...read("docs/baselines/s27/entry.json").preservedSourceHashes,
   };
   const changes = {
+    "docs/sprints/s28-workspace-backend-bridge.md": [
+      "8b29f168cebd7d7047f03b8c095f5b28ee0d719d02164973ce4d98a589127af6",
+      "63048c3d08c2966c310fddf27106a04e1583a220a5ae2c8f2ef53dd66fcb80dc",
+    ],
+    "docs/sprints/s29-semantic-codebase-construction.md": [
+      "5845c7064ba8de48f077e26706ee7d9f02a2e01e7653a47ae5e4c6b4ba9282eb",
+      "be8739804169b4270c56307a17a004765eb65155060d55d71ff457a1762407df",
+    ],
     "docs/sprints/s27-jev-controller-contract.md": [
       "e0e8862376d50dff70625a3b5f79c1440fc10379509eae621bd30fccf41f87a1",
       "1c4d63e0be76fc02abe041119cebe5b595a43c17d274fc0101ede8264c2f5788",

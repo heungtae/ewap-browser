@@ -1,0 +1,1139 @@
+{
+  "schema": 1,
+  "scope": "Reviewed controlled Linux Chrome 147 six-state comparison with S26; exact approved current visible-ID geometry and state. Runtime operations are checked separately.",
+  "states": {
+    "options-agent": {
+      "reason": "Preserved approval explanation wraps one extra line. Loaded state and Chrome permission status differ truthfully; unsupported automatic recovery is disabled. No form or control was removed.",
+      "baselineSha256": "78896d57471992fd275c9b28443e5bc69d1d5b4e973629ca536ae71c04d32dbd",
+      "delta": {
+        "viewport": [1440, 1100, 1],
+        "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+        "missing": [],
+        "extra": [],
+        "changes": {
+          "settings-content": {
+            "before": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1773.6]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1792.2]
+            }
+          },
+          "agent": {
+            "before": {
+              "tag": "DIV",
+              "id": "agent",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1773.6]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "agent",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1792.2]
+            }
+          },
+          "agent-preferences-form": {
+            "before": {
+              "tag": "FORM",
+              "id": "agent-preferences-form",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 205.6, 850, 1334.8]
+            },
+            "after": {
+              "tag": "FORM",
+              "id": "agent-preferences-form",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 205.6, 850, 1353.4]
+            }
+          },
+          "approval-categories": {
+            "before": {
+              "tag": "DIV",
+              "id": "approval-categories",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [418.5, 388.1, 816, 622.8]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "approval-categories",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [418.5, 406.7, 816, 622.8]
+            }
+          },
+          "approval-constraints": {
+            "before": {
+              "tag": "OUTPUT",
+              "id": "approval-constraints",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [418.5, 1034.8, 816, 20]
+            },
+            "after": {
+              "tag": "OUTPUT",
+              "id": "approval-constraints",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [418.5, 1053.4, 816, 20]
+            }
+          },
+          "agent-preferences-status": {
+            "before": {
+              "tag": "OUTPUT",
+              "id": "agent-preferences-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1550.5, 850, 20]
+            },
+            "after": {
+              "tag": "OUTPUT",
+              "id": "agent-preferences-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1569.1, 850, 20]
+            }
+          },
+          "screenshot-permission-request": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "screenshot-permission-request",
+              "role": null,
+              "class": "",
+              "disabled": true,
+              "rect": [401.5, 1692.9, 261.6, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "screenshot-permission-request",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1711.5, 261.6, 41.7]
+            }
+          },
+          "screenshot-permission-status": {
+            "before": {
+              "tag": "OUTPUT",
+              "id": "screenshot-permission-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1738.5, 850, 20]
+            },
+            "after": {
+              "tag": "OUTPUT",
+              "id": "screenshot-permission-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1757.1, 850, 20]
+            }
+          },
+          "content-recovery-enable": {
+            "before": {
+              "tag": "INPUT",
+              "id": "content-recovery-enable",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1773.8, 16, 16]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "content-recovery-enable",
+              "role": null,
+              "class": "",
+              "disabled": true,
+              "rect": [401.5, 1792.4, 16, 16]
+            }
+          },
+          "content-recovery-status": {
+            "before": {
+              "tag": "OUTPUT",
+              "id": "content-recovery-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1795.1, 850, 20]
+            },
+            "after": {
+              "tag": "OUTPUT",
+              "id": "content-recovery-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1813.7, 850, 20]
+            }
+          },
+          "permission-revoke-all": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "permission-revoke-all",
+              "role": null,
+              "class": "danger-button",
+              "disabled": false,
+              "rect": [401.5, 1829.1, 206.6, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "permission-revoke-all",
+              "role": null,
+              "class": "danger-button",
+              "disabled": false,
+              "rect": [401.5, 1847.7, 206.6, 41.7]
+            }
+          }
+        }
+      }
+    },
+    "options-models": {
+      "reason": "Controller/Analyst role and setup wording changes the text height and role-button width. This capture follows Provider deletion: the delete control is disabled and the old transient save-status output is empty. All editor controls and collapsed sections retain their structure.",
+      "baselineSha256": "1df69d8efc10099075bf3bed78eb39b402568930d45532c799b0fad0a38b84fd",
+      "delta": {
+        "viewport": [1440, 1100, 1],
+        "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+        "missing": ["settings-status"],
+        "extra": [],
+        "changes": {
+          "settings-content": {
+            "before": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1971.9]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1941.9]
+            }
+          },
+          "models": {
+            "before": {
+              "tag": "DIV",
+              "id": "models",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1971.9]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "models",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 1941.9]
+            }
+          },
+          "provider-management": {
+            "before": {
+              "tag": "SECTION",
+              "id": "provider-management",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 376]
+            },
+            "after": {
+              "tag": "SECTION",
+              "id": "provider-management",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [380.5, 118.2, 892, 357.4]
+            }
+          },
+          "provider-primary-select": {
+            "before": {
+              "tag": "SELECT",
+              "id": "provider-primary-select",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 248.8, 724.9, 44]
+            },
+            "after": {
+              "tag": "SELECT",
+              "id": "provider-primary-select",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 230.2, 699.5, 44]
+            }
+          },
+          "provider-activate": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-activate",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1134.4, 248.8, 117.1, 44]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-activate",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1109, 230.2, 142.5, 44]
+            }
+          },
+          "provider-decision-select": {
+            "before": {
+              "tag": "SELECT",
+              "id": "provider-decision-select",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 382.1, 820, 41]
+            },
+            "after": {
+              "tag": "SELECT",
+              "id": "provider-decision-select",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 363.5, 820, 41]
+            }
+          },
+          "provider-jev-enabled": {
+            "before": {
+              "tag": "INPUT",
+              "id": "provider-jev-enabled",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 438.4, 16, 16]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "provider-jev-enabled",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 419.8, 16, 16]
+            }
+          },
+          "provider-jev-failure": {
+            "before": {
+              "tag": "SELECT",
+              "id": "provider-jev-failure",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 494.3, 694.9, 44]
+            },
+            "after": {
+              "tag": "SELECT",
+              "id": "provider-jev-failure",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 475.7, 694.9, 44]
+            }
+          },
+          "provider-routing-apply": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-routing-apply",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1119.4, 494.3, 117.1, 44]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-routing-apply",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1119.4, 475.7, 117.1, 44]
+            }
+          },
+          "provider-routing-status": {
+            "before": {
+              "tag": "OUTPUT",
+              "id": "provider-routing-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 382.5, 850, 20]
+            },
+            "after": {
+              "tag": "OUTPUT",
+              "id": "provider-routing-status",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 363.9, 850, 20]
+            }
+          },
+          "provider-import": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-import",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 431.5, 208.7, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-import",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 412.9, 208.7, 41.7]
+            }
+          },
+          "primary-editor": {
+            "before": {
+              "tag": "SECTION",
+              "id": "primary-editor",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [380.5, 512.2, 892, 909.8]
+            },
+            "after": {
+              "tag": "SECTION",
+              "id": "primary-editor",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [380.5, 493.6, 892, 879.8]
+            }
+          },
+          "primary-title": {
+            "before": {
+              "tag": "H2",
+              "id": "primary-title",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 533.2, 850, 24.8]
+            },
+            "after": {
+              "tag": "H2",
+              "id": "primary-title",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 514.6, 850, 24.8]
+            }
+          },
+          "provider-form": {
+            "before": {
+              "tag": "FORM",
+              "id": "provider-form",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 599.6, 850, 771.4]
+            },
+            "after": {
+              "tag": "FORM",
+              "id": "provider-form",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 581, 850, 771.4]
+            }
+          },
+          "provider-models-load": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-models-load",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 949.3, 105.2, 37.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-models-load",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 930.7, 105.2, 37.7]
+            }
+          },
+          "provider-api-key": {
+            "before": {
+              "tag": "INPUT",
+              "id": "provider-api-key",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1105.2, 795.9, 40.6]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "provider-api-key",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1086.6, 795.9, 40.6]
+            }
+          },
+          "api-key-toggle": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "api-key-toggle",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1205.4, 1105.2, 46.1, 40.6]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "api-key-toggle",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1205.4, 1086.6, 46.1, 40.6]
+            }
+          },
+          "api-key-state": {
+            "before": {
+              "tag": "SPAN",
+              "id": "api-key-state",
+              "role": null,
+              "class": "field-help",
+              "disabled": false,
+              "rect": [401.5, 1151.8, 850, 18.6]
+            },
+            "after": {
+              "tag": "SPAN",
+              "id": "api-key-state",
+              "role": null,
+              "class": "field-help",
+              "disabled": false,
+              "rect": [401.5, 1133.2, 850, 18.6]
+            }
+          },
+          "provider-headers": {
+            "before": {
+              "tag": "DIV",
+              "id": "provider-headers",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 1373.9, 820, 43.7]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "provider-headers",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 1355.3, 820, 43.7]
+            }
+          },
+          "add-header": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "add-header",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 1452.1, 111.9, 35.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "add-header",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 1433.5, 111.9, 35.7]
+            }
+          },
+          "provider-host-access": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-host-access",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 1534.4, 259.4, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-host-access",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [416.5, 1515.8, 259.4, 41.7]
+            }
+          },
+          "provider-test": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-test",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [530.7, 1282.7, 100.3, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-test",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [530.7, 1264.1, 100.3, 41.7]
+            }
+          },
+          "provider-export": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-export",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [639, 1282.7, 147, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-export",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [639, 1264.1, 147, 41.7]
+            }
+          },
+          "provider-remove-delete": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "provider-remove-delete",
+              "role": null,
+              "class": "danger-button",
+              "disabled": false,
+              "rect": [794, 1282.7, 121.2, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "provider-remove-delete",
+              "role": null,
+              "class": "danger-button",
+              "disabled": true,
+              "rect": [794, 1264.1, 121.2, 41.7]
+            }
+          },
+          "provider-test-messages": {
+            "before": {
+              "tag": "INPUT",
+              "id": "provider-test-messages",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1339.7, 16, 16]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "provider-test-messages",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1321.1, 16, 16]
+            }
+          },
+          "decision-editor": {
+            "before": {
+              "tag": "SECTION",
+              "id": "decision-editor",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [380.5, 1440, 892, 650.2]
+            },
+            "after": {
+              "tag": "SECTION",
+              "id": "decision-editor",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [380.5, 1391.4, 892, 668.8]
+            }
+          },
+          "decision-title": {
+            "before": {
+              "tag": "H2",
+              "id": "decision-title",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1461, 850, 24.8]
+            },
+            "after": {
+              "tag": "H2",
+              "id": "decision-title",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1412.4, 850, 24.8]
+            }
+          },
+          "decision-provider-form": {
+            "before": {
+              "tag": "FORM",
+              "id": "decision-provider-form",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1527.3, 850, 541.8]
+            },
+            "after": {
+              "tag": "FORM",
+              "id": "decision-provider-form",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1497.3, 850, 541.8]
+            }
+          },
+          "decision-provider-id": {
+            "before": {
+              "tag": "INPUT",
+              "id": "decision-provider-id",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1631.5, 850, 40.6]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "decision-provider-id",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1601.5, 850, 40.6]
+            }
+          },
+          "decision-provider-url": {
+            "before": {
+              "tag": "INPUT",
+              "id": "decision-provider-url",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1710.7, 850, 40.6]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "decision-provider-url",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1680.7, 850, 40.6]
+            }
+          },
+          "decision-provider-model": {
+            "before": {
+              "tag": "INPUT",
+              "id": "decision-provider-model",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1789.9, 850, 40.6]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "decision-provider-model",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1759.9, 850, 40.6]
+            }
+          },
+          "decision-provider-key": {
+            "before": {
+              "tag": "INPUT",
+              "id": "decision-provider-key",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1869.1, 795.9, 40.6]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "decision-provider-key",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1839.1, 795.9, 40.6]
+            }
+          },
+          "decision-provider-key-toggle": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "decision-provider-key-toggle",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1205.4, 1869.1, 46.1, 40.6]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "decision-provider-key-toggle",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [1205.4, 1839.1, 46.1, 40.6]
+            }
+          },
+          "decision-provider-key-state": {
+            "before": {
+              "tag": "SPAN",
+              "id": "decision-provider-key-state",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1915.7, 850, 18.6]
+            },
+            "after": {
+              "tag": "SPAN",
+              "id": "decision-provider-key-state",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1885.7, 850, 18.6]
+            }
+          },
+          "decision-provider-enabled": {
+            "before": {
+              "tag": "INPUT",
+              "id": "decision-provider-enabled",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1949.6, 16, 16]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "decision-provider-enabled",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [401.5, 1919.6, 16, 16]
+            }
+          },
+          "decision-provider-test": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "decision-provider-test",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [560.4, 2013.5, 100.3, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "decision-provider-test",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [560.4, 1983.5, 100.3, 41.7]
+            }
+          },
+          "decision-provider-export": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "decision-provider-export",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [668.7, 2013.5, 147, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "decision-provider-export",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [668.7, 1983.5, 147, 41.7]
+            }
+          },
+          "decision-provider-remove-delete": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "decision-provider-remove-delete",
+              "role": null,
+              "class": "danger-button",
+              "disabled": true,
+              "rect": [823.7, 2013.5, 121.2, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "decision-provider-remove-delete",
+              "role": null,
+              "class": "danger-button",
+              "disabled": true,
+              "rect": [823.7, 1983.5, 121.2, 41.7]
+            }
+          }
+        }
+      }
+    },
+    "options-automation": {
+      "reason": "An explicit advisory-only status adds a 30px output region to the unchanged empty workflow layout.",
+      "baselineSha256": "615c00074e9326fe3c4e1558e264c0a208ee9cbcab9121b73fbf3d19d7c4a7b8",
+      "delta": {
+        "viewport": [1440, 1100, 1],
+        "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+        "missing": [],
+        "extra": ["workflow-records-status"],
+        "changes": {
+          "settings-content": {
+            "before": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 433.6]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 463.6]
+            }
+          },
+          "automation": {
+            "before": {
+              "tag": "DIV",
+              "id": "automation",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 433.6]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "automation",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 463.6]
+            }
+          }
+        }
+      }
+    },
+    "options-enterprise": {
+      "reason": "Visible IDs, geometry, roles, classes and states match S26 exactly; no Resolver network qualification is asserted.",
+      "baselineSha256": "a4db692f6631cd91ce4655c57c8834b3895651f5ed264ad1de50676931130f9c",
+      "delta": {
+        "viewport": [1440, 1100, 1],
+        "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+        "missing": [],
+        "extra": [],
+        "changes": {}
+      }
+    },
+    "workflow-catalog": {
+      "reason": "The existing profile-open and advisory-only workflow statuses add output regions; the first card grows by 44px. Existing editable workflow-row controls and geometry remain intact; current data is advisory metadata.",
+      "baselineSha256": "47c1185a4067e662ab8e779bec67e66d9411b6c88c02aaec9010e6eeea0584b8",
+      "delta": {
+        "viewport": [1440, 1100, 1],
+        "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+        "missing": [],
+        "extra": ["learned-profile-status", "workflow-records-status"],
+        "changes": {
+          "settings-content": {
+            "before": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 632]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "settings-content",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 706]
+            }
+          },
+          "automation": {
+            "before": {
+              "tag": "DIV",
+              "id": "automation",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 632]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "automation",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 706]
+            }
+          },
+          "learned-profile-section": {
+            "before": {
+              "tag": "SECTION",
+              "id": "learned-profile-section",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 215.3]
+            },
+            "after": {
+              "tag": "SECTION",
+              "id": "learned-profile-section",
+              "role": null,
+              "class": "settings-card",
+              "disabled": false,
+              "rect": [388, 118.2, 892, 259.3]
+            }
+          },
+          "workflow-refresh": {
+            "before": {
+              "tag": "BUTTON",
+              "id": "workflow-refresh",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [409, 453.5, 113.2, 41.7]
+            },
+            "after": {
+              "tag": "BUTTON",
+              "id": "workflow-refresh",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [409, 497.5, 113.2, 41.7]
+            }
+          },
+          "workflow-records": {
+            "before": {
+              "tag": "DIV",
+              "id": "workflow-records",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [409, 509.2, 850, 220.1]
+            },
+            "after": {
+              "tag": "DIV",
+              "id": "workflow-records",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [409, 553.2, 850, 220.1]
+            }
+          }
+        }
+      }
+    },
+    "profile-manager": {
+      "reason": "The empty-state paragraph is restored in the list. The advisory feature label, bounded count and final-page wording change only the associated inline widths; editor and list layout are preserved.",
+      "baselineSha256": "54690577f5a87073bd58935e3b8c92ab87e620b1bbab7f67e7dc7805c92c3176",
+      "delta": {
+        "viewport": [1100, 800, 1],
+        "font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Inter, sans-serif",
+        "missing": [],
+        "extra": [],
+        "changes": {
+          "learned-profile-enabled": {
+            "before": {
+              "tag": "INPUT",
+              "id": "learned-profile-enabled",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [938.6, 45.1, 16, 16]
+            },
+            "after": {
+              "tag": "INPUT",
+              "id": "learned-profile-enabled",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [913.2, 45.1, 16, 16]
+            }
+          },
+          "learned-profile-count": {
+            "before": {
+              "tag": "SPAN",
+              "id": "learned-profile-count",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [352.1, 158.9, 17.7, 18.6]
+            },
+            "after": {
+              "tag": "SPAN",
+              "id": "learned-profile-count",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [326.7, 158.9, 43.1, 18.6]
+            }
+          },
+          "learned-profile-page": {
+            "before": {
+              "tag": "SPAN",
+              "id": "learned-profile-page",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [195, 658, 24.8, 18.6]
+            },
+            "after": {
+              "tag": "SPAN",
+              "id": "learned-profile-page",
+              "role": null,
+              "class": "",
+              "disabled": false,
+              "rect": [178.1, 658, 58.6, 18.6]
+            }
+          }
+        }
+      }
+    }
+  }
+}

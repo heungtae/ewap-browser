@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28/S29 — 2026-11-02 completion
+
+**Completed — original isolated implementation and controlled Linux scope.** [Requirement-by-requirement audit](evidence/s28-s29-completion-2026-11-02.md) accounts for all 12 cards and 12 scenarios. The final UI check enforces all 26 S26 states and fixes [ISS-20261102-003](issues/records/2026-11-02-manager-empty-state.md). Fresh Chrome verifies construction limits/atomicity/mutation shutdown, extension transport and authenticated projections. Earlier dated In Progress entries remain history. Production task/source-consent wiring, provider qualification, platform installation, cutover and release remain later Sprints; the legacy entrypoint and version stay unchanged.
+
 ## Browser Agent S28 — 2026-11-02 task-history recovery seam
 
 **In Progress.** [Evidence](evidence/s28-task-history-2026-11-02.md) connects the owner-bound SQLite reader to signed opt-in read IPC and an explicitly bound TaskClient. Actual Chrome verifies panel snapshot recovery, Worker replacement, native restart, cursor continuation, one state card and locked/cleared historical inputs. Full unit tests pass 1,493/1,493; four actual SQLite/socket checks pass. Remaining completion work is Settings/manager baseline review and the original acceptance audit; ordinary task routing stays unavailable.

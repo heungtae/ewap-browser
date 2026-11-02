@@ -1,6 +1,6 @@
 # Browser Agent S29 — Semantic Codebase construction and repository
 
-**Status: Planned. Created: 2026-10-18. Implementation: not started.**
+**Status: Completed — isolated implementation and controlled Linux qualification, 2026-11-02. Created: 2026-10-18.**
 
 Owner: Knowledge-plane maintainer. Migration slice: M03. Prerequisites: [S28](s28-workspace-backend-bridge.md).
 
@@ -22,7 +22,7 @@ Preserve current Side Panel/Options/profile-manager presentation structure, expl
 
 ## Implementation cards
 
-All cards are Planned. Execute as reviewable changes with the listed regression checks; no product implementation is authorized merely by creating this Sprint.
+The original delivery cards below are retained. All cards and scenarios passed the [2026-11-02 completion audit](../evidence/s28-s29-completion-2026-11-02.md) in its recorded scope; product cutover remains a later Sprint.
 
 | ID     | Change                                                                                                                                                                                                                                                                                        | Acceptance / linked checks                                                                                                                                            |
 | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
