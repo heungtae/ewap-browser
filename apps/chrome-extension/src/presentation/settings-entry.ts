@@ -6,12 +6,18 @@ import {
 import { initializeFormFeedback } from "../../../../extension/src/settings/form-feedback.js";
 import { createSettingsClient } from "./settings-client.js";
 import { initializeProviderSave } from "./provider-save.js";
+import { createAdvisoryClient } from "./advisory-client.js";
+import { initializeAdvisoryOptions } from "./advisory-options.js";
+import { initializeAdvisoryWorkflows } from "./advisory-workflows.js";
 import { request } from "../bridge/presentation-client.js";
 let initialized = false;
 export function initializeBackendSettings() {
   if (initialized) return;
   initialized = true;
   initializeFormFeedback();
+  const advisory = createAdvisoryClient();
+  initializeAdvisoryOptions(advisory);
+  initializeAdvisoryWorkflows(advisory);
   const client = createSettingsClient((command) =>
     request(command).catch((error) => {
       show("Backend disconnected — 설정 연결을 확인해 주세요.");

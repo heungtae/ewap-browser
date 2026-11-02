@@ -1,0 +1,24 @@
+# S28/S29 advisory management — 2026-11-02
+
+Source base `5d9f9ef48` plus the recorded uncommitted changes. [Machine report and source hashes](s28-s29-advisory-management-2026-11-02.json), [controlled screenshot](s28-s29-advisory-management-2026-11-02.png). Linux, Node 20.19.6, pnpm 9.15.4 and Chrome for Testing 147.0.7727.15. Extension version remains 0.1.117. S28/S29 remain **In Progress**.
+
+The preserved target Settings/profile-manager pages now operate on the target Codebase IndexedDB namespace. Closed management commands are accepted only from identified, live Settings/manager documents. The namespace derives from the paired installation/profile identity, without exposing pairing credentials to presentation. The browser repository remains authoritative; no second native profile catalog or legacy storage migration is introduced.
+
+Learned recipes are grouped by partition/page. Recorded workflows remain a separate list. Names, profile notes, enable/automatic-update flags and rediscovery barriers are separate management metadata; graph entities and original source history remain unchanged by edits. Notes are absent from the candidate read projection. Deletion removes the selected advisory metadata and history while preserving compact digest/revision replay receipts, the page graph and unrelated recorded workflows. Reimporting a deleted old revision returns `DELETED`; newer source evidence remains eligible. Global revisions fence concurrent manager/import writers in a single IndexedDB transaction. Deadline or capacity failures abort the whole management change.
+
+Lists use bounded index scans and opaque continuation cursors; recipes and source histories are paged. Counts distinguish displayed items from a complete catalog. Disabled candidates do not consume the eligible read limit, and scan/history truncation stays explicit. Rediscovery is an observation barrier, never a saved command or a dispatch request. No historic ref, grant, approval or executable method identity is exposed by management contracts.
+
+Actual Chrome checks exercise manager-window reuse, profile rename, local note save, two source-history revisions, filtering/reset, recorded-workflow rename/disable/delete and learned-profile deletion against extension-origin IndexedDB. A syntactically valid Side Panel mutation is rejected. Inherited checks pass for Provider settings, real toolbar ownership, copied-panel rejection, native handshake, daemon restart, session credential loss and connection-only snapshot recovery. These checks use synthetic source metadata in a disposable profile. They do not establish legacy migration, task admission, approval authority, task snapshots or live-provider execution.
+
+Executed checks:
+
+- `pnpm test:s29`: 47/47, including paging, numeric history ordering, concurrent writes, stale revisions, authority rejection, expired-write rollback, opt-out and deletion/reimport.
+- `pnpm exec vitest run extension/tests/unit --reporter=json --outputFile=/tmp/s28-s29-manager-unit-20261102.json`: 1,466/1,466.
+- `pnpm typecheck`, `pnpm lint`, `pnpm check:module-boundaries`: pass.
+- `pnpm build:s28`, `pnpm check:s28`, `pnpm check:s29`, `pnpm check:s30`: pass, including preserved source/design hashes, static UI tags/styles, 199-line limits, package boundaries and goldens.
+- `S28_EVIDENCE_DIR=/tmp/s28-advisory-final-wording-20261102 CHROME_FOR_TESTING_BIN=... pnpm test:chrome-s28:native`: pass. The named binary is `/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome`.
+- `S29_EVIDENCE_DIR=/tmp/s29-manager-regression-20261102 CHROME_FOR_TESTING_BIN=... node --experimental-websocket scripts/s29/chrome-extension.mjs`: pass for Worker/content collection, extension-origin revisions 1/2/3, fresh identity reuse, privacy exclusion, missing consent, Settings impersonation and stale document/read rejection.
+
+First failures: strict source-history decoding rejected the storage-only digest wrapper; the decoder now removes that wrapper before validating the closed history payload. Node's fake IndexedDB lacks a global `IDBKeyRange`; cursor queries now use exact index keys and real Chrome confirms them. The initial Chrome fixture had an incorrect support import path. A UI driver clicked a stale row while a refresh was pending; presented loading states and completion waits now fence the next interaction. These failed attempts are not counted as successful checks.
+
+Approval facts, provider calls and business dispatches: **zero**. Original production packaging and architecture/Sprint design files are unchanged. Remaining S28 work includes emitted MAIN qualification, full S26 state/focus replay, task-history recovery and the outstanding install/connection-loss matrix. S29 still requires its S28 gate, actual source-consent admission and backend projection/native composition. Later task/provider activation and release are not established by this evidence.

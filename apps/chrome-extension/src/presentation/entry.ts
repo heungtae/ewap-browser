@@ -19,6 +19,10 @@ if (document.querySelector("#provider-form")) {
   void import("./settings-entry.js").then((module) =>
     module.initializeBackendSettings(),
   );
+} else if (document.querySelector("#learned-profiles")) {
+  void import("./advisory-manager.js").then((module) =>
+    module.initializeAdvisoryManager(),
+  );
 } else {
   const state = { cursor: 0, snapshotRequired: false, connectionOnly: true };
   let dispose: (() => void) | undefined;

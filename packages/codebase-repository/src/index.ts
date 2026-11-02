@@ -4,3 +4,4 @@ export * from "./datasets.js";
 export * from "./query.js";
 export * from "./read-service.js";
 export * from "./advisory.js";
+export * from "./management.js";

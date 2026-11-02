@@ -1,13 +1,14 @@
 import { advisoryRecordSchema, digest } from "@contextpilot/codebase-schema";
 import { completed, key, request, stores, type Stored } from "./database.js";
 import { stored } from "./records.js";
+import { catalog, catalogRecord, importAllowed } from "./advisory-controls.js";
 import { readAll, enforceCapacity } from "./capacity.js";
 export async function writeAdvisory(
   db: IDBDatabase,
   input: unknown,
   now: number,
   capacity = 100 * 1024 * 1024,
-): Promise<void> {
+): Promise<"IMPORTED" | "DUPLICATE" | "DELETED"> {
   const item = advisoryRecordSchema.parse(input);
   const e = item.entity;
   const valueDigest = await digest(item);
@@ -22,7 +23,8 @@ export async function writeAdvisory(
     const page = (await request(
       tx.objectStore("pages").get(key(e.partitionId, e.pageKey, "current")),
     )) as Stored | undefined;
-    if (!page) throw new Error("IMPORT_PAGE_UNAVAILABLE");
+    if (!page || page.expiresAt <= now)
+      throw new Error("IMPORT_PAGE_UNAVAILABLE");
     const old = (await request(
       tx.objectStore("migrationJournal").get(journalKey),
     )) as Stored | undefined;
@@ -30,8 +32,27 @@ export async function writeAdvisory(
       if ((old.value as { digest: string }).digest !== valueDigest)
         throw new Error("IMPORT_CONFLICT");
       await done;
-      return;
+      return old.kind === "advisory_deleted_receipt" ? "DELETED" : "DUPLICATE";
     }
+    await importAllowed(
+      tx,
+      e.partitionId,
+      e.pageKey,
+      e.id,
+      item.history.source,
+    );
+    const deleted = (await request(
+      tx
+        .objectStore("migrationJournal")
+        .get(key(e.partitionId, e.pageKey, `advisory_deleted_${e.id}`)),
+    )) as Stored | undefined;
+    if (
+      deleted &&
+      item.history.sourceRevision <=
+        Number((deleted.value as { sourceRevision: number }).sourceRevision)
+    )
+      throw Error("IMPORT_REVISION_STALE");
+    const state = await catalog(tx);
     const existing = (await request(
       tx.objectStore("entities").get(key(e.partitionId, e.pageKey, e.id)),
     )) as Stored | undefined;
@@ -62,9 +83,14 @@ export async function writeAdvisory(
       },
     ];
     writes[0]!.record.source = String(item.history.sourceRevision);
+    writes.push({
+      store: "migrationJournal",
+      record: catalogRecord({ ...state, revision: state.revision + 1 }, now),
+    });
     enforceCapacity(tx, await readAll(tx), writes, capacity, now, e.pageKey);
     for (const w of writes) tx.objectStore(w.store).put(w.record);
     await done;
+    return "IMPORTED";
   } catch (error) {
     try {
       tx.abort();
@@ -75,42 +101,4 @@ export async function writeAdvisory(
     throw error;
   }
 }
-export async function readAdvisory(
-  db: IDBDatabase,
-  partition: string,
-  page: string,
-  limit: number,
-  now: number,
-) {
-  if (!Number.isInteger(limit) || limit < 1 || limit > 128)
-    throw new Error("IMPORT_QUERY_LIMIT");
-  const tx = db.transaction(
-    ["entities", "migrationJournal", "pages"],
-    "readonly",
-  );
-  const done = completed(tx);
-  const current = (await request(
-    tx.objectStore("pages").get(key(partition, page, "current")),
-  )) as Stored | undefined;
-  if (!current) {
-    await done;
-    throw new Error("IMPORT_PAGE_UNAVAILABLE");
-  }
-  const rows = (await request(
-    tx
-      .objectStore("entities")
-      .index("scopeKind")
-      .getAll([partition, page, "workflow"], limit),
-  )) as Stored[];
-  const history = (await request(
-    tx
-      .objectStore("migrationJournal")
-      .index("scopeKind")
-      .getAll([partition, page, "advisory"], 128),
-  )) as Stored[];
-  await done;
-  return {
-    entities: rows.filter((r) => r.expiresAt > now).map((r) => r.value),
-    history: history.filter((r) => r.expiresAt > now).map((r) => r.value),
-  };
-}
+export { readAdvisory } from "./advisory-read.js";

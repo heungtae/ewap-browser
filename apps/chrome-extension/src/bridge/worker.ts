@@ -4,6 +4,7 @@ import { parseMigrationCommand } from "../../../../packages/policy-engine/src/mi
 import { migrationProfileGuard } from "../../../../packages/shared/src/migration-rpc.js";
 import { api, liveUiSender, unboundBootstrapResult } from "./api.js";
 import { PanelOwners, openOwnedPanel } from "./panel-owner.js";
+import { managementRequest } from "./advisory.js";
 import { NativeBridge } from "./native.js";
 const panelOwners = new PanelOwners(api?.runtime.id ?? "");
 api?.action.onClicked.addListener((tab) => {
@@ -46,6 +47,8 @@ function connect(): Promise<NativeBridge> {
 async function request(value: unknown): Promise<unknown> {
   if (!value || typeof value !== "object") throw new Error("INVALID_REQUEST");
   const command = value as Record<string, unknown>;
+  if (typeof command.kind === "string" && command.kind.startsWith("advisory."))
+    return managementRequest(command);
   const isMigration =
     typeof command.kind === "string" && command.kind.startsWith("migration.");
   if (
@@ -125,6 +128,16 @@ api?.runtime.onMessage.addListener((value, sender, reply) => {
     )
     .then((trusted) => {
       if (
+        typeof kind === "string" &&
+        kind.startsWith("advisory.") &&
+        !["settings/index.html", "settings/learned-profiles.html"].some(
+          (path) =>
+            sender.url?.split("#")[0] ===
+            `chrome-extension://${api!.runtime.id}/${path}`,
+        )
+      )
+        throw Error("UI_SENDER_DENIED");
+      if (
         !trusted ||
         (typeof kind === "string" &&
           kind.startsWith("settings.") &&
@@ -142,6 +155,21 @@ api?.runtime.onMessage.addListener((value, sender, reply) => {
           : unboundBootstrapResult(kind, result),
       }),
     )
-    .catch(() => reply({ ok: false, error: "BACKEND_UNAVAILABLE" }));
+    .catch((error) =>
+      reply({
+        ok: false,
+        error:
+          typeof kind === "string" &&
+          kind.startsWith("advisory.") &&
+          error instanceof Error &&
+          [
+            "MANAGEMENT_STALE",
+            "ADVISORY_UNAVAILABLE",
+            "MANAGEMENT_EXPIRED",
+          ].includes(error.message)
+            ? error.message
+            : "BACKEND_UNAVAILABLE",
+      }),
+    );
   return true;
 });

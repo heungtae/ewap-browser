@@ -1,0 +1,226 @@
+{
+  "date": "2026-11-02",
+  "baseRevision": "5d9f9ef4897671b994d2f10a40be99dd820674ce",
+  "dirty": true,
+  "status": "IN_PROGRESS",
+  "extensionVersion": "0.1.117",
+  "environment": {
+    "os": "Linux",
+    "node": "v20.19.6",
+    "pnpm": "9.15.4",
+    "chrome": "Chrome/147.0.7727.15"
+  },
+  "checks": {
+    "unitPassed": 1466,
+    "unitFailed": 0,
+    "s29Tests": 47,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "s28Boundaries": "PASS",
+    "s29BoundariesAndGoldens": "PASS",
+    "s30BoundariesAndGoldens": "PASS",
+    "moduleBoundaries": "PASS",
+    "preservedSourceDesignAndPresentation": "PASS"
+  },
+  "chrome": {
+    "native": {
+      "toolbarActionOpenedPanel": true,
+      "ownedAddressResolves": true,
+      "copiedTabDenied": true,
+      "ownerScope": "Chrome toolbar action, live native bootstrap, tab impersonation; no task admission",
+      "advisoryManagement": {
+        "actualIndexedDb": true,
+        "managerWindowReused": true,
+        "profileRenamed": true,
+        "localNoteSaved": true,
+        "sourceHistoryShown": true,
+        "filterVerified": true,
+        "workflowRenamed": true,
+        "workflowDisabled": true,
+        "workflowDeleted": true,
+        "profileDeleted": true,
+        "panelMutationDenied": true,
+        "source": "synthetic advisory imports; no legacy storage or execution authority"
+      },
+      "providerSettings": {
+        "providerSavedViaUi": true,
+        "blankSecretRetained": true,
+        "endpointChangeDropsCredential": true,
+        "analystRoleAssigned": true,
+        "staleRevisionDenied": true,
+        "publicMetadataSecretFree": true,
+        "privateMetadataMode": true,
+        "noAutomaticReadiness": true,
+        "panelSettingsMutationDenied": true,
+        "publicMetadataRetainedAfterRestart": true,
+        "sessionSecretLostTruthfully": true,
+        "providerRemovedViaUi": true,
+        "selectedRoleCleared": true
+      },
+      "connectionSnapshotRecovered": true,
+      "uiReconnectWithoutDuplicateMessages": true,
+      "restartReconnect": true,
+      "result": "PASS",
+      "registration": "isolated profile",
+      "nativeHandshake": true,
+      "foreignDocumentDenied": true,
+      "settingsAndProfilesAllowed": true,
+      "actualSidePanelAllowed": true,
+      "sidePanelWindowId": -1,
+      "sidePanelMigrationDenied": true,
+      "portSenderDocumentIdPresent": false,
+      "selfReportedWindowMatches": true,
+      "sidePanelWindowFilterCount": 0,
+      "openEventSupported": true,
+      "openEventWindowMatches": true,
+      "openEventDocumentIdPresent": false,
+      "multiplePanelsFailClosed": true,
+      "singlePanelRecovers": true,
+      "taskReady": false
+    },
+    "result": "PASS",
+    "scope": "target missing-backend, preserved static IDs, settings hash/focus, fixture message; not full S26 interaction parity",
+    "browser": "Chrome/147.0.7727.15",
+    "records": [
+      {
+        "name": "panel",
+        "ids": 32,
+        "focusable": 11,
+        "status": "Backend disconnected \u2014 waiting for reconnection"
+      },
+      {
+        "name": "settings",
+        "ids": 73,
+        "focusable": 45,
+        "status": "Backend disconnected \u2014 \uc124\uc815 \uc5f0\uacb0\uc744 \ud655\uc778\ud574 \uc8fc\uc138\uc694."
+      },
+      {
+        "name": "profiles",
+        "ids": 13,
+        "focusable": 6,
+        "status": "\ucc38\uace0 \uae30\ub85d\uc744 \ubd88\ub7ec\uc654\uc2b5\ub2c8\ub2e4. \uc2e4\ud589 \uad8c\ud55c\uc740 \ud3ec\ud568\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4."
+      }
+    ]
+  },
+  "sourceHashes": {
+    "apps/chrome-extension/src/bridge/advisory.ts": "465af0b5a8d625ffe7e5146093edf737de484224a387287bee2d8914d1f378ac",
+    "apps/chrome-extension/src/bridge/worker.ts": "e7c1e6575ce60b61807cdb6fd5efbb1235142ed86c186ed090757b4006224269",
+    "apps/chrome-extension/src/codebase/profile-scope.ts": "93105dee9c0e4990ac727a9e3a96135e147ef0ea134ca6dbbe64eaf4d274539d",
+    "apps/chrome-extension/src/presentation/advisory-client.ts": "a04f054c97aee96da3f4bcf83d8f1e143fb33dfd5e9fae7a91f528922dd4eacf",
+    "apps/chrome-extension/src/presentation/advisory-detail.ts": "f62444566b449b8fd5706854831039b6ea4c4186af089567e2b5f3c751e8991b",
+    "apps/chrome-extension/src/presentation/advisory-manager.ts": "eecdc0a95a33d345c36c68c1566cf0e3efd1644741432d5ce11c1a868bda7ccf",
+    "apps/chrome-extension/src/presentation/advisory-options.ts": "e9a9305d2ac0f56724a923da995e8a2bd6b4493cf307a3113a6f5e56baf5943c",
+    "apps/chrome-extension/src/presentation/advisory-workflows.ts": "df572a2c47d2bf749b166563f623c120bb4aea2cbc08178685a55b9f394807ac",
+    "apps/chrome-extension/src/presentation/entry.ts": "3065b4de9a150c496e1d716eb1969de745caeece96d8a723208892526d6b16f0",
+    "apps/chrome-extension/src/presentation/settings-entry.ts": "89afe7a6a91dab43c2331075c655fc89acc679ec964fe48b219811f18ad1c8a7",
+    "apps/chrome-extension/ui/settings/automation.html": "28caf37be576e685f7e0cc9c759c426c94381a4251ceb20375adf0094dc2127b",
+    "apps/chrome-extension/ui/settings/learned-profiles.html": "352ca69d3d13c3bec88eadf9f3002d5b24c59b1b27e752762e8f52af34f5bbaf",
+    "extension/tests/fixture/s29/advisory-worker.ts": "7c2355ef78970f93e9339a01ceb84f8af2ad5bff89716f60463c6d43697308b9",
+    "extension/tests/unit/migration/s29/management-fixture.ts": "c7105b83e353e2b65b6d3ad5bf0990417adb3398ad73cce7268d14d82e3ab326",
+    "extension/tests/unit/migration/s29/management-pages.test.ts": "bc1a292e79de0c3a2d06431ec32505ebe7f5aaa3e805597b8a60c77ba59b51cf",
+    "extension/tests/unit/migration/s29/management.test.ts": "c4b1ae12e1af3c46bc5126da0c2ebc630328adc5810661bf9a149c512e49873f",
+    "packages/codebase-repository/src/advisory-controls.ts": "a7a247436563b58866a74cdb168c356c3e6e2bb957d153d467803a2f82fe016d",
+    "packages/codebase-repository/src/advisory-delete.ts": "fc516eadf89a51262af0ef0f353587ece5253e9d27935268d87c6ad143a3f425",
+    "packages/codebase-repository/src/advisory-page.ts": "7c43dccb987f27915c91b7af2b83923c68f9dd1914387eae39e4ab147661ab7d",
+    "packages/codebase-repository/src/advisory-read.ts": "63e714f416d5eea07b84f1bcc25f28367f0e3ea42528cbac33b29661ea958772",
+    "packages/codebase-repository/src/advisory.ts": "8b330f8a5152bc989d24f0df326ed1cd456e5f82c252fb180e239b6d0846a2c6",
+    "packages/codebase-repository/src/index.ts": "8d065c01885971b0e7fff29a9d258f682b11940451ab559ecf53576b5952c33e",
+    "packages/codebase-repository/src/management-scan.ts": "5e13bfddd56f35a8eef79455c33c7e4e33c0ed555962005117fe1013fd19ec74",
+    "packages/codebase-repository/src/management-write.ts": "2a3f8b6742ff77fbf3b55766612b87d438fae7ab7561a7967a260ede268007c5",
+    "packages/codebase-repository/src/management.ts": "0ac804b2bb1d2ea96fb20e6cbec9b5f494b6aa61392e142b34a86e16ea58b4ce",
+    "packages/codebase-schema/src/index.ts": "27e7c48f547570be7e25cc466b812ec4ce9cccccae9d7f8a41e14789765ccbae",
+    "packages/codebase-schema/src/management.ts": "830eafe2bbd04230cb969c17ae0e0f866b694cc4711a823b8e2a603586f84c7c",
+    "scripts/s28/chrome-advisory.mjs": "bc08337d4621eb24ab0d746ab34e2066964f5e09bda3d73b6d6a686aafcd5bae",
+    "scripts/s28/chrome-native.mjs": "122be1977a531513934b7b48a0c43e11846123ce4da3cbd8d8e04ba3ea6ba337",
+    "scripts/s28/chrome-smoke.mjs": "6a9c1a160dba5612f07dd49de4b2069415f4c4fd6dda75ff54ca7be79f0d9f92"
+  },
+  "approvals": 0,
+  "providerCalls": 0,
+  "businessDispatches": 0,
+  "limits": [
+    "Synthetic metadata imports in an isolated Chrome profile; not a legacy data migration.",
+    "S28/S29 full acceptance, task admission, task snapshots and native Codebase projection remain pending."
+  ],
+  "collectorRegression": {
+    "result": "PASS",
+    "browser": "Chrome/147.0.7727.15",
+    "scope": "isolated extension Worker to content-script transport and extension-origin IndexedDB; synthetic admission, no public task or provider routing",
+    "first": {
+      "revision": 1,
+      "savedRevision": 1,
+      "coverage": {
+        "status": "partial",
+        "examined": 24,
+        "emitted": 4,
+        "omitted": 1,
+        "redactions": 1,
+        "total": 4,
+        "reasons": [
+          "SAMPLE_ONLY",
+          "DENIED_REGION"
+        ],
+        "startedAt": 1793579415357,
+        "endedAt": 1793579415359,
+        "deadline": 1793579425352
+      },
+      "privacy": true,
+      "saveMatches": 2,
+      "identityReused": null,
+      "extensionIndexedDb": true
+    },
+    "revisit": {
+      "revision": 2,
+      "savedRevision": 2,
+      "coverage": {
+        "status": "partial",
+        "examined": 24,
+        "emitted": 4,
+        "omitted": 1,
+        "redactions": 1,
+        "total": 4,
+        "reasons": [
+          "SAMPLE_ONLY",
+          "DENIED_REGION"
+        ],
+        "startedAt": 1793579415386,
+        "endedAt": 1793579415387,
+        "deadline": 1793579425385
+      },
+      "privacy": true,
+      "saveMatches": 2,
+      "identityReused": true,
+      "extensionIndexedDb": true
+    },
+    "delta": {
+      "revision": 3,
+      "savedRevision": 3,
+      "coverage": {
+        "status": "partial",
+        "examined": 22,
+        "emitted": 3,
+        "omitted": 1,
+        "redactions": 1,
+        "total": 3,
+        "reasons": [
+          "SAMPLE_ONLY",
+          "DENIED_REGION"
+        ],
+        "startedAt": 1793579415407,
+        "endedAt": 1793579415407,
+        "deadline": 1793579425406
+      },
+      "privacy": true,
+      "saveMatches": 0,
+      "identityReused": null,
+      "extensionIndexedDb": true
+    },
+    "stale": {
+      "oldDocumentRejected": true,
+      "oldReadRejected": true,
+      "committedRevision": 3,
+      "tabIdMatches": true
+    },
+    "settingsImpersonationDenied": true,
+    "missingReadConsentDenied": true
+  }
+}

@@ -4,6 +4,7 @@ import { access, copyFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { install } from "./install.mjs";
 import { evaluate, waitFor } from "../chrome-cdp-utils.mjs";
+import { qualifyAdvisory } from "./chrome-advisory.mjs";
 import { qualifySettings } from "./chrome-settings.mjs";
 import { qualifyPanelOwner } from "./chrome-owner.mjs";
 import { qualifySidePanel } from "./chrome-sidepanel.mjs";
@@ -127,6 +128,12 @@ export async function qualifyNative({
       panel,
       "document.querySelectorAll('#chat-messages .message').length",
     );
+    const advisoryEvidence = await qualifyAdvisory({
+      worker,
+      targets,
+      output,
+      panel,
+    });
     const settingsEvidence = await qualifySettings({
       worker,
       panel,
@@ -198,6 +205,7 @@ export async function qualifyNative({
     });
     return {
       ...ownerEvidence,
+      advisoryManagement: advisoryEvidence,
       providerSettings: { ...settingsEvidence.before, ...settingsRestart },
       connectionSnapshotRecovered: true,
       uiReconnectWithoutDuplicateMessages: true,

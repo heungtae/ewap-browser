@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28/S29 — 2026-11-02 advisory management
+
+**In Progress.** [Evidence](evidence/s28-s29-advisory-management-2026-11-02.md) records preserved manager/workflow controls over transactional Codebase metadata, bounded paging, source history, stale-write fencing and deletion replay protection. Actual Chrome management and collection regressions pass; full unit tests pass 1,466/1,466. Full S28 state/recovery/installation acceptance and S29 source-consent/native projection remain open.
+
 ## Browser Agent S28 — 2026-11-01 Provider management
 
 **In Progress.** [Evidence](evidence/s28-workspace-bridge-2026-10-19.md#backend-provider-settings-and-preserved-forms--2026-11-01) records typed backend settings, private metadata and session credentials, preserved Provider-form save/blank writes/Analyst assignment/removal, stale revision rejection and actual Chrome/native restart checks. Full profile/workflow/chat parity, task snapshots and the remaining S28 acceptance matrix remain open.

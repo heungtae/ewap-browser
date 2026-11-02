@@ -72,11 +72,15 @@ try {
       5000,
       "PAGE_TARGET",
     );
+    const statusPattern =
+      name === "profiles" && process.argv.includes("--native")
+        ? "참고 기록"
+        : "Backend";
     await waitFor(
       () =>
         evaluate(
           target,
-          "document.readyState === 'complete' && /Backend/.test(document.querySelector('#status,#settings-status,#learned-profile-status')?.textContent ?? '')",
+          `document.readyState === 'complete' && document.querySelector('#status,#settings-status,#learned-profile-status')?.textContent?.includes(${JSON.stringify(statusPattern)})`,
         ),
       5000,
       `PAGE_READY:${name}`,
@@ -96,7 +100,7 @@ try {
       `(()=>({ids:[...document.querySelectorAll('[id]')].map(e=>e.id),focus:[...document.querySelectorAll('button,input,select,textarea,a[href]')].filter(e=>e.getClientRects().length).map(e=>e.id||e.tagName),status:document.querySelector('#status,#settings-status,#learned-profile-status')?.textContent}))()`,
     );
     assert.ok(structure.ids.length > 10);
-    assert.match(structure.status, /Backend/);
+    assert.ok(structure.status.includes(statusPattern));
     const source = await readFile(`apps/chrome-extension/ui/${path}`, "utf8");
     for (const match of source.matchAll(/\bid="([^"]+)"/g))
       assert.ok(structure.ids.includes(match[1]), `${name}:${match[1]}`);
