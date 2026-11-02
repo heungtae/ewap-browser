@@ -15389,6 +15389,230 @@
       "disposition": "reuse",
       "sprint": "S28",
       "target": "MAIN artifact qualification and document identity regression evidence"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-action-cards.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-action-summary.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-attachments.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-consent-card.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-controls.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-decisions.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-diagnostics.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-dom.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-state-view.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-status.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-transcript.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-view.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-workflow-cards.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "extension/tests/fixture/s28/panel-client.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/panel-events.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/panel-replay.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "packages/shared/src/panel-contracts.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "packages/shared/src/panel-events.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-capture.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-cases.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-guards.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "scripts/s28/chrome-panel.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "closed TaskClient presentation events, prompt response guards and preserved UI replay"
+    },
+    {
+      "path": "docs/evidence/s28-panel-presentation-2026-11-02.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "docs/evidence/s28-panel-presentation-2026-11-02.md",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "docs/evidence/s28-panel-presentation-2026-11-02.png",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "docs/evidence/s28-panel-workflow-2026-11-02.png",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-bounds.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-download.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-isolation.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-responses.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "scripts/s28/chrome-panel-workflow.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "scripts/s28/panel-harness.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "TaskClient UI replay and prompt lifecycle evidence"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

@@ -1,0 +1,540 @@
+{
+  "date": "2026-11-02",
+  "baseRevision": "75ce953bb476b26296bbe7ac20c61c81e55a0962",
+  "dirty": true,
+  "status": "IN_PROGRESS",
+  "extensionVersion": "0.1.117",
+  "presentation": {
+    "cases": [
+      {
+        "name": "panel-idle",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {}
+      },
+      {
+        "name": "panel-action-review",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-session-review",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-permission",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-value",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-confirmation",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-option-value",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-consent-source",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-consent-component-scroll",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-consent-component-vision",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-consent-runtime-methods",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-consent-jev-decision",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-consent-runtime-result",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "workflow-plan-review",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-stopping",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "execution-trace",
+          "diagnostics-debug",
+          "diagnostics-export"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "execution-trace": "bounded current UI status text",
+          "diagnostics-debug": "vertical position follows status text height",
+          "diagnostics-export": "vertical position follows status text height"
+        }
+      },
+      {
+        "name": "panel-goal-unknown",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "chat-send"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "chat-send": "authoritative terminal event releases a stalled Stop control"
+        }
+      },
+      {
+        "name": "new-chat-dialog",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "chat-send"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "chat-send": "authoritative terminal event releases a stalled Stop control"
+        }
+      },
+      {
+        "name": "workflow-candidates",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "chat-send"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "chat-send": "authoritative terminal event releases a stalled Stop control"
+        }
+      },
+      {
+        "name": "workflow-preview",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "chat-send"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "chat-send": "authoritative terminal event releases a stalled Stop control"
+        }
+      },
+      {
+        "name": "diagnostics-dialog",
+        "viewportMatch": true,
+        "fontMatch": true,
+        "missing": [],
+        "extra": [],
+        "changed": [
+          "chat-send"
+        ],
+        "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+        "reviewedDifferences": {
+          "chat-send": "authoritative terminal event releases a stalled Stop control"
+        }
+      }
+    ],
+    "result": "PASS",
+    "scope": "TaskClient fixture presentation; geometry differences retained for review; not full S26 parity or native task routing",
+    "guards": {
+      "oneResponsePerPrompt": true,
+      "exactBindingForwarded": true,
+      "valuesCleared": true,
+      "expiredPromptDisabled": true,
+      "disconnectLocksPrompt": true,
+      "reconnectNeedsFreshPrompt": true,
+      "freshConsentAccepted": true,
+      "unknownResponseLocked": true,
+      "privateErrorMasked": true,
+      "lateFailureKeepsNewPrompt": true,
+      "askCannotApproveAction": true,
+      "terminalIgnoresLatePrompts": true,
+      "remountKeepsOneStreamingMessage": true,
+      "responseTruncationVisible": true,
+      "transcriptCap": 1000,
+      "clearWaitsForClient": true,
+      "startCarriesRequestIdentity": true
+    },
+    "fixtureResponses": 4,
+    "diagnosticsDownload": {
+      "actualFile": true,
+      "scope": "presentation-status-only",
+      "pendingValuesExcluded": true,
+      "backendUnavailabilityExplicit": true
+    },
+    "browser": "Chrome/147.0.7727.15",
+    "approvals": 0,
+    "providerCalls": 0,
+    "businessDispatches": 0
+  },
+  "nativeRegression": {
+    "native": {
+      "toolbarActionOpenedPanel": true,
+      "ownedAddressResolves": true,
+      "copiedTabDenied": true,
+      "ownerScope": "Chrome toolbar action, live native bootstrap, tab impersonation; no task admission",
+      "advisoryManagement": {
+        "actualIndexedDb": true,
+        "managerWindowReused": true,
+        "profileRenamed": true,
+        "localNoteSaved": true,
+        "sourceHistoryShown": true,
+        "filterVerified": true,
+        "workflowRenamed": true,
+        "workflowDisabled": true,
+        "workflowDeleted": true,
+        "profileDeleted": true,
+        "panelMutationDenied": true,
+        "source": "synthetic advisory imports; no legacy storage or execution authority"
+      },
+      "providerSettings": {
+        "providerSavedViaUi": true,
+        "blankSecretRetained": true,
+        "endpointChangeDropsCredential": true,
+        "analystRoleAssigned": true,
+        "staleRevisionDenied": true,
+        "publicMetadataSecretFree": true,
+        "privateMetadataMode": true,
+        "noAutomaticReadiness": true,
+        "panelSettingsMutationDenied": true,
+        "publicMetadataRetainedAfterRestart": true,
+        "sessionSecretLostTruthfully": true,
+        "providerRemovedViaUi": true,
+        "selectedRoleCleared": true
+      },
+      "connectionSnapshotRecovered": true,
+      "uiReconnectWithoutDuplicateMessages": true,
+      "restartReconnect": true,
+      "result": "PASS",
+      "registration": "isolated profile",
+      "nativeHandshake": true,
+      "foreignDocumentDenied": true,
+      "settingsAndProfilesAllowed": true,
+      "actualSidePanelAllowed": true,
+      "sidePanelWindowId": -1,
+      "sidePanelMigrationDenied": true,
+      "portSenderDocumentIdPresent": false,
+      "selfReportedWindowMatches": true,
+      "sidePanelWindowFilterCount": 0,
+      "openEventSupported": true,
+      "openEventWindowMatches": true,
+      "openEventDocumentIdPresent": false,
+      "multiplePanelsFailClosed": true,
+      "singlePanelRecovers": true,
+      "taskReady": false
+    },
+    "result": "PASS",
+    "scope": "target missing-backend, preserved static IDs, settings hash/focus, fixture message; not full S26 interaction parity",
+    "browser": "Chrome/147.0.7727.15",
+    "records": [
+      {
+        "name": "panel",
+        "ids": 32,
+        "focusable": 11,
+        "status": "Backend disconnected \u2014 waiting for reconnection"
+      },
+      {
+        "name": "settings",
+        "ids": 73,
+        "focusable": 45,
+        "status": "Backend disconnected \u2014 \uc124\uc815 \uc5f0\uacb0\uc744 \ud655\uc778\ud574 \uc8fc\uc138\uc694."
+      },
+      {
+        "name": "profiles",
+        "ids": 13,
+        "focusable": 6,
+        "status": "\ucc38\uace0 \uae30\ub85d\uc744 \ubd88\ub7ec\uc654\uc2b5\ub2c8\ub2e4. \uc2e4\ud589 \uad8c\ud55c\uc740 \ud3ec\ud568\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4."
+      }
+    ]
+  },
+  "checks": {
+    "unitPassed": 1477,
+    "unitFailed": 0,
+    "s28Tests": 81,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "s28BoundariesAndGoldens": "PASS",
+    "s29BoundariesAndGoldens": "PASS",
+    "s30BoundariesAndGoldens": "PASS",
+    "legacyModuleBoundaries": "PASS",
+    "frozenSourceDesignAndUI": "PASS"
+  },
+  "sourceHashes": {
+    "apps/chrome-extension/src/bridge/api.ts": "8da4832692ea0f0c9beebcfb65968e80f0a83f95b77194688d270980d2854e48",
+    "apps/chrome-extension/src/presentation/connection-loop.ts": "266b584e7cea71b157ba65cbda91be9dda163e2b11bb328d476cdf7582991ca0",
+    "apps/chrome-extension/src/presentation/controller.ts": "edcac3885126372bc126ee1a7b3829b55f2a289e5513f56152abd10b66960806",
+    "apps/chrome-extension/src/presentation/entry.ts": "a5042e1114b4e06fa694b713c5ac5c69235b066b20aecf502a9a7b59b190ed41",
+    "apps/chrome-extension/src/presentation/panel-action-cards.ts": "2b108537b94d3f5d0a9b898e9a3c1e44934f604e7cd922499a7cca2edc0eca53",
+    "apps/chrome-extension/src/presentation/panel-action-summary.ts": "aee19d2a080cb3a5875cd595275e2dc6b71b2102a38970858ecab27b6e5af3e8",
+    "apps/chrome-extension/src/presentation/panel-attachments.ts": "3be1b13aeffc36e5e447803417978e4a4d18ccc78afb02da22196e51d31180d2",
+    "apps/chrome-extension/src/presentation/panel-consent-card.ts": "a0230e902f716e980f22496da03d8c8364253a665a1df62565b399c5a9dd6131",
+    "apps/chrome-extension/src/presentation/panel-controls.ts": "d39e054766c5d046aad94115e92d888d6aaf68833f7f71f5ae02c38efb704237",
+    "apps/chrome-extension/src/presentation/panel-decisions.ts": "921ec56233924886b11a5466ef0e186a9c51ca5202f36860dc196bb2d4b9a485",
+    "apps/chrome-extension/src/presentation/panel-diagnostics.ts": "d1a5f8fe4ee14fd75b9b678b38728d90e04357774f8f4378c0e189473baab03d",
+    "apps/chrome-extension/src/presentation/panel-dom.ts": "8cd82fc5c56ab2cd5ad0b9c98a0354ee45330d0dba3f8bd7acba093b7fabaf71",
+    "apps/chrome-extension/src/presentation/panel-state-view.ts": "5965966809ae977190a7055538f211dbd13b226f1cdd6e8fea12d5e5e0736b3e",
+    "apps/chrome-extension/src/presentation/panel-status.ts": "27fefb191db32c6d3da800158a25e73290014258a640372793eb5fcc78c6db2f",
+    "apps/chrome-extension/src/presentation/panel-transcript.ts": "37464b5d6c78d69aa34bdd1238b922633b612eb16c0d79ca140d3c19f4febba5",
+    "apps/chrome-extension/src/presentation/panel-view.ts": "75191075fea12e75d3e6dcca86d6432e4767238e4846e4dedb0c43dfba114dbc",
+    "apps/chrome-extension/src/presentation/panel-workflow-cards.ts": "1ef657125620eba7180f19e10fece35c7579b376268c52802947286b7898bef3",
+    "apps/chrome-extension/src/presentation/view.ts": "c221e910737b2e93df4c930f25a4a6af7469d3d2b6e638b75e61c55708bcd707",
+    "extension/tests/fixture/s28/panel-client.ts": "d867c3701e968b5137ccfc05a4ed52597181c79e4d6f4e26cda178c5b2fd4023",
+    "extension/tests/unit/migration/s28/panel-events.test.ts": "4380af85613a80e6300aeafda69b19e435c3fe68266c8ffdbcc52cbc4e137100",
+    "extension/tests/unit/migration/s28/panel-replay.test.ts": "fcde975d79d13e12711b6e8e9edcaa5b00189d159d28e1f02ba07a9f7d66e293",
+    "packages/shared/src/bridge.ts": "f6420a3e1cf50c9fcb8a7a6b2e2ba536d65d2d5534da0c935167b50908695927",
+    "packages/shared/src/panel-contracts.ts": "190cf7871efba80d64115a15bf80a30338b3c0b31ba10f09f28198fca3e3b4ae",
+    "packages/shared/src/panel-events.ts": "12efac1417308528ebc615fb801d058e05683cd6765cbd8fb47b9b26078e1a60",
+    "scripts/s28/chrome-panel-bounds.mjs": "906c2df902f9a2e0ae617e4e69de8350f6d8fef7f7629ed6fd18bbd6a7da707d",
+    "scripts/s28/chrome-panel-capture.mjs": "d7b1ccc287f6a160268782bb7e86e66a163c087550adb43096e04341038fcde6",
+    "scripts/s28/chrome-panel-cases.mjs": "1c550dc08bd2cb5d853f0d60f38b2c67d9bdbc4a431072f63c930ce27c045d22",
+    "scripts/s28/chrome-panel-download.mjs": "60de63535740b95bacbb66be8833d704b9e4a0a4b13a4986d3f7fe757ec6f208",
+    "scripts/s28/chrome-panel-guards.mjs": "68c5ebeb48946ed5e0b765de5db1eb3d115ef47ed8122c31e7d9cf65122751aa",
+    "scripts/s28/chrome-panel-isolation.mjs": "901097397a6dda66813d7075d9645818430687bc0babd08a673ea0bcac7fc785",
+    "scripts/s28/chrome-panel-responses.mjs": "282e7d98a2270ae21aa79d85c7e5fb2c0481dbd888928a7ebf5e89964d71a4fc",
+    "scripts/s28/chrome-panel-workflow.mjs": "637c30a0965db321d35f24e04c9aae4bb7db658813badadb28892798b64aed84",
+    "scripts/s28/chrome-panel.mjs": "fd62be4ccd867102eb742c57aed6f890412619d0ea00052142aff6884bd30c76",
+    "scripts/s28/export-contracts.mjs": "040854276f4b517a0c82befdfcf8084ea8ad88187b6e08e26b513e123263e81f",
+    "scripts/s28/panel-harness.mjs": "01b92adacdc81420d1173707fe9f883746fda0515380df7e4b35ba495a893b67"
+  },
+  "capturedArtifactHashes": {
+    "diagnostics-dialog.png": "08d5ecdbaa25af2e7671b8210b9a7b0080f9bbbc920972ef8719ea95785f15e0",
+    "new-chat-dialog.png": "8b829e2a9e00cec7c928e3499ab31899a64cbe34c6398d113617438ea952e358",
+    "panel-action-review.png": "4a367e8dd08430e4820436100d18c85f27785335ba21f5a207ed04d6f29cadbb",
+    "panel-confirmation.png": "79a3f1f1f8b640d5e5d88e3b02fd67d3331887ae3eb88348f737ce25161ec1e5",
+    "panel-consent-component-scroll.png": "f782f5c912a0a1089150d476c50339791c660828b80686efcd4208ed0ea043cd",
+    "panel-consent-component-vision.png": "22b456e3de018c880430ac7e29559194b4bccb4134199b4591a688bbaecc00a6",
+    "panel-consent-jev-decision.png": "b25363cffde77b459704800a9b13b3846054e9286c1a4012dce10d2b56fda8ef",
+    "panel-consent-runtime-methods.png": "a1748e7f864dd6bbeed49fbec22335daff2e15aebc2c26c86c9c3264a9835727",
+    "panel-consent-runtime-result.png": "c2c53322dadd87fe6b0d7399a2d8e608a615ed1ae0cdad26abad86588109e440",
+    "panel-consent-source.png": "d767bca7f39e3c25e25dc7b956112061d7489ac99101aad04f119ac148d9ab6a",
+    "panel-goal-unknown.png": "8752bf35918b812f63dfaa4f2fa82f92aea6fa2acacffeb4d778aab2722a3c44",
+    "panel-idle.png": "3f99ef1c154f19eb2b528a50c7eaadd81cc5a500815c074164d2cb0ca6f7f337",
+    "panel-option-value.png": "44296b524865ed7e917fe0e020e95bea543d6b646942e0f013f518235cdcb8ef",
+    "panel-permission.png": "ee760508cfc3043335dbfce69e5e7e92685882d5b231abaa40b410b95b2b6d63",
+    "panel-session-review.png": "a6a5f5007df30e863ff1d1d091e0a66efcada0e64b12d98f750bfd2ce732cd3b",
+    "panel-stopping.png": "bcfa9aecb34cc68c4385f018cd01d8f28d147307fc94eecbfa16dc1549231ac9",
+    "panel-value.png": "6d2b6742f099f3a91f0b5cdbbbd3a9e66d27a520b18e6cda6b86cd12e17ad9d4",
+    "workflow-candidates.png": "5e215c24ba3f4cea1ae99c45e1ee6a0221f9e31e584b987a153968e9d1380193",
+    "workflow-plan-review.png": "29e91fd49112e0e953bdb296ed32912ea32073afc5424d8cff7786dcc43e18f3",
+    "workflow-preview.png": "226c81f2848694cdecf55da6a27c576a3ce13b197e1f5abd8652cc8c69b6a3f8"
+  },
+  "approvals": 0,
+  "providerCalls": 0,
+  "businessDispatches": 0,
+  "limits": [
+    "TaskClient fixture composition, not normal Worker task routing.",
+    "20 of 26 S26 states; six Settings/manager states and full snapshot/connection-loss acceptance remain pending.",
+    "Diagnostic download contains presentation status only; backend traces are unavailable.",
+    "S28/S29 full acceptance remains pending."
+  ],
+  "environment": {
+    "os": "Linux",
+    "node": "v20.19.6",
+    "pnpm": "9.15.4"
+  }
+}

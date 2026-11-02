@@ -1,8 +1,16 @@
+import type { PanelClient, PanelEvent } from "@contextpilot/shared/bridge";
+import { createPanelView } from "./panel-view.js";
 export interface PresentationView {
   status(text: string): void;
   message(text: string): void;
+  event?(event: PanelEvent): void;
+  connection?(text: string, available: boolean): void;
+  bind?(client?: PanelClient): () => void;
 }
 export function createView(document: Document): PresentationView {
+  const chat = document.getElementById("chat-messages");
+  if (chat && document.getElementById("chat-form"))
+    return createPanelView(document, chat);
   return {
     status(text) {
       const output = document.querySelector(

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { panelEventSchema, type PanelClient } from "./panel-events.js";
+export * from "./panel-events.js";
 export * from "./settings-rpc.js";
 import { settingsCommandSchema } from "./settings-rpc.js";
 import { migrationCommandSchema } from "./migration-rpc.js";
@@ -83,12 +85,27 @@ export const envelopeSchema = z.strictObject({
 });
 export type Hello = z.infer<typeof helloSchema>;
 export type Envelope = z.infer<typeof envelopeSchema>;
-export const bridgeEventSchema = z.strictObject({
+const eventPosition = {
   sequence: z.number().int().positive(),
   revision: z.number().int().positive(),
-  kind: z.string().max(128),
-  text: z.string().max(65536).optional(),
-});
+};
+export const bridgeEventSchema = z.union([
+  z.strictObject({
+    ...eventPosition,
+    kind: z.literal("presentation"),
+    presentation: panelEventSchema,
+    text: z.never().optional(),
+  }),
+  z.strictObject({
+    ...eventPosition,
+    kind: z
+      .string()
+      .max(128)
+      .regex(/^(?!presentation$)[\s\S]*$/),
+    text: z.string().max(65536).optional(),
+    presentation: z.never().optional(),
+  }),
+]);
 export const replaySchema = z.strictObject({
   events: z.array(bridgeEventSchema).max(4096),
   cursor: z.number().int().nonnegative(),
@@ -112,6 +129,7 @@ export const replaySchema = z.strictObject({
 });
 export type BridgeEvent = z.infer<typeof bridgeEventSchema>;
 export interface TaskClient {
+  panel?: PanelClient;
   resume(
     afterSequence: number,
     streamId?: string,

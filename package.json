@@ -82,6 +82,7 @@
     "check:s28": "node scripts/s28/check-boundaries.mjs && node --test scripts/s28/install.test.mjs scripts/s28/runtime.test.mjs && node scripts/s28/export-contracts.mjs && node scripts/s27/check-inventory.mjs docs/baselines/s27-v2/disposition.json",
     "test:chrome-s28": "node --experimental-websocket scripts/s28/chrome-smoke.mjs",
     "test:chrome-s28:native": "node --experimental-websocket scripts/s28/chrome-smoke.mjs --native",
+    "test:chrome-s28:panel": "node --experimental-websocket scripts/s28/chrome-panel.mjs",
     "test:chrome-s28:main": "node --experimental-websocket scripts/s28/chrome-main.mjs",
     "test:s29": "vitest run extension/tests/unit/migration/s29",
     "build:s29": "node scripts/s29/build.mjs",

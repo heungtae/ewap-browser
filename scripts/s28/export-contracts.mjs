@@ -29,6 +29,12 @@ for (const name of [
   "settingsCommandSchema",
   "settingsViewSchema",
   "settingsResultSchema",
+  "panelEventSchema",
+  "panelResponseSchema",
+  "panelPromptSchema",
+  "panelActionSchema",
+  "panelCandidateSchema",
+  "panelCompletionSchema",
 ])
   golden[name] = schemas.z.toJSONSchema(schemas[name]);
 const text = await prettier.format(JSON.stringify(golden), { parser: "json" });

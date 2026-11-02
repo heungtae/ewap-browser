@@ -28,6 +28,8 @@ export function connectPresentation(
   let stopped = false;
   let { cursor, snapshotRequired } = state;
   let handle: unknown;
+  const report = (text: string, available: boolean) =>
+    view.connection ? view.connection(text, available) : view.status(text);
   const update = async () => {
     const [events, config] = await Promise.allSettled([
       state.streamId
@@ -37,7 +39,7 @@ export function connectPresentation(
     ]);
     if (stopped) return;
     if (events.status !== "fulfilled" || config.status !== "fulfilled") {
-      view.status("Backend disconnected — waiting for reconnection");
+      report("Backend disconnected — waiting for reconnection", false);
       return;
     }
     const parsed = replaySchema.safeParse(events.value);
@@ -84,24 +86,29 @@ export function connectPresentation(
       )
         snapshotRequired = true;
       if (!snapshotRequired) {
+        if (batch.events.some((event) => event.presentation && !view.event))
+          snapshotRequired = true;
+      }
+      if (!snapshotRequired) {
+        report("Backend connected", true);
         for (const event of batch.events)
-          if (
-            event.sequence > cursor &&
-            event.kind === "message" &&
-            event.text !== undefined
-          )
-            view.message(event.text);
+          if (event.sequence > cursor) {
+            if (event.presentation) view.event?.(event.presentation);
+            else if (event.kind === "message" && event.text !== undefined)
+              view.message(event.text);
+          }
         cursor = next;
         state.cursor = cursor;
       }
     }
     state.snapshotRequired = snapshotRequired;
-    view.status(
+    report(
       snapshotRequired
         ? "Backend snapshot required — waiting"
         : config.value.controllerReady
           ? "Backend connected"
           : "Backend connected — controller setup required",
+      !snapshotRequired,
     );
   };
   const run = async () => {
@@ -109,7 +116,7 @@ export function connectPresentation(
       await update();
     } catch {
       if (!stopped)
-        view.status("Backend unavailable — waiting for reconnection");
+        report("Backend unavailable — waiting for reconnection", false);
     } finally {
       if (!stopped)
         handle = timer.later(() => {

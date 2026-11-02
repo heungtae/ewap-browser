@@ -26,14 +26,9 @@ if (document.querySelector("#provider-form")) {
 } else {
   const state = { cursor: 0, snapshotRequired: false, connectionOnly: true };
   let dispose: (() => void) | undefined;
+  const view = createView(document);
   const mount = () => {
-    dispose ??= mountPresentation(
-      document,
-      createView(document),
-      tasks,
-      settings,
-      state,
-    );
+    dispose ??= mountPresentation(document, view, tasks, settings, state);
   };
   window.addEventListener("pagehide", () => {
     dispose?.();

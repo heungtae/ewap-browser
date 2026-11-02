@@ -87,7 +87,8 @@ export function unboundBootstrapResult(kind: unknown, value: unknown): unknown {
       result.events.some(
         (event) =>
           !["browser.connected", "browser.waiting"].includes(event.kind) ||
-          event.text !== undefined,
+          event.text !== undefined ||
+          event.presentation !== undefined,
       )
     )
       throw new Error("UI_CONTEXT_REQUIRED");
