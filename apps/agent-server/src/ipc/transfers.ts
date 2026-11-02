@@ -1,6 +1,7 @@
-import { ChunkTransfer } from "./transfer.js";
+import { ChunkTransfer, type TransferSpec } from "./transfer.js";
 import { transferCommandSchema } from "@contextpilot/shared/bridge";
 export class ConnectionTransfers {
+  constructor(private consume?: (spec: TransferSpec, bytes: Buffer) => void) {}
   private active: ChunkTransfer | undefined;
   private finished = new Set<string>();
   private timer: ReturnType<typeof setTimeout> | undefined;
@@ -27,7 +28,8 @@ export class ConnectionTransfers {
       else if (command.kind === "transfer.complete") {
         const trusted = t.complete(now);
         this.cancel();
-        // No task consumer is admitted in S28. A verified transfer alone grants no authority.
+        // Only an explicitly bound consumer can accept content; verification alone is not authority.
+        this.consume?.(t.spec, trusted);
         return { state: "verified", bytes: trusted.length };
       } else this.cancel();
       return {

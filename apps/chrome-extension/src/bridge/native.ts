@@ -4,23 +4,14 @@ import {
   readySchema,
   responseSchema,
 } from "@contextpilot/shared/bridge";
-export interface NativePort {
-  postMessage(value: unknown): void;
-  disconnect(): void;
-  onMessage: { addListener(callback: (value: unknown) => void): void };
-  onDisconnect: { addListener(callback: () => void): void };
-}
-export interface Pairing {
-  installationId: string;
-  profileId: string;
-  extensionId: string;
-  secret: string;
-}
-const hex = (bytes: ArrayBuffer) =>
-  [...new Uint8Array(bytes)]
-    .map((n) => n.toString(16).padStart(2, "0"))
-    .join("");
+export type { NativePort, Pairing } from "./native-types.js";
+import type { NativePort, Pairing } from "./native-types.js";
+import { nativeHello, wireDigest } from "./native-auth.js";
+import { CodebaseEndpoint } from "./codebase-endpoint.js";
+import type { ProjectionAdmission } from "../codebase/projection-registry.js";
+import type { CodebaseReadService } from "@contextpilot/codebase-repository";
 export class NativeBridge {
+  private codebase: CodebaseEndpoint | undefined;
   private identity:
     | { connectionId: string; connectionEpoch: number }
     | undefined;
@@ -43,7 +34,10 @@ export class NativeBridge {
   constructor(
     private port: NativePort,
     private pairing: Pairing,
+    options: { codebase?: boolean } = {},
   ) {
+    if (options.codebase)
+      this.codebase = new CodebaseEndpoint(this, pairing, () => this.close());
     this.ready = new Promise((resolve, reject) => {
       this.readyResolve = resolve;
       this.readyReject = reject;
@@ -62,39 +56,15 @@ export class NativeBridge {
     if (v.kind === "challenge" && this.handshake === "challenge") {
       const challenge = challengeSchema.parse(value);
       this.handshake = "signing";
-      const p = this.pairing;
-      const keyBytes = new TextEncoder().encode(p.secret);
-      const key = await crypto.subtle.importKey(
-        "raw",
-        keyBytes,
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"],
+      const hello = await nativeHello(
+        this.pairing,
+        challenge.nonce,
+        this.codebase !== undefined,
       );
-      const data = new TextEncoder().encode(
-        JSON.stringify([
-          1,
-          0,
-          p.installationId,
-          p.profileId,
-          p.extensionId,
-          challenge.nonce,
-        ]),
-      );
-      const proof = hex(await crypto.subtle.sign("HMAC", key, data));
       if (this.closed || this.handshake !== "signing")
         throw new Error("BACKEND_DISCONNECTED");
       this.handshake = "ready";
-      this.port.postMessage({
-        kind: "hello",
-        major: 1,
-        minor: 0,
-        installationId: p.installationId,
-        profileId: p.profileId,
-        extensionId: p.extensionId,
-        nonce: challenge.nonce,
-        proof,
-      });
+      this.port.postMessage(hello);
     } else if (v.kind === "ready" && this.handshake === "ready") {
       const ready = readySchema.parse(value);
       this.capabilities = new Set(ready.capabilities);
@@ -105,6 +75,15 @@ export class NativeBridge {
       this.handshake = "connected";
       clearTimeout(this.timer);
       this.readyResolve?.();
+      this.codebase?.attach(this.identity, this.capabilities);
+    } else if (this.handshake === "connected" && v.kind === "codebase.agent") {
+      if (
+        !this.codebase ||
+        !this.identity ||
+        !this.capabilities.has("codebase.read")
+      )
+        throw Error("PROJECTION_PROTOCOL");
+      this.codebase.receiveAgent(value, this.identity);
     } else if (
       this.handshake === "connected" &&
       typeof v.messageId === "string"
@@ -132,12 +111,7 @@ export class NativeBridge {
           : "MIGRATION_UNAVAILABLE",
       );
     const messageId = crypto.randomUUID();
-    const payloadDigest = hex(
-      await crypto.subtle.digest(
-        "SHA-256",
-        new TextEncoder().encode(JSON.stringify(payload)),
-      ),
-    );
+    const payloadDigest = await wireDigest(payload);
     if (this.closed || !this.identity || this.pending.size >= 4)
       throw new Error("BACKEND_UNAVAILABLE");
     const now = Date.now();
@@ -170,9 +144,18 @@ export class NativeBridge {
     }
     return result;
   }
+  async publishProjection(
+    read: CodebaseReadService,
+    admission: ProjectionAdmission,
+  ) {
+    await this.ready;
+    if (this.closed || !this.codebase) throw Error("PROJECTION_UNAVAILABLE");
+    return this.codebase.publish(read, admission);
+  }
   close(): void {
     if (this.closed) return;
     this.closed = true;
+    this.codebase?.close();
     clearTimeout(this.timer);
     this.identity = undefined;
     const error = new Error("BACKEND_DISCONNECTED");

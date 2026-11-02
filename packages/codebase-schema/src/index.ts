@@ -6,3 +6,6 @@ export * from "./validate.js";
 export * from "./dataset.js";
 export * from "./advisory.js";
 export * from "./management.js";
+export * from "./projection-query.js";
+export * from "./projection.js";
+export * from "./projection-validation.js";

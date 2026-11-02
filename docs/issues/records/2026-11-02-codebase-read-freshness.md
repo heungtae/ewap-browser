@@ -1,0 +1,9 @@
+# ISS-20261102-002 — Codebase catalog released after caller revocation
+
+Status: **Resolved for the target read service and controlled native projection scope**. Occurred/updated 2026-11-02 KST. Version 0.1.117, source base `e75ddf9fd` plus this change. The fix revision is the commit containing this record. Deployment and real task/source-consent admission are unverified.
+
+The new [regression](../../../extension/tests/unit/migration/s29/projection-freshness.test.ts) reproduced a caller becoming invalid while `repository.snapshot()` awaited IndexedDB. The previous `catalog()` checked the caller before the await and returned the resolved snapshot afterward. The first test failed because the promise resolved instead of rejecting with `PROJECTION_STALE`.
+
+[CodebaseReadService](../../../packages/codebase-repository/src/read-service.ts) now checks the caller immediately before and after the catalog read. Its dataset read also validates the bound graph revision/digest before releasing immutable data. The new projection path checks source/cancellation/deadline and graph identity again after projection/hash work and before transfer completion. No cached projection reactivates a lease.
+
+Acceptance passed: the reproduced in-flight revocation rejects, valid reads still work, changed scope/byte limits/revoked grants reject, separate sample/data permissions are enforced before data access, and actual Chrome navigation invalidates a previous-document backend read. The [evidence](../../evidence/s29-native-projection-2026-11-02.md) records checks and scope. This differs from [ISS-20261102-001](2026-11-02-main-injection-document.md), which concerns MAIN injection identity and dispatch uncertainty. Native authentication/replay regressions also pass; neither issue authorizes task execution.

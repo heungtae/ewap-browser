@@ -15613,6 +15613,216 @@
       "disposition": "replace",
       "sprint": "S28",
       "target": "TaskClient UI replay and prompt lifecycle evidence"
+    },
+    {
+      "path": "apps/agent-server/src/codebase/projection-channel.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/agent-server/src/codebase/projection-hub.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/agent-server/src/codebase/projection-pending.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/agent-server/src/codebase/projection-validation.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/agent-server/src/ipc/dispatch.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/codebase-endpoint.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/codebase-inbox.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/codebase-transfer.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/native-auth.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/native-types.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/codebase/projection-registry.ts",
+      "owner": "RF22",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/codebase/projection-wait.ts",
+      "owner": "RF22",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "docs/evidence/s29-native-projection-2026-11-02.json",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "docs/evidence/s29-native-projection-2026-11-02.md",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "docs/issues/records/2026-11-02-codebase-read-freshness.md",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/fixture/s29/projection-daemon.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/fixture/s29/projection-worker.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/codebase-auth.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/projection-fixture.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/projection-freshness.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/projection-ipc-fixture.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/projection-ipc.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/projection-validation.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s29/projection.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "packages/codebase-repository/src/projector.ts",
+      "owner": "RF22",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "packages/codebase-schema/src/projection-query.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "packages/codebase-schema/src/projection-validation.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "packages/codebase-schema/src/projection.ts",
+      "owner": "RF10",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "packages/shared/src/codebase-rpc.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "scripts/s29/chrome-projection.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S29",
+      "target": "Authenticated read-only Codebase projection and controlled native qualification"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

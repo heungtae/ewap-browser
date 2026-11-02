@@ -1,0 +1,182 @@
+{
+  "date": "2026-11-02 KST",
+  "sourceBase": "e75ddf9fd2cc38844812d651dd60aeb56fd805fe",
+  "dirtyCaveat": "Source base plus containing commit changes; hashes identify verified sources. Original production/design files unchanged.",
+  "versions": {
+    "extension": "0.1.117",
+    "node": "v20.19.6",
+    "pnpm": "9.15.4",
+    "browser": "Chrome/147.0.7727.15",
+    "platform": "Linux"
+  },
+  "result": "PASS",
+  "sprintStatus": "In Progress",
+  "scope": "Read-only projections with synthetic trusted admission; no task admission/provider routing/production cutover",
+  "approvalFacts": 0,
+  "businessDispatches": 0,
+  "providerCalls": 0,
+  "commands": [
+    {
+      "command": "pnpm install --frozen-lockfile",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm lint",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm test:unit",
+      "result": "PASS",
+      "files": 308,
+      "tests": 1487
+    },
+    {
+      "command": "pnpm build:s28",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm build:s29",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:module-boundaries",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s28",
+      "result": "PASS",
+      "schemaGoldens": 19
+    },
+    {
+      "command": "pnpm check:s29",
+      "result": "PASS",
+      "schemaGoldens": 10
+    },
+    {
+      "command": "pnpm check:s30",
+      "result": "PASS"
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S29_PROJECTION_EVIDENCE_DIR=/tmp/s29-projection-chrome node --experimental-websocket scripts/s29/chrome-projection.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_EVIDENCE_DIR=/tmp/s29-projection-native-regression pnpm test:chrome-s28:native",
+      "result": "PASS"
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_PANEL_EVIDENCE_DIR=/tmp/s29-projection-panel-regression pnpm test:chrome-s28:panel",
+      "result": "PASS"
+    }
+  ],
+  "chromeProjection": {
+    "result": "PASS",
+    "browser": "Chrome/147.0.7727.15",
+    "scope": "source-fixture Worker composition; real Chrome content collection/IndexedDB/native host/Unix socket and authenticated backend read; synthetic read admission and Unicode dataset; no task/provider routing",
+    "collection": {
+      "revision": 1,
+      "privacy": true,
+      "coverage": {
+        "status": "partial",
+        "examined": 5,
+        "emitted": 2,
+        "omitted": 1,
+        "redactions": 1,
+        "total": 2,
+        "reasons": ["DENIED_REGION"],
+        "startedAt": 1793584838866,
+        "endedAt": 1793584838869,
+        "deadline": 1793584848861
+      }
+    },
+    "native": {
+      "state": "PASS",
+      "authenticatedNativeRead": true,
+      "contentToIndexedDb": true,
+      "rows": 1000,
+      "transferredBytes": 620567,
+      "staleDocumentDenied": true,
+      "privateExcluded": true
+    }
+  },
+  "firstFailures": [
+    {
+      "case": "in-flight catalog caller revocation",
+      "before": "Promise resolved after revocation",
+      "after": "PROJECTION_STALE rejection"
+    },
+    {
+      "case": "fixture compile integration",
+      "before": "incomplete typed read/query arguments and CommonJS top-level await",
+      "after": "actual closed API and async entry compile"
+    },
+    {
+      "case": "negative-test callback narrowing",
+      "before": "TypeScript lost discriminated-union narrowing inside closure",
+      "after": "captured narrowed payload"
+    },
+    {
+      "case": "inventory owner sprint",
+      "before": "RF26 entry incorrectly labelled S29",
+      "after": "RF26 bridge entry assigned S28"
+    }
+  ],
+  "limits": [
+    "Synthetic read-only admission; no real consent UI creates these grants yet.",
+    "No provider tools, task execution, live-site or production release claim.",
+    "S28 full baseline/recovery gates remain pending.",
+    "Per-connection bounded request/message identifiers require reconnect after caps; no unbounded history."
+  ],
+  "sourceSha256": {
+    "apps/agent-server/src/codebase/projection-channel.ts": "37f453c9f37b3f9d40c0aac824a432e08ede760e1483135639ba48e83bcc5cf3",
+    "apps/agent-server/src/codebase/projection-hub.ts": "638e477f996b7beb753524e44fd0b16ebbc3c7719a6aff4221ea4c1b0ddddd41",
+    "apps/agent-server/src/codebase/projection-pending.ts": "6ceb24b2fd0cbc0f696bd446f14575f4439cd2b39064cf017961461ab8d13343",
+    "apps/agent-server/src/codebase/projection-validation.ts": "cb439245b4be07a44fb390984d485b064111141dc9a5d8ffdbb115ef812d31a5",
+    "apps/agent-server/src/ipc/dispatch.ts": "d2b04affdad0cd417599e6c2e554c75c741714f40471c5c73dc3275a25465c14",
+    "apps/chrome-extension/src/bridge/codebase-endpoint.ts": "4a62f920036e3d67fbab209fc26c62ad2d15ee35388c3e96d046dc67a54d9f6e",
+    "apps/chrome-extension/src/bridge/codebase-inbox.ts": "aece1466ecfbc5b7abafa8eb20ba34e65a5921900f176c828855e586422d1a07",
+    "apps/chrome-extension/src/bridge/codebase-transfer.ts": "2d056b0936d28b21490a634dea0ecebb573e9cc31139ce8a93fb1b6c7ba635ba",
+    "apps/chrome-extension/src/bridge/native-auth.ts": "508197ef9d0381c779eb6fc67333bdb27b99d8d9aa6c5e9904c736c1fbd369bb",
+    "apps/chrome-extension/src/bridge/native-types.ts": "3a4561d177426fddd071452fe41e02ac89f8eb7ad44fbbf59653d65627c68aa9",
+    "apps/chrome-extension/src/codebase/projection-registry.ts": "c1b1439cb66ce1e6ae3d1ad05210e8950784ef1ec39da99faa0c884e0a54662d",
+    "apps/chrome-extension/src/codebase/projection-wait.ts": "379fee81d5d19bd87ecdbac52ab8ed24670cc116575db66e3c9411d6a67bab2b",
+    "extension/tests/fixture/s29/projection-daemon.ts": "fb151276e9d41c49134b8985464ecc604ef43e4d830b40c8c6cf52526e90734a",
+    "extension/tests/fixture/s29/projection-worker.ts": "0f1c11401602f4c5effa0b161ef3afc6f0d9a2cdc2df88e1fbad0388eeb69e51",
+    "extension/tests/unit/migration/s28/codebase-auth.test.ts": "874722048092b392b7638cdcbe580bb3ed288a6bbb2c6eda601842bd678bd4e1",
+    "extension/tests/unit/migration/s29/projection-fixture.ts": "963d37ecb56253a81eb161d5f080345a99b0663923ddf2321f7ce98d87c1b53f",
+    "extension/tests/unit/migration/s29/projection-freshness.test.ts": "d93bab80a31b2f315de16906c5e42daf74fd095773fbd286355c4b97fe9478cf",
+    "extension/tests/unit/migration/s29/projection-ipc-fixture.ts": "d09d6c66cfff67521718cee235f95a23fd2b76258f1a57fe21107bc595d17ad5",
+    "extension/tests/unit/migration/s29/projection-ipc.test.ts": "62f5bbc74b7508acb0e6f677cdcb3f13479b841d01045170e47dbcbb1118000c",
+    "extension/tests/unit/migration/s29/projection-validation.test.ts": "ce17252b5127e32d1a6c6e53518e1ac53201fd54282f93f79eb40b0c060613ad",
+    "extension/tests/unit/migration/s29/projection.test.ts": "d4153c8367cbaaf13819c54c1b0d124bb19c499f683cb68032bfb6980f3d22d2",
+    "packages/codebase-repository/src/projector.ts": "4855a69b79a34492cfffb515f5002811afc209d32cabfd3869726c48ca2d613a",
+    "packages/codebase-schema/src/projection-query.ts": "2507c79198aad051d29098305e351640a7a5d3114d9e4e0615a8a74163ec8131",
+    "packages/codebase-schema/src/projection-validation.ts": "1c82c577a41e8335999e48e8aad3a1594cd5ebe900e462f781839120b1d4a3e2",
+    "packages/codebase-schema/src/projection.ts": "f3fb32002292567d925debeebaf23a2f56b0e53b13a0dcd4b920f4a26544b760",
+    "packages/shared/src/codebase-rpc.ts": "098ce8943c1aa59baf4febf7402d8d769dd4faa42d872aa6ceac361bf4f0dde4",
+    "scripts/s29/chrome-projection.mjs": "da596bbef9cc3faaaf32337ef6196de871c38bdf072677599e8a8f9cfb84edbe",
+    "apps/agent-server/package.json": "e0c34cb937ca3edf447c521dc6bcc35f7744c73e024b24de3473751fa568b610",
+    "apps/agent-server/src/ipc/auth.ts": "6d809f7015523c6dea9cdea396d32643904dd715a9bdd3dbe13aec2cbf5c8d78",
+    "apps/agent-server/src/ipc/server.ts": "af1e9b87f7ecc231909d289c13c6993bd9e80b7bfed4be79cbd644270404f2d0",
+    "apps/agent-server/src/ipc/transfers.ts": "ee30d8f806b3b4d9707ecdd5f4c253b93c514dfa133f4159bfc89e61fdab58a8",
+    "apps/agent-server/src/native/launcher.ts": "63e4ba66ca894137bd95eb70ab329425f1d2b45400869521777f9e4c353ddc58",
+    "apps/chrome-extension/src/bridge/capabilities.ts": "0d52a577f4ffc412099075d5e533806c92a3e3b3dccbdf015d78f9dac2b42996",
+    "apps/chrome-extension/src/bridge/native.ts": "8df616e2656bb0fa3e743b0226878ee376f24dfe44c7e735df4c58572f2a5601",
+    "apps/chrome-extension/src/bridge/worker.ts": "188ebef99a1f3ab32cbaaeff2ca3332299c216d1dd21046738cf05de192553e1",
+    "apps/chrome-extension/src/codebase/profile-scope.ts": "328863b5ccf7336108f3b870872d9c109ff1925d8d03c372b894840ae3a3345a",
+    "extension/tests/fixture/s28-contracts.json": "b8eaa0c16349290bed622361373c24a3c5fdd85f7e18a92f00951c3251fdd40d",
+    "extension/tests/fixture/s29/contracts.json": "8b5d269d8af4175713ea16c72a3fb47370fcbdc9297c403e15194da8ee853997",
+    "packages/codebase-repository/src/index.ts": "232bb112344d12c07c89c8f00ae1c3dd064ee06ee32ffb3bdaf84bb738519350",
+    "packages/codebase-repository/src/read-service.ts": "734d980d9d2107a77a873f66826a1413e733a29c3478edb9aaca380f0d715ca8",
+    "packages/codebase-schema/src/index.ts": "694c46c7640e94945267525660540d2c8f3a9bc223efbc7d786787444812469a",
+    "packages/shared/package.json": "ca5dbc48608f6534c46b0434b5d43464ba92158fc75312969da725d2d3e97866",
+    "packages/shared/src/bridge.ts": "e69cd58fc1ab72985ec090b1b30e45715c6b38b851ee94a9a3101a7703966585",
+    "pnpm-lock.yaml": "12c1833b25b124cd53f39ed54eb87ad036e47e97ff06b05a3efc0bec9f9bf11b",
+    "scripts/s28/export-contracts.mjs": "ee5f40393c17ecc76fb8c35d6f6ef5a8b2f1fbb3076fa545acb6380524e13fa1",
+    "scripts/s29/export-goldens.mjs": "22fc2030da66d13ad5b535a1c6f5b1eb685d5d9c0d96185852d121192c856730"
+  }
+}

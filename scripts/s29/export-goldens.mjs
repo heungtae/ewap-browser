@@ -18,6 +18,10 @@ const m = await import(
 );
 const schemas = {};
 for (const name of [
+  "projectionLeaseSchema",
+  "projectionRequestSchema",
+  "projectionPacketSchema",
+  "projectionCancelSchema",
   "batchSchema",
   "deltaSchema",
   "snapshotSchema",
@@ -52,4 +56,4 @@ for (const [path, value] of [
       `S29 golden drift ${path}`,
     );
 }
-console.log("S29 six schema goldens + observation-to-graph golden PASS");
+console.log("S29 ten schema goldens + observation-to-graph golden PASS");

@@ -1,5 +1,7 @@
 # 코드 탐색 안내
 
+Read-only Codebase projections: [closed contracts](../packages/codebase-schema/src/projection.ts), [browser leases](../apps/chrome-extension/src/codebase/projection-registry.ts), [native endpoint](../apps/chrome-extension/src/bridge/codebase-endpoint.ts), [backend consumer](../apps/agent-server/src/codebase/projection-channel.ts), [actual Chrome runner](../scripts/s29/chrome-projection.mjs), [evidence and scope](evidence/s29-native-projection-2026-11-02.md). Explicit paired capability negotiation; no task/provider advertisement.
+
 Observed-owner restart rebind: [read-only backend snapshot](../apps/agent-server/src/migration/resume-snapshot.ts), [fresh browser rebind](../apps/chrome-extension/src/migration/resume-observed.ts), [Chrome restart runner](../scripts/s36/settings-transfer/observed-restart-chrome.mjs), [evidence and limits](evidence/s36-observed-restart-2026-10-28.md). No historical ACK use or automatic session restoration.
 
 Observed migration owner: [adapter](../apps/chrome-extension/src/migration/observed-owner.ts), [unit checks](../extension/tests/unit/migration/s36/observed-owner.test.ts), [controlled Chrome composition](../extension/tests/fixture/s36/settings-observed-fixture.ts), [evidence and limitations](evidence/s36-observed-owner-2026-10-28.md). The caller must establish freeze/drain and re-arm observation after restart.

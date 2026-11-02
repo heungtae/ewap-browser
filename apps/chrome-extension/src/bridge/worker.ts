@@ -40,6 +40,7 @@ function connect(): Promise<NativeBridge> {
         secret: p.secret,
         extensionId: api.runtime.id,
       },
+      { codebase: p.codebaseReadVersion === 1 },
     );
   })();
   return connection;

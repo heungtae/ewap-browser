@@ -10,6 +10,7 @@ export function proof(
   pairing: Pairing,
   nonce: string,
   extensionId: string,
+  capabilities?: string[],
 ): string {
   return createHmac("sha256", pairing.secret)
     .update(
@@ -20,6 +21,7 @@ export function proof(
         pairing.profileId,
         extensionId,
         nonce,
+        ...(capabilities === undefined ? [] : [capabilities]),
       ]),
     )
     .digest("hex");
@@ -43,7 +45,10 @@ export class Handshake {
       hello.nonce !== this.nonce ||
       !timingSafeEqual(
         Buffer.from(hello.proof, "hex"),
-        Buffer.from(proof(p, this.nonce, hello.extensionId), "hex"),
+        Buffer.from(
+          proof(p, this.nonce, hello.extensionId, hello.capabilities),
+          "hex",
+        ),
       )
     )
       throw new Error("AUTH_DENIED");

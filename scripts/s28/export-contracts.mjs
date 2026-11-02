@@ -18,6 +18,8 @@ const schemas = await import(
 );
 const golden = {};
 for (const name of [
+  "codebaseCommandSchema",
+  "codebaseAgentSchema",
   "helloSchema",
   "envelopeSchema",
   "challengeSchema",

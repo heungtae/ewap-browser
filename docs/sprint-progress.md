@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S29 — 2026-11-02 authenticated backend projection
+
+**In Progress.** [Evidence](evidence/s29-native-projection-2026-11-02.md) records closed read-only projection contracts, explicit signed capability negotiation, per-source leases, separate sample/dataset permissions, native chunk transfer and cancellation. Actual Chrome joins content collection, extension IndexedDB and backend reads, including 620 KB Unicode data and navigation invalidation. [ISS-20261102-002](issues/records/2026-11-02-codebase-read-freshness.md) fixes caller revocation during catalog reads. S28 full UI/recovery acceptance and later task/source-consent integration remain pending.
+
 ## Browser Agent S28 — 2026-11-02 TaskClient presentation
 
 **In Progress.** [Evidence](evidence/s28-panel-presentation-2026-11-02.md) records typed review/permission/value/confirmation/consent/workflow events, exact prompt responses, disconnect/expiry/stale-reply guards and same-document streaming recovery. Actual Chrome replays 20 S26 states with reviewed differences, and downloads a presentation-only diagnostic file. Unit tests pass 1,477/1,477; native/management regressions pass. Six baseline Settings/manager states, full task-history/connection-loss acceptance and the remaining S28/S29 gates stay pending.

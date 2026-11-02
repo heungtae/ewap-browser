@@ -10,7 +10,29 @@ export class CodebaseReadService {
   ) {}
   async catalog(): Promise<Snapshot> {
     if (!this.current()) throw new Error("PROJECTION_STALE");
-    return this.repository.snapshot(this.partitionId, this.pageKey);
+    const snapshot = await this.repository.snapshot(
+      this.partitionId,
+      this.pageKey,
+    );
+    if (!this.current()) throw new Error("PROJECTION_STALE");
+    return snapshot;
+  }
+  async dataset(datasetId: string, revision: number) {
+    const before = await this.catalog();
+    if (before.revision !== revision) throw new Error("PROJECTION_STALE");
+    const data = await this.repository.dataset(
+      this.partitionId,
+      this.pageKey,
+      datasetId,
+    );
+    const after = await this.catalog();
+    if (
+      data.graphRevision !== revision ||
+      after.revision !== revision ||
+      after.digest !== before.digest
+    )
+      throw new Error("PROJECTION_STALE");
+    return data;
   }
   async query(datasetId: string, revision: number, query: unknown) {
     const before = await this.catalog();

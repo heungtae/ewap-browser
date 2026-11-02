@@ -5,10 +5,10 @@ import { FrameDecoder, encodeFrame } from "../native/framing.js";
 import { Handshake, type Pairing } from "./auth.js";
 import { Session } from "./session.js";
 import { ConnectionTransfers } from "./transfers.js";
-import { capabilityHealth } from "../settings/health.js";
-import type { MigrationRequestContext } from "../../../../packages/shared/src/migration-rpc.js";
-import { requestSettings } from "./settings-request.js";
+import { dispatchCommand, type MigrationHandler } from "./dispatch.js";
 import type { ProviderSettingsService } from "../settings/provider-service.js";
+import type { ProjectionHub } from "../codebase/projection-hub.js";
+import type { ProjectionChannel } from "../codebase/projection-channel.js";
 import { EventReplay } from "./replay.js";
 const peers = new WeakMap<Server, Set<Socket>>();
 const paths = new WeakMap<Server, string>();
@@ -26,13 +26,9 @@ export async function stopLocal(server: Server): Promise<void> {
 export async function listenLocal(
   path: string,
   pairing: Pairing,
-  migration?: ((
-    command: unknown,
-    context: MigrationRequestContext,
-  ) => Promise<unknown>) & {
-    settingsMode?: "session-only" | "os-store";
-  },
+  migration?: MigrationHandler,
   settings?: ProviderSettingsService,
+  projections?: ProjectionHub,
 ): Promise<Server> {
   if (process.platform === "win32") throw new Error("WINDOWS_ACL_UNQUALIFIED");
   const directory = dirname(path);
@@ -55,7 +51,10 @@ export async function listenLocal(
     }
     connections.add(socket);
     const decoder = new FrameDecoder();
-    const transfers = new ConnectionTransfers();
+    let codebase: ProjectionChannel | undefined;
+    const transfers = new ConnectionTransfers((spec, bytes) => {
+      if (codebase?.expects(spec.id)) codebase.complete(spec.id, bytes);
+    });
     const handshake = new Handshake(pairing, Date.now() + 5000);
     let session: Session | undefined;
     socket.setTimeout(5000, () => socket.destroy());
@@ -69,8 +68,10 @@ export async function listenLocal(
     const processFrame = async (input: unknown) => {
       if (socket.destroyed) return;
       if (!session) {
-        handshake.accept(input, Date.now());
+        const hello = handshake.accept(input, Date.now());
         session = new Session(pairing, ++epoch);
+        if (projections && hello.capabilities?.includes("codebase.read"))
+          codebase = projections.connect(session, send);
         socket.setTimeout(30_000);
         send({
           kind: "ready",
@@ -92,68 +93,21 @@ export async function listenLocal(
                 ]
               : ["heartbeat", "resumeEvents"]),
             ...(settings ? ["settings"] : []),
+            ...(codebase ? ["codebase.read"] : []),
           ],
           taskReady: false,
         });
       } else {
         const command = session.accept(input, Date.now());
-        let result: unknown;
-        if (command.kind.startsWith("migration.")) {
-          if (!migration) throw new Error("MIGRATION_UNAVAILABLE");
-          const abort = new AbortController();
-          const disconnect = () => abort.abort();
-          const timer = setTimeout(
-            disconnect,
-            Math.max(0, session.deadline - Date.now()),
-          );
-          timer.unref();
-          socket.once("close", disconnect);
-          try {
-            result = await migration(command, {
-              deadline: session.deadline,
-              signal: abort.signal,
-            });
-            if (
-              abort.signal.aborted ||
-              Date.now() >= session.deadline ||
-              socket.destroyed
-            )
-              throw new Error("MIGRATION_EXPIRED");
-          } finally {
-            clearTimeout(timer);
-            socket.removeListener("close", disconnect);
-          }
-        } else if (command.kind.startsWith("settings.")) {
-          if (!settings) throw new Error("SETTINGS_UNAVAILABLE");
-          result = await requestSettings(
-            settings,
-            command,
-            session.deadline,
-            socket,
-          );
-        } else if (command.kind.startsWith("transfer."))
-          result = transfers.handle(command, Date.now());
-        else if (command.kind === "resumeEvents")
-          result = replay.resume(command.afterSequence, command.streamId);
-        else if (command.kind === "capabilities")
-          result = {
-            taskReady: false,
-            browserReady: session.browserAvailable(),
-            health: capabilityHealth({
-              hostInstalled: true,
-              executableValid: true,
-              protocolMajor: 1,
-              paired: true,
-              durableSecrets: false,
-            }),
-          };
-        else if (command.kind === "heartbeat") result = { kind: "heartbeat" };
-        else
-          result = replay.append(
-            session.browserAvailable()
-              ? "browser.connected"
-              : "browser.waiting",
-          );
+        const result = await dispatchCommand(command, {
+          session,
+          socket,
+          replay,
+          transfers,
+          migration,
+          settings,
+          codebase,
+        });
         send({ messageId: session.messageId, result });
       }
     };
@@ -176,6 +130,7 @@ export async function listenLocal(
     });
     socket.on("error", () => socket.destroy());
     socket.on("close", () => {
+      if (session) projections?.disconnect(session.connectionId);
       session?.disconnect();
       transfers.cancel();
       connections.delete(socket);

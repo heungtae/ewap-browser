@@ -1,3 +1,5 @@
+export * from "./codebase-rpc.js";
+import { codebaseCommandSchema } from "./codebase-rpc.js";
 import { z } from "zod";
 import { panelEventSchema, type PanelClient } from "./panel-events.js";
 export * from "./panel-events.js";
@@ -16,6 +18,7 @@ export const helloSchema = z.strictObject({
   extensionId: z.string().regex(/^[a-p]{32}$/),
   nonce: z.string().regex(/^[a-f0-9]{64}$/),
   proof: z.string().regex(/^[a-f0-9]{64}$/),
+  capabilities: z.array(z.literal("codebase.read")).min(1).max(1).optional(),
 });
 export const transferCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({
@@ -51,6 +54,7 @@ export const transferCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("transfer.cancel"), id }),
 ]);
 export const commandSchema = z.union([
+  codebaseCommandSchema,
   settingsCommandSchema,
   migrationCommandSchema,
   transferCommandSchema,
@@ -157,6 +161,7 @@ export const readySchema = z.strictObject({
   capabilities: z
     .array(
       z.enum([
+        "codebase.read",
         "settings",
         "heartbeat",
         "resumeEvents",
@@ -169,7 +174,7 @@ export const readySchema = z.strictObject({
         "migration.consensus",
       ]),
     )
-    .max(10),
+    .max(11),
   taskReady: z.literal(false),
 });
 export const responseSchema = z.strictObject({

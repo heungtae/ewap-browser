@@ -1,3 +1,4 @@
+import { ProjectionHub } from "../codebase/projection-hub.js";
 import { ProviderSettingsService } from "../settings/provider-service.js";
 import { FileSettingsPersistence } from "../settings/provider-file.js";
 import { SessionSecrets } from "../settings/service.js";
@@ -23,6 +24,7 @@ if (mode === "native") {
           new FileSettingsPersistence(`${configPath}.settings.json`, config),
           new SessionSecrets(128),
         ),
+        new ProjectionHub(config),
       ),
     )
     .then((server) => {
