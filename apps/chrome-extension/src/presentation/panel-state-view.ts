@@ -81,3 +81,11 @@ export function terminalView(
   }
   return { active: false, text: "" };
 }
+
+export function setPanelBusy(send: HTMLButtonElement, value: boolean) {
+  send.dataset.state = value ? "stop" : "send";
+  send.type = value ? "button" : "submit";
+  send.disabled = false;
+  send.setAttribute("aria-label", value ? "중지" : "보내기");
+  send.title = value ? "중지" : "보내기";
+}

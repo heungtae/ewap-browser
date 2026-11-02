@@ -3,7 +3,16 @@ export const hex = (bytes: ArrayBuffer) =>
   [...new Uint8Array(bytes)]
     .map((n) => n.toString(16).padStart(2, "0"))
     .join("");
-export async function nativeHello(p: Pairing, nonce: string, codebase = false) {
+export async function nativeHello(
+  p: Pairing,
+  nonce: string,
+  codebase = false,
+  history = false,
+) {
+  const capabilities = [
+    ...(codebase ? ["codebase.read"] : []),
+    ...(history ? ["task.history"] : []),
+  ];
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(p.secret),
@@ -19,7 +28,7 @@ export async function nativeHello(p: Pairing, nonce: string, codebase = false) {
       p.profileId,
       p.extensionId,
       nonce,
-      ...(codebase ? [["codebase.read"]] : []),
+      ...(capabilities.length ? [capabilities] : []),
     ]),
   );
   const proof = hex(await crypto.subtle.sign("HMAC", key, data));
@@ -32,7 +41,7 @@ export async function nativeHello(p: Pairing, nonce: string, codebase = false) {
     extensionId: p.extensionId,
     nonce,
     proof,
-    ...(codebase ? { capabilities: ["codebase.read"] } : {}),
+    ...(capabilities.length ? { capabilities } : {}),
   };
 }
 export const wireDigest = async (value: unknown) =>

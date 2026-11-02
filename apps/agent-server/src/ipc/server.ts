@@ -9,6 +9,7 @@ import { dispatchCommand, type MigrationHandler } from "./dispatch.js";
 import type { ProviderSettingsService } from "../settings/provider-service.js";
 import type { ProjectionHub } from "../codebase/projection-hub.js";
 import type { ProjectionChannel } from "../codebase/projection-channel.js";
+import type { TaskHistoryService } from "../tasks/history-service.js";
 import { EventReplay } from "./replay.js";
 const peers = new WeakMap<Server, Set<Socket>>();
 const paths = new WeakMap<Server, string>();
@@ -29,6 +30,7 @@ export async function listenLocal(
   migration?: MigrationHandler,
   settings?: ProviderSettingsService,
   projections?: ProjectionHub,
+  history?: TaskHistoryService,
 ): Promise<Server> {
   if (process.platform === "win32") throw new Error("WINDOWS_ACL_UNQUALIFIED");
   const directory = dirname(path);
@@ -52,6 +54,7 @@ export async function listenLocal(
     connections.add(socket);
     const decoder = new FrameDecoder();
     let codebase: ProjectionChannel | undefined;
+    let taskHistory: TaskHistoryService | undefined;
     const transfers = new ConnectionTransfers((spec, bytes) => {
       if (codebase?.expects(spec.id)) codebase.complete(spec.id, bytes);
     });
@@ -69,9 +72,11 @@ export async function listenLocal(
       if (socket.destroyed) return;
       if (!session) {
         const hello = handshake.accept(input, Date.now());
-        session = new Session(pairing, ++epoch);
+        session = new Session(pairing, ++epoch, hello.extensionId);
         if (projections && hello.capabilities?.includes("codebase.read"))
           codebase = projections.connect(session, send);
+        if (history && hello.capabilities?.includes("task.history"))
+          taskHistory = history;
         socket.setTimeout(30_000);
         send({
           kind: "ready",
@@ -93,6 +98,7 @@ export async function listenLocal(
                 ]
               : ["heartbeat", "resumeEvents"]),
             ...(settings ? ["settings"] : []),
+            ...(taskHistory ? ["task.history"] : []),
             ...(codebase ? ["codebase.read"] : []),
           ],
           taskReady: false,
@@ -107,6 +113,7 @@ export async function listenLocal(
           migration,
           settings,
           codebase,
+          history: taskHistory,
         });
         send({ messageId: session.messageId, result });
       }

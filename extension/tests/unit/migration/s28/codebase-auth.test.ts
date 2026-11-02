@@ -29,3 +29,27 @@ it("authenticates an explicit read capability and rejects capability tampering w
     ),
   ).toThrow("AUTH_DENIED");
 });
+it("binds combined history capability negotiation to the signed hello", async () => {
+  const pairing = {
+    installationId: randomUUID(),
+    profileId: randomUUID(),
+    extensionId: "a".repeat(32),
+    secret: "b".repeat(64),
+  };
+  const config = { ...pairing, extensionIds: [pairing.extensionId] };
+  const check = new Handshake(config, Date.now() + 5000);
+  expect(
+    check.accept(
+      await nativeHello(pairing, check.nonce, true, true),
+      Date.now(),
+    ).capabilities,
+  ).toEqual(["codebase.read", "task.history"]);
+  const changed = new Handshake(config, Date.now() + 5000),
+    original = await nativeHello(pairing, changed.nonce, true, true);
+  expect(() =>
+    changed.accept(
+      { ...original, capabilities: ["codebase.read"] },
+      Date.now(),
+    ),
+  ).toThrow("AUTH_DENIED");
+});

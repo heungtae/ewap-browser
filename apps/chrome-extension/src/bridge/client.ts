@@ -21,6 +21,7 @@ export class BridgeClient implements TaskClient {
   async resume(afterSequence = this.cursor) {
     this.connected = false;
     const result = await this.transport.request("resumeEvents", afterSequence);
+    if ("schema" in result) throw new Error("HISTORY_VIEW_REQUIRED");
     if (result.resync) this.snapshotRequired = true;
     if (this.snapshotRequired) {
       this.status("Backend snapshot required — waiting");

@@ -3,3 +3,4 @@ export * from "./store.js";
 export * from "./intents.js";
 export * from "./retention.js";
 export * from "./resume.js";
+export * from "./history-service.js";

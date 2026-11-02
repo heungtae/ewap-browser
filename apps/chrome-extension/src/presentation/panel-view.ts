@@ -2,7 +2,8 @@ import {
   panelEventSchema,
   type PanelClient,
 } from "@contextpilot/shared/bridge";
-import { runStartView, terminalView } from "./panel-state-view.js";
+import { PanelHistory } from "./panel-history.js";
+import * as stateView from "./panel-state-view.js";
 import type { PresentationView } from "./view.js";
 import { PanelStatus } from "./panel-status.js";
 import { PanelTranscript } from "./panel-transcript.js";
@@ -18,8 +19,12 @@ export function createPanelView(
 ): PresentationView {
   const transcript = new PanelTranscript(document, root);
   const feedback = new PanelStatus(document);
-  const status = feedback.status,
-    setActivity = feedback.activity;
+  const { status, activity: setActivity } = feedback;
+  const history = new PanelHistory(
+    document,
+    (node) => transcript.append(node),
+    feedback,
+  );
   const send = document.getElementById("chat-send") as HTMLButtonElement;
   let runId: string | undefined,
     requestId: string | undefined,
@@ -29,11 +34,7 @@ export function createPanelView(
   const ended = new Set<string>();
   const setBusy = (value: boolean) => {
     busy = value;
-    send.dataset.state = value ? "stop" : "send";
-    send.type = value ? "button" : "submit";
-    send.disabled = false;
-    send.setAttribute("aria-label", value ? "중지" : "보내기");
-    send.title = value ? "중지" : "보내기";
+    stateView.setPanelBusy(send, value);
   };
   const decisions = new PanelDecisions(
     status,
@@ -55,6 +56,7 @@ export function createPanelView(
     runId = undefined;
     requestId = undefined;
     ended.clear();
+    history.clear();
     setBusy(false);
     setActivity();
     status("새 대화를 시작했습니다.");
@@ -62,9 +64,17 @@ export function createPanelView(
   let unbind: (() => void) | undefined;
   return {
     status,
-    message: (text) => {
-      transcript.message(text);
+    history(state, dispatchUnknown, gap) {
+      decisions.lock("최신 요청 확인 필요");
+      history.show(state, dispatchUnknown, gap);
+      if (!state) return;
+      if (runId === state.id || runId === undefined) {
+        transcript.end(state.id);
+        setBusy(false);
+        if (state.state === "TERMINAL") ended.add(state.id);
+      }
     },
+    message: (text) => transcript.message(text),
     bind(client?: PanelClient) {
       unbind?.();
       transcript.attach();
@@ -117,7 +127,7 @@ export function createPanelView(
         requestId = event.requestId;
         mode = event.mode;
         setBusy(true);
-        setActivity(runStartView(ctx, event));
+        setActivity(stateView.runStartView(ctx, event));
         return;
       }
       if (
@@ -130,10 +140,8 @@ export function createPanelView(
         transcript.message(event.text, event.role);
         return;
       }
-      if (event.type === "assistant_delta") {
-        transcript.delta(event.runId, event.text);
-        return;
-      }
+      if (event.type === "assistant_delta")
+        return transcript.delta(event.runId, event.text);
       if (event.type === "activity") {
         status(event.text);
         setActivity(event.finished ? undefined : event.text);
@@ -167,7 +175,7 @@ export function createPanelView(
         renderWorkflowCard(ctx, event);
         return;
       }
-      const terminal = terminalView(ctx, event);
+      const terminal = stateView.terminalView(ctx, event);
       decisions.lock(
         terminal.active
           ? "화면 확인 중"

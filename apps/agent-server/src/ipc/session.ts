@@ -14,6 +14,7 @@ export class Session {
   constructor(
     readonly pairing: Pairing,
     readonly connectionEpoch: number,
+    readonly extensionId?: string,
   ) {}
   accept(input: unknown, now: number) {
     const e = envelopeSchema.parse(input);

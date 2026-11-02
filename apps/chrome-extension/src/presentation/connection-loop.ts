@@ -1,3 +1,4 @@
+import { applyTaskHistory } from "./apply-task-history.js";
 import {
   replaySchema,
   type TaskClient,
@@ -48,6 +49,22 @@ export function connectPresentation(
     }
     if (parsed.success) {
       const batch = parsed.data;
+      if ("schema" in batch && batch.schema === "wca.task-history/v1") {
+        snapshotRequired = true;
+        state.connectionOnly = false;
+        try {
+          cursor = applyTaskHistory(batch, cursor, tasks.taskId, view);
+          state.cursor = cursor;
+          state.streamId = batch.streamId;
+          state.connectionOnly = false;
+          snapshotRequired = false;
+        } finally {
+          state.snapshotRequired = snapshotRequired;
+        }
+        report("Backend connected — 작업 상태를 복구했습니다.", true);
+        return;
+      }
+
       if (
         batch.events.some(
           (event) =>

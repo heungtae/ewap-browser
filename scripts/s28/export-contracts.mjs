@@ -20,6 +20,9 @@ const golden = {};
 for (const name of [
   "codebaseCommandSchema",
   "codebaseAgentSchema",
+  "taskHistoryCommandSchema",
+  "taskHistoryStateSchema",
+  "taskHistoryReplaySchema",
   "helloSchema",
   "envelopeSchema",
   "challengeSchema",

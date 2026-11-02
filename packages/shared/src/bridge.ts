@@ -1,7 +1,11 @@
+export * from "./replay.js";
+import { replaySchema } from "./replay.js";
+export * from "./task-history.js";
+import { taskHistoryCommandSchema } from "./task-history.js";
 export * from "./codebase-rpc.js";
 import { codebaseCommandSchema } from "./codebase-rpc.js";
 import { z } from "zod";
-import { panelEventSchema, type PanelClient } from "./panel-events.js";
+import { type PanelClient } from "./panel-events.js";
 export * from "./panel-events.js";
 export * from "./settings-rpc.js";
 import { settingsCommandSchema } from "./settings-rpc.js";
@@ -18,7 +22,12 @@ export const helloSchema = z.strictObject({
   extensionId: z.string().regex(/^[a-p]{32}$/),
   nonce: z.string().regex(/^[a-f0-9]{64}$/),
   proof: z.string().regex(/^[a-f0-9]{64}$/),
-  capabilities: z.array(z.literal("codebase.read")).min(1).max(1).optional(),
+  capabilities: z
+    .array(z.enum(["codebase.read", "task.history"]))
+    .min(1)
+    .max(2)
+    .refine((values) => new Set(values).size === values.length)
+    .optional(),
 });
 export const transferCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({
@@ -54,6 +63,7 @@ export const transferCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("transfer.cancel"), id }),
 ]);
 export const commandSchema = z.union([
+  taskHistoryCommandSchema,
   codebaseCommandSchema,
   settingsCommandSchema,
   migrationCommandSchema,
@@ -89,50 +99,8 @@ export const envelopeSchema = z.strictObject({
 });
 export type Hello = z.infer<typeof helloSchema>;
 export type Envelope = z.infer<typeof envelopeSchema>;
-const eventPosition = {
-  sequence: z.number().int().positive(),
-  revision: z.number().int().positive(),
-};
-export const bridgeEventSchema = z.union([
-  z.strictObject({
-    ...eventPosition,
-    kind: z.literal("presentation"),
-    presentation: panelEventSchema,
-    text: z.never().optional(),
-  }),
-  z.strictObject({
-    ...eventPosition,
-    kind: z
-      .string()
-      .max(128)
-      .regex(/^(?!presentation$)[\s\S]*$/),
-    text: z.string().max(65536).optional(),
-    presentation: z.never().optional(),
-  }),
-]);
-export const replaySchema = z.strictObject({
-  events: z.array(bridgeEventSchema).max(4096),
-  cursor: z.number().int().nonnegative(),
-  resync: z.boolean(),
-  streamId: z.string().uuid().optional(),
-  snapshot: z
-    .union([
-      z.strictObject({
-        revision: z.number().int().nonnegative(),
-        state: z.literal("waiting"),
-      }),
-      z.strictObject({
-        schema: z.literal("wca.connection-snapshot/v1"),
-        streamId: z.string().uuid(),
-        revision: z.number().int().nonnegative(),
-        state: z.literal("waiting"),
-      }),
-    ])
-    .nullable()
-    .optional(),
-});
-export type BridgeEvent = z.infer<typeof bridgeEventSchema>;
 export interface TaskClient {
+  readonly taskId?: string;
   panel?: PanelClient;
   resume(
     afterSequence: number,
@@ -161,6 +129,7 @@ export const readySchema = z.strictObject({
   capabilities: z
     .array(
       z.enum([
+        "task.history",
         "codebase.read",
         "settings",
         "heartbeat",
@@ -174,7 +143,7 @@ export const readySchema = z.strictObject({
         "migration.consensus",
       ]),
     )
-    .max(11),
+    .max(12),
   taskReady: z.literal(false),
 });
 export const responseSchema = z.strictObject({

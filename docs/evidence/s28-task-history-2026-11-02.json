@@ -1,0 +1,183 @@
+{
+  "date": "2026-11-02 KST",
+  "sourceBase": "6703175b240579522ef4a32ec3a5347325a36759",
+  "dirtyCaveat": "Base plus containing change; hashes identify verified sources. Original designs/static UI assets/production route unchanged.",
+  "versions": {
+    "extension": "0.1.117",
+    "nodeBuildRelay": "20.19.6",
+    "sqliteNode": "22.23.2",
+    "pnpm": "9.15.4",
+    "browser": "Chrome/147.0.7727.15",
+    "platform": "Linux"
+  },
+  "result": "PASS for scoped read-only history transport and presentation; S28/S29 In Progress",
+  "approvalFacts": 0,
+  "businessDispatches": 0,
+  "providerCalls": 0,
+  "commands": [
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm lint",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:module-boundaries",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm build:s28",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s28",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s29",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s30",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm test:unit",
+      "result": "PASS",
+      "files": 310,
+      "tests": 1493
+    },
+    {
+      "command": "node scripts/s28/history-build.mjs && /home/heungtae/.nvm/versions/node/v22.23.2/bin/node --test scripts/s28/history.test.mjs",
+      "result": "PASS",
+      "tests": 4
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_HISTORY_EVIDENCE_DIR=/tmp/s28-history-source-final S28_SQLITE_NODE=/home/heungtae/.nvm/versions/node/v22.23.2/bin/node node --experimental-websocket scripts/s28/history-chrome.mjs",
+      "result": "PASS"
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_EVIDENCE_DIR=/tmp/s28-history-native-final pnpm test:chrome-s28:native",
+      "result": "PASS"
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_PANEL_EVIDENCE_DIR=/tmp/s28-history-panel-final pnpm test:chrome-s28:panel",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm build:s31",
+      "result": "PASS"
+    },
+    {
+      "command": "/home/heungtae/.nvm/versions/node/v22.23.2/bin/node scripts/s31/sqlite.test.mjs",
+      "result": "PASS",
+      "tests": 10
+    },
+    {
+      "command": "pnpm check:s31",
+      "result": "PASS"
+    }
+  ],
+  "chrome": {
+    "result": "PASS",
+    "browser": "Chrome/147.0.7727.15",
+    "scope": "source-fixture Worker/Panel callers, real native relay, authenticated socket and SQLite source; synthetic readonly task admission; no production task routing",
+    "panelReloadSnapshot": true,
+    "copiedReaderDenied": true,
+    "workerActuallyReplaced": true,
+    "nativeRestartRecovered": true,
+    "currentTaskCards": 1,
+    "historicalInputsReactivated": 0,
+    "historicalValueCleared": true,
+    "workerResumeCursor": 5,
+    "nativeResumeCursor": 5,
+    "unknownDispatchPreserved": true,
+    "businessDispatches": 0,
+    "providerCalls": 0
+  },
+  "sqlite": {
+    "actualSqlite": true,
+    "authenticatedUnixSocket": true,
+    "events": 1002,
+    "pages": 16,
+    "wireEventsPerPage": 64,
+    "snapshotAfterPruneAndReopen": true,
+    "uncertainDispatchPreserved": true,
+    "wrongPrincipalDenied": true,
+    "legacyHeartbeatWithoutHistory": true
+  },
+  "firstFailures": [
+    {
+      "case": "Chrome fixture lookup",
+      "observed": "Built-in extension Worker selected; panel URL opened chrome-error page. Initial file-replacement attribution was unproven.",
+      "fix": "Select exact /js/service-worker.js target; prepare fixture assets before Chrome loads."
+    },
+    {
+      "case": "diagnostic evaluation",
+      "observed": "Await in non-async expression masked diagnostics.",
+      "fix": "Use explicit async/exception-aware inspection."
+    },
+    {
+      "case": "helper extraction",
+      "observed": "cp import removed while host copy still used it.",
+      "fix": "Restore required import."
+    },
+    {
+      "case": "empty history read after stale prompt",
+      "observed": "Old prompt status/activity survived while committed history was suspended.",
+      "fix": "Restore last source phase and lock historical controls on empty reads."
+    },
+    {
+      "case": "compatibility review",
+      "observed": "History capability initially advertised without explicit opt-in.",
+      "fix": "Bind opt-in in signed hello; do not install per-session source for legacy peers."
+    }
+  ],
+  "limits": [
+    "Fixture-only Worker/Panel caller composition. No default product task-history or task-admission UI route is enabled.",
+    "Trusted backend caller must supply ownership resolver; wire caller cannot choose owner.",
+    "No imported prompt/input/lease/ref/dispatch authority is restored.",
+    "Remaining Settings/manager review and original completion audit are pending.",
+    "No provider/live-site, cross-platform installation, production cutover or release claim."
+  ],
+  "sourceSha256": {
+    "apps/agent-server/src/tasks/history-service.ts": "89e080ee3df930cbb55d445ae6f120d5d488a419e2ac9ee9f65d2d7228e09f47",
+    "apps/chrome-extension/src/bridge/task-history-client.ts": "e2f97f8bc84f2525c0a1f4b100d8309b2344c2a0febb72e0514c499c96ad2a15",
+    "apps/chrome-extension/src/presentation/apply-task-history.ts": "209fb3fd716d06e9f31d9e546d1b4648ac9cb2f1cab6b89d0d89b543c81f9e79",
+    "apps/chrome-extension/src/presentation/panel-history.ts": "99fcbc966b590e67cbdc74aebfeda30b0df17d4d9641b1e16e425e6e4ea0651e",
+    "extension/tests/fixture/s28/history-panel.ts": "c31f71b28d13534c07952744e88af2ddadd305acb4286d02e5808987e7dea421",
+    "extension/tests/fixture/s28/history-worker.ts": "2ca06cfce0522e728c4dc0d6bf200570e392b9a847b02c114c533cbd71c5ff8f",
+    "extension/tests/unit/migration/s28/task-history.test.ts": "5e3154b2c84d82fc52752be66dcb95120aa3c4f18611c90d9043031a9fb05c63",
+    "packages/shared/src/replay.ts": "99479f3c77177e1ce9ade41f021c017e64e510132bdfab2e74dbe97aa15214a4",
+    "packages/shared/src/task-history.ts": "d98ef0b4fd0c1de89f22516dabaa266c467a8888186dc73981cd6995b0880e48",
+    "scripts/s28/history-build.mjs": "37c00be313d2f66c308ef9732b7c5b5a8a3a236e005ff088cc2d40752a925d76",
+    "scripts/s28/history-chrome.mjs": "817a82de359be1fd948540a3354af4aa9fce178e43771f98016318dd00c9fdab",
+    "scripts/s28/history-daemon.mjs": "c8b3f7f66a33989bdb462714feafe2ca4df7e42f70e9fd43e657adce37dffb28",
+    "scripts/s28/history-extension.mjs": "c7cc7bd155dd973b364ada5a5b0ec173d827d709361686c6f4f61c78558cd59c",
+    "scripts/s28/history-fixture.mjs": "20b26b5f7ad4de3ed2f03cd4bb74d17744f5c414bf8d46a739cdb94773f73de1",
+    "scripts/s28/history-loss-cases.mjs": "6f10df7320bcab060f403f0f965b07192e463597c10e966a54156e0df2c77dff",
+    "scripts/s28/history-panel-cases.mjs": "03f32d82b59a0f2754d3c1426b4f15fea845bc898502376014ae707115ec2cf5",
+    "scripts/s28/history-report.mjs": "c3047eb90d2603ef470cc537d0f79b46dc96322f15abfb5b7b569e7319619059",
+    "scripts/s28/history.test.mjs": "7494dd33704201db8be180ff1879cfc1d0e39f531a5922258f3a927c6bfb0f1f",
+    "apps/agent-server/src/ipc/dispatch.ts": "82f94a5e07e65a5e79726bb9abf2a64025dbab404a2960baefde31170b646770",
+    "apps/agent-server/src/ipc/server.ts": "a2ad78090cdf41110624e5268726e2fbbf1d0658c6022517c7ae510f39347f71",
+    "apps/agent-server/src/ipc/session.ts": "7bacf29f5da77188eac0c8a2029d58f9592e5bd18a2e615e5254d3c461c6a066",
+    "apps/agent-server/src/tasks/index.ts": "d30687c2baec0f7cd4d1fc6da412dc96c0b07e2f2225066ffa4dc8f196174f3c",
+    "apps/chrome-extension/src/bridge/api.ts": "008511a0189f6eb8860b6acc6f2b317282e8b004107dd86d4e714e6e09d48fde",
+    "apps/chrome-extension/src/bridge/capabilities.ts": "5d87ad6ce7fb2ebe03765cba0711bd67513620d00b9860239b48dcdde17b75a7",
+    "apps/chrome-extension/src/bridge/client.ts": "f1ccdab2afca2a5cc0a4109a41e953bc5d4af04081277ec8ae9d92b63c18a5d4",
+    "apps/chrome-extension/src/bridge/native-auth.ts": "b82cffb0530a57f1706344d884635005c074f2bfb2acb1a568192dec1b70e096",
+    "apps/chrome-extension/src/bridge/native.ts": "07baf691fe5a264cb807cac3889c7aa53471d7d3010b682f02c5f736dad26c78",
+    "apps/chrome-extension/src/presentation/connection-loop.ts": "ace519263ad8f651027e80fb79c357ba06771b03b0adae51e561e574e41ed009",
+    "apps/chrome-extension/src/presentation/panel-state-view.ts": "09111fccc5e4cb0235fc68fe9fd10242160b74e5f7d518913199a4620cf7925c",
+    "apps/chrome-extension/src/presentation/panel-view.ts": "5ef34cfb9bf11c1500a40c658adb729578a9bb3cbfde8c62dc04ea551538e2fd",
+    "apps/chrome-extension/src/presentation/view.ts": "1703b6c34525bbed42635d6bf1899b17c2eb3319b31820f554c18f8dd76e2b6e",
+    "extension/tests/fixture/s28-contracts.json": "652d5539f06939ef77116d784272f60307016282208cf07f001aee674380e4d8",
+    "extension/tests/unit/migration/s28/codebase-auth.test.ts": "9e5a0b8e8a875067ab72dd9c4987d87425d9cce3baf48349d2591d48bb2257cf",
+    "packages/shared/src/bridge.ts": "08c496922273950fefbad8965517bddd522e2edfb33324dd7930078034df90d8",
+    "scripts/s28/export-contracts.mjs": "1daea2ef31cbc22fbebc76cb5156ff45aa5f1f6284c4c4f1e573ea013f741497"
+  },
+  "screenshotSha256": "87e703dd651bce76f2d89fe67dbe65f2b20bad20c2cadd5620ebb3532a3fe3da"
+}

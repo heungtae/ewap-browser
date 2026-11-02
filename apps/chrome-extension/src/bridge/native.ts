@@ -11,6 +11,7 @@ import { CodebaseEndpoint } from "./codebase-endpoint.js";
 import type { ProjectionAdmission } from "../codebase/projection-registry.js";
 import type { CodebaseReadService } from "@contextpilot/codebase-repository";
 export class NativeBridge {
+  private historyEnabled: boolean;
   private codebase: CodebaseEndpoint | undefined;
   private identity:
     | { connectionId: string; connectionEpoch: number }
@@ -34,8 +35,9 @@ export class NativeBridge {
   constructor(
     private port: NativePort,
     private pairing: Pairing,
-    options: { codebase?: boolean } = {},
+    options: { codebase?: boolean; history?: boolean } = {},
   ) {
+    this.historyEnabled = options.history === true;
     if (options.codebase)
       this.codebase = new CodebaseEndpoint(this, pairing, () => this.close());
     this.ready = new Promise((resolve, reject) => {
@@ -60,6 +62,7 @@ export class NativeBridge {
         this.pairing,
         challenge.nonce,
         this.codebase !== undefined,
+        this.historyEnabled,
       );
       if (this.closed || this.handshake !== "signing")
         throw new Error("BACKEND_DISCONNECTED");
@@ -106,9 +109,11 @@ export class NativeBridge {
       throw new Error("BACKEND_UNAVAILABLE");
     if (!commandAvailable(payload.kind, this.capabilities))
       throw new Error(
-        payload.kind.startsWith("settings.")
-          ? "SETTINGS_UNAVAILABLE"
-          : "MIGRATION_UNAVAILABLE",
+        payload.kind === "task.history"
+          ? "TASK_HISTORY_UNAVAILABLE"
+          : payload.kind.startsWith("settings.")
+            ? "SETTINGS_UNAVAILABLE"
+            : "MIGRATION_UNAVAILABLE",
       );
     const messageId = crypto.randomUUID();
     const payloadDigest = await wireDigest(payload);

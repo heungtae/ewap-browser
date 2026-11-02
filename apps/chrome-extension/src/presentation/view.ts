@@ -1,6 +1,15 @@
-import type { PanelClient, PanelEvent } from "@contextpilot/shared/bridge";
+import type {
+  TaskHistoryState,
+  PanelClient,
+  PanelEvent,
+} from "@contextpilot/shared/bridge";
 import { createPanelView } from "./panel-view.js";
 export interface PresentationView {
+  history?(
+    state: TaskHistoryState | null,
+    dispatchUnknown: boolean,
+    gap: boolean,
+  ): void;
   status(text: string): void;
   message(text: string): void;
   event?(event: PanelEvent): void;

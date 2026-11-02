@@ -1,3 +1,4 @@
+import type { TaskHistoryService } from "../tasks/history-service.js";
 import type { Socket } from "node:net";
 import type { MigrationRequestContext } from "../../../../packages/shared/src/migration-rpc.js";
 import type { ProviderSettingsService } from "../settings/provider-service.js";
@@ -12,6 +13,7 @@ export type MigrationHandler = ((
   context: MigrationRequestContext,
 ) => Promise<unknown>) & { settingsMode?: "session-only" | "os-store" };
 export interface IpcServices {
+  history: TaskHistoryService | undefined;
   socket: Socket;
   session: Session;
   replay: EventReplay;
@@ -25,6 +27,10 @@ export async function dispatchCommand(
   s: IpcServices,
 ): Promise<unknown> {
   const { session, socket } = s;
+  if (command.kind === "task.history") {
+    if (!s.history) throw Error("TASK_HISTORY_UNAVAILABLE");
+    return s.history.read(session, command);
+  }
   if (command.kind.startsWith("codebase.")) {
     if (!s.codebase) throw Error("PROJECTION_UNAVAILABLE");
     return s.codebase.command(command);

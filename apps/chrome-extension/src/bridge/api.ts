@@ -83,6 +83,7 @@ export function unboundBootstrapResult(kind: unknown, value: unknown): unknown {
   if (kind === "capabilities") return bootstrapCapabilities.parse(value);
   if (kind === "resumeEvents") {
     const result = replaySchema.parse(value);
+    if ("schema" in result) throw new Error("UI_CONTEXT_REQUIRED");
     if (
       result.events.some(
         (event) =>

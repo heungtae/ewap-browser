@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28 — 2026-11-02 task-history recovery seam
+
+**In Progress.** [Evidence](evidence/s28-task-history-2026-11-02.md) connects the owner-bound SQLite reader to signed opt-in read IPC and an explicitly bound TaskClient. Actual Chrome verifies panel snapshot recovery, Worker replacement, native restart, cursor continuation, one state card and locked/cleared historical inputs. Full unit tests pass 1,493/1,493; four actual SQLite/socket checks pass. Remaining completion work is Settings/manager baseline review and the original acceptance audit; ordinary task routing stays unavailable.
+
 ## Browser Agent S28 — 2026-11-02 task preference form
 
 **In Progress.** [Evidence](evidence/s28-preferences-2026-11-02.md) records revision-bound public preference persistence, eight preserved approval controls, real native form save/reload and panel-write denial. Full unit tests pass 1,489/1,489. Agent-screen differences are reviewed; the other Settings captures retain pending comparison status. Full baseline/management and owner-bound task-history/loss recovery remain open. Preferences are configuration intent and grant no execution authority.

@@ -15886,6 +15886,153 @@
       "disposition": "replace",
       "sprint": "S28",
       "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "apps/agent-server/src/tasks/history-service.ts",
+      "owner": "RF05",
+      "disposition": "replace",
+      "sprint": "S31",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/bridge/task-history-client.ts",
+      "owner": "RF26",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/apply-task-history.ts",
+      "owner": "RF23",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/panel-history.ts",
+      "owner": "RF23",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "docs/evidence/s28-task-history-2026-11-02.json",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "docs/evidence/s28-task-history-2026-11-02.md",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "docs/evidence/s28-task-history-2026-11-02.png",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "extension/tests/fixture/s28/history-panel.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "extension/tests/fixture/s28/history-worker.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/task-history.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "packages/shared/src/replay.ts",
+      "owner": "RF28",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "packages/shared/src/task-history.ts",
+      "owner": "RF28",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-build.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-chrome.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-daemon.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-extension.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-fixture.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-loss-cases.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-panel-cases.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history-report.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
+    },
+    {
+      "path": "scripts/s28/history.test.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Owner-bound readonly task history transport, snapshot application and loss recovery qualification"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

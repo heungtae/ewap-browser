@@ -2,6 +2,7 @@ export function commandAvailable(
   kind: string,
   capabilities: ReadonlySet<string>,
 ) {
+  if (kind === "task.history") return capabilities.has("task.history");
   if (kind.startsWith("codebase.")) return capabilities.has("codebase.read");
   if (kind.startsWith("settings.")) return capabilities.has("settings");
   if (!kind.startsWith("migration.")) return true;
