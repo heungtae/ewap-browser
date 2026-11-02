@@ -1,3 +1,5 @@
+import { initializeBrowserPermissions } from "./browser-permissions.js";
+import { initializeAgentPreferences } from "./agent-preferences.js";
 import { initializeProviderManagement } from "./provider-management.js";
 import {
   loadProviderForm,
@@ -23,6 +25,16 @@ export function initializeBackendSettings() {
       show("Backend disconnected — 설정 연결을 확인해 주세요.");
       throw error;
     }),
+  );
+  initializeAgentPreferences(client);
+  initializeBrowserPermissions(
+    (
+      globalThis as typeof globalThis & {
+        chrome?: {
+          permissions: Parameters<typeof initializeBrowserPermissions>[0];
+        };
+      }
+    ).chrome?.permissions,
   );
   const management = initializeProviderManagement(client, loadProviderForm);
   initializeProviderSave(client, management);

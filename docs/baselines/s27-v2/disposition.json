@@ -15823,6 +15823,69 @@
       "disposition": "replace",
       "sprint": "S29",
       "target": "Authenticated read-only Codebase projection and controlled native qualification"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/agent-preferences.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/approval-preferences-view.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "apps/chrome-extension/src/presentation/browser-permissions.ts",
+      "owner": "RF24",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "docs/evidence/s28-preferences-2026-11-02.json",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "docs/evidence/s28-preferences-2026-11-02.md",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "docs/evidence/s28-preferences-2026-11-02.png",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/preferences.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "packages/shared/src/preferences.ts",
+      "owner": "RF18",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
+    },
+    {
+      "path": "scripts/s28/chrome-preferences.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "Preserved task preferences with public typed persistence and scoped UI evidence"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",

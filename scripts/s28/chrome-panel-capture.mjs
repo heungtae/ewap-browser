@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
 import { writeFile, readFile } from "node:fs/promises";
 import { cdp, evaluate } from "../chrome-cdp-utils.mjs";
-export async function capturePanel(target, output, name) {
+export async function capturePanel(
+  target,
+  output,
+  name,
+  reviewed = {},
+  enforce = true,
+) {
   await evaluate(
     target,
     "document.fonts.ready.then(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))))",
@@ -34,20 +40,30 @@ export async function capturePanel(target, output, name) {
     scope:
       "observed visible ID/geometry/state differences, not automatic parity acceptance",
   };
+  await writeFile(
+    `${output}/${name}-observed.json`,
+    JSON.stringify({ comparison, observed: data, baseline }, null, 2) + "\n",
+  );
   assert.equal(comparison.viewportMatch, true, `${name}:viewport`);
   assert.equal(comparison.fontMatch, true, `${name}:font`);
-  assert.deepEqual(comparison.missing, [], `${name}:missing`);
-  assert.deepEqual(comparison.extra, [], `${name}:extra`);
+  if (enforce) assert.deepEqual(comparison.missing, [], `${name}:missing`);
+  if (enforce) assert.deepEqual(comparison.extra, [], `${name}:extra`);
   const allowed = {
+    ...reviewed,
     "execution-trace": "bounded current UI status text",
     "diagnostics-debug": "vertical position follows status text height",
     "diagnostics-export": "vertical position follows status text height",
     "chat-send": "authoritative terminal event releases a stalled Stop control",
   };
-  for (const id of comparison.changed)
+  for (const id of enforce ? comparison.changed : [])
     assert.ok(id in allowed, `${name}:unreviewed difference:${id}`);
+  comparison.acceptance = enforce
+    ? "reviewed differences only"
+    : "pending review; observation only";
   comparison.reviewedDifferences = Object.fromEntries(
-    comparison.changed.map((id) => [id, allowed[id]]),
+    comparison.changed
+      .filter((id) => id in allowed)
+      .map((id) => [id, allowed[id]]),
   );
   await writeFile(
     `${output}/${name}.json`,

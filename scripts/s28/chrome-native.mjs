@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { qualifyPreferences } from "./chrome-preferences.mjs";
 import { spawn } from "node:child_process";
 import { access, copyFile, mkdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -197,6 +198,12 @@ export async function qualifyNative({
       count,
     );
     const settingsRestart = await settingsEvidence.afterRestart();
+    const preferencesEvidence = await qualifyPreferences({
+      worker,
+      panel,
+      targets,
+      output,
+    });
     const ownerEvidence = await qualifyPanelOwner({
       panel,
       worker,
@@ -205,6 +212,7 @@ export async function qualifyNative({
     });
     return {
       ...ownerEvidence,
+      preferences: preferencesEvidence,
       advisoryManagement: advisoryEvidence,
       providerSettings: { ...settingsEvidence.before, ...settingsRestart },
       connectionSnapshotRecovered: true,

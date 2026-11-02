@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  agentPreferencesSchema,
   publicProviderSchema,
   settingsRolesSchema,
   type ProviderWrite,
@@ -11,6 +12,7 @@ export const settingsStateSchema = z
     profileId: z.string().uuid(),
     revision: z.number().int().nonnegative().safe(),
     roles: settingsRolesSchema,
+    preferences: agentPreferencesSchema.optional(),
     providers: z.record(
       z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/),
       publicProviderSchema

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { agentPreferencesSchema } from "./preferences.js";
+export * from "./preferences.js";
 const id = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/);
 const revision = z.number().int().nonnegative().safe();
 export const providerWriteSchema = z.strictObject({
@@ -42,6 +44,11 @@ export const settingsRolesSchema = z.strictObject({
 export const settingsCommandSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("settings.read") }),
   z.strictObject({
+    kind: z.literal("settings.preferences.write"),
+    revision,
+    preferences: agentPreferencesSchema,
+  }),
+  z.strictObject({
     kind: z.literal("settings.provider.write"),
     revision,
     id,
@@ -57,6 +64,7 @@ export const settingsCommandSchema = z.discriminatedUnion("kind", [
 export const settingsViewSchema = z.strictObject({
   revision,
   providers: z.record(id, publicProviderSchema),
+  preferences: agentPreferencesSchema.optional(),
   roles: settingsRolesSchema,
   controllerFailure: z.literal("stop"),
   secretMode: z.enum(["session-only", "os-store"]),

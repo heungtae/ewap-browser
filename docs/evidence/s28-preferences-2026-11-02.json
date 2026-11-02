@@ -1,0 +1,291 @@
+{
+  "date": "2026-11-02 KST",
+  "sourceBase": "32a1a29e7ea43a78f887161470ff0bdf4581ec94",
+  "dirtyCaveat": "Source base plus containing change; exact hashes below.",
+  "versions": {
+    "extension": "0.1.117",
+    "node": "20.19.6",
+    "pnpm": "9.15.4",
+    "browser": "Chrome/147.0.7727.15",
+    "platform": "Linux"
+  },
+  "result": "PASS for scoped preferences implementation; full S28/S29 remain In Progress",
+  "approvalFacts": 0,
+  "providerCalls": 0,
+  "businessDispatches": 0,
+  "commands": [
+    {
+      "command": "pnpm typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm lint",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:module-boundaries",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm build:s28",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s28",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s29",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm check:s30",
+      "result": "PASS"
+    },
+    {
+      "command": "pnpm test:unit",
+      "result": "PASS",
+      "files": 309,
+      "tests": 1489
+    },
+    {
+      "command": "pnpm exec vitest run extension/tests/unit/migration/s28/preferences.test.ts extension/tests/unit/migration/s28/provider-settings.test.ts extension/tests/unit/migration/s28/settings-client.test.ts",
+      "result": "PASS",
+      "tests": 11
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_EVIDENCE_DIR=/tmp/s28-preferences-native-final pnpm test:chrome-s28:native",
+      "result": "PASS for native operations; comparative captures remain explicitly pending where indicated"
+    },
+    {
+      "command": "CHROME_FOR_TESTING_BIN=/home/heungtae/.cache/ms-playwright/chromium-1217/chrome-linux64/chrome S28_PANEL_EVIDENCE_DIR=/tmp/s28-preferences-panel-regression pnpm test:chrome-s28:panel",
+      "result": "PASS",
+      "states": 20
+    }
+  ],
+  "native": {
+    "native": {
+      "toolbarActionOpenedPanel": true,
+      "ownedAddressResolves": true,
+      "copiedTabDenied": true,
+      "ownerScope": "Chrome toolbar action, live native bootstrap, tab impersonation; no task admission",
+      "preferences": {
+        "savedViaUi": true,
+        "restoredAfterReload": true,
+        "revisionBound": true,
+        "panelWriteDenied": true,
+        "configurationOnly": true,
+        "baselineReviewPending": true,
+        "comparisons": [
+          {
+            "name": "options-agent",
+            "viewportMatch": true,
+            "fontMatch": true,
+            "missing": [],
+            "extra": [],
+            "changed": [
+              "settings-content",
+              "agent",
+              "agent-preferences-form",
+              "approval-categories",
+              "approval-constraints",
+              "agent-preferences-status",
+              "screenshot-permission-request",
+              "screenshot-permission-status",
+              "content-recovery-enable",
+              "content-recovery-status",
+              "permission-revoke-all"
+            ],
+            "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+            "acceptance": "reviewed differences only",
+            "reviewedDifferences": {
+              "settings-content": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "agent": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "agent-preferences-form": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "approval-categories": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "approval-constraints": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "agent-preferences-status": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "screenshot-permission-request": "actual Chrome permission state; preserved paragraph wrap shifts controls",
+              "screenshot-permission-status": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "content-recovery-enable": "unsupported automatic recovery is disabled explicitly",
+              "content-recovery-status": "current preserved approval explanation wraps one more line; truthful loaded/permission status",
+              "permission-revoke-all": "current preserved approval explanation wraps one more line; truthful loaded/permission status"
+            }
+          },
+          {
+            "name": "options-models",
+            "viewportMatch": true,
+            "fontMatch": true,
+            "missing": ["settings-status"],
+            "extra": [],
+            "changed": [
+              "settings-content",
+              "models",
+              "provider-management",
+              "provider-primary-select",
+              "provider-activate",
+              "provider-decision-select",
+              "provider-jev-enabled",
+              "provider-jev-failure",
+              "provider-routing-apply",
+              "provider-routing-status",
+              "provider-import",
+              "primary-editor",
+              "primary-title",
+              "provider-form",
+              "provider-models-load",
+              "provider-api-key",
+              "api-key-toggle",
+              "api-key-state",
+              "provider-headers",
+              "add-header",
+              "provider-host-access",
+              "provider-test",
+              "provider-export",
+              "provider-remove-delete",
+              "provider-test-messages",
+              "decision-editor",
+              "decision-title",
+              "decision-provider-form",
+              "decision-provider-id",
+              "decision-provider-url",
+              "decision-provider-model",
+              "decision-provider-key",
+              "decision-provider-key-toggle",
+              "decision-provider-key-state",
+              "decision-provider-enabled",
+              "decision-provider-test",
+              "decision-provider-export",
+              "decision-provider-remove-delete"
+            ],
+            "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+            "acceptance": "pending review; observation only",
+            "reviewedDifferences": {}
+          },
+          {
+            "name": "options-automation",
+            "viewportMatch": true,
+            "fontMatch": true,
+            "missing": [],
+            "extra": ["workflow-records-status"],
+            "changed": ["settings-content", "automation"],
+            "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+            "acceptance": "pending review; observation only",
+            "reviewedDifferences": {}
+          },
+          {
+            "name": "options-enterprise",
+            "viewportMatch": true,
+            "fontMatch": true,
+            "missing": [],
+            "extra": [],
+            "changed": [],
+            "scope": "observed visible ID/geometry/state differences, not automatic parity acceptance",
+            "acceptance": "pending review; observation only",
+            "reviewedDifferences": {}
+          }
+        ]
+      },
+      "advisoryManagement": {
+        "actualIndexedDb": true,
+        "managerWindowReused": true,
+        "profileRenamed": true,
+        "localNoteSaved": true,
+        "sourceHistoryShown": true,
+        "filterVerified": true,
+        "workflowRenamed": true,
+        "workflowDisabled": true,
+        "workflowDeleted": true,
+        "profileDeleted": true,
+        "panelMutationDenied": true,
+        "source": "synthetic advisory imports; no legacy storage or execution authority"
+      },
+      "providerSettings": {
+        "providerSavedViaUi": true,
+        "blankSecretRetained": true,
+        "endpointChangeDropsCredential": true,
+        "analystRoleAssigned": true,
+        "staleRevisionDenied": true,
+        "publicMetadataSecretFree": true,
+        "privateMetadataMode": true,
+        "noAutomaticReadiness": true,
+        "panelSettingsMutationDenied": true,
+        "publicMetadataRetainedAfterRestart": true,
+        "sessionSecretLostTruthfully": true,
+        "providerRemovedViaUi": true,
+        "selectedRoleCleared": true
+      },
+      "connectionSnapshotRecovered": true,
+      "uiReconnectWithoutDuplicateMessages": true,
+      "restartReconnect": true,
+      "result": "PASS",
+      "registration": "isolated profile",
+      "nativeHandshake": true,
+      "foreignDocumentDenied": true,
+      "settingsAndProfilesAllowed": true,
+      "actualSidePanelAllowed": true,
+      "sidePanelWindowId": -1,
+      "sidePanelMigrationDenied": true,
+      "portSenderDocumentIdPresent": false,
+      "selfReportedWindowMatches": true,
+      "sidePanelWindowFilterCount": 0,
+      "openEventSupported": true,
+      "openEventWindowMatches": true,
+      "openEventDocumentIdPresent": false,
+      "multiplePanelsFailClosed": true,
+      "singlePanelRecovers": true,
+      "taskReady": false
+    },
+    "result": "PASS",
+    "scope": "target missing-backend, preserved static IDs, settings hash/focus, fixture message; not full S26 interaction parity",
+    "browser": "Chrome/147.0.7727.15",
+    "records": [
+      {
+        "name": "panel",
+        "ids": 32,
+        "focusable": 11,
+        "status": "Backend disconnected — waiting for reconnection"
+      },
+      {
+        "name": "settings",
+        "ids": 73,
+        "focusable": 45,
+        "status": "Backend disconnected — 설정 연결을 확인해 주세요."
+      },
+      {
+        "name": "profiles",
+        "ids": 13,
+        "focusable": 6,
+        "status": "참고 기록을 불러왔습니다. 실행 권한은 포함하지 않습니다."
+      }
+    ]
+  },
+  "firstFailures": [
+    "Reload predicate observed static controls before dynamic initialization; waits for eight category controls and unlocked submit now.",
+    "Device metrics and scroll were reset after reload before comparison.",
+    "Blank status/data differences in the Settings baseline remain observation-only rather than asserted acceptance."
+  ],
+  "limits": [
+    "Preferences remain configuration intent; no execution/policy/source-consent grant.",
+    "Automatic page recovery and backend approval-store revocation remain unavailable and explicitly shown.",
+    "Remaining Settings/manager baseline interactions and task-history/loss recovery are incomplete.",
+    "Legacy production route and version unchanged."
+  ],
+  "sourceSha256": {
+    "apps/chrome-extension/src/presentation/agent-preferences.ts": "d4c09bbac0fbe65e11699226680a464a6059e41750962b6a94c8b136e786ce25",
+    "apps/chrome-extension/src/presentation/approval-preferences-view.ts": "06afd42c7fa44daebb689701bf25ffd571ce00af8af0bfe759610a280c54a837",
+    "apps/chrome-extension/src/presentation/browser-permissions.ts": "6fc42c379fd619aff719b26a52af5caa96e6e5887805e4cbc2ea3c5dcc37fe75",
+    "extension/tests/unit/migration/s28/preferences.test.ts": "ad71599b18031597f1b09fee89bfb095aca5b93352d63033b89fe0d2fb24e2b4",
+    "packages/shared/src/preferences.ts": "4d4d4981466868b0888ba859d0a4baa0b45f4bd10b3dbc797d1afdf81583d6a6",
+    "scripts/s28/chrome-preferences.mjs": "258c8b925d95aa005da66f44c7cff0c19ba82a4a73f5183e8c6db0a680a994a8",
+    "apps/agent-server/src/settings/provider-service.ts": "3e3281a6dbcccb2b6a7810ce2ea49c51cbefabb1c6875b9ec95a088c477a54a6",
+    "apps/agent-server/src/settings/provider-state.ts": "af8b01638b8ec59007b3657e9d70b5a1358df39670c24d4d3840d64d18f98d20",
+    "apps/chrome-extension/src/presentation/settings-client.ts": "1735929dedca1123003b0ae2686f797e3483fe25b06669b575777b3b8dfc39a3",
+    "apps/chrome-extension/src/presentation/settings-entry.ts": "0096f1708ddbd092934609188d6eb91e2bd3f67e5164c9a089fe663037196313",
+    "extension/tests/fixture/s28-contracts.json": "daf0df826c9adf7e05102da5fa36daa4601cb9c68abc86fad66a5d6fed65cd9f",
+    "packages/shared/src/settings-rpc.ts": "35a20c09ca20c8f7c987e96c3713c8e00d3832d1f4cecf8484b1fad50c6ad982",
+    "scripts/s28/chrome-native.mjs": "f3dc461a6d46a2fff8473033ab3b4f49de455f4e2be613bc6bb4c77da2e8e749",
+    "scripts/s28/chrome-panel-capture.mjs": "c266a7684e3ceb78617fa88a3be7e94b1493bc52707e6d3d33f7ac5c3d5ea451"
+  },
+  "screenshotSha256": "dfb57078e01cde55db96dbb06f5e8709fc6049a2d5ccc249769a99833f39c0da"
+}

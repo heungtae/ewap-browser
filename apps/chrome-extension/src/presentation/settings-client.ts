@@ -3,6 +3,7 @@ import {
   settingsCommandSchema,
   type SettingsCommand,
   type SettingsView,
+  type AgentPreferences,
 } from "../../../../packages/shared/src/settings-rpc.js";
 export function createSettingsClient(
   request: (command: SettingsCommand) => Promise<unknown>,
@@ -46,6 +47,8 @@ export function createSettingsClient(
   });
   return {
     read: () => invoke({ kind: "settings.read" }),
+    savePreferences: (revision: number, preferences: AgentPreferences) =>
+      invoke({ kind: "settings.preferences.write", revision, preferences }),
     async sendMessage(raw: unknown): Promise<Record<string, unknown>> {
       if (!raw || typeof raw !== "object")
         throw Error("설정 요청이 올바르지 않습니다.");

@@ -1,4 +1,5 @@
 import {
+  normalizePreferences,
   settingsCommandSchema,
   settingsViewSchema,
   type SettingsCommand,
@@ -61,6 +62,7 @@ export class ProviderSettingsService {
       );
     return settingsViewSchema.parse({
       revision: state.revision,
+      ...(state.preferences ? { preferences: state.preferences } : {}),
       providers,
       roles: state.roles,
       controllerFailure: "stop",
@@ -111,7 +113,12 @@ export class ProviderSettingsService {
         for (const role of ["controller", "analyst"] as const)
           if (next.roles[role] === command.id) next.roles[role] = null;
         if (!next.roles.controller) next.roles.controllerEnabled = false;
-      } else next.roles = command.roles;
+      } else if (command.kind === "settings.preferences.write")
+        next.preferences = normalizePreferences(
+          command.preferences,
+          state.revision + 1,
+        );
+      else next.roles = command.roles;
       validateRoles(next);
       next.revision++;
       const parsed = settingsStateSchema.parse(next);
