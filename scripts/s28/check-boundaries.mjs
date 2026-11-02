@@ -93,6 +93,43 @@ assert.ok(
   ),
   "browser code in backend",
 );
+const serializers = new Set([
+  "extension/src/service-worker/page-method-registry-main.ts",
+  "extension/src/service-worker/page-method-discovery-main.ts",
+  "extension/src/service-worker/page-method-invoke-main.ts",
+  "extension/src/service-worker/page-api-main.ts",
+  "extension/src/page-api/read-adapter.ts",
+  "apps/chrome-extension/src/content/main-transport.ts",
+]);
+const main = await build({
+  entryPoints: ["main-helpers", "main-transport"].map(
+    (name) => `apps/chrome-extension/src/content/${name}.ts`,
+  ),
+  platform: "browser",
+  bundle: true,
+  format: "esm",
+  target: "chrome116",
+  outdir: "/tmp/s28-main-boundary",
+  metafile: true,
+  write: false,
+});
+for (const entry of Object.values(main.metafile.outputs)) {
+  assert.equal(entry.imports.length, 0, "MAIN artifact runtime imports");
+  for (const [path, input] of Object.entries(entry.inputs))
+    if (input.bytesInOutput > 0)
+      assert.ok(
+        serializers.has(path),
+        `MAIN module closure dependency ${path}`,
+      );
+}
+for (const file of main.outputFiles) {
+  const name = file.path.split("/").at(-1);
+  assert.equal(
+    await readFile(`dist/s28/chrome-extension/js/${name}`, "utf8"),
+    file.text,
+    `emitted MAIN artifact ${name}`,
+  );
+}
 const manifest = JSON.parse(
   await readFile("dist/s28/chrome-extension/manifest.json", "utf8"),
 );

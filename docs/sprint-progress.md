@@ -4,6 +4,10 @@
 > 갱신 당시의 범위다. 현재 동작은 [코드](source-guide.md), 결과는 해당 revision의
 > [증거](evidence/README.md)로 확인한다. 신규 작업은 [Sprint 목록](sprints/README.md)에서 찾는다.
 
+## Browser Agent S28 — 2026-11-02 packaged MAIN qualification
+
+**In Progress.** [Evidence](evidence/s28-main-2026-11-02.md) records six unchanged emitted serializers in a real Chrome fixture Worker, MAIN isolation, stale/fresh method identity, accessor/result limits and bounded uncertain outcomes. [ISS-20261102-001](issues/records/2026-11-02-main-injection-document.md) tracks document/result checks. Unit tests pass 1,471/1,471. Full UI state/focus replay, task-history recovery and remaining S28 acceptance are pending.
+
 ## Browser Agent S28/S29 — 2026-11-02 advisory management
 
 **In Progress.** [Evidence](evidence/s28-s29-advisory-management-2026-11-02.md) records preserved manager/workflow controls over transactional Codebase metadata, bounded paging, source history, stale-write fencing and deletion replay protection. Actual Chrome management and collection regressions pass; full unit tests pass 1,466/1,466. Full S28 state/recovery/installation acceptance and S29 source-consent/native projection remain open.

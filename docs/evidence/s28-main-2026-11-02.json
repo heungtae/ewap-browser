@@ -1,0 +1,161 @@
+{
+  "date": "2026-11-02",
+  "baseRevision": "536ce19a0a99d034d0cb28466aff5a997886eed2",
+  "dirty": true,
+  "extensionVersion": "0.1.117",
+  "status": "IN_PROGRESS",
+  "main": {
+    "result": "PASS",
+    "browser": "Chrome/147.0.7727.15",
+    "scope": "unchanged packaged helpers statically imported by fixture MV3 Worker and serialized into controlled HTTPS MAIN; not normal Worker policy/task routing",
+    "exports": [
+      "discoverPageMethodsMain",
+      "installPageMethodRegistryMain",
+      "invokeFixturePageApi",
+      "invokePageMethodMain",
+      "probeFixturePageApi",
+      "readFixturePageApi"
+    ],
+    "emittedFunctionsSerialized": true,
+    "mainIsolatedSeparation": true,
+    "fixtureApiReadAndInvoke": true,
+    "invalidOptionDenied": true,
+    "discoveryBounded": true,
+    "replacementIdentityRejected": true,
+    "freshIdentityAccepted": true,
+    "accessorsNotInvoked": true,
+    "resultBounds": true,
+    "staleDocumentDenied": true,
+    "stalledMainBounded": true,
+    "fixtureCalls": 3,
+    "businessDispatches": 0,
+    "approvals": 0,
+    "providerCalls": 0
+  },
+  "nativeRegression": {
+    "native": {
+      "toolbarActionOpenedPanel": true,
+      "ownedAddressResolves": true,
+      "copiedTabDenied": true,
+      "ownerScope": "Chrome toolbar action, live native bootstrap, tab impersonation; no task admission",
+      "advisoryManagement": {
+        "actualIndexedDb": true,
+        "managerWindowReused": true,
+        "profileRenamed": true,
+        "localNoteSaved": true,
+        "sourceHistoryShown": true,
+        "filterVerified": true,
+        "workflowRenamed": true,
+        "workflowDisabled": true,
+        "workflowDeleted": true,
+        "profileDeleted": true,
+        "panelMutationDenied": true,
+        "source": "synthetic advisory imports; no legacy storage or execution authority"
+      },
+      "providerSettings": {
+        "providerSavedViaUi": true,
+        "blankSecretRetained": true,
+        "endpointChangeDropsCredential": true,
+        "analystRoleAssigned": true,
+        "staleRevisionDenied": true,
+        "publicMetadataSecretFree": true,
+        "privateMetadataMode": true,
+        "noAutomaticReadiness": true,
+        "panelSettingsMutationDenied": true,
+        "publicMetadataRetainedAfterRestart": true,
+        "sessionSecretLostTruthfully": true,
+        "providerRemovedViaUi": true,
+        "selectedRoleCleared": true
+      },
+      "connectionSnapshotRecovered": true,
+      "uiReconnectWithoutDuplicateMessages": true,
+      "restartReconnect": true,
+      "result": "PASS",
+      "registration": "isolated profile",
+      "nativeHandshake": true,
+      "foreignDocumentDenied": true,
+      "settingsAndProfilesAllowed": true,
+      "actualSidePanelAllowed": true,
+      "sidePanelWindowId": -1,
+      "sidePanelMigrationDenied": true,
+      "portSenderDocumentIdPresent": false,
+      "selfReportedWindowMatches": true,
+      "sidePanelWindowFilterCount": 0,
+      "openEventSupported": true,
+      "openEventWindowMatches": true,
+      "openEventDocumentIdPresent": false,
+      "multiplePanelsFailClosed": true,
+      "singlePanelRecovers": true,
+      "taskReady": false
+    },
+    "result": "PASS",
+    "scope": "target missing-backend, preserved static IDs, settings hash/focus, fixture message; not full S26 interaction parity",
+    "browser": "Chrome/147.0.7727.15",
+    "records": [
+      {
+        "name": "panel",
+        "ids": 32,
+        "focusable": 11,
+        "status": "Backend disconnected \u2014 waiting for reconnection"
+      },
+      {
+        "name": "settings",
+        "ids": 73,
+        "focusable": 45,
+        "status": "Backend disconnected \u2014 \uc124\uc815 \uc5f0\uacb0\uc744 \ud655\uc778\ud574 \uc8fc\uc138\uc694."
+      },
+      {
+        "name": "profiles",
+        "ids": 13,
+        "focusable": 6,
+        "status": "\ucc38\uace0 \uae30\ub85d\uc744 \ubd88\ub7ec\uc654\uc2b5\ub2c8\ub2e4. \uc2e4\ud589 \uad8c\ud55c\uc740 \ud3ec\ud568\ud558\uc9c0 \uc54a\uc2b5\ub2c8\ub2e4."
+      }
+    ]
+  },
+  "checks": {
+    "s28Tests": 75,
+    "allUnitPassed": 1471,
+    "allUnitFailed": 0,
+    "typecheck": "PASS",
+    "lint": "PASS",
+    "s28Boundaries": "PASS",
+    "s29Boundaries": "PASS",
+    "s30Boundaries": "PASS",
+    "methodInstrumentationAndCoverage": "PASS"
+  },
+  "firstFailures": [
+    {
+      "stage": "Worker module loading",
+      "observation": "Dynamic import rejected by ServiceWorkerGlobalScope.",
+      "correction": "Static fixture imports of actual packaged artifacts."
+    },
+    {
+      "stage": "raw old-document injection",
+      "observation": "Resolved response identified a different active document and frame.",
+      "correction": "Pre/post metadata and exact response identity checks; uncertain after dispatch.",
+      "browserInternalCause": "not determined"
+    }
+  ],
+  "sourceHashes": {
+    "apps/chrome-extension/src/content/main-helpers.ts": "be92c965a265208c79441e5489b92e4a32a910be0af3db5c5e2623c7fd85c4de",
+    "apps/chrome-extension/src/content/main-transport.ts": "1bf132deb6bc7402250a6dfa9c50be7cdd7643ea1869d965a4c72bc6ca6a8f34",
+    "extension/tests/unit/migration/s28/main-transport.test.ts": "1d383b4b08a44761758307e43bb134bee58c89417bd05780db3c2feaa9dc5b35",
+    "scripts/s28/build.mjs": "16c8372ad01abfa6431fb44d3486946a9e388448812de75874787b94067c43ea",
+    "scripts/s28/check-boundaries.mjs": "c0547abca3458cd0a61c453d19419990b1350a39abefa4d0e4af5a8d2f56ef99",
+    "scripts/s28/chrome-main-cases.mjs": "b344933af8150344b1a0041d66b3e30babae33eec371b7d7a888e17f4a865a1d",
+    "scripts/s28/chrome-main.mjs": "0bef2fcd6cebfbd0b1150f4b095e90dbe074f83c85734aaa908e105f436645b5",
+    "scripts/s28/main-fixture.mjs": "5f6b0bed39fca3bdb018c1574f267689eb6c50c0a5d129e64aade99e8ee67f71"
+  },
+  "artifactHashes": {
+    "main-helpers.js": "939203f10d7c207403b963d02475cf32c1a5c048d619f7665067c2b68f605ee9",
+    "main-transport.js": "c7a0410206cf6aafd6fcafdc4e77070c15c34d4f3a5c1ca544ea121253623134"
+  },
+  "approvals": 0,
+  "providerCalls": 0,
+  "businessDispatches": 0,
+  "limits": [
+    "Static fixture Worker composition; no normal Worker task or policy route.",
+    "Controlled Linux Chrome; not live-provider, deployed user-profile or release qualification.",
+    "S28/S29 full acceptance remains pending."
+  ]
+}

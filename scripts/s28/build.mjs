@@ -78,6 +78,8 @@ await build({
   entryPoints: {
     "service-worker": "apps/chrome-extension/src/bridge/worker.ts",
     content: "apps/chrome-extension/src/content/entry.ts",
+    "main-helpers": "apps/chrome-extension/src/content/main-helpers.ts",
+    "main-transport": "apps/chrome-extension/src/content/main-transport.ts",
   },
   bundle: true,
   platform: "browser",

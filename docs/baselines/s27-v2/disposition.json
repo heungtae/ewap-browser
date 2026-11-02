@@ -15326,6 +15326,69 @@
       "disposition": "reuse",
       "sprint": "S28",
       "target": "controlled advisory manager and Codebase runtime evidence"
+    },
+    {
+      "path": "apps/chrome-extension/src/content/main-helpers.ts",
+      "owner": "RF09",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "packaged MAIN serialization and current-document injection verification"
+    },
+    {
+      "path": "apps/chrome-extension/src/content/main-transport.ts",
+      "owner": "RF09",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "packaged MAIN serialization and current-document injection verification"
+    },
+    {
+      "path": "extension/tests/unit/migration/s28/main-transport.test.ts",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "packaged MAIN serialization and current-document injection verification"
+    },
+    {
+      "path": "scripts/s28/chrome-main-cases.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "packaged MAIN serialization and current-document injection verification"
+    },
+    {
+      "path": "scripts/s28/chrome-main.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "packaged MAIN serialization and current-document injection verification"
+    },
+    {
+      "path": "scripts/s28/main-fixture.mjs",
+      "owner": "RF30",
+      "disposition": "replace",
+      "sprint": "S28",
+      "target": "packaged MAIN serialization and current-document injection verification"
+    },
+    {
+      "path": "docs/evidence/s28-main-2026-11-02.json",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "MAIN artifact qualification and document identity regression evidence"
+    },
+    {
+      "path": "docs/evidence/s28-main-2026-11-02.md",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "MAIN artifact qualification and document identity regression evidence"
+    },
+    {
+      "path": "docs/issues/records/2026-11-02-main-injection-document.md",
+      "owner": "RF30",
+      "disposition": "reuse",
+      "sprint": "S28",
+      "target": "MAIN artifact qualification and document identity regression evidence"
     }
   ],
   "baseline": "docs/baselines/s36-observed-owner/disposition.json",
